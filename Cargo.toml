@@ -1,0 +1,7 @@
+[package]
+name = "apint"
+version = "0.1.0"
+authors = ["Robbepop <robbepop@web.de>"]
+
+[dependencies]
+log = "0.3.8"
