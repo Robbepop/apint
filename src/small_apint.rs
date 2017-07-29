@@ -7,6 +7,11 @@ use traits::{
 	APIntImpl,
 	APIntMutImpl,
 };
+use std::ops::{
+	BitAndAssign,
+	BitOrAssign,
+	BitXorAssign
+};
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 pub(crate) struct SmallAPInt {
@@ -112,9 +117,9 @@ impl<T> APIntImpl<SmallAPInt> for T
 	where T: Width + DigitWrapper
 {
 	#[inline]
-	fn get(&self, n: usize) -> Result<bool> {
+	fn get(&self, n: usize) -> Result<Bit> {
 		self.verify_bit_access(n)?;
-		Ok(self.digit().get(n))
+		self.digit().get(n)
 	}
 
 	#[inline]
@@ -145,7 +150,7 @@ impl<T> APIntMutImpl<SmallAPInt> for T
 	#[inline]
 	fn set(&mut self, n: usize) -> Result<()> {
 		self.verify_bit_access(n)?;
-		Ok(self.digit_mut().set(n))
+		self.digit_mut().set(n)
 	}
 
 	#[inline]
@@ -156,7 +161,7 @@ impl<T> APIntMutImpl<SmallAPInt> for T
 	#[inline]
 	fn unset(&mut self, n: usize) -> Result<()> {
 		self.verify_bit_access(n)?;
-		Ok(self.digit_mut().unset(n))
+		self.digit_mut().unset(n)
 	}
 
 	#[inline]
@@ -167,7 +172,7 @@ impl<T> APIntMutImpl<SmallAPInt> for T
 	#[inline]
 	fn flip(&mut self, n: usize) -> Result<()> {
 		self.verify_bit_access(n)?;
-		Ok(self.digit_mut().flip(n))
+		self.digit_mut().flip(n)
 	}
 
 	#[inline]
@@ -179,7 +184,7 @@ impl<T> APIntMutImpl<SmallAPInt> for T
 	#[inline]
 	fn bitnot_inplace(&mut self) {
 		let width = self.width().to_usize();
-		self.digit_mut().bitnot_assign();
+		self.digit_mut().not_inplace();
 		self.digit_mut().unset_first_n(digit::BITS - width);
 	}
 

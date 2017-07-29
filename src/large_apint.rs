@@ -132,7 +132,7 @@ impl<'a> Width for &'a mut LargeAPIntMut<'a> {
 impl<'a, T> APIntImpl<LargeAPInt<'a>> for T
 	where T: Width + DigitSliceWrapper
 {
-	fn get(&self, n: usize) -> Result<bool> {
+	fn get(&self, n: usize) -> Result<Bit> {
 		unimplemented!()
 	}
 

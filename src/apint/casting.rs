@@ -68,13 +68,13 @@ impl APInt {
 			(Storage::Inl, Storage::Inl) => Ok(APInt{
 				len : target_bitwidth,
 				data: APIntData{
-					inl: unsafe{self.data.inl.truncated(target_bitwidth)}
+					inl: unsafe{self.data.inl.truncated(target_bitwidth).unwrap()}
 				}
 			}),
 			(Storage::Inl, Storage::Ext) => Ok(APInt{
 				len : target_bitwidth,
 				data: APIntData{
-					inl: unsafe{(*self.data.ext).truncated(target_bitwidth)}
+					inl: unsafe{(*self.data.ext).truncated(target_bitwidth).unwrap()}
 				}
 			}),
 			(Storage::Ext, Storage::Ext) => {
@@ -136,13 +136,13 @@ impl APInt {
 			(Storage::Inl, Storage::Inl) => Ok(APInt{
 				len : target_bitwidth,
 				data: APIntData{
-					inl: unsafe{self.data.inl.truncated(target_bitwidth)}
+					inl: unsafe{self.data.inl.truncated(target_bitwidth).unwrap()}
 				}
 			}),
 			(Storage::Inl, Storage::Ext) => Ok(APInt{
 				len : target_bitwidth,
 				data: APIntData{
-					inl: unsafe{(*self.data.ext).truncated(target_bitwidth)}
+					inl: unsafe{(*self.data.ext).truncated(target_bitwidth).unwrap()}
 				}
 			}),
 			(Storage::Ext, Storage::Ext) => {

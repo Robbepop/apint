@@ -79,7 +79,7 @@ impl APInt {
 		if bitwidth.to_usize() == 0 { panic!("APInt::from_pattern(0) cannot be instantiated with a bit-width of zero (0).") }
 		match BitWidth::from(bitwidth).storage() {
 			Storage::Inl => {
-				APInt{len: bitwidth, data: APIntData{inl: pattern.truncated(bitwidth)}}
+				APInt{len: bitwidth, data: APIntData{inl: pattern.truncated(bitwidth).unwrap()}}
 			}
 			Storage::Ext => {
 				use std::mem;

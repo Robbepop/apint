@@ -46,7 +46,7 @@ pub(crate) trait Width {
 pub(crate) trait APIntImpl<I>
 	where I: Width
 {
-	fn get(&self, n: usize) -> Result<bool>;
+	fn get(&self, n: usize) -> Result<Bit>;
 	fn sign_bit(&self) -> Bit;
 
 	fn ult(&self, other: &I) -> Result<bool>;
