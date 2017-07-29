@@ -83,7 +83,7 @@ impl APInt {
 				buffer.extend_from_slice(&self.as_digit_slice()[0..req_blocks]);
 				debug_assert_eq!(buffer.capacity(), req_blocks);
 				if let Some(excess_bits) = target_bitwidth.excess_bits() {
-					buffer.last_mut().unwrap().truncate(excess_bits);
+					buffer.last_mut().unwrap().truncate(excess_bits).unwrap();
 				}
 				let dst = buffer.as_mut_ptr();
 				::std::mem::forget(buffer);

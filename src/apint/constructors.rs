@@ -86,7 +86,7 @@ impl APInt {
 				let req_blocks = bitwidth.required_blocks();
 				let mut buffer = vec![pattern; req_blocks];
 				let last_width = bitwidth.to_usize() % digit::BITS;
-				buffer.last_mut().unwrap().truncate(last_width);
+				buffer.last_mut().unwrap().truncate(last_width).unwrap();
 				assert_eq!(buffer.capacity(), req_blocks);
 				let ptr_buffer = buffer.as_ptr() as *mut Digit;
 				mem::forget(buffer);

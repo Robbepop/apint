@@ -185,7 +185,7 @@ impl<T> APIntMutImpl<SmallAPInt> for T
 	fn bitnot_inplace(&mut self) {
 		let width = self.width().to_usize();
 		self.digit_mut().not_inplace();
-		self.digit_mut().unset_first_n(digit::BITS - width);
+		self.digit_mut().unset_first_n(digit::BITS - width).unwrap();
 	}
 
 	#[inline]

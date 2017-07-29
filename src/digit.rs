@@ -101,7 +101,7 @@ impl Digit {
 		where W: Into<BitWidth>
 	{
 		let bitwidth = bitwidth.into();
-		self.truncate(bitwidth);
+		self.truncate(bitwidth)?;
 		Ok(self)
 	}
 
