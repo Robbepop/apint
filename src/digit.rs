@@ -1,6 +1,9 @@
 use bitwidth::BitWidth;
 use errors::{Error, Result};
 
+use std::convert::TryInto;
+use std::fmt;
+
 use std::ops::{
 	Not,
 	BitAnd,
@@ -68,6 +71,12 @@ impl Digit {
 		Ok(Digit::from_u64(1 << n))
 	}
 
+	/// Creates a digit that represents the value `1`.
+	#[inline]
+	pub fn one() -> Digit {
+		Digit::from_u64(1)
+	}
+
 	/// Creates a digit where all bits are initialized to `0`.
 	#[inline]
 	pub fn zeros() -> Digit {
@@ -98,18 +107,20 @@ impl Digit {
 impl Digit {
 	#[inline]
 	pub fn truncated<W>(mut self, bitwidth: W) -> Result<Digit>
-		where W: Into<BitWidth>
+		where W: TryInto<BitWidth>,
+		      W::Error: fmt::Debug
 	{
-		let bitwidth = bitwidth.into();
+		let bitwidth = bitwidth.try_into().expect("TODO");
 		self.truncate(bitwidth)?;
 		Ok(self)
 	}
 
 	#[inline]
 	pub fn truncate<W>(&mut self, bitwidth: W) -> Result<()>
-		where W: Into<BitWidth>
+		where W: TryInto<BitWidth>,
+		      W::Error: fmt::Debug
 	{
-		let bitwidth = bitwidth.into();
+		let bitwidth = bitwidth.try_into().expect("TODO");
 		if bitwidth.to_usize() > self::BITS {
 			return Err(Error::bit_access_out_of_bounds(bitwidth.to_usize(), self::BITS))
 		}

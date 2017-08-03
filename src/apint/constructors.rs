@@ -5,6 +5,9 @@ use bitwidth::{BitWidth, Model, Storage};
 use digit::{Digit};
 use digit;
 
+use std::convert::TryInto;
+use std::fmt;
+
 impl Drop for APInt {
 	fn drop(&mut self) {
 		use std::mem;
@@ -15,6 +18,15 @@ impl Drop for APInt {
 			}
 		}
 	}
+}
+
+/// Used to construct an `APInt` from raw parts while staying type safe.
+#[derive(Debug, Clone, PartialEq, Eq)]
+enum RawData {
+	/// Used in case of an inline, single-digit `APInt`
+	Inl(Digit),
+	/// Used in case of a multi-digit `APInt`
+	Ext(Vec<Digit>)
 }
 
 //  =======================================================================
@@ -70,11 +82,15 @@ impl APInt {
 		APInt{len: BitWidth(64), data: APIntData{inl: Digit(val as u64)}}
 	}
 
+	/// Creates a new `APInt` with a value representation equal to the given pattern.
+	/// 
+	/// Note: The pattern is repeated as many times as it fits into the given bitwidth.
 	fn from_pattern<W, P>(bitwidth: W, pattern: P) -> APInt
-		where W: Into<BitWidth>,
+		where W: TryInto<BitWidth>,
+		      W::Error: fmt::Debug,
 		      P: Into<Digit>
 	{
-		let bitwidth = bitwidth.into();
+		let bitwidth = bitwidth.try_into().expect("TODO: Change function return type to Result");
 		let pattern  = pattern.into();
 		if bitwidth.to_usize() == 0 { panic!("APInt::from_pattern(0) cannot be instantiated with a bit-width of zero (0).") }
 		match BitWidth::from(bitwidth).storage() {
@@ -99,43 +115,55 @@ impl APInt {
 	///
 	/// **Error** Returns `InvalidZeroBitWidth` in case of a given target bit-width of zero.
 	pub fn zero<W>(bitwidth: W) -> APInt
-		where W: Into<BitWidth>
+		where W: TryInto<BitWidth>,
+		      W::Error: fmt::Debug
 	{
-		use self::Model::*;
-		let bitwidth = bitwidth.into();
-		match bitwidth.model() {
-			C8  => APInt::from_u8(0),
-			C16 => APInt::from_u16(0),
-			C32 => APInt::from_u32(0),
-			C64 => APInt::from_u64(0),
-			Inl |
-			Ext => APInt::from_pattern(bitwidth, 0)
-		}
+		APInt::from_pattern(bitwidth, 0)
+		// use self::Model::*;
+		// let bitwidth = bitwidth.into();
+		// match bitwidth.storage() {
+		// 	Storage::Inl => {
+		// 		APInt
+		// 	}
+		// 	Storage::Ext => {
+		// 		APInt::from_pattern(bitwidth, 0);
+		// 	}
+		// }
+		// match bitwidth.model() {
+		// 	C8  => APInt::from_u8(0),
+		// 	C16 => APInt::from_u16(0),
+		// 	C32 => APInt::from_u32(0),
+		// 	C64 => APInt::from_u64(0),
+		// 	Inl |
+		// 	Ext => APInt::from_pattern(bitwidth, 0)
+		// }
 	}
 
 	/// Creates a new `APInt` with the given bit-width that represents one.
 	///
 	/// **Error** Returns `InvalidZeroBitWidth` in case of a given target bit-width of zero.
 	pub fn one<W>(bitwidth: W) -> APInt
-		where W: Into<BitWidth>
+		where W: TryInto<BitWidth>
 	{
-		use self::Model::*;
-		let bitwidth = bitwidth.into();
-		match bitwidth.model() {
-			C8  => APInt::from_u8(1),
-			C16 => APInt::from_u16(1),
-			C32 => APInt::from_u32(1),
-			C64 => APInt::from_u64(1),
-			Inl => APInt::from_pattern(bitwidth, 1),
-			Ext => APInt::from_u64(1).zero_extend(bitwidth).unwrap()
-		}
+		unimplemented!()
+		// use self::Model::*;
+		// let bitwidth = bitwidth.into();
+		// match bitwidth.model() {
+		// 	C8  => APInt::from_u8(1),
+		// 	C16 => APInt::from_u16(1),
+		// 	C32 => APInt::from_u32(1),
+		// 	C64 => APInt::from_u64(1),
+		// 	Inl => APInt::from_pattern(bitwidth, 1),
+		// 	Ext => APInt::from_u64(1).zero_extend(bitwidth).unwrap()
+		// }
 	}
 
 	/// Creates a new `APInt` with the given bit-width that has all bits set.
 	///
 	/// **Error** Returns `InvalidZeroBitWidth` in case of a given target bit-width of zero.
 	pub fn zeros<W>(bitwidth: W) -> APInt
-		where W: Into<BitWidth>
+		where W: TryInto<BitWidth>,
+		      W::Error: fmt::Debug
 	{
 		APInt::zero(bitwidth)
 	}
@@ -144,18 +172,20 @@ impl APInt {
 	///
 	/// **Error** Returns `InvalidZeroBitWidth` in case of a given target bit-width of zero.
 	pub fn ones<W>(bitwidth: W) -> APInt
-		where W: Into<BitWidth>
+		where W: TryInto<BitWidth>,
+		      W::Error: fmt::Debug
 	{
-		use self::Model::*;
-		let bitwidth = bitwidth.into();
-		match bitwidth.model() {
-			C8  => APInt::from_u8(0xFF),
-			C16 => APInt::from_u16(0xFFFF),
-			C32 => APInt::from_u32(0xFFFF_FFFF),
-			C64 => APInt::from_u64(0xFFFF_FFFF_FFFF_FFFF),
-			Inl |
-			Ext => APInt::from_pattern(bitwidth, 0xFFFF_FFFF_FFFF_FFFF)
-		}
+		unimplemented!()
+		// use self::Model::*;
+		// let bitwidth = bitwidth.into();
+		// match bitwidth.model() {
+		// 	C8  => APInt::from_u8(0xFF),
+		// 	C16 => APInt::from_u16(0xFFFF),
+		// 	C32 => APInt::from_u32(0xFFFF_FFFF),
+		// 	C64 => APInt::from_u64(0xFFFF_FFFF_FFFF_FFFF),
+		// 	Inl |
+		// 	Ext => APInt::from_pattern(bitwidth, 0xFFFF_FFFF_FFFF_FFFF)
+		// }
 	}
 
 }

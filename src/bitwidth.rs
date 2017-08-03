@@ -1,5 +1,13 @@
 use digit;
+use errors::{Result, Error};
+use errors;
 
+use std::convert::TryFrom;
+
+/// The `BitWidth` represents the length of an `APInt`.
+/// 
+/// Its invariant restricts it to always be a positive, non-zero value.
+/// Code that built's on top of `BitWidth` may and should use this invariant.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 pub struct BitWidth(pub usize);
 
@@ -9,7 +17,69 @@ pub(crate) enum Storage { Inl, Ext }
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 pub(crate) enum Model { C8, C16, C32, C64, Inl, Ext }
 
+//  ===========================================================================
+///  Constructors & 
+/// ===========================================================================
 impl BitWidth {
+	/// Creates a `BitWidth` that represents a bit-width of `1` bit.
+	#[inline]
+	pub fn i1() -> Self { BitWidth(1) }
+
+	/// Creates a `BitWidth` that represents a bit-width of `8` bits.
+	#[inline]
+	pub fn i8() -> Self { BitWidth(8) }
+
+	/// Creates a `BitWidth` that represents a bit-width of `16` bits.
+	#[inline]
+	pub fn i16() -> Self { BitWidth(16) }
+
+	/// Creates a `BitWidth` that represents a bit-width of `32` bits.
+	#[inline]
+	pub fn i32() -> Self { BitWidth(32) }
+
+	/// Creates a `BitWidth` that represents a bit-width of `64` bits.
+	#[inline]
+	pub fn i64() -> Self { BitWidth(64) }
+
+	/// Creates a `BitWidth` from the given `usize`.
+	/// 
+	/// # Errors
+	/// 
+	/// - When encountering a given bitwidth of zero (`0`).
+	pub fn from_usize(val: usize) -> Result<Self> {
+		if val == 0 {
+			return Err(Error::invalid_zero_bitwidth())
+		}
+		Ok(BitWidth(val))
+	}
+}
+
+impl TryFrom<usize> for BitWidth {
+	type Error = errors::Error;
+
+	fn try_from(val: usize) -> Result<BitWidth> {
+		BitWidth::from_usize(val)
+	}
+}
+
+impl TryFrom<BitWidth> for BitWidth {
+	type Error = errors::Error;
+
+	fn try_from(bw: BitWidth) -> Result<BitWidth> {
+		Ok(bw)
+	}
+}
+
+//  ===========================================================================
+///  API
+/// ===========================================================================
+impl BitWidth {
+	/// Converts this `BitWidth` into a `usize`.
+	#[inline]
+	pub fn to_usize(self) -> usize {
+		self.0
+	}
+
 	pub(crate) fn excess_bits(self) -> Option<usize> {
 		match self.to_usize() % digit::BITS {
 			0 => None,
@@ -17,10 +87,15 @@ impl BitWidth {
 		}
 	}
 
+	/// Returns a storage specifier that tells the caller if `APInt`'s 
+	/// associated with this bitwidth require an external memory (`Ext`) to store 
+	/// their digits or may use inplace memory (`Inl`).
+	#[inline]
 	pub(crate) fn storage(self) -> Storage {
 		if self.to_usize() < digit::BITS { Storage::Inl } else { Storage::Ext }
 	}
 
+	#[deprecated]
 	pub(crate) fn model(self) -> Model {
 		use self::Model::*;
 		match self.to_usize() {
@@ -29,32 +104,15 @@ impl BitWidth {
 			32 => C32,
 			64 => C64,
 			n if n < digit::BITS => Inl,
-			_                      => Ext
+			_                    => Ext
 		}
 	}
 
-	pub fn to_usize(self) -> usize {
-		self.0
-	}
-
-	pub fn from_usize(val: usize) -> Self {
-		if val == 0 { panic!("BitWidth::from_usize(0) cannot be instantiated with zero (0).")}
-		BitWidth(val)
-	}
-
+	/// Returns the number of digit-blocks that are required to represent any 
+	/// value with a bit-width equal to `self`.
 	#[inline]
 	pub fn required_blocks(&self) -> usize {
 		((self.to_usize() - 1) / digit::BITS) + 1
-	}
-
-}
-
-impl From<usize> for BitWidth {
-	fn from(val: usize) -> BitWidth {
-		if val == 0 {
-			panic!("BitWidth::from(..) cannot be instantiated with zero (0).")
-		}
-		BitWidth::from_usize(val)
 	}
 }
 
@@ -78,6 +136,6 @@ impl Iterator for BitWidthIter {
 		use std::cmp;
 		let cur = cmp::max(self.total - self.cur, digit::BITS);
 		self.cur += digit::BITS;
-		Some(cur.into())
+		Some(BitWidth(cur))
 	}
 }
