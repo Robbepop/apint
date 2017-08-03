@@ -1,7 +1,7 @@
 
 use apint::{APInt, APIntData};
 
-use bitwidth::{BitWidth, Model, Storage};
+use bitwidth::{BitWidth, Storage};
 use digit::{Digit};
 use digit;
 
@@ -37,49 +37,49 @@ impl APInt {
 	/// Creates a new `APInt` from a given `i8` value with a bit-width of 8.
 	#[inline]
 	pub fn from_i8(val: i8) -> APInt {
-		APInt{len: BitWidth(8), data: APIntData{inl: Digit(val as u64)}}
+		APInt{len: BitWidth::w8(), data: APIntData{inl: Digit(val as u64)}}
 	}
 
 	/// Creates a new `APInt` from a given `i8` value with a bit-width of 8.
 	#[inline]
 	pub fn from_u8(val: u8) -> APInt {
-		APInt{len: BitWidth(8), data: APIntData{inl: Digit(val as u64)}}
+		APInt{len: BitWidth::w8(), data: APIntData{inl: Digit(val as u64)}}
 	}
 
 	/// Creates a new `APInt` from a given `i16` value with a bit-width of 16.
 	#[inline]
 	pub fn from_i16(val: i16) -> APInt {
-		APInt{len: BitWidth(16), data: APIntData{inl: Digit(val as u64)}}
+		APInt{len: BitWidth::w16(), data: APIntData{inl: Digit(val as u64)}}
 	}
 
 	/// Creates a new `APInt` from a given `i16` value with a bit-width of 16.
 	#[inline]
 	pub fn from_u16(val: u16) -> APInt {
-		APInt{len: BitWidth(16), data: APIntData{inl: Digit(val as u64)}}
+		APInt{len: BitWidth::w16(), data: APIntData{inl: Digit(val as u64)}}
 	}
 
 	/// Creates a new `APInt` from a given `i32` value with a bit-width of 32.
 	#[inline]
 	pub fn from_i32(val: i32) -> APInt {
-		APInt{len: BitWidth(32), data: APIntData{inl: Digit(val as u64)}}
+		APInt{len: BitWidth::w32(), data: APIntData{inl: Digit(val as u64)}}
 	}
 
 	/// Creates a new `APInt` from a given `i32` value with a bit-width of 32.
 	#[inline]
 	pub fn from_u32(val: u32) -> APInt {
-		APInt{len: BitWidth(32), data: APIntData{inl: Digit(val as u64)}}
+		APInt{len: BitWidth::w32(), data: APIntData{inl: Digit(val as u64)}}
 	}
 
 	/// Creates a new `APInt` from a given `i64` value with a bit-width of 64.
 	#[inline]
 	pub fn from_i64(val: i64) -> APInt {
-		APInt{len: BitWidth(64), data: APIntData{inl: Digit(val as u64)}}
+		APInt{len: BitWidth::w64(), data: APIntData{inl: Digit(val as u64)}}
 	}
 
 	/// Creates a new `APInt` from a given `i64` value with a bit-width of 64.
 	#[inline]
 	pub fn from_u64(val: u64) -> APInt {
-		APInt{len: BitWidth(64), data: APIntData{inl: Digit(val as u64)}}
+		APInt{len: BitWidth::w64(), data: APIntData{inl: Digit(val as u64)}}
 	}
 
 	/// Creates a new `APInt` with a value representation equal to the given pattern.

@@ -9,13 +9,10 @@ use std::convert::TryFrom;
 /// Its invariant restricts it to always be a positive, non-zero value.
 /// Code that built's on top of `BitWidth` may and should use this invariant.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
-pub struct BitWidth(pub usize);
+pub struct BitWidth(usize);
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 pub(crate) enum Storage { Inl, Ext }
-
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
-pub(crate) enum Model { C8, C16, C32, C64, Inl, Ext }
 
 //  ===========================================================================
 ///  Constructors & 
@@ -23,23 +20,23 @@ pub(crate) enum Model { C8, C16, C32, C64, Inl, Ext }
 impl BitWidth {
 	/// Creates a `BitWidth` that represents a bit-width of `1` bit.
 	#[inline]
-	pub fn i1() -> Self { BitWidth(1) }
+	pub fn w1() -> Self { BitWidth(1) }
 
 	/// Creates a `BitWidth` that represents a bit-width of `8` bits.
 	#[inline]
-	pub fn i8() -> Self { BitWidth(8) }
+	pub fn w8() -> Self { BitWidth(8) }
 
 	/// Creates a `BitWidth` that represents a bit-width of `16` bits.
 	#[inline]
-	pub fn i16() -> Self { BitWidth(16) }
+	pub fn w16() -> Self { BitWidth(16) }
 
 	/// Creates a `BitWidth` that represents a bit-width of `32` bits.
 	#[inline]
-	pub fn i32() -> Self { BitWidth(32) }
+	pub fn w32() -> Self { BitWidth(32) }
 
 	/// Creates a `BitWidth` that represents a bit-width of `64` bits.
 	#[inline]
-	pub fn i64() -> Self { BitWidth(64) }
+	pub fn w64() -> Self { BitWidth(64) }
 
 	/// Creates a `BitWidth` from the given `usize`.
 	/// 
@@ -93,19 +90,6 @@ impl BitWidth {
 	#[inline]
 	pub(crate) fn storage(self) -> Storage {
 		if self.to_usize() < digit::BITS { Storage::Inl } else { Storage::Ext }
-	}
-
-	#[deprecated]
-	pub(crate) fn model(self) -> Model {
-		use self::Model::*;
-		match self.to_usize() {
-			8  => C8,
-			16 => C16,
-			32 => C32,
-			64 => C64,
-			n if n < digit::BITS => Inl,
-			_                    => Ext
-		}
 	}
 
 	/// Returns the number of digit-blocks that are required to represent any 
