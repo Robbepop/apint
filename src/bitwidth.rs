@@ -15,7 +15,7 @@ pub struct BitWidth(usize);
 pub(crate) enum Storage { Inl, Ext }
 
 //  ===========================================================================
-///  Constructors & 
+///  Constructors
 /// ===========================================================================
 impl BitWidth {
 	/// Creates a `BitWidth` that represents a bit-width of `1` bit.
@@ -49,6 +49,12 @@ impl BitWidth {
 		}
 		Ok(BitWidth(val))
 	}
+
+	/// Returns `true` if `pos` is less than the bit-width that is represented by `self`.
+	#[inline]
+	pub(crate) fn is_valid_pos(self, pos: usize) -> bool {
+		pos < self.0
+	}
 }
 
 impl TryFrom<usize> for BitWidth {
@@ -56,14 +62,6 @@ impl TryFrom<usize> for BitWidth {
 
 	fn try_from(val: usize) -> Result<BitWidth> {
 		BitWidth::from_usize(val)
-	}
-}
-
-impl TryFrom<BitWidth> for BitWidth {
-	type Error = errors::Error;
-
-	fn try_from(bw: BitWidth) -> Result<BitWidth> {
-		Ok(bw)
 	}
 }
 

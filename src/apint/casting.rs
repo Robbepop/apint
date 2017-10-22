@@ -3,7 +3,7 @@ use apint::{APInt, APIntData};
 use errors::{Error, Result};
 
 use bitwidth::{BitWidth, Storage};
-use digit::{Digit};
+use digit::{Bit, Digit};
 
 impl Clone for APInt {
 	fn clone(&self) -> Self {
@@ -45,11 +45,6 @@ impl APInt {
 		let target_bitwidth = target_bitwidth.into();
 		let len_bitwidth    = target_bitwidth.to_usize();
 
-		if len_bitwidth == 0 {
-			return Error::invalid_zero_bitwidth()
-				.with_annotation(format!("Cannot truncate {:?} to zero (0) bitwidth.", self))
-				.into()
-		}
 		if len_bitwidth > self.len_bits() {
 			return Error::bitwidth_too_large(len_bitwidth, self.len_bits())
 				.with_annotation(format!(
@@ -113,11 +108,6 @@ impl APInt {
 		let target_bitwidth = target_bitwidth.into();
 		let len_bitwidth    = target_bitwidth.to_usize();
 
-		if len_bitwidth == 0 {
-			return Error::invalid_zero_bitwidth()
-				.with_annotation(format!("Cannot zero-extend {:?} to zero (0) bitwidth.", self))
-				.into()
-		}
 		if len_bitwidth < self.len_bits() {
 			return Error::bitwidth_too_small(len_bitwidth, self.len_bits())
 				.with_annotation(format!(
@@ -184,11 +174,6 @@ impl APInt {
 		let target_bitwidth = target_bitwidth.into();
 		let len_bitwidth    = target_bitwidth.to_usize();
 
-		if len_bitwidth == 0 {
-			return Error::invalid_zero_bitwidth()
-				.with_annotation(format!("Cannot sign-extend {:?} to zero (0) bitwidth.", self))
-				.into()
-		}
 		if len_bitwidth < self.len_bits() {
 			return Error::bitwidth_too_small(len_bitwidth, self.len_bits())
 				.with_annotation(format!(
@@ -203,14 +188,50 @@ impl APInt {
 			return Ok(self.clone())
 		}
 
-		if self.most_significant_bit() {
-			unimplemented!()
+		match self.sign_bit() {
+			Bit::Set => {
+				unimplemented!();
+				// if let Some(excess_bits) = target_bitwidth.excess_bits() {
+				// 	buffer.last_mut().unwrap().truncate(excess_bits);
+				// }
+			}
+			Bit::Unset => {
+				self.zero_extend(target_bitwidth)
+			}
+		}
+	}
+
+	/// TODO: Missing documentation.
+	pub fn zero_resize<W>(&self, target_bitwidth: W) -> APInt
+		where W: Into<BitWidth>
+	{
+		let target_bitwidth = target_bitwidth.into();
+		let len_bitwidth    = target_bitwidth.to_usize();
+
+		if len_bitwidth <= self.len_bits() {
+			self.truncate(target_bitwidth)
+			    .expect("truncate cannot fail if the target bitwidth is smaller than the current")
 		}
 		else {
 			self.zero_extend(target_bitwidth)
+			    .expect("zero_extend cannot fail if the target bitwidth is larger than the current")
 		}
-		// if let Some(excess_bits) = target_bitwidth.excess_bits() {
-		// 	buffer.last_mut().unwrap().truncate(excess_bits);
-		// }
+	}
+
+	/// TODO: Missing documentation.
+	pub fn sign_resize<W>(&self, target_bitwidth: W) -> APInt
+		where W: Into<BitWidth>
+	{
+		let target_bitwidth = target_bitwidth.into();
+		let len_bitwidth    = target_bitwidth.to_usize();
+
+		if len_bitwidth <= self.len_bits() {
+			self.truncate(target_bitwidth)
+			    .expect("truncate cannot fail if the target bitwidth is smaller than the current")
+		}
+		else {
+			self.sign_extend(target_bitwidth)
+			    .expect("zero_extend cannot fail if the target bitwidth is larger than the current")
+		}
 	}
 }
