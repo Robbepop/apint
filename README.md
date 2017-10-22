@@ -5,6 +5,8 @@ APInt - Arbitrary Precision Integers for Rust
 |:-------------------:|:-------------------:|:--------------------:|:------------------:|
 | [![travisCI][1]][2] | [![appveyor][3]][4] | [![coveralls][5]][6] | [![licence][7]][8] |
 
+**Development in progress:** *The implementation has not been finished, is unstable and may not work.*
+
 *A*rbitrary *P*recision *Int*egers (APInt) are a way to handle integers that have an arbitrary but 
 fixed (on runtime) bit-width and offer modulo arithmetic similar to the primitive machine integers.
 
