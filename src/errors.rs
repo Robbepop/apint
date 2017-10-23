@@ -6,6 +6,9 @@ use std::result;
 use std::error;
 use std::fmt;
 
+/// Represents the kind of an `Error`.
+/// 
+/// This also stores the unique information tied to the error report.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum ErrorKind {
 	/// Returned on trying to create a `Radix` from an invalid `usize` representation.
@@ -50,6 +53,10 @@ pub enum ErrorKind {
 	}
 }
 
+/// Represents an error that may occure upon using the `APInt` library.
+/// 
+/// All errors have a unique kind which also stores extra information for error reporting.
+/// Besides that an `Error` also stores a message and an optional additional annotation.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Error{
 	kind      : ErrorKind,

@@ -16,8 +16,14 @@ pub(crate) const BITS: usize = 64;
 const U64_ZEROS: u64 = 0x0000_0000_0000_0000_u64;
 const U64_ONES : u64 = 0xFFFF_FFFF_FFFF_FFFF_u64;
 
+/// Represents the set or unset state of a bit within an `APInt`.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
-pub enum Bit { Unset = 0, Set = 1 }
+pub enum Bit {
+	/// Unset, or `false` or `off` state.
+	Unset = 0,
+	/// Set, or `true` or `on` state.
+	Set = 1
+}
 
 impl From<bool> for Bit {
 	#[inline]
