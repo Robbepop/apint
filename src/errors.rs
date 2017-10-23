@@ -8,8 +8,10 @@ use std::fmt;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum ErrorKind {
+	/// Returned on trying to create a `Radix` from an invalid `usize` representation.
 	InvalidRadix(usize),
 
+	/// Returned whenever trying to parse an invalid string representation for an `APInt`.
 	InvalidStringRepr{
 		/// The string storing the invalid representation of the int for the given radix.
 		input: String,
@@ -17,6 +19,7 @@ pub enum ErrorKind {
 		radix: Radix
 	},
 
+	/// Returned on trying to access an invalid bit position.
 	InvalidBitAccess{
 		/// The invalid bit position that was tried to access.
 		pos: BitPos,
@@ -24,20 +27,25 @@ pub enum ErrorKind {
 		width: BitWidth
 	},
 
-
+	/// Returned on violation of matching bitwidth constraints of operations.
 	UnmatchingBitwidth(BitWidth, BitWidth),
 
+	/// Returned on trying to create a `BitWidth` from an invalid `usize` representation.
 	InvalidBitWidth(usize),
 
 	/// Returned on truncating an `APInt` with a bitwidth greater than the current one.
 	TruncationBitWidthTooLarge{
+		/// The target bit width.
 		target: BitWidth,
+		/// The current actual bit width.
 		current: BitWidth
 	},
 
 	/// Returned on extending an `APInt` with a bitwidth less than the current one.
 	ExtensionBitWidthTooSmall{
+		/// The target bit width.
 		target: BitWidth,
+		/// The current actual bit width.
 		current: BitWidth
 	}
 }
