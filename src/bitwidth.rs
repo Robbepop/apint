@@ -40,7 +40,7 @@ impl BitWidth {
 	/// # Errors
 	/// 
 	/// - When encountering a given bitwidth of zero (`0`).
-	pub fn from_usize(val: usize) -> Result<Self> {
+	pub fn new(val: usize) -> Result<Self> {
 		if val == 0 {
 			return Err(Error::invalid_zero_bitwidth())
 		}
@@ -56,7 +56,7 @@ impl BitWidth {
 
 impl From<usize> for BitWidth {
 	fn from(val: usize) -> BitWidth {
-		BitWidth::from_usize(val).unwrap()
+		BitWidth::new(val).unwrap()
 	}
 }
 
