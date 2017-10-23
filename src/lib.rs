@@ -9,6 +9,7 @@ mod errors;
 mod traits;
 mod digit;
 mod bitwidth;
+mod storage;
 mod small_apint;
 mod large_apint;
 mod apint;

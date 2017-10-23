@@ -1,4 +1,5 @@
 use digit;
+use storage::Storage;
 use errors::{Result, Error};
 
 /// The `BitWidth` represents the length of an `APInt`.
@@ -7,9 +8,6 @@ use errors::{Result, Error};
 /// Code that built's on top of `BitWidth` may and should use this invariant.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 pub struct BitWidth(usize);
-
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
-pub(crate) enum Storage { Inl, Ext }
 
 //  ===========================================================================
 ///  Constructors
@@ -70,6 +68,8 @@ impl BitWidth {
 		self.0
 	}
 
+	// TODO: Move this method out of this context. (Does not fit here!)
+	// ----------------------------------------------------------------
 	pub(crate) fn excess_bits(self) -> Option<usize> {
 		match self.to_usize() % digit::BITS {
 			0 => None,
@@ -77,14 +77,18 @@ impl BitWidth {
 		}
 	}
 
+	// TODO: Move this method out of this context. (Fits better as constructor of Storage.)
+	// ------------------------------------------------------------------------------------
 	/// Returns a storage specifier that tells the caller if `APInt`'s 
 	/// associated with this bitwidth require an external memory (`Ext`) to store 
 	/// their digits or may use inplace memory (`Inl`).
 	#[inline]
 	pub(crate) fn storage(self) -> Storage {
-		if self.to_usize() < digit::BITS { Storage::Inl } else { Storage::Ext }
+		Storage::from(self)
 	}
 
+	// TODO: Move this method out of this context. (Does not fit here!)
+	// ----------------------------------------------------------------
 	/// Returns the number of digit-blocks that are required to represent any 
 	/// value with a bit-width equal to `self`.
 	#[inline]

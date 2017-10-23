@@ -1,5 +1,5 @@
 
-use bitwidth::{Storage};
+use storage::{Storage};
 use digit::{Digit};
 use apint::{APInt};
 use small_apint::{SmallAPInt, SmallAPIntMut};

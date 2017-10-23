@@ -4,6 +4,7 @@ use bitwidth::BitWidth;
 use errors::{Result};
 use traits::{
 	Width,
+	WidthAssertions,
 	APIntImpl,
 	APIntMutImpl,
 };
@@ -114,7 +115,7 @@ impl<'a> DigitMutWrapper for &'a mut SmallAPIntMut<'a> {
 // ============================================================================
 
 impl<T> APIntImpl<SmallAPInt> for T
-	where T: Width + DigitWrapper
+	where T: Width + WidthAssertions + DigitWrapper
 {
 	#[inline]
 	fn get(&self, n: usize) -> Result<Bit> {
@@ -144,7 +145,7 @@ impl<T> APIntImpl<SmallAPInt> for T
 }
 
 impl<T> APIntMutImpl<SmallAPInt> for T
-	where T: Width + DigitMutWrapper
+	where T: Width + WidthAssertions + DigitMutWrapper
 {
 
 	#[inline]

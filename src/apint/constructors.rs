@@ -1,6 +1,7 @@
 
 use apint::{APInt, APIntData};
-use bitwidth::{BitWidth, Storage};
+use bitwidth::{BitWidth};
+use storage::{Storage};
 use digit::{Digit};
 use digit;
 

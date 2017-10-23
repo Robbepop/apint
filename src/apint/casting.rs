@@ -2,7 +2,8 @@
 use apint::{APInt, APIntData};
 use errors::{Error, Result};
 
-use bitwidth::{BitWidth, Storage};
+use bitwidth::{BitWidth};
+use storage::{Storage};
 use digit::{Bit, Digit};
 
 impl Clone for APInt {

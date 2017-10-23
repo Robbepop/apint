@@ -1,3 +1,5 @@
+use bitwidth::BitWidth;
+
 use std::result;
 use std::error;
 use std::fmt;
@@ -8,9 +10,12 @@ pub enum ErrorKind {
 	InvalidDecimalStr(String),
 	InvalidHexStr(String),
 
-	BitAccessOutOfBounds{bit_idx: usize, upper_bound: usize},
+	BitAccessOutOfBounds{
+		bit_idx: usize,
+		upper_bound: usize
+	},
 
-	UnmatchingBitwidth(usize, usize),
+	UnmatchingBitwidth(BitWidth, BitWidth),
 	InvalidZeroBitWidth,
 	BitWidthOutOfBounds{bitwidth: usize, lo: usize, hi: usize},
 	BitWidthTooLarge{bitwidth: usize, upper_bound: usize},
@@ -88,10 +93,14 @@ impl Error {
 	}
 
 	#[inline]
-	pub(crate) fn unmatching_bitwidths(left: usize, right: usize) -> Error {
+	pub(crate) fn unmatching_bitwidths<W>(lhs: W, rhs: W) -> Error
+		where W: Into<BitWidth>
+	{
+		let lhs = lhs.into();
+		let rhs = rhs.into();
 		Error{
-			kind: ErrorKind::UnmatchingBitwidth(left, right),
-			message: format!("Encountered invalid operation on entities with non-matching bit-widths of {:?} and {:?}.", left, right),
+			kind: ErrorKind::UnmatchingBitwidth(lhs, rhs),
+			message: format!("Encountered invalid operation on entities with non-matching bit-widths of {:?} and {:?}.", lhs, rhs),
 			annotation: None
 		}
 	}
