@@ -1,6 +1,6 @@
 [package]
 name = "apint"
-version = "0.0.0"
+version = "0.0.0-alpha.1"
 authors = ["Robbepop"]
 license = "MIT/Apache-2.0"
 readme  = "README.md"
