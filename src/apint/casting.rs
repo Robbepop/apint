@@ -29,17 +29,17 @@ impl Clone for APInt {
 ///  Casting: Truncation & Extension
 /// =======================================================================
 impl APInt {
-	/// Creates a new `FixInt` that represents this `FixInt` truncated to 
+	/// Creates a new `APInt` that represents this `APInt` truncated to 
 	/// the given target bit-width.
 	///
 	/// # Panics
 	/// 
-	/// - If `target_bitwidth` is greater than the `FixInt`'s current bit-width.
+	/// - If `target_bitwidth` is greater than the `APInt`'s current bit-width.
 	/// - If `target_bitwidth` is zero (`0`).
 	/// 
 	/// # Note
 	/// 
-	/// Equal to a call to `clone()` if `target_bitwidth` is equal to this `FixInt`'s bit-width.
+	/// Equal to a call to `clone()` if `target_bitwidth` is equal to this `APInt`'s bit-width.
 	pub fn truncate<W>(&self, target_bitwidth: W) -> Result<APInt>
 		where W: Into<BitWidth>
 	{
@@ -89,7 +89,7 @@ impl APInt {
 		}
 	}
 
-	/// Creates a new `FixInt` that represents the zero-extension of this `FixInt` to the given target bit-width.
+	/// Creates a new `APInt` that represents the zero-extension of this `APInt` to the given target bit-width.
 	///
 	/// # Semantics (from LLVM)
 	/// 
@@ -98,11 +98,11 @@ impl APInt {
 	/// 
 	/// # Panics
 	/// 
-	/// - If `target_bitwidth` is less than the `FixInt`'s current bit-width.
+	/// - If `target_bitwidth` is less than the `APInt`'s current bit-width.
 	/// 
 	/// # Note
 	/// 
-	/// Equal to a call to `clone()` if `target_bitwidth` is equal to this `FixInt`'s bit-width.
+	/// Equal to a call to `clone()` if `target_bitwidth` is equal to this `APInt`'s bit-width.
 	pub fn zero_extend<W>(&self, target_bitwidth: W) -> Result<APInt>
 		where W: Into<BitWidth>
 	{
@@ -154,7 +154,7 @@ impl APInt {
 		}
 	}
 
-	/// Creates a new `FixInt` that represents the sign-extension of this `FixInt` to the given target bit-width.
+	/// Creates a new `APInt` that represents the sign-extension of this `APInt` to the given target bit-width.
 	/// 
 	/// 
 	/// # Semantic (from LLVM)
@@ -164,11 +164,11 @@ impl APInt {
 	///
 	/// # Panics
 	/// 
-	/// - If `target_bitwidth` is less than the `FixInt`'s current bit-width.
+	/// - If `target_bitwidth` is less than the `APInt`'s current bit-width.
 	/// 
 	/// # Note
 	/// 
-	/// Equal to a call to `clone()` if `target_bitwidth` is equal to this `FixInt`'s bit-width.
+	/// Equal to a call to `clone()` if `target_bitwidth` is equal to this `APInt`'s bit-width.
 	pub fn sign_extend<W>(&self, target_bitwidth: W) -> Result<APInt>
 		where W: Into<BitWidth>
 	{

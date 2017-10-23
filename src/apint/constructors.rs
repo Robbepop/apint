@@ -109,31 +109,23 @@ impl APInt {
 	}
 
 	/// Creates a new `APInt` with the given bit-width that represents zero.
-	///
-	/// **Error** Returns `InvalidZeroBitWidth` in case of a given target bit-width of zero.
-	pub fn zero(bitwidth: BitWidth) -> APInt {
-		APInt::repeat_digit(bitwidth, 0)
+	pub fn zero(width: BitWidth) -> APInt {
+		APInt::repeat_digit(width, 0)
 	}
 
 	/// Creates a new `APInt` with the given bit-width that represents one.
-	///
-	/// **Error** Returns `InvalidZeroBitWidth` in case of a given target bit-width of zero.
-	pub fn one(bitwidth: BitWidth) -> APInt {
-		APInt::from_u64(1).zero_extend(bitwidth).unwrap()
+	pub fn one(width: BitWidth) -> APInt {
+		APInt::from_u64(1).zero_extend(width).unwrap()
 	}
 
 	/// Creates a new `APInt` with the given bit-width that has all bits set.
-	///
-	/// **Error** Returns `InvalidZeroBitWidth` in case of a given target bit-width of zero.
-	pub fn zeros(bitwidth: BitWidth) -> APInt {
-		APInt::zero(bitwidth)
+	pub fn zeros(width: BitWidth) -> APInt {
+		APInt::zero(width)
 	}
 
 	/// Creates a new `APInt` with the given bit-width that has all bits set.
-	///
-	/// **Error** Returns `InvalidZeroBitWidth` in case of a given target bit-width of zero.
-	pub fn ones(bitwidth: BitWidth) -> APInt
+	pub fn ones(width: BitWidth) -> APInt
 	{
-		APInt::repeat_digit(bitwidth, Digit::ones())
+		APInt::repeat_digit(width, Digit::ones())
 	}
 }
