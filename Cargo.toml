@@ -1,7 +1,15 @@
 [package]
 name = "apint"
 version = "0.0.0"
-authors = ["Robbepop <robbepop@web.de>"]
+authors = ["Robbepop"]
+license = "MIT/Apache-2.0"
+readme  = "README.md"
+
+keywords   = ["int", "integer", "precision", "arbitrary"]
+
+documentation = "https://docs.rs/apint"
+description = """This library provides efficient integers with arbitrary precision for modulo arithmetic."""
+categories = ["data-structures"]
 
 [dependencies]
 log = "0.3.8"

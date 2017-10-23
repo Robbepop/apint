@@ -43,6 +43,17 @@ further add some signedness information. This will behave similar to LLVM's `APS
 - Extensive test suite to provide a decent quality implementation guarantee
 - Hopefully soon on stable - as soon as `i128` is stabilized
 
+## License
+
+Licensed under either of
+
+ * Apache License, Version 2.0, ([LICENSE-APACHE](LICENSE-APACHE) or http://www.apache.org/licenses/LICENSE-2.0)
+ * MIT license ([LICENSE-MIT](LICENSE-MIT) or http://opensource.org/licenses/MIT)
+
+at your option.
+
+### Dual licence: [![badge][7]](LICENSE-MIT) [![badge][8]](LICENSE-APACHE)
+
 [1]: https://travis-ci.org/Robbepop/apint.svg?branch=master
 [2]: https://travis-ci.org/Robbepop/apint
 [3]: https://ci.appveyor.com/api/projects/status/16fc9l6rtroo4xqd?svg=true
