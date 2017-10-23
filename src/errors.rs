@@ -1,4 +1,5 @@
 use bitwidth::BitWidth;
+use bitpos::BitPos;
 use radix::Radix;
 
 use std::result;
@@ -8,6 +9,7 @@ use std::fmt;
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum ErrorKind {
 	InvalidRadix(usize),
+
 	InvalidStringRepr{
 		/// The string storing the invalid representation of the int for the given radix.
 		input: String,
@@ -15,16 +17,29 @@ pub enum ErrorKind {
 		radix: Radix
 	},
 
-	BitAccessOutOfBounds{
-		bit_idx: usize,
-		upper_bound: usize
+	InvalidBitAccess{
+		/// The invalid bit position that was tried to access.
+		pos: BitPos,
+		/// The upper bound for valid bit positions in this context.
+		width: BitWidth
 	},
 
+
 	UnmatchingBitwidth(BitWidth, BitWidth),
-	InvalidZeroBitWidth,
-	BitWidthOutOfBounds{bitwidth: usize, lo: usize, hi: usize},
-	BitWidthTooLarge{bitwidth: usize, upper_bound: usize},
-	BitWidthTooSmall{bitwidth: usize, lower_bound: usize}
+
+	InvalidBitWidth(usize),
+
+	/// Returned on truncating an `APInt` with a bitwidth greater than the current one.
+	TruncationBitWidthTooLarge{
+		target: BitWidth,
+		current: BitWidth
+	},
+
+	/// Returned on extending an `APInt` with a bitwidth less than the current one.
+	ExtensionBitWidthTooSmall{
+		target: BitWidth,
+		current: BitWidth
+	}
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -34,6 +49,9 @@ pub struct Error{
 	annotation: Option<String>
 }
 
+//  ===========================================================================
+///  Public getters for `Error`.
+/// ===========================================================================
 impl Error {
 	/// Returns a reference to the kind of this `Error`.
 	#[inline]
@@ -55,13 +73,25 @@ impl Error {
 			None          => None
 		}
 	}
+}
 
+//  ===========================================================================
+///  Extending constructors for `Error`.
+/// ===========================================================================
+impl Error {
 	#[inline]
-	pub(crate) fn new(kind: ErrorKind, message: String) -> Error {
-		Error{kind, message, annotation: None}
+	pub(crate) fn with_annotation<A>(mut self, annotation: A) -> Error
+		where A: Into<String>
+	{
+		self.annotation = Some(annotation.into());
+		self
 	}
+}
 
-	#[inline]
+//  ===========================================================================
+///  Default constructors for `Error`.
+/// ===========================================================================
+impl Error {
 	pub(crate) fn invalid_radix(val: usize) -> Error {
 		Error{
 			kind: ErrorKind::InvalidRadix(val),
@@ -70,45 +100,55 @@ impl Error {
 		}
 	}
 
-	#[inline]
+	pub(crate) fn invalid_string_repr(input: String, radix: Radix) -> Error {
+		Error{
+			kind: ErrorKind::InvalidStringRepr{input, radix},
+			message: format!("Encountered an invalid string representation for the given radix (= {:?}).", radix),
+			annotation: None
+		}
+	}
+
+	pub(crate) fn invalid_bitwidth(val: usize) -> Error {
+		Error{
+			kind: ErrorKind::InvalidBitWidth(val),
+			message: format!("Encountered invalid bitwidth of {:?}.", val),
+			annotation: None
+		}
+	}
+
 	pub(crate) fn invalid_zero_bitwidth() -> Error {
+		Error::invalid_bitwidth(0)
+	}
+
+	pub(crate) fn extension_bitwidth_too_small<W1, W2>(target: W1, current: W2) -> Error
+		where W1: Into<BitWidth>,
+		      W2: Into<BitWidth>
+	{
+		let target = target.into();
+		let current = current.into();
 		Error{
-			kind: ErrorKind::InvalidZeroBitWidth,
-			message: "Encountered invalid bitwidth of zero (0).".to_owned(),
+			kind: ErrorKind::ExtensionBitWidthTooSmall{target, current},
+			message: format!("Tried to extend an `APInt` with a width of {:?} to a smaller target width of {:?}", current, target),
 			annotation: None
 		}
 	}
 
-	#[inline]
-	pub(crate) fn bitwidth_too_small(bitwidth: usize, lower_bound: usize) -> Error {
+	pub(crate) fn truncation_bitwidth_too_large<W1, W2>(target: W1, current: W2) -> Error
+		where W1: Into<BitWidth>,
+		      W2: Into<BitWidth>
+	{
+		let target = target.into();
+		let current = current.into();
 		Error{
-			kind: ErrorKind::BitWidthTooSmall{bitwidth, lower_bound},
-			message: format!("Encountered bitwidth of {:?} smaller than the lower bound of {:?}.", bitwidth, lower_bound),
+			kind: ErrorKind::TruncationBitWidthTooLarge{target, current},
+			message: format!("Tried to truncate an `APInt` with a width of {:?} to a larger target width of {:?}", current, target),
 			annotation: None
 		}
 	}
 
-	#[inline]
-	pub(crate) fn bitwidth_too_large(bitwidth: usize, upper_bound: usize) -> Error {
-		Error{
-			kind: ErrorKind::BitWidthTooLarge{bitwidth, upper_bound},
-			message: format!("Encountered bitwidth of {:?} larger than the upper bound of {:?}.", bitwidth, upper_bound),
-			annotation: None
-		}
-	}
-
-	#[inline]
-	pub(crate) fn bitwidth_out_of_bounds(bitwidth: usize, lo: usize, hi: usize) -> Error {
-		Error{
-			kind: ErrorKind::BitWidthOutOfBounds{bitwidth, lo, hi},
-			message: format!("Encountered bitwidth of {:?} out of valid bounds of {:?} to {:?}.", bitwidth, lo, hi),
-			annotation: None
-		}
-	}
-
-	#[inline]
-	pub(crate) fn unmatching_bitwidths<W>(lhs: W, rhs: W) -> Error
-		where W: Into<BitWidth>
+	pub(crate) fn unmatching_bitwidths<W1, W2>(lhs: W1, rhs: W2) -> Error
+		where W1: Into<BitWidth>,
+		      W2: Into<BitWidth>
 	{
 		let lhs = lhs.into();
 		let rhs = rhs.into();
@@ -119,24 +159,27 @@ impl Error {
 		}
 	}
 
-	#[inline]
-	pub(crate) fn with_annotation<A>(mut self, annotation: A) -> Error
-		where A: Into<String>
+	pub(crate) fn invalid_bit_access<P, W>(pos: P, width: W) -> Error
+		where P: Into<BitPos>,
+		      W: Into<BitWidth>
 	{
-		self.annotation = Some(annotation.into());
-		self
-	}
-
-	pub(crate) fn bit_access_out_of_bounds(bit_idx: usize, upper_bound: usize) -> Error {
+		let pos = pos.into();
+		let width = width.into();
 		Error{
-			kind: ErrorKind::BitAccessOutOfBounds{bit_idx, upper_bound},
-			message: format!("Encountered invalid bit access at index {:?} with an upper bound of {:?}.", bit_idx, upper_bound),
+			kind: ErrorKind::InvalidBitAccess{pos, width},
+			message: format!("Encountered invalid bit access at position {:?} with a total bit-width of {:?}.", pos, width),
 			annotation: None
 		}
 	}
 }
 
 impl<T> Into<Result<T>> for Error {
+	/// Converts an `Error` into a `Result<T, Error>`.
+	/// 
+	/// This might be useful to prevent some parentheses spams
+	/// because it replaces `Err(my_error)` with `my_error.into()`.
+	/// 
+	/// On the other hand it might be an abuse of the trait ...
 	fn into(self) -> Result<T> {
 		Err(self)
 	}
@@ -154,4 +197,5 @@ impl error::Error for Error {
 	}
 }
 
+/// The `Result` type used in `APInt`.
 pub type Result<T> = result::Result<T, Error>;

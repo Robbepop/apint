@@ -47,7 +47,7 @@ impl APInt {
 		let len_bitwidth    = target_bitwidth.to_usize();
 
 		if len_bitwidth > self.len_bits() {
-			return Error::bitwidth_too_large(len_bitwidth, self.len_bits())
+			return Error::truncation_bitwidth_too_large(len_bitwidth, self.len_bits())
 				.with_annotation(format!(
 					"Cannot truncate bit-width of {:?} to {:?} bits. \
 					 Do you mean to extend the instance instead?",
@@ -110,7 +110,7 @@ impl APInt {
 		let len_bitwidth    = target_bitwidth.to_usize();
 
 		if len_bitwidth < self.len_bits() {
-			return Error::bitwidth_too_small(len_bitwidth, self.len_bits())
+			return Error::extension_bitwidth_too_small(len_bitwidth, self.len_bits())
 				.with_annotation(format!(
 					"Cannot zero-extend bit-width of {:?} to {:?} bits. \
 					 Do you mean to truncate the instance instead?",
@@ -176,7 +176,7 @@ impl APInt {
 		let len_bitwidth    = target_bitwidth.to_usize();
 
 		if len_bitwidth < self.len_bits() {
-			return Error::bitwidth_too_small(len_bitwidth, self.len_bits())
+			return Error::extension_bitwidth_too_small(len_bitwidth, self.len_bits())
 				.with_annotation(format!(
 					"Cannot sign-extend bit-width of {:?} to {:?} bits. \
 					 Do you mean to truncate the instance instead?",

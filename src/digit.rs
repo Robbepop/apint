@@ -63,7 +63,7 @@ impl Digit {
 	#[inline]
 	pub fn one_at(n: usize) -> Result<Digit> {
 		if n >= self::BITS {
-			return Err(Error::bit_access_out_of_bounds(n, self::BITS))
+			return Err(Error::invalid_bit_access(n, self::BITS))
 		}
 		Ok(Digit::from_u64(1 << n))
 	}
@@ -117,7 +117,7 @@ impl Digit {
 	{
 		let bitwidth = bitwidth.into();
 		if bitwidth.to_usize() > self::BITS {
-			return Err(Error::bit_access_out_of_bounds(bitwidth.to_usize(), self::BITS))
+			return Err(Error::invalid_bit_access(bitwidth.to_usize(), self::BITS))
 		}
 		Ok(self.0 &= U64_ONES >> ((self::BITS as u64) - (bitwidth.to_usize() as u64)))
 	}
@@ -135,7 +135,7 @@ impl Digit {
 	#[inline]
 	pub fn get(&self, n: usize) -> Result<Bit> {
 		if n >= self::BITS {
-			return Err(Error::bit_access_out_of_bounds(n, self::BITS))
+			return Err(Error::invalid_bit_access(n, self::BITS))
 		}
 		Ok(Bit::from(((self.to_u64() >> n) & 0x01) == 1))
 	}
@@ -148,7 +148,7 @@ impl Digit {
 	#[inline]
 	pub fn set(&mut self, n: usize) -> Result<()> {
 		if n >= self::BITS {
-			return Err(Error::bit_access_out_of_bounds(n, self::BITS))
+			return Err(Error::invalid_bit_access(n, self::BITS))
 		}
 		Ok(self.0 |= 0x01 << n)
 	}
@@ -161,7 +161,7 @@ impl Digit {
 	#[inline]
 	pub fn unset(&mut self, n: usize) -> Result<()> {
 		if n >= self::BITS {
-			return Err(Error::bit_access_out_of_bounds(n, self::BITS))
+			return Err(Error::invalid_bit_access(n, self::BITS))
 		}
 		Ok(self.0 &= !(0x01 << n))
 	}
@@ -174,7 +174,7 @@ impl Digit {
 	#[inline]
 	pub fn flip(&mut self, n: usize) -> Result<()> {
 		if n >= self::BITS {
-			return Err(Error::bit_access_out_of_bounds(n, self::BITS))
+			return Err(Error::invalid_bit_access(n, self::BITS))
 		}
 		Ok(self.0 ^= 0x01 << n)
 	}
@@ -205,7 +205,7 @@ impl Digit {
 	#[inline]
 	pub fn set_first_n(&mut self, n: usize) -> Result<()> {
 		if n >= self::BITS {
-			return Err(Error::bit_access_out_of_bounds(n, self::BITS))
+			return Err(Error::invalid_bit_access(n, self::BITS))
 		}
 		Ok(self.0 |= !(U64_ONES >> n))
 	}
@@ -218,7 +218,7 @@ impl Digit {
 	#[inline]
 	pub fn unset_first_n(&mut self, n: usize) -> Result<()> {
 		if n >= self::BITS {
-			return Err(Error::bit_access_out_of_bounds(n, self::BITS))
+			return Err(Error::invalid_bit_access(n, self::BITS))
 		}
 		Ok(self.0 &= U64_ONES >> (self::BITS - n))
 	}

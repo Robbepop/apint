@@ -1,6 +1,5 @@
 use errors::{Error, Result};
 use bitwidth::{BitWidth};
-use storage::{Storage};
 use digit::{Bit};
 use digit;
 
@@ -11,12 +10,6 @@ pub(crate) trait Width {
 pub(crate) trait WidthAssertions: Width {
 	fn verify_bit_access(&self, n: usize) -> Result<()>;
 	fn assert_bit_access(&self, n: usize);
-
-	fn verify_small_bitwidth(&self) -> Result<()>;
-	fn assert_small_bitwidth(&self);
-
-	fn verify_large_bitwidth(&self) -> Result<()>;
-	fn assert_large_bitwidth(&self);
 
 	fn verify_common_bitwidth<W>(&self, other: &W) -> Result<()>
 		where W: Width;
@@ -30,39 +23,13 @@ impl<T> WidthAssertions for T where T: Width {
 		if n < self.width().to_usize() {
 			Ok(())
 		} else {
-			Error::bit_access_out_of_bounds(n, self.width().to_usize()).into()
+			Error::invalid_bit_access(n, self.width().to_usize()).into()
 		}
 	}
 
 	#[inline]
 	fn assert_bit_access(&self, n: usize) {
 		Self::verify_bit_access(self, n).unwrap()
-	}
-
-	#[inline]
-	fn verify_small_bitwidth(&self) -> Result<()> {
-		match self.width().storage() {
-			Storage::Inl => Ok(()),
-			Storage::Ext => Error::bitwidth_too_large(self.width().to_usize(), digit::BITS).into()
-		}
-	}
-
-	#[inline]
-	fn assert_small_bitwidth(&self) {
-		Self::verify_small_bitwidth(self).unwrap()
-	}
-
-	#[inline]
-	fn verify_large_bitwidth(&self) -> Result<()> {
-		match self.width().storage() {
-			Storage::Ext => Ok(()),
-			Storage::Inl => Error::bitwidth_too_small(self.width().to_usize(), digit::BITS + 1).into()
-		}
-	}
-
-	#[inline]
-	fn assert_large_bitwidth(&self) {
-		Self::verify_large_bitwidth(self).unwrap()
 	}
 
 	#[inline]

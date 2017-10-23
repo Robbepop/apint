@@ -40,6 +40,7 @@ impl Radix {
 }
 
 impl From<usize> for Radix {
+	#[inline]
 	fn from(val: usize) -> Radix {
 		Radix::new(val).unwrap()
 	}
