@@ -17,7 +17,7 @@ const U64_ZEROS: u64 = 0x0000_0000_0000_0000_u64;
 const U64_ONES : u64 = 0xFFFF_FFFF_FFFF_FFFF_u64;
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
-pub enum Bit { Set, Unset }
+pub enum Bit { Unset = 0, Set = 1 }
 
 impl From<bool> for Bit {
 	#[inline]
