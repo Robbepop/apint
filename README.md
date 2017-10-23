@@ -1,13 +1,13 @@
 APInt - Arbitrary Precision Integers for Rust
 =============================================
 
-|        Linux        |       Windows       |       Coverage       |       Licence      |
-|:-------------------:|:-------------------:|:--------------------:|:------------------:|
-| [![travisCI][1]][2] | [![appveyor][3]][4] | [![coveralls][5]][6] | [![licence][7]][8] |
+|        Linux        |       Windows       |       Coveralls      |       Docs       |       Crates.io      |
+|:-------------------:|:-------------------:|:--------------------:|:----------------:|:--------------------:|
+| [![travisCI][1]][2] | [![appveyor][3]][4] | [![coveralls][5]][6] | [![docs][11]][12] | [![crates][13]][14] |
 
 **Development in progress:** *The implementation has not been finished, is unstable and may not work.*
 
-*A*rbitrary *P*recision *Int*egers (APInt) are a way to handle integers that have an arbitrary but 
+**A**rbitrary **P**recision **Int**egers (**APInt**) are a way to handle integers that have an arbitrary but 
 fixed (on runtime) bit-width and offer modulo arithmetic similar to the primitive machine integers.
 
 This library and its API are based on the popular LLVM [`APInt`](http://llvm.org/doxygen/classllvm_1_1APInt.html) support library
@@ -61,4 +61,10 @@ at your option.
 [5]: https://coveralls.io/repos/github/Robbepop/apint/badge.svg?branch=master
 [6]: https://coveralls.io/github/Robbepop/apint?branch=master
 [7]: https://img.shields.io/badge/license-MIT-blue.svg
-[8]: ./LICENCE
+[8]: https://img.shields.io/badge/license-APACHE-orange.svg
+[9]: ./LICENSE-MIT
+[10]: ./LICENSE-APACHE
+[11]: https://docs.rs/apint/badge.svg
+[12]: https://docs.rs/apint
+[13]: https://img.shields.io/crates/v/apint.svg
+[14]: https://crates.io/crates/apint
