@@ -7,6 +7,7 @@ readme  = "README.md"
 
 keywords   = ["int", "integer", "precision", "arbitrary"]
 
+repository = "https://github.com/robbepop/apint"
 documentation = "https://docs.rs/apint"
 description = """This library provides efficient integers with arbitrary precision for modulo arithmetic."""
 categories = ["data-structures"]
