@@ -1,8 +1,5 @@
 use digit;
 use errors::{Result, Error};
-use errors;
-
-use std::convert::TryFrom;
 
 /// The `BitWidth` represents the length of an `APInt`.
 /// 
@@ -57,11 +54,9 @@ impl BitWidth {
 	}
 }
 
-impl TryFrom<usize> for BitWidth {
-	type Error = errors::Error;
-
-	fn try_from(val: usize) -> Result<BitWidth> {
-		BitWidth::from_usize(val)
+impl From<usize> for BitWidth {
+	fn from(val: usize) -> BitWidth {
+		BitWidth::from_usize(val).unwrap()
 	}
 }
 

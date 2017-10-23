@@ -1,9 +1,6 @@
 use bitwidth::BitWidth;
 use errors::{Error, Result};
 
-use std::convert::TryInto;
-use std::fmt;
-
 use std::ops::{
 	Not,
 	BitAnd,
@@ -107,20 +104,18 @@ impl Digit {
 impl Digit {
 	#[inline]
 	pub fn truncated<W>(mut self, bitwidth: W) -> Result<Digit>
-		where W: TryInto<BitWidth>,
-		      W::Error: fmt::Debug
+		where W: Into<BitWidth>
 	{
-		let bitwidth = bitwidth.try_into().expect("TODO");
+		let bitwidth = bitwidth.into();
 		self.truncate(bitwidth)?;
 		Ok(self)
 	}
 
 	#[inline]
 	pub fn truncate<W>(&mut self, bitwidth: W) -> Result<()>
-		where W: TryInto<BitWidth>,
-		      W::Error: fmt::Debug
+		where W: Into<BitWidth>
 	{
-		let bitwidth = bitwidth.try_into().expect("TODO");
+		let bitwidth = bitwidth.into();
 		if bitwidth.to_usize() > self::BITS {
 			return Err(Error::bit_access_out_of_bounds(bitwidth.to_usize(), self::BITS))
 		}

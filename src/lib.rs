@@ -1,5 +1,4 @@
 #![feature(i128_type)]
-#![feature(try_from)]
 
 #![allow(dead_code)]
 #![allow(unused_variables)]
