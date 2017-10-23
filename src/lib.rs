@@ -16,3 +16,4 @@ mod apint;
 pub use apint::APInt;
 pub use errors::{Result, Error, ErrorKind};
 pub use bitwidth::BitWidth;
+pub use digit::{Bit};
