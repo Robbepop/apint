@@ -5,7 +5,7 @@ mod bitwise;
 mod relational;
 mod arithmetic;
 mod shift;
-// mod serialization;
+mod serialization;
 
 use digit::{Digit};
 use bitwidth::{BitWidth};

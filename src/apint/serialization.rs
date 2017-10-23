@@ -1,134 +1,54 @@
+use radix::{Radix};
+use bitwidth::{BitWidth};
+use apint::{APInt};
+use errors::{Result};
 
 //  =======================================================================
 ///  Deserialization
 /// =======================================================================
 impl APInt {
-
-	/// Creates a new bitvector from the given binary string representation.
+	/// Parses the given `input` `String` with the given `Radix` and returns an `APInt`
+	/// with the given `target_width` `BitWidth`.
 	/// 
-	/// Using the first parameter `bitwidth` the user can either let the method infer the resulting bit-width
-	/// or set it explicitely.
+	/// **Note:** The given `input` is parsed as big-endian value. This means, the most significant bit (MSB)
+	/// is the leftst bit in the string representation provided by the user.
 	/// 
-	/// The format of the binary string must follow some rules.
-	///  - The only allowed characters are digits `'0'`, `'1'` and the digit-separator `'_'` (underscore).
-	///  - The input string must contain at least a single `'0'` or `'1'` character.
+	/// The string is assumed to contain no whitespace and contain only values within a subset of the 
+	/// range of `0`..`9` and `a`..`z` depending on the given `radix`.
 	/// 
-	/// In any other case the implementation will return an error.
+	/// The string is assumed to have no sign as `APInt` does not handle signdness.
 	/// 
-	/// # Good Examples
+	/// # Errors
 	/// 
-	/// - `"0101"`
-	/// - `"0111_0010_0000_1110"`
-	/// - `"11__00"`
-	/// - `"__0__"`
+	/// - If `input` is not a valid representation for an `APInt` for the given `radix`.
+	/// - If `input` represents an `APInt` value that does not fit into the given `target_bitwidth`.
 	/// 
-	/// # Bad Examples
+	/// # Examples
 	/// 
-	/// - `"0102"`
-	/// - `"01'0001"`
-	/// - `"foo"`
-	/// - `"-1001"`
-	/// 
-	/// # Note
-	/// 
-	/// - The most significant bit (MSB) is on the left.
-	/// - The bitwidth of the resulting `APInt` is infered from the number of valid digits in the input.
-	/// - Input may start with `'0'` which may influence the bit-width of the resulting `APInt`.
-	pub fn from_bin_str(bitwidth: TargetBitWidth, binary_str: &str) -> Result<APInt> {
-		unimplemented!();
+	/// ```no_run
+	/// # use apint::APInt;
+	/// let a = APInt::from_str_radix( 64, "42", 10); // ok
+	/// let b = APInt::from_str_radix( 32, "1011011", 2); // ok (dec. = 91)
+	/// let c = APInt::from_str_radix(128, "ffcc00", 16); // ok (dec. = 16763904)
+	/// let c = APInt::from_str_radix(  8, "257", 10); // Error: 257 does not fit within 8 bits!
+	/// let d = APInt::from_str_radix(100, "hello", 16); // Error: "hello" is not a valid APInt representation!
+	/// ```
+	pub fn from_str_radix<W, R>(target_width: W, input: &str, radix: R) -> Result<APInt>
+		where W: Into<BitWidth>,
+		      R: Into<Radix>
+	{
+		unimplemented!()		
 	}
-
-	/// Creates a new bitvector from the given decimal string representation.
-	/// 
-	/// Using the first parameter `bitwidth` the user can either let the method infer the resulting bit-width
-	/// or set it explicitely.
-	/// 
-	/// The format of the decimal string must follow some rules.
-	///  - The only allowed characters are digits `'0'`, `'1'`,..,`'9'` and the digit-separator `'_'` (underscore).
-	///  - The input string must contain at least a single valid digit character.
-	/// 
-	/// In any other case the implementation will return an error.
-	/// 
-	/// # Good Examples
-	/// 
-	/// - `"3497"`
-	/// - `"0323_0321_9876_5432"`
-	/// - `"85__132"`
-	/// - `"__9__"`
-	/// - `"000075"`
-	/// 
-	/// # Bad Examples
-	/// 
-	/// - `"0A5C"`
-	/// - `"13'8273"`
-	/// - `"bar"`
-	/// - `"-1337"`
-	/// 
-	/// # Note
-	/// 
-	/// - The most significant digit is on the left.
-	/// - The bitwidth of the resulting `APInt` is infered from the number of valid digits in the input.
-	/// - Input may start with `'0'` which may influence the bit-width of the resulting `APInt`.
-	pub fn from_dec_str(bitwidth: TargetBitWidth, dec_str: &str) -> Result<APInt> {
-		unimplemented!();
-	}
-
-	/// Creates a new bitvector from the given hexa-decimal string representation.
-	/// 
-	/// Using the first parameter `bitwidth` the user can either let the method infer the resulting bit-width
-	/// or set it explicitely.
-	/// 
-	/// The format of the decimal string must follow some rules.
-	///  - The only allowed characters are the digits `'0'`, `'1'`,..,`'9'` the alphas `'A'`,`'B'`,..,`'F'` and the digit-separator `'_'` (underscore).
-	///  - The input string must contain at least a single valid alpha-numeric character.
-	/// 
-	/// In any other case the implementation will return an error.
-	/// 
-	/// # Good Examples
-	/// 
-	/// - `"AC08"`
-	/// - `"03B8_A30D_EEE2_007"`
-	/// - `"FF__A00"`
-	/// - `"__E__"`
-	/// - `"B008CE"`
-	/// 
-	/// # Bad Examples
-	/// 
-	/// - `"ffcc0"`: no small letters!
-	/// - `"0K5X"`
-	/// - `"13'8273"`
-	/// - `"foobar"`
-	/// - `"-MCLVII"`
-	/// 
-	/// # Note
-	/// 
-	/// - The most significant quad is on the left.
-	/// - The bitwidth of the resulting `APInt` is infered from the number of valid digits in the input.
-	/// - Input may start with `'0'` which may influence the bit-width of the resulting `APInt`.
-	pub fn from_hex_str(bitwidth: TargetBitWidth, hex_str: &str) -> Result<APInt> {
-		unimplemented!();
-	}
-
 }
 
 //  =======================================================================
 ///  Serialization
 /// =======================================================================
 impl APInt {
-
-	/// Returns a string representation of the binary encoded bitvector.
-	pub fn to_bin_string(&self) -> String {
+	/// Returns a `String` representation of the binary encoded `APInt` for the given `Radix`.
+	pub fn as_string_with_radix<R>(&self, radix: R) -> String
+		where R: Into<Radix>
+	{
 		unimplemented!();
 	}
-
-	/// Returns a string representation of the decimal encoded bitvector.
-	pub fn to_dec_string(&self) -> String {
-		unimplemented!();
-	}
-
-	/// Returns a string representation of the hex-decimal encoded bitvector.
-	pub fn to_hex_string(&self) -> String {
-		unimplemented!();
-	}
-
 }
