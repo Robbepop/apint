@@ -1,4 +1,5 @@
 use bitwidth::BitWidth;
+use radix::Radix;
 
 use std::result;
 use std::error;
@@ -6,9 +7,13 @@ use std::fmt;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum ErrorKind {
-	InvalidBinaryStr(String),
-	InvalidDecimalStr(String),
-	InvalidHexStr(String),
+	InvalidRadix(usize),
+	InvalidStringRepr{
+		/// The string storing the invalid representation of the int for the given radix.
+		input: String,
+		/// The radix that was used.
+		radix: Radix
+	},
 
 	BitAccessOutOfBounds{
 		bit_idx: usize,
@@ -54,6 +59,15 @@ impl Error {
 	#[inline]
 	pub(crate) fn new(kind: ErrorKind, message: String) -> Error {
 		Error{kind, message, annotation: None}
+	}
+
+	#[inline]
+	pub(crate) fn invalid_radix(val: usize) -> Error {
+		Error{
+			kind: ErrorKind::InvalidRadix(val),
+			message: format!("Encountered an invalid parsing radix of {:?}.", val),
+			annotation: None
+		}
 	}
 
 	#[inline]
