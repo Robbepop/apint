@@ -37,12 +37,12 @@ impl BitWidth {
 	/// 
 	/// # Errors
 	/// 
-	/// - When encountering a given bitwidth of zero (`0`).
-	pub fn new(val: usize) -> Result<Self> {
-		if val == 0 {
+	/// - If the given `width` is equal to zero.
+	pub fn new(width: usize) -> Result<Self> {
+		if width == 0 {
 			return Err(Error::invalid_zero_bitwidth())
 		}
-		Ok(BitWidth(val))
+		Ok(BitWidth(width))
 	}
 
 	/// Returns `true` if `pos` is less than the bit-width that is represented by `self`.
@@ -53,8 +53,8 @@ impl BitWidth {
 }
 
 impl From<usize> for BitWidth {
-	fn from(val: usize) -> BitWidth {
-		BitWidth::new(val).unwrap()
+	fn from(width: usize) -> BitWidth {
+		BitWidth::new(width).unwrap()
 	}
 }
 
