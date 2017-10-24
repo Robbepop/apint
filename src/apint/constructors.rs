@@ -5,8 +5,6 @@ use storage::{Storage};
 use digit::{Digit};
 use digit;
 
-use std::convert::{From};
-
 impl Drop for APInt {
 	fn drop(&mut self) {
 		use std::mem;
@@ -78,7 +76,7 @@ impl APInt {
 	/// Creates a new `APInt` from a given `i64` value with a bit-width of 64.
 	#[inline]
 	pub fn from_u64(val: u64) -> APInt {
-		APInt{len: BitWidth::w64(), data: APIntData{inl: Digit(val as u64)}}
+		APInt{len: BitWidth::w64(), data: APIntData{inl: Digit(val)}}
 	}
 
 	/// Creates a new `APInt` that represents the repetition of the given digit
@@ -90,7 +88,7 @@ impl APInt {
 		where D: Into<Digit>
 	{
 		let digit = digit.into();
-		match BitWidth::from(bitwidth).storage() {
+		match bitwidth.storage() {
 			Storage::Inl => {
 				APInt{len: bitwidth, data: APIntData{inl: digit.truncated(bitwidth).unwrap()}}
 			}
