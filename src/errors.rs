@@ -11,8 +11,8 @@ use std::fmt;
 /// This also stores the unique information tied to the error report.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum ErrorKind {
-	/// Returned on trying to create a `Radix` from an invalid `usize` representation.
-	InvalidRadix(usize),
+	/// Returned on trying to create a `Radix` from an invalid `u32` representation.
+	InvalidRadix(u32),
 
 	/// Returned whenever trying to parse an invalid string representation for an `APInt`.
 	InvalidStringRepr{
@@ -107,7 +107,7 @@ impl Error {
 ///  Default constructors for `Error`.
 /// ===========================================================================
 impl Error {
-	pub(crate) fn invalid_radix(val: usize) -> Error {
+	pub(crate) fn invalid_radix(val: u32) -> Error {
 		Error{
 			kind: ErrorKind::InvalidRadix(val),
 			message: format!("Encountered an invalid parsing radix of {:?}.", val),
@@ -115,7 +115,10 @@ impl Error {
 		}
 	}
 
-	pub(crate) fn invalid_string_repr(input: String, radix: Radix) -> Error {
+	pub(crate) fn invalid_string_repr<S>(input: S, radix: Radix) -> Error
+		where S: Into<String>
+	{
+		let input = input.into();
 		Error{
 			kind: ErrorKind::InvalidStringRepr{input, radix},
 			message: format!("Encountered an invalid string representation for the given radix (= {:?}).", radix),

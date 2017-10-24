@@ -14,34 +14,34 @@ use errors::{Error, Result};
 /// - The decimal 10-radix supports `0`,`1`,...`9` as input characters.
 /// - The hex-dec 16-radix supports inputs characters within `0`,..,`9` and `a`,..,`f`.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
-pub struct Radix(usize);
+pub struct Radix(u32);
 
 impl Radix {
-	const MAX: usize = 36;
+	const MAX: u32 = 36;
 
-	/// Create a new `Radix` from the given `usize`.
+	/// Create a new `Radix` from the given `u32`.
 	/// 
 	/// # Errors
 	/// 
 	/// - If the given value is not within the valid radix range of `1..36`.
 	#[inline]
-	pub fn new(val: usize) -> Result<Radix> {
+	pub fn new(val: u32) -> Result<Radix> {
 		if val == 0 || val > Radix::MAX {
 			return Err(Error::invalid_radix(val))
 		}
 		Ok(Radix(val))
 	}
 
-	/// Returns the `usize` representation of this `Radix`.
+	/// Returns the `u32` representation of this `Radix`.
 	#[inline]
-	pub fn to_usize(self) -> usize {
+	pub fn to_u32(self) -> u32 {
 		self.0
 	}
 }
 
-impl From<usize> for Radix {
+impl From<u32> for Radix {
 	#[inline]
-	fn from(val: usize) -> Radix {
+	fn from(val: u32) -> Radix {
 		Radix::new(val).unwrap()
 	}
 }
