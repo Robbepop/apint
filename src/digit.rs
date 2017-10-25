@@ -27,8 +27,15 @@ pub(crate) const BITS: usize = 64;
 /// The `DoubleDigit` base offset.
 pub(crate) const BASE: DoubleDigitRepr = 1 << BITS;
 
-const REPR_ZEROS: DigitRepr = 0x0000_0000_0000_0000;
-const REPR_ONES : DigitRepr = 0xFFFF_FFFF_FFFF_FFFF;
+pub(crate) const BASE_R: DoubleDigit = DoubleDigit(1 << BITS);
+
+const REPR_ONE : DigitRepr = 0x0000_0000_0000_0001;
+const REPR_ZERO: DigitRepr = 0x0000_0000_0000_0000;
+const REPR_ONES: DigitRepr = 0xFFFF_FFFF_FFFF_FFFF;
+
+pub(crate) const ONE : Digit = Digit(REPR_ONE);
+pub(crate) const ZERO: Digit = Digit(REPR_ZERO);
+pub(crate) const ONES: Digit = Digit(REPR_ONES);
 
 /// Represents the set or unset state of a bit within an `APInt`.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
@@ -84,14 +91,7 @@ impl DoubleDigit {
 	/// Returns a `DoubleDigit` from the given hi and lo raw `Digit` parts.
 	#[inline]
 	fn from_hi_lo(hi: Digit, lo: Digit) -> DoubleDigit {
-		DoubleDigit(((hi.to_u64() as u128) << BITS) | (lo.to_u64() as u128))
-	}
-}
-
-impl From<u64> for Digit {
-	#[inline]
-	fn from(val: u64) -> Digit {
-		Digit::from_u64(val)
+		DoubleDigit(((hi.repr() as u128) << BITS) | (lo.repr() as u128))
 	}
 }
 
@@ -113,7 +113,7 @@ impl DigitAndCarry {
 /// 
 /// Returns the result (`a + b`) and the implied carry of the operation.
 fn carry_add(a: Digit, b: DigitAndCarry) -> DigitAndCarry {
-	let (hi, lo) = DoubleDigit(a.to_u128() + b.digit.to_u128() + b.carry.to_u128()).hi_lo();
+	let (hi, lo) = DoubleDigit(a.dd_repr() + b.digit.dd_repr() + b.carry.dd_repr()).hi_lo();
 	DigitAndCarry{
 		digit: lo,
 		carry: hi
@@ -138,7 +138,7 @@ impl DigitAndBorrow {
 /// 
 /// Returns the result (`a - b`) and the implied carry of the operation.
 fn borrow_sub(a: Digit, b: DigitAndBorrow) -> DigitAndBorrow {
-	let (hi, lo) = DoubleDigit(BASE + a.to_u128() - b.digit.to_u128() - b.borrow.to_u128()).hi_lo();
+	let (hi, lo) = DoubleDigit(BASE + a.dd_repr() - b.digit.dd_repr() - b.borrow.dd_repr()).hi_lo();
 
     //     hi * (base) + lo        ==    1 * (base) + ai - bi - borrow
     // =>  ai - bi - borrow < 0   <==>   hi == 0
@@ -153,64 +153,44 @@ fn borrow_sub(a: Digit, b: DigitAndBorrow) -> DigitAndBorrow {
 ///  Constructors
 /// =======================================================================
 impl Digit {
-	/// Creates a digit from a `u64` representation.
-	#[inline]
-	pub fn from_u64(val: u64) -> Digit {
-		Digit(val)
-	}
-
 	/// Creates a digit that only has the nth bit set to '1'.
 	#[inline]
 	pub fn one_at(n: usize) -> Result<Digit> {
 		if n >= self::BITS {
 			return Err(Error::invalid_bit_access(n, self::BITS))
 		}
-		Ok(Digit::from_u64(1 << n))
+		Ok(Digit(REPR_ONE << n))
 	}
 
 	/// Creates a digit that represents the value `1`.
 	#[inline]
-	pub fn one() -> Digit {
-		Digit::from_u64(1)
-	}
-
-	/// Creates a digit that represents the value `0`.
-	/// 
-	/// **Note:** Equivalent to `Digit::zeros()`.
-	#[inline]
-	pub fn zero() -> Digit {
-		Digit::from_u64(0)
-	}
-
-	/// Creates a digit where all bits are initialized to `0`.
-	/// 
-	/// **Note:** Equivalent to `Digit::zero()`.
-	#[inline]
-	pub fn zeros() -> Digit {
-		Digit::from_u64(REPR_ZEROS)
-	}
+	pub fn one() -> Digit { ONE	}
 
 	/// Creates a digit where all bits are initialized to `1`.
 	#[inline]
-	pub fn ones() -> Digit {
-		Digit::from_u64(REPR_ONES)
-	}
+	pub fn ones() -> Digit { ONES }
+
+	/// Creates a digit that represents the value `0`.
+	/// 
+	/// **Note:** In twos-complement this means that all bits are `0`.
+	#[inline]
+	pub fn zero() -> Digit { ZERO }
 }
 
 //  ===========================================================================
 ///  Utility & helper methods.
 /// ===========================================================================
 impl Digit {
-	/// Returns the internal representation as `u64` value.
+	/// Returns the `Digit`'s value as internal representation.
 	#[inline]
-	pub fn to_u64(self) -> u64 { 
+	pub(crate) fn repr(self) -> DigitRepr {
 		self.0
 	}
 
-	/// Returns the internal representation as `u128` value.
+	/// Returns the `Digit`'s value as double-digit internal representation.
 	#[inline]
-	pub fn to_u128(self) -> u128 { 
-		self.to_u64() as u128
+	fn dd_repr(self) -> DoubleDigitRepr {
+		self.repr() as u128
 	}
 }
 
@@ -252,7 +232,7 @@ impl Digit {
 		if n >= self::BITS {
 			return Err(Error::invalid_bit_access(n, self::BITS))
 		}
-		Ok(Bit::from(((self.to_u64() >> n) & 0x01) == 1))
+		Ok(Bit::from(((self.repr() >> n) & 0x01) == 1))
 	}
 
 	/// Sets the `n`th bit in the digit to `1`.
@@ -303,7 +283,7 @@ impl Digit {
 	/// Sets all bits in this digit to `0`.
 	#[inline]
 	pub fn unset_all(&mut self) {
-		self.0 &= REPR_ZEROS
+		self.0 &= REPR_ZERO
 	}
 
 	/// Flips all bits in this digit.
@@ -359,13 +339,13 @@ impl Not for Digit {
 	type Output = Self;
 
 	fn not(self) -> Self::Output {
-		Digit(!self.to_u64())
+		Digit(!self.repr())
 	}
 }
 
 impl Digit {
 	pub fn not_inplace(&mut self) {
-		self.0 = !self.to_u64()
+		self.0 = !self.repr()
 	}
 }
 
@@ -373,7 +353,7 @@ impl BitAnd for Digit {
 	type Output = Self;
 
 	fn bitand(self, rhs: Self) -> Self::Output {
-		Digit(self.to_u64() & rhs.to_u64())
+		Digit(self.repr() & rhs.repr())
 	}
 }
 
@@ -381,7 +361,7 @@ impl BitOr for Digit {
 	type Output = Self;
 
 	fn bitor(self, rhs: Self) -> Self::Output {
-		Digit(self.to_u64() | rhs.to_u64())
+		Digit(self.repr() | rhs.repr())
 	}
 }
 
@@ -389,7 +369,7 @@ impl BitXor for Digit {
 	type Output = Self;
 
 	fn bitxor(self, rhs: Self) -> Self::Output {
-		Digit(self.to_u64() ^ rhs.to_u64())
+		Digit(self.repr() ^ rhs.repr())
 	}
 }
 
@@ -398,19 +378,19 @@ impl BitXor for Digit {
 // ============================================================================
 impl BitAndAssign for Digit {
 	fn bitand_assign(&mut self, rhs: Self) {
-		self.0 &= rhs.to_u64()
+		self.0 &= rhs.repr()
 	}
 }
 
 impl BitOrAssign for Digit {
 	fn bitor_assign(&mut self, rhs: Self) {
-		self.0 |= rhs.to_u64()
+		self.0 |= rhs.repr()
 	}
 }
 
 impl BitXorAssign for Digit {
 	fn bitxor_assign(&mut self, rhs: Self) {
-		self.0 ^= rhs.to_u64()
+		self.0 ^= rhs.repr()
 	}
 }
 
@@ -420,8 +400,8 @@ mod tests {
 
 	#[test]
 	fn retain_last_n() {
-		let mut d = Digit::from(0xFFFF_FFFF_FFFF_FFFF);
+		let mut d = ONES;
 		d.retain_last_n(32).unwrap();
-		assert_eq!(d, Digit::from(0x0000_0000_FFFF_FFFF));
+		assert_eq!(d, Digit(0x0000_0000_FFFF_FFFF));
 	}
 }

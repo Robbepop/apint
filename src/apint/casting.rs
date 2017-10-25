@@ -143,7 +143,7 @@ impl APInt {
 				let mut buffer: Vec<Digit> = Vec::with_capacity(req_blocks);
 				buffer.extend_from_slice(&self.as_digit_slice()[0..present_blocks]);
 				let rest = req_blocks - present_blocks;
-				buffer.resize(rest, Digit::zeros());
+				buffer.resize(rest, Digit::zero());
 				debug_assert_eq!(buffer.capacity(), req_blocks);
 				debug_assert_eq!(buffer.len()     , req_blocks);
 				let dst = buffer.as_mut_ptr();

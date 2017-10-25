@@ -108,7 +108,7 @@ impl APInt {
 
 	/// Creates a new `APInt` with the given bit-width that represents zero.
 	pub fn zero(width: BitWidth) -> APInt {
-		APInt::repeat_digit(width, 0)
+		APInt::repeat_digit(width, digit::ZERO)
 	}
 
 	/// Creates a new `APInt` with the given bit-width that represents one.

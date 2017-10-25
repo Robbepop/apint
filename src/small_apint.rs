@@ -147,15 +147,15 @@ impl<T> APIntImpl<SmallAPInt> for T
 	#[inline]
 	fn ult(&self, other: &SmallAPInt) -> Result<bool> {
 		self.verify_common_bitwidth(&other)?;
-		Ok(self.digit().to_u64() < other.digit().to_u64())
+		Ok(self.digit().repr() < other.digit().repr())
 	}
 
 	#[inline]
 	fn slt(&self, other: &SmallAPInt) -> Result<bool> {
 		self.verify_common_bitwidth(&other)?;
 		let infate_abs = digit::BITS - self.width().to_usize();
-		let left       = ( self.digit().to_u64() << infate_abs) as i64;
-		let right      = (other.digit().to_u64() << infate_abs) as i64;
+		let left       = ( self.digit().repr() << infate_abs) as i64;
+		let right      = (other.digit().repr() << infate_abs) as i64;
 		Ok(left < right)
 	}
 }
