@@ -28,8 +28,24 @@ pub(crate) struct SmallAPIntMut<'a> {
 
 impl SmallAPInt {
 	#[inline]
-	pub(crate) fn new(len: BitWidth, digit: Digit) -> SmallAPInt {
-		SmallAPInt{len, digit}
+	pub(crate) fn new<W>(width: W, digit: Digit) -> SmallAPInt
+		where W: Into<BitWidth>
+	{
+		SmallAPInt{len: width.into(), digit}
+	}
+
+	#[inline]
+	pub(crate) fn one<W>(width: W) -> SmallAPInt
+		where W: Into<BitWidth>
+	{
+		SmallAPInt::new(width, Digit::one())
+	}
+
+	#[inline]
+	pub(crate) fn zero<W>(width: W) -> SmallAPInt
+		where W: Into<BitWidth>
+	{
+		SmallAPInt::new(width, Digit::zero())
 	}
 }
 
@@ -156,7 +172,9 @@ impl<T> APIntMutImpl<SmallAPInt> for T
 
 	#[inline]
 	fn set_all(&mut self) {
-		self.digit_mut().set_all()
+		self.digit_mut().set_all();
+		let valid_bits = self.width().to_usize();
+		self.digit_mut().retain_last_n(valid_bits).unwrap();
 	}
 
 	#[inline]
@@ -178,7 +196,9 @@ impl<T> APIntMutImpl<SmallAPInt> for T
 
 	#[inline]
 	fn flip_all(&mut self) {
-		self.digit_mut().flip_all()
+		self.digit_mut().flip_all();
+		let valid_bits = self.width().to_usize();
+		self.digit_mut().retain_last_n(valid_bits).unwrap();
 	}
 
 
@@ -186,7 +206,7 @@ impl<T> APIntMutImpl<SmallAPInt> for T
 	fn bitnot_inplace(&mut self) {
 		let width = self.width().to_usize();
 		self.digit_mut().not_inplace();
-		self.digit_mut().unset_first_n(digit::BITS - width).unwrap();
+		self.digit_mut().retain_last_n(width).unwrap();
 	}
 
 	#[inline]
@@ -206,6 +226,7 @@ impl<T> APIntMutImpl<SmallAPInt> for T
 
 
 	fn neg_inplace(&mut self) {
+		// Negating a twos-complement number is accomplished by inverting all bits and adding 1.
 		unimplemented!()
 	}
 
