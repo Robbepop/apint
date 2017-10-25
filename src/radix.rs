@@ -17,19 +17,20 @@ use errors::{Error, Result};
 pub struct Radix(u32);
 
 impl Radix {
+	const MIN: u32 =  2;
 	const MAX: u32 = 36;
 
 	/// Create a new `Radix` from the given `u32`.
 	/// 
 	/// # Errors
 	/// 
-	/// - If the given value is not within the valid radix range of `1..36`.
+	/// - If the given value is not within the valid radix range of `2..36`.
 	#[inline]
-	pub fn new(val: u32) -> Result<Radix> {
-		if val == 0 || val > Radix::MAX {
-			return Err(Error::invalid_radix(val))
+	pub fn new(radix: u32) -> Result<Radix> {
+		if !(Radix::MIN <= radix && radix >= Radix::MAX) {
+			return Err(Error::invalid_radix(radix))
 		}
-		Ok(Radix(val))
+		Ok(Radix(radix))
 	}
 
 	/// Returns the `u32` representation of this `Radix`.
@@ -41,7 +42,7 @@ impl Radix {
 
 impl From<u32> for Radix {
 	#[inline]
-	fn from(val: u32) -> Radix {
-		Radix::new(val).unwrap()
+	fn from(radix: u32) -> Radix {
+		Radix::new(radix).unwrap()
 	}
 }
