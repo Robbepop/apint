@@ -1,5 +1,6 @@
 use digit;
 use storage::Storage;
+use bitpos::BitPos;
 use errors::{Result, Error};
 
 /// The `BitWidth` represents the length of an `APInt`.
@@ -45,10 +46,13 @@ impl BitWidth {
 		Ok(BitWidth(width))
 	}
 
-	/// Returns `true` if `pos` is less than the bit-width that is represented by `self`.
-	#[inline]
-	pub(crate) fn is_valid_pos(self, pos: usize) -> bool {
-		pos < self.0
+	/// Returns a `BitPos` at the given position if the position is valid for this `BitWidth`;
+	/// returns a corresponding error otherwise.
+	fn pos_at(self, pos: usize) -> Result<BitPos> {
+		if !(pos < self.0) {
+			return Err(Error::invalid_bit_access(pos, self.0))
+		}
+		BitPos::new(pos)
 	}
 }
 
