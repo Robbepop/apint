@@ -11,11 +11,24 @@ use std::ops::{
 	BitXorAssign
 };
 
+/// The type for the internal `Digit` representation.
+/// 
+/// Must be exactly half the size of `DoubleDigitRepr`.
+type DigitRepr = u64;
+
+/// The type for the internal `DoubleDigit` representation.
+/// 
+/// Must be exactly double the size of `DigitRepr`.
+type DoubleDigitRepr = u128;
+
 /// The amount of bits within a single `Digit`.
 pub(crate) const BITS: usize = 64;
 
-const REPR_ZEROS: u64 = 0x0000_0000_0000_0000_u64;
-const REPR_ONES : u64 = 0xFFFF_FFFF_FFFF_FFFF_u64;
+/// The `DoubleDigit` base offset.
+pub(crate) const BASE: DoubleDigitRepr = 1 << BITS;
+
+const REPR_ZEROS: DigitRepr = 0x0000_0000_0000_0000;
+const REPR_ONES : DigitRepr = 0xFFFF_FFFF_FFFF_FFFF;
 
 /// Represents the set or unset state of a bit within an `APInt`.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
@@ -53,7 +66,7 @@ impl DoubleDigit {
 	/// Returns the hi part of this `DoubleDigit` as `Digit`.
 	#[inline]
 	fn hi(self) -> Digit {
-		Digit((self.0 >> 64) as u64)
+		Digit((self.0 >> BITS) as u64)
 	}
 
 	/// Returns the hi part of this `DoubleDigit` as `Digit`.
@@ -67,12 +80,72 @@ impl DoubleDigit {
 	fn hi_lo(self) -> (Digit, Digit) {
 		(self.hi(), self.lo())
 	}
+
+	/// Returns a `DoubleDigit` from the given hi and lo raw `Digit` parts.
+	#[inline]
+	fn from_hi_lo(hi: Digit, lo: Digit) -> DoubleDigit {
+		DoubleDigit(((hi.to_u64() as u128) << BITS) | (lo.to_u64() as u128))
+	}
 }
 
 impl From<u64> for Digit {
 	#[inline]
 	fn from(val: u64) -> Digit {
 		Digit::from_u64(val)
+	}
+}
+
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+struct DigitAndCarry {
+	digit: Digit,
+	carry: Digit
+}
+
+impl DigitAndCarry {
+	/// Creates a new `DigitAndCarry` from the given `Digit` a zero carry.
+	#[inline]
+	fn new(digit: Digit) -> DigitAndCarry {
+		DigitAndCarry{digit, carry: Digit(0)}
+	}
+}
+
+/// Add `a + b` with carry.
+/// 
+/// Returns the result (`a + b`) and the implied carry of the operation.
+fn carry_add(a: Digit, b: DigitAndCarry) -> DigitAndCarry {
+	let (hi, lo) = DoubleDigit(a.to_u128() + b.digit.to_u128() + b.carry.to_u128()).hi_lo();
+	DigitAndCarry{
+		digit: lo,
+		carry: hi
+	}
+}
+
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+struct DigitAndBorrow {
+	digit: Digit,
+	borrow: Digit
+}
+
+impl DigitAndBorrow {
+	/// Creates a new `DigitAndBorrow` from the given `Digit` a zero borrow.
+	#[inline]
+	fn new(digit: Digit) -> DigitAndBorrow {
+		DigitAndBorrow{digit, borrow: Digit(0)}
+	}
+}
+
+/// Subtract `a - b` with borrow.
+/// 
+/// Returns the result (`a - b`) and the implied carry of the operation.
+fn borrow_sub(a: Digit, b: DigitAndBorrow) -> DigitAndBorrow {
+	let (hi, lo) = DoubleDigit(BASE + a.to_u128() - b.digit.to_u128() - b.borrow.to_u128()).hi_lo();
+
+    //     hi * (base) + lo        ==    1 * (base) + ai - bi - borrow
+    // =>  ai - bi - borrow < 0   <==>   hi == 0
+
+	DigitAndBorrow{
+		digit: lo,
+		borrow: Digit((hi == Digit::zero()) as DigitRepr)
 	}
 }
 
@@ -132,6 +205,12 @@ impl Digit {
 	#[inline]
 	pub fn to_u64(self) -> u64 { 
 		self.0
+	}
+
+	/// Returns the internal representation as `u128` value.
+	#[inline]
+	pub fn to_u128(self) -> u128 { 
+		self.to_u64() as u128
 	}
 }
 
