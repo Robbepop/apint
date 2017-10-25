@@ -8,7 +8,12 @@ use std::ops::{
 	BitXor,
 	BitAndAssign,
 	BitOrAssign,
-	BitXorAssign
+	BitXorAssign,
+
+	Add,
+	Sub,
+	Mul,
+	Div
 };
 
 /// The type for the internal `Digit` representation.
@@ -25,9 +30,9 @@ type DoubleDigitRepr = u128;
 pub(crate) const BITS: usize = 64;
 
 /// The `DoubleDigit` base offset.
-pub(crate) const BASE: DoubleDigitRepr = 1 << BITS;
+const BASE_REPR: DoubleDigitRepr = 1 << BITS;
 
-pub(crate) const BASE_R: DoubleDigit = DoubleDigit(1 << BITS);
+const BASE: DoubleDigit = DoubleDigit(BASE_REPR);
 
 const REPR_ONE : DigitRepr = 0x0000_0000_0000_0001;
 const REPR_ZERO: DigitRepr = 0x0000_0000_0000_0000;
@@ -69,17 +74,55 @@ pub(crate) struct Digit(pub u64);
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 pub(crate) struct DoubleDigit(pub u128);
 
+impl Add for DoubleDigit {
+	type Output = DoubleDigit;
+
+	fn add(self, rhs: DoubleDigit) -> Self::Output {
+		DoubleDigit(self.repr() + rhs.repr())
+	}
+}
+
+impl Sub for DoubleDigit {
+	type Output = DoubleDigit;
+
+	fn sub(self, rhs: DoubleDigit) -> Self::Output {
+		DoubleDigit(self.repr() - rhs.repr())
+	}
+}
+
+impl Mul for DoubleDigit {
+	type Output = DoubleDigit;
+
+	fn mul(self, rhs: DoubleDigit) -> Self::Output {
+		DoubleDigit(self.repr() * rhs.repr())
+	}
+}
+
+impl Div for DoubleDigit {
+	type Output = DoubleDigit;
+
+	fn div(self, rhs: DoubleDigit) -> Self::Output {
+		DoubleDigit(self.repr() / rhs.repr())
+	}
+}
+
 impl DoubleDigit {
+	/// Returns the value as its internal representation.
+	#[inline]
+	fn repr(self) -> DoubleDigitRepr {
+		self.0
+	}
+
 	/// Returns the hi part of this `DoubleDigit` as `Digit`.
 	#[inline]
 	fn hi(self) -> Digit {
-		Digit((self.0 >> BITS) as u64)
+		Digit((self.0 >> BITS) as DigitRepr)
 	}
 
 	/// Returns the hi part of this `DoubleDigit` as `Digit`.
 	#[inline]
 	fn lo(self) -> Digit {
-		Digit(self.0 as u64)
+		Digit(self.0 as DigitRepr)
 	}
 
 	/// Returns the hi and lo parts of this `DoubleDigit` as `Digit` each.
@@ -105,15 +148,34 @@ impl DigitAndCarry {
 	/// Creates a new `DigitAndCarry` from the given `Digit` a zero carry.
 	#[inline]
 	fn new(digit: Digit) -> DigitAndCarry {
-		DigitAndCarry{digit, carry: Digit(0)}
+		DigitAndCarry{digit, carry: ZERO}
 	}
 }
 
 /// Add `a + b` with carry.
 /// 
 /// Returns the result (`a + b`) and the implied carry of the operation.
+#[inline]
 fn carry_add(a: Digit, b: DigitAndCarry) -> DigitAndCarry {
-	let (hi, lo) = DoubleDigit(a.dd_repr() + b.digit.dd_repr() + b.carry.dd_repr()).hi_lo();
+	let (hi, lo) = (a.dd() + b.digit.dd() + b.carry.dd()).hi_lo();
+	DigitAndCarry{
+		digit: lo,
+		carry: hi
+	}
+}
+
+#[inline]
+fn carry_mul_add(a: Digit, b: Digit, c: Digit, carry: Digit) -> DigitAndCarry {
+	let (hi, lo) = (a.dd() + (b.dd() * c.dd()) + carry.dd()).hi_lo();
+	DigitAndCarry{
+		digit: lo,
+		carry: hi
+	}
+}
+
+#[inline]
+fn carry_mul(a: Digit, b: DigitAndCarry) -> DigitAndCarry {
+	let (hi, lo) = (a.dd() * b.digit.dd() + b.carry.dd()).hi_lo();
 	DigitAndCarry{
 		digit: lo,
 		carry: hi
@@ -130,15 +192,16 @@ impl DigitAndBorrow {
 	/// Creates a new `DigitAndBorrow` from the given `Digit` a zero borrow.
 	#[inline]
 	fn new(digit: Digit) -> DigitAndBorrow {
-		DigitAndBorrow{digit, borrow: Digit(0)}
+		DigitAndBorrow{digit, borrow: ZERO}
 	}
 }
 
 /// Subtract `a - b` with borrow.
 /// 
 /// Returns the result (`a - b`) and the implied carry of the operation.
+#[inline]
 fn borrow_sub(a: Digit, b: DigitAndBorrow) -> DigitAndBorrow {
-	let (hi, lo) = DoubleDigit(BASE + a.dd_repr() - b.digit.dd_repr() - b.borrow.dd_repr()).hi_lo();
+	let (hi, lo) = (BASE + a.dd() - b.digit.dd() - b.borrow.dd()).hi_lo();
 
     //     hi * (base) + lo        ==    1 * (base) + ai - bi - borrow
     // =>  ai - bi - borrow < 0   <==>   hi == 0
@@ -190,7 +253,12 @@ impl Digit {
 	/// Returns the `Digit`'s value as double-digit internal representation.
 	#[inline]
 	fn dd_repr(self) -> DoubleDigitRepr {
-		self.repr() as u128
+		self.repr() as DoubleDigitRepr
+	}
+
+	#[inline]
+	fn dd(self) -> DoubleDigit {
+		DoubleDigit(self.repr() as DoubleDigitRepr)
 	}
 }
 

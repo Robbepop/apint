@@ -13,4 +13,4 @@ description = """This library provides efficient integers with arbitrary precisi
 categories = ["data-structures"]
 
 [dependencies]
-log = "0.3.8"
+log = "0.3"
