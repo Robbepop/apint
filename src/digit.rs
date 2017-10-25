@@ -11,6 +11,7 @@ use std::ops::{
 	BitXorAssign
 };
 
+/// The amount of bits within a single `Digit`.
 pub(crate) const BITS: usize = 64;
 
 const REPR_ZEROS: u64 = 0x0000_0000_0000_0000_u64;
@@ -47,6 +48,26 @@ pub(crate) struct Digit(pub u64);
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 pub(crate) struct DoubleDigit(pub u128);
+
+impl DoubleDigit {
+	/// Returns the hi part of this `DoubleDigit` as `Digit`.
+	#[inline]
+	fn hi(self) -> Digit {
+		Digit((self.0 >> 64) as u64)
+	}
+
+	/// Returns the hi part of this `DoubleDigit` as `Digit`.
+	#[inline]
+	fn lo(self) -> Digit {
+		Digit(self.0 as u64)
+	}
+
+	/// Returns the hi and lo parts of this `DoubleDigit` as `Digit` each.
+	#[inline]
+	fn hi_lo(self) -> (Digit, Digit) {
+		(self.hi(), self.lo())
+	}
+}
 
 impl From<u64> for Digit {
 	#[inline]
