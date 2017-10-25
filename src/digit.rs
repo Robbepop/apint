@@ -13,8 +13,8 @@ use std::ops::{
 
 pub(crate) const BITS: usize = 64;
 
-const U64_ZEROS: u64 = 0x0000_0000_0000_0000_u64;
-const U64_ONES : u64 = 0xFFFF_FFFF_FFFF_FFFF_u64;
+const REPR_ZEROS: u64 = 0x0000_0000_0000_0000_u64;
+const REPR_ONES : u64 = 0xFFFF_FFFF_FFFF_FFFF_u64;
 
 /// Represents the set or unset state of a bit within an `APInt`.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
@@ -80,16 +80,26 @@ impl Digit {
 		Digit::from_u64(1)
 	}
 
+	/// Creates a digit that represents the value `0`.
+	/// 
+	/// **Note:** Equivalent to `Digit::zeros()`.
+	#[inline]
+	pub fn zero() -> Digit {
+		Digit::from_u64(0)
+	}
+
 	/// Creates a digit where all bits are initialized to `0`.
+	/// 
+	/// **Note:** Equivalent to `Digit::zero()`.
 	#[inline]
 	pub fn zeros() -> Digit {
-		Digit::from_u64(U64_ZEROS)
+		Digit::from_u64(REPR_ZEROS)
 	}
 
 	/// Creates a digit where all bits are initialized to `1`.
 	#[inline]
 	pub fn ones() -> Digit {
-		Digit::from_u64(U64_ONES)
+		Digit::from_u64(REPR_ONES)
 	}
 }
 
@@ -112,7 +122,6 @@ impl Digit {
 	pub fn truncated<W>(mut self, bitwidth: W) -> Result<Digit>
 		where W: Into<BitWidth>
 	{
-		let bitwidth = bitwidth.into();
 		self.truncate(bitwidth)?;
 		Ok(self)
 	}
@@ -125,7 +134,7 @@ impl Digit {
 		if bitwidth.to_usize() > self::BITS {
 			return Err(Error::invalid_bit_access(bitwidth.to_usize(), self::BITS))
 		}
-		Ok(self.0 &= U64_ONES >> ((self::BITS as u64) - (bitwidth.to_usize() as u64)))
+		Ok(self.0 &= REPR_ONES >> ((self::BITS as u64) - (bitwidth.to_usize() as u64)))
 	}
 }
 
@@ -188,19 +197,19 @@ impl Digit {
 	/// Sets all bits in this digit to `1`.
 	#[inline]
 	pub fn set_all(&mut self) {
-		self.0 |= U64_ONES
+		self.0 |= REPR_ONES
 	}
 
 	/// Sets all bits in this digit to `0`.
 	#[inline]
 	pub fn unset_all(&mut self) {
-		self.0 &= U64_ZEROS
+		self.0 &= REPR_ZEROS
 	}
 
 	/// Flips all bits in this digit.
 	#[inline]
 	pub fn flip_all(&mut self) {
-		self.0 ^= U64_ONES
+		self.0 ^= REPR_ONES
 	}
 
 	/// Sets the first `n` bits in the digit to `1`.
@@ -213,7 +222,7 @@ impl Digit {
 		if n >= self::BITS {
 			return Err(Error::invalid_bit_access(n, self::BITS))
 		}
-		Ok(self.0 |= !(U64_ONES >> n))
+		Ok(self.0 |= !(REPR_ONES >> n))
 	}
 
 	/// Sets the first `n` bits in the digit to `0`.
@@ -226,9 +235,21 @@ impl Digit {
 		if n >= self::BITS {
 			return Err(Error::invalid_bit_access(n, self::BITS))
 		}
-		Ok(self.0 &= U64_ONES >> (self::BITS - n))
+		Ok(self.0 &= REPR_ONES >> (self::BITS - n))
 	}
 
+	/// Unsets all bits but the last `n` ones.
+	/// 
+	/// # Errors
+	/// 
+	/// If the given `n` is greater than the digit size.
+	#[inline]
+	pub fn retain_last_n(&mut self, n: usize) -> Result<()> {
+		if n >= self::BITS {
+			return Err(Error::invalid_bit_access(n, self::BITS))
+		}
+		Ok(self.0 &= !(REPR_ONES << n))
+	}
 }
 
 //  ===========================================================================
@@ -290,5 +311,17 @@ impl BitOrAssign for Digit {
 impl BitXorAssign for Digit {
 	fn bitxor_assign(&mut self, rhs: Self) {
 		self.0 ^= rhs.to_u64()
+	}
+}
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+
+	#[test]
+	fn retain_last_n() {
+		let mut d = Digit::from(0xFFFF_FFFF_FFFF_FFFF);
+		d.retain_last_n(32).unwrap();
+		assert_eq!(d, Digit::from(0x0000_0000_FFFF_FFFF));
 	}
 }
