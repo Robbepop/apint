@@ -1,7 +1,7 @@
 use radix::{Radix};
 use bitwidth::{BitWidth};
 use apint::{APInt};
-use errors::{Result};
+use errors::{Error, Result};
 
 //  =======================================================================
 ///  Deserialization
@@ -20,7 +20,9 @@ impl APInt {
 	/// 
 	/// # Errors
 	/// 
+	/// - If `input` is empty.
 	/// - If `input` is not a valid representation for an `APInt` for the given `radix`.
+	/// - If `input` has trailing zero characters (`0`), e.g. `"0042"` instead of `"42"`.
 	/// - If `input` represents an `APInt` value that does not fit into the given `target_bitwidth`.
 	/// 
 	/// # Examples
@@ -37,7 +39,42 @@ impl APInt {
 		where W: Into<BitWidth>,
 		      R: Into<Radix>
 	{
-		unimplemented!()		
+		let radix = radix.into();
+
+		if input.is_empty() {
+			return Err(Error::invalid_string_repr(input, radix)
+				.with_annotation("Cannot parse an empty string into an APInt."))
+		}
+		if !input.chars().all(|c| c.is_digit(radix.to_u32())) {
+			return Err(Error::invalid_string_repr(input, radix)
+				.with_annotation("The input string contains invalid characters for the given radix."))
+		}
+		if input.len() >= 2 && input.starts_with('0') {
+			return Err(Error::invalid_string_repr(input, radix)
+				.with_annotation("The input string starts with zero digits."))
+		}
+
+		/// A `target_width` that is greater than or equal to the `BitWidth` returned by this function
+		/// can store any number representation of the given input length and radix.
+		fn safe_bit_width(radix: Radix, n: usize) -> BitWidth {
+			(n * ((radix.to_u32() as f64).log2().ceil() as usize)).into()
+		}
+
+		/// A `target_width` that is less than the `BitWidth` returned by this function
+		/// can **never** store any number representation of the given input length and radix.
+		fn unsafe_bit_width(radix: Radix, n: usize) -> BitWidth {
+			safe_bit_width(radix, n - 1)
+		}
+
+		let target_width = target_width.into();
+		let safe_width = safe_bit_width(radix, input.len());
+		let unsafe_width = unsafe_bit_width(radix, input.len());
+		if target_width < unsafe_width {
+			return Err(Error::invalid_string_repr(input, radix)
+				.with_annotation("The target bit-width does not suffice to represent the given input string as `APInt`."))
+		}
+
+		Ok(APInt::zero(target_width)) // TODO: Proper parsing.
 	}
 }
 
