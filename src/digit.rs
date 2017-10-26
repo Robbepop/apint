@@ -68,9 +68,18 @@ impl From<Bit> for bool {
 	}
 }
 
+/// A (big) digit within an `APInt` or similar representations.
+/// 
+/// It uses the `DoubleDigit` as computation unit.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 pub(crate) struct Digit(pub DigitRepr);
 
+/// A doubled digit.
+/// 
+/// This is used as a compute unit for `Digit`'s since many `Digit` arithmetic operations
+/// may overflow or have carries this is required in order to not lose those overflow- and underflow values.
+/// 
+/// Has wrapping arithmetics for better machine emulation and improved performance.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 pub(crate) struct DoubleDigit(pub DoubleDigitRepr);
 
@@ -246,7 +255,7 @@ impl Digit {
 impl Digit {
 	/// Returns the `Digit`'s value as internal representation.
 	#[inline]
-	pub(crate) fn repr(self) -> DigitRepr {
+	pub fn repr(self) -> DigitRepr {
 		self.0
 	}
 
