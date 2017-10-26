@@ -250,12 +250,6 @@ impl Digit {
 		self.0
 	}
 
-	/// Returns the `Digit`'s value as double-digit internal representation.
-	#[inline]
-	fn dd_repr(self) -> DoubleDigitRepr {
-		self.repr() as DoubleDigitRepr
-	}
-
 	#[inline]
 	fn dd(self) -> DoubleDigit {
 		DoubleDigit(self.repr() as DoubleDigitRepr)
