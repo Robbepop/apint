@@ -46,6 +46,14 @@ impl BitWidth {
 		Ok(BitWidth(width))
 	}
 
+	/// Returns `true` if the given `BitPos` is valid for this `BitWidth`.
+	#[inline]
+	pub(crate) fn is_valid_pos<P>(self, pos: P) -> bool
+		where P: Into<BitPos>
+	{
+		pos.into().to_usize() < self.0
+	}
+
 	/// Returns a `BitPos` at the given position if the position is valid for this `BitWidth`;
 	/// returns a corresponding error otherwise.
 	fn pos_at(self, pos: usize) -> Result<BitPos> {
