@@ -461,10 +461,193 @@ impl BitXorAssign for Digit {
 mod tests {
 	use super::*;
 
-	#[test]
-	fn retain_last_n() {
-		let mut d = ONES;
-		d.retain_last_n(32).unwrap();
-		assert_eq!(d, Digit(0x0000_0000_FFFF_FFFF));
+	mod bit {
+		use super::*;
+
+		#[test]
+		fn from_bool() {
+			assert_eq!(Bit::from(true) , Bit::Set);
+			assert_eq!(Bit::from(false), Bit::Unset);
+		}
+
+		#[test]
+		fn from_bit() {
+			assert_eq!(bool::from(Bit::Set)  , true);
+			assert_eq!(bool::from(Bit::Unset), false);
+		}
+	}
+
+	mod double_digit {
+		use super::*;
+
+		static TEST_VALUES: &[DoubleDigitRepr] = &[0, 1, 2, 10, 42, 1337];
+
+		#[test]
+		fn ops_add() {
+			fn assert_for(lhs: DoubleDigitRepr, rhs: DoubleDigitRepr) {
+				assert_eq!(
+					DoubleDigit(lhs) + DoubleDigit(rhs),
+					DoubleDigit(lhs + rhs)
+				)
+			}
+			for &lhs in TEST_VALUES {
+				for &rhs in TEST_VALUES {
+					assert_for(lhs, rhs)
+				}
+			}
+		}
+
+		#[test]
+		fn ops_sub() {
+			fn assert_for(lhs: DoubleDigitRepr, rhs: DoubleDigitRepr) {
+				assert_eq!(
+					DoubleDigit(lhs) - DoubleDigit(rhs),
+					DoubleDigit(lhs - rhs)
+				)
+			}
+			for &lhs in TEST_VALUES {
+				for &rhs in TEST_VALUES {
+					assert_for(lhs, rhs)
+				}
+			}
+		}
+
+		#[test]
+		fn ops_mul() {
+			fn assert_for(lhs: DoubleDigitRepr, rhs: DoubleDigitRepr) {
+				assert_eq!(
+					DoubleDigit(lhs) * DoubleDigit(rhs),
+					DoubleDigit(lhs * rhs)
+				)
+			}
+			for &lhs in TEST_VALUES {
+				for &rhs in TEST_VALUES {
+					assert_for(lhs, rhs)
+				}
+			}
+		}
+
+		#[test]
+		fn ops_div() {
+			fn assert_for(lhs: DoubleDigitRepr, rhs: DoubleDigitRepr) {
+				assert_eq!(
+					DoubleDigit(lhs) / DoubleDigit(rhs),
+					DoubleDigit(lhs / rhs)
+				)
+			}
+			for &lhs in TEST_VALUES {
+				for &rhs in TEST_VALUES {
+					// Avoid division by zero.
+					if rhs != 0 {
+						assert_for(lhs, rhs)
+					}
+				}
+			}
+		}
+
+		#[test]
+		fn repr() {
+			fn assert_for(val: DoubleDigitRepr) {
+				assert_eq!(DoubleDigit(val).repr(), val)
+			}
+			for &val in TEST_VALUES {
+				assert_for(val)
+			}
+		}
+
+		#[test]
+		fn hi() {
+			fn assert_for(input: DoubleDigitRepr, expected: DigitRepr) {
+				assert_eq!(DoubleDigit(input).hi(), Digit(expected))
+			}
+			let test_values = &[
+				(0,0),
+				(1,0),
+				(0x0000_0000_0000_0001_0000_0000_0000_0000, 1),
+				(0xFFFF_FFFF_FFFF_FFFF_FFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF),
+				(0x0000_0000_0000_0000_FFFF_FFFF_FFFF_FFFF, 0),
+				(0x0000_0000_FFFF_FFFF_FFFF_FFFF_0000_0000, 0xFFFF_FFFF),
+				(0xFFFF_FFFF_FFFF_FFFF_0000_0000_0000_0000, 0xFFFF_FFFF_FFFF_FFFF),
+				(0x0123_4567_8910_ABCD_EF00_0000_0000_0000, 0x0123_4567_8910_ABCD),
+				(0x0000_0000_0000_00FE_DCBA_0198_7654_3210, 0xFE)
+			];
+			for &(input, expected) in test_values {
+				assert_for(input, expected)
+			}
+		}
+
+		#[test]
+		fn lo() {
+			fn assert_for(input: DoubleDigitRepr, expected: DigitRepr) {
+				assert_eq!(DoubleDigit(input).lo(), Digit(expected))
+			}
+			let test_values = &[
+				(0,0),
+				(1,1),
+				(0x0000_0000_0000_0001_0000_0000_0000_0000, 0),
+				(0xFFFF_FFFF_FFFF_FFFF_FFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF),
+				(0x0000_0000_0000_0000_FFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF),
+				(0x0000_0000_FFFF_FFFF_FFFF_FFFF_0000_0000, 0xFFFF_FFFF_0000_0000),
+				(0xFFFF_FFFF_FFFF_FFFF_0000_0000_0000_0000, 0),
+				(0x0123_4567_8910_ABCD_EF00_0000_0000_0000, 0xEF00_0000_0000_0000),
+				(0x0000_0000_0000_00FE_DCBA_0198_7654_3210, 0xDCBA_0198_7654_3210)
+			];
+			for &(input, expected) in test_values {
+				assert_for(input, expected)
+			}
+		}
+
+		#[test]
+		fn hi_lo() {
+			fn assert_for(input: DoubleDigitRepr, expected_hi: DigitRepr, expected_lo: DigitRepr) {
+				assert_eq!(DoubleDigit(input).hi_lo(), (Digit(expected_hi), Digit(expected_lo)))
+			}
+			let test_values = &[
+				(0, (0, 0)),
+				(1, (0, 1)),
+				(0x0000_0000_0000_0001_0000_0000_0000_0000, (1, 0)),
+				(0xFFFF_FFFF_FFFF_FFFF_FFFF_FFFF_FFFF_FFFF, (0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF)),
+				(0x0000_0000_0000_0000_FFFF_FFFF_FFFF_FFFF, (0, 0xFFFF_FFFF_FFFF_FFFF)),
+				(0x0000_0000_FFFF_FFFF_FFFF_FFFF_0000_0000, (0xFFFF_FFFF, 0xFFFF_FFFF_0000_0000)),
+				(0xFFFF_FFFF_FFFF_FFFF_0000_0000_0000_0000, (0xFFFF_FFFF_FFFF_FFFF, 0)),
+				(0x0123_4567_8910_ABCD_EF00_0000_0000_0000, (0x0123_4567_8910_ABCD, 0xEF00_0000_0000_0000)),
+				(0x0000_0000_0000_00FE_DCBA_0198_7654_3210, (0x0000_0000_0000_00FE, 0xDCBA_0198_7654_3210))
+			];
+			for &(input, (expected_hi, expected_lo)) in test_values {
+				assert_for(input, expected_hi, expected_lo)
+			}
+		}
+
+		#[test]
+		fn from_hi_lo() {
+			fn assert_for(hi: DigitRepr, lo: DigitRepr, expected: DoubleDigitRepr) {
+				assert_eq!(DoubleDigit::from_hi_lo(Digit(hi), Digit(lo)), DoubleDigit(expected))
+			}
+			let test_values = &[
+				(0, (0, 0)),
+				(1, (0, 1)),
+				(0x0000_0000_0000_0001_0000_0000_0000_0000, (1, 0)),
+				(0xFFFF_FFFF_FFFF_FFFF_FFFF_FFFF_FFFF_FFFF, (0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF)),
+				(0x0000_0000_0000_0000_FFFF_FFFF_FFFF_FFFF, (0, 0xFFFF_FFFF_FFFF_FFFF)),
+				(0x0000_0000_FFFF_FFFF_FFFF_FFFF_0000_0000, (0xFFFF_FFFF, 0xFFFF_FFFF_0000_0000)),
+				(0xFFFF_FFFF_FFFF_FFFF_0000_0000_0000_0000, (0xFFFF_FFFF_FFFF_FFFF, 0)),
+				(0x0123_4567_8910_ABCD_EF00_0000_0000_0000, (0x0123_4567_8910_ABCD, 0xEF00_0000_0000_0000)),
+				(0x0000_0000_0000_00FE_DCBA_0198_7654_3210, (0x0000_0000_0000_00FE, 0xDCBA_0198_7654_3210))
+			];
+			for &(expected, (hi, lo)) in test_values {
+				assert_for(hi, lo, expected)
+			}
+		}
+	}
+
+	mod digit {
+		use super::*;
+
+		#[test]
+		fn retain_last_n() {
+			let mut d = ONES;
+			d.retain_last_n(32).unwrap();
+			assert_eq!(d, Digit(0x0000_0000_FFFF_FFFF));
+		}
 	}
 }

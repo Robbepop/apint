@@ -5,7 +5,7 @@ use errors::{Error, Result};
 /// A radix represents the range of valid input characters that represent values
 /// of the to-be-parsed `APInt`.
 /// 
-/// Supported radices range from unary radix (`1`) up
+/// Supported radices range from binary radix (`2`) up
 /// to full case-insensitive alphabet and numerals (`36`).
 /// 
 /// # Examples
@@ -17,7 +17,9 @@ use errors::{Error, Result};
 pub struct Radix(u32);
 
 impl Radix {
+	/// The minimum supported radix is the binary that has only `0` and `1` in its alphabet.
 	const MIN: u32 =  2;
+	/// The maximum supported radix is the 36-ary that has an alphabet containing `0..9` and `a..z`.
 	const MAX: u32 = 36;
 
 	/// Create a new `Radix` from the given `u32`.
