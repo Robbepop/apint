@@ -78,7 +78,7 @@ impl Add for DoubleDigit {
 	type Output = DoubleDigit;
 
 	fn add(self, rhs: DoubleDigit) -> Self::Output {
-		DoubleDigit(self.repr() + rhs.repr())
+		DoubleDigit(self.repr().wrapping_add(rhs.repr()))
 	}
 }
 
@@ -86,7 +86,7 @@ impl Sub for DoubleDigit {
 	type Output = DoubleDigit;
 
 	fn sub(self, rhs: DoubleDigit) -> Self::Output {
-		DoubleDigit(self.repr() - rhs.repr())
+		DoubleDigit(self.repr().wrapping_sub(rhs.repr()))
 	}
 }
 
@@ -94,7 +94,7 @@ impl Mul for DoubleDigit {
 	type Output = DoubleDigit;
 
 	fn mul(self, rhs: DoubleDigit) -> Self::Output {
-		DoubleDigit(self.repr() * rhs.repr())
+		DoubleDigit(self.repr().wrapping_mul(rhs.repr()))
 	}
 }
 
@@ -102,7 +102,7 @@ impl Div for DoubleDigit {
 	type Output = DoubleDigit;
 
 	fn div(self, rhs: DoubleDigit) -> Self::Output {
-		DoubleDigit(self.repr() / rhs.repr())
+		DoubleDigit(self.repr().wrapping_div(rhs.repr()))
 	}
 }
 
@@ -487,7 +487,7 @@ mod tests {
 			fn assert_for(lhs: DoubleDigitRepr, rhs: DoubleDigitRepr) {
 				assert_eq!(
 					DoubleDigit(lhs) + DoubleDigit(rhs),
-					DoubleDigit(lhs + rhs)
+					DoubleDigit(lhs.wrapping_add(rhs))
 				)
 			}
 			for &lhs in TEST_VALUES {
@@ -502,7 +502,7 @@ mod tests {
 			fn assert_for(lhs: DoubleDigitRepr, rhs: DoubleDigitRepr) {
 				assert_eq!(
 					DoubleDigit(lhs) - DoubleDigit(rhs),
-					DoubleDigit(lhs - rhs)
+					DoubleDigit(lhs.wrapping_sub(rhs))
 				)
 			}
 			for &lhs in TEST_VALUES {
@@ -517,7 +517,7 @@ mod tests {
 			fn assert_for(lhs: DoubleDigitRepr, rhs: DoubleDigitRepr) {
 				assert_eq!(
 					DoubleDigit(lhs) * DoubleDigit(rhs),
-					DoubleDigit(lhs * rhs)
+					DoubleDigit(lhs.wrapping_mul(rhs))
 				)
 			}
 			for &lhs in TEST_VALUES {
@@ -532,7 +532,7 @@ mod tests {
 			fn assert_for(lhs: DoubleDigitRepr, rhs: DoubleDigitRepr) {
 				assert_eq!(
 					DoubleDigit(lhs) / DoubleDigit(rhs),
-					DoubleDigit(lhs / rhs)
+					DoubleDigit(lhs.wrapping_div(rhs))
 				)
 			}
 			for &lhs in TEST_VALUES {
