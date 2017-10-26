@@ -69,10 +69,10 @@ impl From<Bit> for bool {
 }
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
-pub(crate) struct Digit(pub u64);
+pub(crate) struct Digit(pub DigitRepr);
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
-pub(crate) struct DoubleDigit(pub u128);
+pub(crate) struct DoubleDigit(pub DoubleDigitRepr);
 
 impl Add for DoubleDigit {
 	type Output = DoubleDigit;
@@ -203,8 +203,8 @@ impl DigitAndBorrow {
 fn borrow_sub(a: Digit, b: DigitAndBorrow) -> DigitAndBorrow {
 	let (hi, lo) = (BASE + a.dd() - b.digit.dd() - b.borrow.dd()).hi_lo();
 
-    //     hi * (base) + lo        ==    1 * (base) + ai - bi - borrow
-    // =>  ai - bi - borrow < 0   <==>   hi == 0
+	//     hi * (base) + lo        ==    1 * (base) + ai - bi - borrow
+	// =>  ai - bi - borrow < 0   <==>   hi == 0
 
 	DigitAndBorrow{
 		digit: lo,
@@ -262,11 +262,10 @@ impl Digit {
 	}
 }
 
-// //  =======================================================================
-// ///  Deprecated. To be removed.
-// /// =======================================================================
 impl Digit {
-	#[inline]
+	// TODO: Remove deprecated method.
+	// 
+	// Replacement has yet to be found.
 	pub fn truncated<W>(mut self, bitwidth: W) -> Result<Digit>
 		where W: Into<BitWidth>
 	{
@@ -274,7 +273,9 @@ impl Digit {
 		Ok(self)
 	}
 
-	#[inline]
+	// TODO: Remove deprecated method.
+	// 
+	// Deprecated by Digit::retain_last_n() method.
 	pub fn truncate<W>(&mut self, bitwidth: W) -> Result<()>
 		where W: Into<BitWidth>
 	{
