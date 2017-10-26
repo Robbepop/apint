@@ -1,9 +1,9 @@
 APInt - Arbitrary Precision Integers for Rust
 =============================================
 
-|        Linux        |       Windows       |       Coveralls      |       Docs       |       Crates.io      |
-|:-------------------:|:-------------------:|:--------------------:|:----------------:|:--------------------:|
-| [![travisCI][1]][2] | [![appveyor][3]][4] | [![coveralls][5]][6] | [![docs][11]][12] | [![crates][13]][14] |
+|        Linux        |       Windows       |       Codecov        |       Coveralls      |       Docs       |       Crates.io      |
+|:-------------------:|:-------------------:|:--------------------:|:--------------------:|:----------------:|:--------------------:|
+| [![travisCI][1]][2] | [![appveyor][3]][4] | [![codecov][15]][16] | [![coveralls][5]][6] | [![docs][11]][12] | [![crates][13]][14] |
 
 **Development in progress:** *The implementation has not been finished, is unstable and may not work.*
 
@@ -68,3 +68,5 @@ at your option.
 [12]: https://docs.rs/apint
 [13]: https://img.shields.io/crates/v/apint.svg
 [14]: https://crates.io/crates/apint
+[15]: https://codecov.io/gh/robbepop/apint/branch/master/graph/badge.svg
+[16]: https://codecov.io/gh/Robbepop/apint/branch/master
