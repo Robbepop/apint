@@ -201,22 +201,6 @@ fn carry_mul_add(a: Digit, b: Digit, c: Digit, carry: Digit) -> DigitAndCarry {
 	}
 }
 
-/// Divide a two digit numerator by a one digit divisor, returns quotient and remainder.
-///
-/// **Note:** The caller must ensure that both the quotient and remainder will fit into a single digit.
-/// This is **not** true for an arbitrary numerator and denominator.
-///
-/// **Note:** This function also matches what the x86 divide instruction does.
-#[inline]
-fn wide_div(hi: Digit, lo: Digit, divisor: Digit) -> (Digit, Digit) {
-	debug_assert!(hi < divisor);
-
-	let lhs = DoubleDigit::from_hi_lo(hi, lo);
-	let rhs = divisor.dd();
-
-	((lhs / rhs).lo(), (lhs % rhs).lo())
-}
-
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 struct DigitAndBorrow {
 	digit: Digit,
@@ -243,6 +227,37 @@ fn borrow_sub(a: Digit, b: DigitAndBorrow) -> DigitAndBorrow {
 		digit: lo,
 		borrow: Digit((hi == Digit::zero()) as DigitRepr)
 	}
+}
+
+/// Divide a two digit numerator by a one digit divisor, returns quotient and remainder.
+///
+/// **Note:** The caller must ensure that both the quotient and remainder will fit into a single digit.
+/// This is **not** true for an arbitrary numerator and denominator.
+///
+/// **Note:** This function also matches what the x86 divide instruction does.
+#[inline]
+fn wide_div(hi: Digit, lo: Digit, divisor: Digit) -> (Digit, Digit) {
+	debug_assert!(hi < divisor);
+
+	let lhs = DoubleDigit::from_hi_lo(hi, lo);
+	let rhs = divisor.dd();
+
+	((lhs / rhs).lo(), (lhs % rhs).lo())
+}
+
+/// TODO: Find out what this exactly does and why it exists.
+/// 
+/// Divides a digit sequence by a single digit.
+/// 
+/// Returns the remainder.
+fn div_rem_digit(a: &mut [Digit], b: Digit) -> Digit {
+	let mut rem = ZERO;
+	for d in a.iter_mut().rev() {
+		let (q, r) = wide_div(rem, *d, b);
+		*d = q;
+		rem = r;
+	}
+	rem
 }
 
 //  =======================================================================
