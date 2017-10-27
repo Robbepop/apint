@@ -153,7 +153,7 @@ impl DoubleDigit {
 	/// Returns a `DoubleDigit` from the given hi and lo raw `Digit` parts.
 	#[inline]
 	fn from_hi_lo(hi: Digit, lo: Digit) -> DoubleDigit {
-		DoubleDigit(((hi.repr() as u128) << BITS) | (lo.repr() as u128))
+		DoubleDigit(((hi.repr() as DoubleDigitRepr) << BITS) | (lo.repr() as DoubleDigitRepr))
 	}
 }
 
