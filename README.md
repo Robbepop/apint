@@ -7,41 +7,54 @@ APInt - Arbitrary Precision Integers for Rust
 
 **Development in progress:** *The implementation has not been finished, is unstable and may not work.*
 
-**A**rbitrary **P**recision **Int**egers (**APInt**) are a way to handle integers that have an arbitrary but 
-fixed (on runtime) bit-width and offer modulo arithmetic similar to the primitive machine integers.
+**A**rbitrary **P**recision **Int**egers (**APInt**) represent integers that have an arbitrary but 
+fixed runtime bit-width and offer twos-complement modulo arithmetic similar to machine integers.
 
-This library and its API are based on the popular LLVM [`APInt`](http://llvm.org/doxygen/classllvm_1_1APInt.html) support library
-which is used quite heavily within the compiler and compiler-based tools. To model machine numbers during the compilation process.
+The API is based on the popular LLVM [`APInt`](http://llvm.org/doxygen/classllvm_1_1APInt.html) support library
+that is heavily used within the compiler and compiler-based tools.
 
-Uses cases may vary greatly - the initial motivation for building this library was for use in an SMT solver
-that operates mainly on the theory of bitvectors.
+## Example Use Cases
+
+- Simulate machine numbers during the compilation process of compilers.
+- SMT solver to model theory of bitvectors.
 
 ## Internals
 
-The design focus was for efficiency and stability. `APInt` instances are space-optimized for
-bit-widths equal to or smaller than `64` bits - only larger bit-widths require dynamic memory allocation!
-For small bit-widths a compute buffer of `128` bits is used which is realized by the currently unstable
-Rust language feature `i128` that will hopefully be stabilized soon as this is the only stable channel blocker so far.
+The design focus is efficiency and robustness.
+`APInt` instances are space-optimized for bit-width smaller than or equal to 64 bits.
+Only `APInt` instances with a larger bit-width require dynamic memory allocation.
 
-The public interface functions avoid panicing and promote returning `Result`s and decent quality error codes instead.
-Some convenience arithmetic operators are overloaded in the cases where it is useful - those do panic as it is 
-convenient for them to be homogenous in input and output types.
+An `APInt` constists of a sequence of 64-bit `Digit`s.
+Computations are done within their 128-bit `DoubleDigit` form to prevent bit-loss on over- or underflows.
+This creates a dependency on 128-bit integers which are currently unstable in Rust.
+
+## Differences & Parallels
+
+The below table lists public and internal differences between `APInt` and `num::BigInt`.
+
+|        Topic             |               `num::BigInt`               |               `APInt`                  |
+|:------------------------:|:------------------------------------------|:---------------------------------------|
+| Abstraction              | High-level unbounded integers.            | Twos-complement machine integers.      |
+| Small Int Optimization   | No                                        | Yes: Up to 64-bits.                    |
+| Building Blocks          | 32-bit `BigDigit` aka `u32`               | 64-bit `Digit`                         |
+| Compute Unit             | 64-bit `DoubleBigDigit` aka `u64`         | 128-bit `DoubleDigit`                  |
+| Signed                   | Yes, `num::BigUint` is for unsigned.      | No, operations know signdness instead. |
+| `mem::size_of<..>`       | Equal to `Vec<..>` (about 24 bytes)       | Exactly 128 bits (16 bytes).           |
+| Width interoperability   | No restriction to operate between `BigInt` instances with different bit-widths. | Only `APInt` instances with the same bit-width can interoperate. |
+| Memory footprint         | Determined by current value stored.       | Determined by bit-width.               |
+| Can grow and shrink?     | Yes                                       | No, see above.                         |
+| Unstable features?       | None                                      | [128-bit integers][17]                 |
 
 ## Current State
 
-Currently only a part of the internal implementation is done. Especially the implementation of the large `APInt`'s
-with bit-widths greater than `64` bits are lacking a lot of implementation code. However, this should not be a major problem
-since this crate is so similar to the well known `APInt` of LLVM as already stated above.
-
-It is planned to add `SAPInt` (*S*igned *A*rbitrary *P*recision *Int*eger) an optional interface on top of `APInt` to
-further add some signedness information. This will behave similar to LLVM's `APSInt` type.
+Currently only parts of the implementation is done - especially the implementation of `APInt`'s with bit-widths greater than 64 bits are incompleted.
 
 ## Planned Features
 
-- Full `APInt` implementation with focus on efficiency and stability
-- `SAPInt` interface layer on top of `APInt` to add signess information
-- Extensive test suite to provide a decent quality implementation guarantee
-- Hopefully soon on stable - as soon as `i128` is stabilized
+- Full `APInt` implementation.
+- `APSInt` API built on top of `APInt` to add signedness information as it is done in LLVM.
+- Extensive test suite to provide a decent quality implementation guarantee.
+- Hopefully soon on stable - as soon as [128-bit integers][17] are stabilized.
 
 ## License
 
@@ -70,3 +83,5 @@ at your option.
 [14]: https://crates.io/crates/apint
 [15]: https://codecov.io/gh/robbepop/apint/branch/master/graph/badge.svg
 [16]: https://codecov.io/gh/Robbepop/apint/branch/master
+
+[17]: https://github.com/rust-lang/rust/issues/35118
