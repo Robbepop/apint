@@ -14,7 +14,8 @@ use std::ops::{
 	Add,
 	Sub,
 	Mul,
-	Div
+	Div,
+	Rem
 };
 
 /// The type for the internal `Digit` representation.
@@ -72,7 +73,7 @@ impl From<Bit> for bool {
 /// A (big) digit within an `APInt` or similar representations.
 /// 
 /// It uses the `DoubleDigit` as computation unit.
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub(crate) struct Digit(pub DigitRepr);
 
 /// A doubled digit.
@@ -81,7 +82,7 @@ pub(crate) struct Digit(pub DigitRepr);
 /// may overflow or have carries this is required in order to not lose those overflow- and underflow values.
 /// 
 /// Has wrapping arithmetics for better machine emulation and improved performance.
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub(crate) struct DoubleDigit(pub DoubleDigitRepr);
 
 impl Add for DoubleDigit {
@@ -113,6 +114,14 @@ impl Div for DoubleDigit {
 
 	fn div(self, rhs: DoubleDigit) -> Self::Output {
 		DoubleDigit(self.repr().wrapping_div(rhs.repr()))
+	}
+}
+
+impl Rem for DoubleDigit {
+	type Output = DoubleDigit;
+
+	fn rem(self, rhs: DoubleDigit) -> Self::Output {
+		DoubleDigit(self.repr().wrapping_rem(rhs.repr()))
 	}
 }
 
@@ -192,6 +201,22 @@ fn carry_mul_add(a: Digit, b: Digit, c: Digit, carry: Digit) -> DigitAndCarry {
 	}
 }
 
+/// Divide a two digit numerator by a one digit divisor, returns quotient and remainder.
+///
+/// **Note:** The caller must ensure that both the quotient and remainder will fit into a single digit.
+/// This is **not** true for an arbitrary numerator and denominator.
+///
+/// **Note:** This function also matches what the x86 divide instruction does.
+#[inline]
+fn wide_div(hi: Digit, lo: Digit, divisor: Digit) -> (Digit, Digit) {
+	debug_assert!(hi < divisor);
+
+	let lhs = DoubleDigit::from_hi_lo(hi, lo);
+	let rhs = divisor.dd();
+
+	((lhs / rhs).lo(), (lhs % rhs).lo())
+}
+
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 struct DigitAndBorrow {
 	digit: Digit,
@@ -226,9 +251,12 @@ fn borrow_sub(a: Digit, b: DigitAndBorrow) -> DigitAndBorrow {
 impl Digit {
 	/// Creates a digit that only has the nth bit set to '1'.
 	#[inline]
-	pub fn one_at(n: usize) -> Result<Digit> {
-		Self::verify_bit_access(n)?;
-		Ok(Digit(REPR_ONE << n))
+	pub fn one_at<P>(pos: P) -> Result<Digit>
+		where P: Into<BitPos>
+	{
+		let pos = pos.into();
+		Self::verify_bit_access(pos)?;
+		Ok(Digit(REPR_ONE << pos.to_usize()))
 	}
 
 	/// Creates a digit that represents the value `1`.
@@ -280,10 +308,10 @@ impl Digit {
 		where W: Into<BitWidth>
 	{
 		let bitwidth = bitwidth.into();
-		if bitwidth.to_usize() > self::BITS {
-			return Err(Error::invalid_bit_access(bitwidth.to_usize(), self::BITS))
+		if bitwidth.to_usize() > BITS {
+			return Err(Error::invalid_bit_access(bitwidth.to_usize(), BITS))
 		}
-		Ok(self.0 &= REPR_ONES >> ((self::BITS as u64) - (bitwidth.to_usize() as u64)))
+		Ok(self.0 &= REPR_ONES >> ((BITS as DigitRepr) - (bitwidth.to_usize() as DigitRepr)))
 	}
 }
 
@@ -547,6 +575,24 @@ mod tests {
 				assert_eq!(
 					DoubleDigit(lhs) / DoubleDigit(rhs),
 					DoubleDigit(lhs.wrapping_div(rhs))
+				)
+			}
+			for &lhs in TEST_VALUES {
+				for &rhs in TEST_VALUES {
+					// Avoid division by zero.
+					if rhs != 0 {
+						assert_for(lhs, rhs)
+					}
+				}
+			}
+		}
+
+		#[test]
+		fn ops_rem() {
+			fn assert_for(lhs: DoubleDigitRepr, rhs: DoubleDigitRepr) {
+				assert_eq!(
+					DoubleDigit(lhs) % DoubleDigit(rhs),
+					DoubleDigit(lhs.wrapping_rem(rhs))
 				)
 			}
 			for &lhs in TEST_VALUES {
