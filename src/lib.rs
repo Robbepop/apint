@@ -15,6 +15,7 @@ mod radix;
 mod small_apint;
 mod large_apint;
 mod apint;
+mod digit_seq;
 
 pub use apint::APInt;
 pub use errors::{Result, Error, ErrorKind};
