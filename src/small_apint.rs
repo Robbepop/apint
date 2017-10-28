@@ -4,7 +4,6 @@ use bitwidth::BitWidth;
 use errors::{Result};
 use traits::{
 	Width,
-	WidthAssertions,
 	APIntImpl,
 	APIntMutImpl,
 };
@@ -130,12 +129,14 @@ impl<'a> DigitMutWrapper for &'a mut SmallAPIntMut<'a> {
 
 // ============================================================================
 
+use checks;
+
 impl<T> APIntImpl<SmallAPInt> for T
-	where T: Width + WidthAssertions + DigitWrapper
+	where T: Width + DigitWrapper
 {
 	#[inline]
 	fn get(&self, n: usize) -> Result<Bit> {
-		self.verify_bit_access(n)?;
+		checks::verify_bit_access(self, n)?;
 		self.digit().get(n)
 	}
 
@@ -146,13 +147,13 @@ impl<T> APIntImpl<SmallAPInt> for T
 
 	#[inline]
 	fn ult(&self, other: &SmallAPInt) -> Result<bool> {
-		self.verify_common_bitwidth(&other)?;
+		checks::verify_common_bitwidth(self, &other)?;
 		Ok(self.digit().repr() < other.digit().repr())
 	}
 
 	#[inline]
 	fn slt(&self, other: &SmallAPInt) -> Result<bool> {
-		self.verify_common_bitwidth(&other)?;
+		checks::verify_common_bitwidth(self, &other)?;
 		let infate_abs = digit::BITS - self.width().to_usize();
 		let left       = ( self.digit().repr() << infate_abs) as i64;
 		let right      = (other.digit().repr() << infate_abs) as i64;
@@ -161,12 +162,12 @@ impl<T> APIntImpl<SmallAPInt> for T
 }
 
 impl<T> APIntMutImpl<SmallAPInt> for T
-	where T: Width + WidthAssertions + DigitMutWrapper
+	where T: Width + DigitMutWrapper
 {
 
 	#[inline]
 	fn set(&mut self, n: usize) -> Result<()> {
-		self.verify_bit_access(n)?;
+		checks::verify_bit_access(self, n)?;
 		self.digit_mut().set(n)
 	}
 
@@ -179,7 +180,7 @@ impl<T> APIntMutImpl<SmallAPInt> for T
 
 	#[inline]
 	fn unset(&mut self, n: usize) -> Result<()> {
-		self.verify_bit_access(n)?;
+		checks::verify_bit_access(self, n)?;
 		self.digit_mut().unset(n)
 	}
 
@@ -190,7 +191,7 @@ impl<T> APIntMutImpl<SmallAPInt> for T
 
 	#[inline]
 	fn flip(&mut self, n: usize) -> Result<()> {
-		self.verify_bit_access(n)?;
+		checks::verify_bit_access(self, n)?;
 		self.digit_mut().flip(n)
 	}
 
