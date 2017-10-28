@@ -34,6 +34,10 @@ impl BitWidth {
 	#[inline]
 	pub fn w64() -> Self { BitWidth(64) }
 
+	/// Creates a `BitWidth` that represents a bit-width of `128` bits.
+	#[inline]
+	pub fn w128() -> Self { BitWidth(128) }
+
 	/// Creates a `BitWidth` from the given `usize`.
 	/// 
 	/// # Errors
