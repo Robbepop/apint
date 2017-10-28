@@ -67,6 +67,12 @@ at your option.
 
 ### Dual licence: [![badge][7]](LICENSE-MIT) [![badge][8]](LICENSE-APACHE)
 
+### Contribution
+
+Unless you explicitly state otherwise, any contribution intentionally submitted
+for inclusion in the work by you, as defined in the Apache-2.0 license, shall be dual licensed as above, without any
+additional terms or conditions.
+
 [1]: https://travis-ci.org/Robbepop/apint.svg?branch=master
 [2]: https://travis-ci.org/Robbepop/apint
 [3]: https://ci.appveyor.com/api/projects/status/16fc9l6rtroo4xqd?svg=true
