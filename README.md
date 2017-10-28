@@ -7,47 +7,46 @@ APInt - Arbitrary Precision Integers for Rust
 
 **Development in progress:** *The implementation has not been finished, is unstable and may not work.*
 
-**A**rbitrary **P**recision **Int**egers (**APInt**) represent integers that have an arbitrary but 
-fixed runtime bit-width and offer twos-complement modulo arithmetic similar to machine integers.
+An **A**rbitrary **P**recision **Int**eger (**APInt**) represents an integer that has an arbitrary but 
+fixed runtime bit-width and offers two's complement modulo arithmetic equal to machine integers.
 
 The API is based on the popular LLVM [`APInt`](http://llvm.org/doxygen/classllvm_1_1APInt.html) support library
-that is heavily used within the compiler and compiler-based tools.
+that is heavily used within the compiler and compiler based tools.
 
 ## Example Use Cases
 
-- Simulate machine numbers during the compilation process of compilers.
-- SMT solver to model theory of bitvectors.
+- Simulate machine arithmetic on compilation, e.g. for constant evaluation and some optimizations.
+- SMT solvers may use this as an underlying model for the theory of bitvectors.
 
 ## Internals
 
-The design focus is efficiency and robustness.
-`APInt` instances are space-optimized for bit-width smaller than or equal to 64 bits.
-Only `APInt` instances with a larger bit-width require dynamic memory allocation.
+The design focus is at efficiency and robustness.
+`APInt` instances are small-value-optimized. This means that only `APInt` instances with a bit-width larger than 64 bits allocate dynamic memory.
 
 An `APInt` constists of a sequence of 64-bit `Digit`s.
 Computations are done within their 128-bit `DoubleDigit` form to prevent bit-loss on over- or underflows.
-This creates a dependency on 128-bit integers which are currently unstable in Rust.
+This implies a dependency on 128-bit integers which are currently unstable in Rust.
 
 ## Differences & Parallels
 
 The below table lists public and internal differences between `APInt` and `num::BigInt`.
 
-|        Topic             |               `num::BigInt`               |               `APInt`                  |
-|:------------------------:|:------------------------------------------|:---------------------------------------|
-| Abstraction              | High-level unbounded integers.            | Twos-complement machine integers.      |
-| Small Int Optimization   | No                                        | Yes: Up to 64-bits.                    |
-| Building Blocks          | 32-bit `BigDigit` aka `u32`               | 64-bit `Digit`                         |
-| Compute Unit             | 64-bit `DoubleBigDigit` aka `u64`         | 128-bit `DoubleDigit`                  |
-| Signed                   | Yes, `num::BigUint` is for unsigned.      | No, operations know signdness instead. |
-| `mem::size_of<..>`       | Equal to `Vec<..>` (about 24 bytes)       | Exactly 128 bits (16 bytes).           |
+|        Topic             |               `num::BigInt`               |               `APInt`                   |
+|:------------------------:|:------------------------------------------|:----------------------------------------|
+| Abstraction              | High-level unbounded integers.            | Twos-complement machine integers.       |
+| Small Int Optimization   | No                                        | Yes: Up to 64-bits.                     |
+| Building Blocks          | 32-bit `BigDigit` aka `u32`               | 64-bit `Digit`                          |
+| Compute Unit             | 64-bit `DoubleBigDigit` aka `u64`         | 128-bit `DoubleDigit`                   |
+| Signed                   | Yes, `num::BigUint` is for unsigned.      | No, operations know signedness instead. |
+| `mem::size_of<..>`       | About 24 bytes + some signedness info.    | Exactly 128 bits (16 bytes).            |
 | Width interoperability   | No restriction to operate between `BigInt` instances with different bit-widths. | Only `APInt` instances with the same bit-width can interoperate. |
-| Memory footprint         | Determined by current value stored.       | Determined by bit-width.               |
-| Can grow and shrink?     | Yes                                       | No, see above.                         |
-| Unstable features?       | None                                      | [128-bit integers][17]                 |
+| Memory footprint         | Determined by current value stored.       | Determined by bit-width.                |
+| Can grow and shrink?     | Yes                                       | No, see above.                          |
+| Unstable features?       | None                                      | [128-bit integers][17]                  |
 
 ## Current State
 
-Currently only parts of the implementation is done - especially the implementation of `APInt`'s with bit-widths greater than 64 bits are incompleted.
+Currently only a few parts of the implementation are done - especially the implementation of `APInt`'s with bit-widths greater than 64 bits is incomplete.
 
 ## Planned Features
 
