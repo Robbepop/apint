@@ -1,6 +1,12 @@
 use bitpos::BitPos;
 use bitwidth::BitWidth;
 use errors::{Error, Result};
+use digit_seq::{
+	AsDigitSeq,
+	AsDigitSeqMut
+};
+use traits::{Width};
+use checks;
 
 use std::ops::{
 	Not,
@@ -17,6 +23,7 @@ use std::ops::{
 	Div,
 	Rem
 };
+use std::iter::{DoubleEndedIterator};
 
 /// The type for the internal `Digit` representation.
 /// 
@@ -245,19 +252,49 @@ fn wide_div(hi: Digit, lo: Digit, divisor: Digit) -> (Digit, Digit) {
 	((lhs / rhs).lo(), (lhs % rhs).lo())
 }
 
-/// TODO: Find out what this exactly does and why it exists.
-/// 
 /// Divides a digit sequence by a single digit.
 /// 
 /// Returns the remainder.
-fn div_rem_digit(a: &mut [Digit], b: Digit) -> Digit {
+/// 
+/// **TODO**: Find out what this exactly does and why it exits.
+fn div_rem_digits_by_digit_impl<'a, D>(seq: D, divisor: Digit) -> Digit
+	where D: AsDigitSeqMut<'a>,
+	      D::SeqMut: DoubleEndedIterator
+{
+	let mut seq = seq;
 	let mut rem = ZERO;
-	for d in a.iter_mut().rev() {
-		let (q, r) = wide_div(rem, *d, b);
-		*d = q;
+	for digit in seq.digits_mut().rev() {
+		let (q, r) = wide_div(rem, *digit, divisor);
+		*digit = q;
 		rem = r;
 	}
 	rem
+}
+
+/// Add-assigns `rhs` to `lhs`: `lhs += rhs` where `lhs` and `rhs` are
+/// digit sequences with an associated bit-width.
+/// 
+/// Returns the carry bit of the addition.
+/// 
+/// This is a raw implementation that can be reused by concrete `APInt` types.
+/// 
+/// # Panics
+/// 
+/// - If `lhs` and `rhs` do not have a common bit-width.
+fn add_assign_digits_impl<'l, DL, DR>(lhs: DL, rhs: DR) -> Digit
+	where DL: AsDigitSeqMut<'l> + Width,
+	      DR: AsDigitSeq + Width
+{
+	checks::assert_common_bitwidth(&lhs, &rhs);
+
+	let mut lhs = lhs;
+	let mut dac = DigitAndCarry::new(ZERO);
+	for (l, r) in lhs.digits_mut().zip(rhs.digits()) {
+		dac.digit = r;
+		dac = carry_add(*l, dac);
+		*l = dac.digit;
+	}
+	dac.carry
 }
 
 //  =======================================================================
@@ -270,8 +307,9 @@ impl Digit {
 		where P: Into<BitPos>
 	{
 		let pos = pos.into();
-		Self::verify_bit_access(pos)?;
-		Ok(Digit(REPR_ONE << pos.to_usize()))
+		let res = Digit(REPR_ONE << pos.to_usize());
+		checks::verify_bit_access(&res, pos)?;
+		Ok(res)
 	}
 
 	/// Creates a digit that represents the value `1`.
@@ -330,40 +368,32 @@ impl Digit {
 	}
 }
 
+impl Width for Digit {
+	#[inline]
+	fn width(&self) -> BitWidth {
+		BitWidth::w64()
+	}
+}
+
+impl Width for DoubleDigit {
+	#[inline]
+	fn width(&self) -> BitWidth {
+		BitWidth::w128()
+	}
+}
+
 //  ===========================================================================
 ///  Bitwise access
 /// ===========================================================================
 impl Digit {
-	/// Returns `Ok` if the given `BitPos` is valid to access bits in a `Digit`;
-	/// returns an appropriate `Err` otherwise.
-	#[inline]
-	fn verify_bit_access<P>(pos: P) -> Result<()>
-		where P: Into<BitPos>
-	{
-		let pos = pos.into();
-		let width = BitWidth::from(BITS);
-		if !width.is_valid_pos(pos) {
-			return Err(Error::invalid_bit_access(pos, width))
-		}
-		Ok(())
-	}
-
-	/// Asserts that the given `BitPos` is valid to access bits in a `Digit`.
-	#[inline]
-	fn assert_bit_access<P>(pos: P)
-		where P: Into<BitPos>
-	{
-		Self::verify_bit_access(pos).unwrap()
-	}
-
 	/// Returns `true` if the `n`th bit is set to `1`, else returns `false`.
 	/// 
 	/// # Errors
 	/// 
 	/// If the given `n` is greater than the digit size.
 	#[inline]
-	pub fn get(&self, n: usize) -> Result<Bit> {
-		Self::verify_bit_access(n)?;
+	pub fn get(self, n: usize) -> Result<Bit> {
+		checks::verify_bit_access(&self, n)?;
 		Ok(Bit::from(((self.repr() >> n) & 0x01) == 1))
 	}
 
@@ -374,7 +404,7 @@ impl Digit {
 	/// If the given `n` is greater than the digit size.
 	#[inline]
 	pub fn set(&mut self, n: usize) -> Result<()> {
-		Self::verify_bit_access(n)?;
+		checks::verify_bit_access(self, n)?;
 		Ok(self.0 |= 0x01 << n)
 	}
 
@@ -385,7 +415,7 @@ impl Digit {
 	/// If the given `n` is greater than the digit size.
 	#[inline]
 	pub fn unset(&mut self, n: usize) -> Result<()> {
-		Self::verify_bit_access(n)?;
+		checks::verify_bit_access(self, n)?;
 		Ok(self.0 &= !(0x01 << n))
 	}
 
@@ -396,7 +426,7 @@ impl Digit {
 	/// If the given `n` is greater than the digit size.
 	#[inline]
 	pub fn flip(&mut self, n: usize) -> Result<()> {
-		Self::verify_bit_access(n)?;
+		checks::verify_bit_access(self, n)?;
 		Ok(self.0 ^= 0x01 << n)
 	}
 
@@ -425,7 +455,7 @@ impl Digit {
 	/// If the given `n` is greater than the digit size.
 	#[inline]
 	pub fn set_first_n(&mut self, n: usize) -> Result<()> {
-		Self::verify_bit_access(n)?;
+		checks::verify_bit_access(self, n)?;
 		Ok(self.0 |= !(REPR_ONES >> n))
 	}
 
@@ -436,7 +466,7 @@ impl Digit {
 	/// If the given `n` is greater than the digit size.
 	#[inline]
 	pub fn unset_first_n(&mut self, n: usize) -> Result<()> {
-		Self::verify_bit_access(n)?;
+		checks::verify_bit_access(self, n)?;
 		Ok(self.0 &= REPR_ONES >> (self::BITS - n))
 	}
 
@@ -447,7 +477,7 @@ impl Digit {
 	/// If the given `n` is greater than the digit size.
 	#[inline]
 	pub fn retain_last_n(&mut self, n: usize) -> Result<()> {
-		Self::verify_bit_access(n)?;
+		checks::verify_bit_access(self, n)?;
 		Ok(self.0 &= !(REPR_ONES << n))
 	}
 }
