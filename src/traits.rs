@@ -1,54 +1,9 @@
-use errors::{Error, Result};
+use errors::{Result};
 use bitwidth::{BitWidth};
 use digit::{Bit};
-use digit;
 
 pub(crate) trait Width {
 	fn width(&self) -> BitWidth;
-}
-
-pub(crate) trait WidthAssertions: Width {
-	fn verify_bit_access(&self, n: usize) -> Result<()>;
-	fn assert_bit_access(&self, n: usize);
-
-	fn verify_common_bitwidth<W>(&self, other: &W) -> Result<()>
-		where W: Width;
-	fn assert_common_bitwidth<W>(&self, other: &W)
-		where W: Width;
-}
-
-impl<T> WidthAssertions for T where T: Width {
-	#[inline]
-	fn verify_bit_access(&self, n: usize) -> Result<()> {
-		if n < self.width().to_usize() {
-			Ok(())
-		} else {
-			Error::invalid_bit_access(n, self.width().to_usize()).into()
-		}
-	}
-
-	#[inline]
-	fn assert_bit_access(&self, n: usize) {
-		Self::verify_bit_access(self, n).unwrap()
-	}
-
-	#[inline]
-	fn verify_common_bitwidth<W>(&self, other: &W) -> Result<()>
-		where W: Width
-	{
-		if self.width() == other.width() {
-			Ok(())
-		} else {
-			Error::unmatching_bitwidths(self.width().to_usize(), digit::BITS + 1).into()
-		}
-	}
-
-	#[inline]
-	fn assert_common_bitwidth<W>(&self, other: &W)
-		where W: Width
-	{
-		Self::verify_common_bitwidth(self, other).unwrap()
-	}
 }
 
 pub(crate) trait APIntImpl<I>
