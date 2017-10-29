@@ -17,6 +17,7 @@ mod large_apint;
 mod apint;
 mod digit_seq;
 mod checks;
+mod algorithm;
 
 pub use apint::APInt;
 pub use errors::{Result, Error, ErrorKind};
