@@ -513,6 +513,13 @@ mod tests {
 		}
 
 		#[test]
+		fn width() {
+			for &val in TEST_VALUES {
+				assert_eq!(DoubleDigit(val).width(), BitWidth::w128());
+			}
+		}
+
+		#[test]
 		fn repr() {
 			fn assert_for(val: DoubleDigitRepr) {
 				assert_eq!(DoubleDigit(val).repr(), val)
@@ -609,6 +616,70 @@ mod tests {
 
 	mod digit {
 		use super::*;
+
+		use std::usize;
+
+		static VALID_TEST_POS_VALUES: &[usize] = &[
+			0, 1, 2, 3, 10, 32, 42, 48, 63
+		];
+
+		static INVALID_TEST_POS_VALUES: &[usize] = &[
+			64, 65, 100, 1337, usize::MAX
+		];
+
+		/// Returns a digit that has every even bit set, starting at index 0.
+		/// 
+		/// E.g.: `0x....010101`
+		fn even_digit() -> Digit {
+			Digit(0x5555_5555_5555_5555)
+		}
+
+		/// Returns a digit that has every odd bit set, starting at index 0.
+		/// 
+		/// E.g.: `0x....101010`
+		fn odd_digit() -> Digit {
+			Digit(0xAAAA_AAAA_AAAA_AAAA)
+		}
+
+		#[test]
+		fn width() {
+			assert_eq!(digit::ONES.width(), BitWidth::w64());
+			assert_eq!(digit::ZERO.width(), BitWidth::w64());
+			assert_eq!(even_digit().width(), BitWidth::w64());
+			assert_eq!(odd_digit().width(), BitWidth::w64());
+		}
+
+		#[test]
+		fn get_ok() {
+			for &pos in VALID_TEST_POS_VALUES {
+				assert_eq!(digit::ONES.get(pos), Ok(Bit::Set));
+				assert_eq!(digit::ZERO.get(pos), Ok(Bit::Unset));
+				assert_eq!(even_digit().get(pos), Ok(if pos % 2 == 0 { Bit::Set } else { Bit::Unset }));
+				assert_eq!(odd_digit().get(pos), Ok(if pos % 2 == 1 { Bit::Set } else { Bit::Unset }));
+			}
+		}
+
+		#[test]
+		fn get_fail() {
+			for &pos in INVALID_TEST_POS_VALUES {
+				let expected_err = Err(Error::invalid_bit_access(pos, BitWidth::w64()));
+				assert_eq!(digit::ONES.get(pos), expected_err);
+				assert_eq!(digit::ZERO.get(pos), expected_err);
+				assert_eq!(digit::even_digit().get(pos), expected_err);
+				assert_eq!(digit::odd_digit().get(pos), expected_err);
+			}
+		}
+
+		// pub fn get(self, n: usize) -> Result<Bit> {
+		// pub fn set(&mut self, n: usize) -> Result<()> {
+		// pub fn unset(&mut self, n: usize) -> Result<()> {
+		// pub fn flip(&mut self, n: usize) -> Result<()> {
+		// pub fn set_all(&mut self) {
+		// pub fn unset_all(&mut self) {
+		// pub fn flip_all(&mut self) {
+		// pub fn set_first_n(&mut self, n: usize) -> Result<()> {
+		// pub fn unset_first_n(&mut self, n: usize) -> Result<()> {
+		// pub fn retain_last_n(&mut self, n: usize) -> Result<()> {
 
 		#[test]
 		fn retain_last_n() {
