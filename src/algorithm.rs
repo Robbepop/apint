@@ -97,7 +97,7 @@ fn wide_div(hi: Digit, lo: Digit, divisor: Digit) -> (Digit, Digit) {
 /// Returns the remainder.
 /// 
 /// **TODO**: Find out what this exactly does and why it exits.
-fn div_rem_digits_by_digit_impl<'a, D>(seq: D, divisor: Digit) -> Digit
+fn div_rem_digits_by_digit<'a, D>(seq: D, divisor: Digit) -> Digit
 	where D: AsDigitSeqMut<'a>,
 	      D::SeqMut: DoubleEndedIterator
 {
@@ -121,7 +121,7 @@ fn div_rem_digits_by_digit_impl<'a, D>(seq: D, divisor: Digit) -> Digit
 /// # Panics
 /// 
 /// - If `lhs` and `rhs` do not have a common bit-width.
-fn add_assign_digits_impl<'l, DL, DR>(lhs: DL, rhs: DR) -> Digit
+fn add_assign_digits<'l, DL, DR>(lhs: DL, rhs: DR) -> Digit
 	where DL: AsDigitSeqMut<'l> + Width,
 	      DR: AsDigitSeq + Width
 {
@@ -135,4 +135,44 @@ fn add_assign_digits_impl<'l, DL, DR>(lhs: DL, rhs: DR) -> Digit
 		*l = dac.digit;
 	}
 	dac.carry
+}
+
+/// Sub-assigns `rhs` from `lhs`: `lhs -= rhs` where `lhs` and `rhs` are
+/// digit sequences with an associated bit-width.
+/// 
+/// Returns the borrow bit of the subtraction.
+/// 
+/// This is the implementation that can be reused by concrete `APInt` types.
+/// 
+/// # Panics
+/// 
+/// - If `lhs` and `rhs` do not have a common bit-width.
+fn sub_assign_digits<'l, DL, DR>(lhs: DL, rhs: DR) -> Digit
+	where DL: AsDigitSeqMut<'l> + Width,
+	      DR: AsDigitSeq + Width
+{
+	checks::assert_common_bitwidth(&lhs, &rhs);
+
+	unimplemented!()
+
+	// let mut borrow = 0;
+
+	// let len = cmp::min(a.len(), b.len());
+	// let (a_lo, a_hi) = a.split_at_mut(len);
+	// let (b_lo, b_hi) = b.split_at(len);
+
+	// for (a, b) in a_lo.iter_mut().zip(b_lo) {
+	//     *a = sbb(*a, *b, &mut borrow);
+	// }
+
+	// if borrow != 0 {
+	//     for a in a_hi {
+	//         *a = sbb(*a, 0, &mut borrow);
+	//         if borrow == 0 { break }
+	//     }
+	// }
+
+	// // note: we're _required_ to fail on underflow
+	// assert!(borrow == 0 && b_hi.iter().all(|x| *x == 0),
+	//         "Cannot subtract b from a because b is larger than a.");
 }
