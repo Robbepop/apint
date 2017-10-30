@@ -199,6 +199,7 @@ impl Digit {
 		self.0
 	}
 
+	/// Returns the `DoubleDigit` representation of this `Digit`.
 	#[inline]
 	pub(crate) fn dd(self) -> DoubleDigit {
 		DoubleDigit(self.repr() as DoubleDigitRepr)
@@ -627,6 +628,17 @@ mod tests {
 			64, 65, 100, 1337, usize::MAX
 		];
 
+		static TEST_DIGIT_REPRS: &[DigitRepr] = &[
+			digit::REPR_ZERO,
+			digit::REPR_ONE,
+			digit::REPR_ONES,
+			0x5555_5555_5555_5555,
+			0xAAAA_AAAA_AAAA_AAAA,
+			0xFFFF_FFFF_0000_0000,
+			0x0000_FFFF_FFFF_0000,
+			0x0000_0000_FFFF_FFFF
+		];
+
 		/// Returns a digit that has every even bit set, starting at index 0.
 		/// 
 		/// E.g.: `0x....010101`
@@ -639,6 +651,20 @@ mod tests {
 		/// E.g.: `0x....101010`
 		fn odd_digit() -> Digit {
 			Digit(0xAAAA_AAAA_AAAA_AAAA)
+		}
+
+		#[test]
+		fn repr() {
+			for &val in TEST_DIGIT_REPRS {
+				assert_eq!(Digit(val).repr(), val);
+			}
+		}
+
+		#[test]
+		fn dd() {
+			for &val in TEST_DIGIT_REPRS {
+				assert_eq!(Digit(val).dd(), DoubleDigit(val as DoubleDigitRepr));
+			}
 		}
 
 		#[test]
@@ -670,7 +696,6 @@ mod tests {
 			}
 		}
 
-		// pub fn get(self, n: usize) -> Result<Bit> {
 		// pub fn set(&mut self, n: usize) -> Result<()> {
 		// pub fn unset(&mut self, n: usize) -> Result<()> {
 		// pub fn flip(&mut self, n: usize) -> Result<()> {
