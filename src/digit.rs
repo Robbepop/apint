@@ -696,6 +696,28 @@ mod tests {
 			}
 		}
 
+		#[test]
+		fn set_ok() {
+			for &val in TEST_DIGIT_REPRS {
+				let mut digit = Digit(val);
+				for &pos in VALID_TEST_POS_VALUES {
+					digit.set(pos).unwrap();
+					assert_eq!(digit.get(pos), Ok(Bit::Set));
+				}
+			}
+		}
+
+		#[test]
+		fn set_fail() {
+			for &pos in INVALID_TEST_POS_VALUES {
+				let expected_err = Err(Error::invalid_bit_access(pos, BitWidth::w64()));
+				assert_eq!(digit::ONES.set(pos), expected_err);
+				assert_eq!(digit::ZERO.set(pos), expected_err);
+				assert_eq!(digit::even_digit().set(pos), expected_err);
+				assert_eq!(digit::odd_digit().set(pos), expected_err);
+			}
+		}
+
 		// pub fn set(&mut self, n: usize) -> Result<()> {
 		// pub fn unset(&mut self, n: usize) -> Result<()> {
 		// pub fn flip(&mut self, n: usize) -> Result<()> {
