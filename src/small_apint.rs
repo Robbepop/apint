@@ -142,7 +142,7 @@ impl<T> APIntImpl<SmallAPInt> for T
 
 	#[inline]
 	fn sign_bit(&self) -> Bit {
-		self.get(self.width().to_usize() - 1).unwrap().into()
+		self.get(self.width().to_usize() - 1).unwrap()
 	}
 
 	#[inline]

@@ -180,10 +180,10 @@ impl APInt {
 	pub fn get(&self, n: usize) -> Result<Bit> {
 		match self.model() {
 			Model::Inl(small) => {
-				small.get(n).map(|f| f.into())
+				small.get(n)
 			}
 			Model::Ext(large) => {
-				large.get(n).map(|f| f.into())
+				large.get(n)
 			}
 		}
 	}

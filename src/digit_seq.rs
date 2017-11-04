@@ -21,7 +21,7 @@ impl<'a> Iterator for ContiguousDigitSeq<'a> {
 
 	#[inline]
 	fn next(&mut self) -> Option<Self::Item> {
-		self.digits.next().map(|d| *d)
+		self.digits.next().cloned()
 	}
 }
 
