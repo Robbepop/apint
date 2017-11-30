@@ -89,9 +89,8 @@ impl APInt {
 				     so we can expect `APInt::from_iter` to be successful.")
 	}
 
-	fn from_iter<I, D>(digits: I) -> Result<APInt>
-		where I: IntoIterator<Item=Digit, IntoIter=D>,
-		      D: Iterator<Item=Digit>
+	fn from_iter<I>(digits: I) -> Result<APInt>
+		where I: IntoIterator<Item=Digit>,
 	{
 		let buffer = digits.into_iter().collect::<Vec<_>>();
 		match buffer.len() {
