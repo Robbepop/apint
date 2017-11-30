@@ -17,7 +17,6 @@ impl Drop for APInt {
 	}
 }
 
-
 //  =======================================================================
 ///  Constructors
 /// =======================================================================
@@ -71,6 +70,25 @@ impl APInt {
 		APInt{len: BitWidth::w64(), data: APIntData{inl: Digit(val)}}
 	}
 
+	/// Creates a new `APInt` from a given `i64` value with a bit-width of 64.
+	#[inline]
+	pub fn from_i128(val: i64) -> APInt {
+		APInt::from_u128(val as u128)
+	}
+
+	/// Creates a new `APInt` from a given `i64` value with a bit-width of 64.
+	#[inline]
+	pub fn from_u128(val: u128) -> APInt {
+		let buffer = vec![
+			Digit((val & 0xFFFF_FFFF_FFFF_FFFF) as u64),
+			Digit((val >> digit::BITS) as u64)
+		];
+		assert_eq!(buffer.len(), 2);
+		APInt::from_iter(buffer)
+			.expect("We just asserted that `buffer.len()` is exactly 2 \
+				     so we can expect `APInt::from_iter` to be successful.")
+	}
+
 	fn from_iter<I, D>(digits: I) -> Result<APInt>
 		where I: IntoIterator<Item=Digit, IntoIter=D>,
 		      D: Iterator<Item=Digit>
@@ -100,6 +118,7 @@ impl APInt {
 			}
 		}
 	}
+
 	/// Creates a new `APInt` that represents the repetition of the given digit
 	/// up to the given bitwidth.
 	/// 
@@ -138,6 +157,8 @@ impl APInt {
 	}
 
 	/// Creates a new `APInt` with the given bit-width that has all bits set.
+	/// 
+	/// This is equal to calling `APInt::zero(..)` with the given `width`.
 	pub fn zeros(width: BitWidth) -> APInt {
 		APInt::zero(width)
 	}
