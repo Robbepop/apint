@@ -29,17 +29,19 @@ impl APInt {
 	/// 
 	/// ```no_run
 	/// # use apint::APInt;
-	/// let a = APInt::from_str_radix( 64, "42", 10); // ok
+	/// let a = APInt::from_str_radix( 64, "42", 10);     // ok
 	/// let b = APInt::from_str_radix( 32, "1011011", 2); // ok (dec. = 91)
 	/// let c = APInt::from_str_radix(128, "ffcc00", 16); // ok (dec. = 16763904)
-	/// let c = APInt::from_str_radix(  8, "257", 10); // Error: 257 does not fit within 8 bits!
-	/// let d = APInt::from_str_radix(100, "hello", 16); // Error: "hello" is not a valid APInt representation!
+	/// let c = APInt::from_str_radix(  8, "257", 10);    // Error: 257 does not fit within 8 bits!
+	/// let d = APInt::from_str_radix(100, "hello", 16);  // Error: "hello" is not a valid APInt representation!
 	/// ```
-	pub fn from_str_radix<W, R>(target_width: W, input: &str, radix: R) -> Result<APInt>
+	pub fn from_str_radix<W, R, S>(target_width: W, radix: R, input: S) -> Result<APInt>
 		where W: Into<BitWidth>,
-		      R: Into<Radix>
+		      R: Into<Radix>,
+		      S: AsRef<str>
 	{
 		let radix = radix.into();
+		let input = input.as_ref();
 
 		if input.is_empty() {
 			return Err(Error::invalid_string_repr(input, radix)
