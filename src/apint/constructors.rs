@@ -7,24 +7,15 @@ use digit;
 
 impl Drop for APInt {
 	fn drop(&mut self) {
-		use std::mem;
 		if self.len.storage() == Storage::Ext {
 			let len = self.len_blocks();
 			unsafe{
-				mem::drop(Vec::from_raw_parts(self.data.ext, len, len))
+				drop(Vec::from_raw_parts(self.data.ext, len, len))
 			}
 		}
 	}
 }
 
-/// Used to construct an `APInt` from raw parts while staying type safe.
-#[derive(Debug, Clone, PartialEq, Eq)]
-enum RawData {
-	/// Used in case of an inline, single-digit `APInt`
-	Inl(Digit),
-	/// Used in case of a multi-digit `APInt`
-	Ext(Vec<Digit>)
-}
 
 //  =======================================================================
 ///  Constructors
