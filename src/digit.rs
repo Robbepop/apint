@@ -155,7 +155,7 @@ impl DoubleDigit {
 	/// Returns a `DoubleDigit` from the given hi and lo raw `Digit` parts.
 	#[inline]
 	pub(crate) fn from_hi_lo(hi: Digit, lo: Digit) -> DoubleDigit {
-		DoubleDigit(((hi.repr() as DoubleDigitRepr) << BITS) | (lo.repr() as DoubleDigitRepr))
+		DoubleDigit((DoubleDigitRepr::from(hi.repr()) << BITS) | DoubleDigitRepr::from(lo.repr()))
 	}
 }
 
@@ -202,7 +202,7 @@ impl Digit {
 	/// Returns the `DoubleDigit` representation of this `Digit`.
 	#[inline]
 	pub(crate) fn dd(self) -> DoubleDigit {
-		DoubleDigit(self.repr() as DoubleDigitRepr)
+		DoubleDigit(DoubleDigitRepr::from(self.repr()))
 	}
 }
 

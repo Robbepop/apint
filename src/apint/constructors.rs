@@ -34,43 +34,43 @@ impl APInt {
 	/// Creates a new `APInt` from a given `i8` value with a bit-width of 8.
 	#[inline]
 	pub fn from_i8(val: i8) -> APInt {
-		APInt{len: BitWidth::w8(), data: APIntData{inl: Digit(val as u64)}}
+		APInt::from_u8(val as u8)
 	}
 
 	/// Creates a new `APInt` from a given `i8` value with a bit-width of 8.
 	#[inline]
 	pub fn from_u8(val: u8) -> APInt {
-		APInt{len: BitWidth::w8(), data: APIntData{inl: Digit(val as u64)}}
+		APInt{len: BitWidth::w8(), data: APIntData{inl: Digit(u64::from(val))}}
 	}
 
 	/// Creates a new `APInt` from a given `i16` value with a bit-width of 16.
 	#[inline]
 	pub fn from_i16(val: i16) -> APInt {
-		APInt{len: BitWidth::w16(), data: APIntData{inl: Digit(val as u64)}}
+		APInt::from_u16(val as u16)
 	}
 
 	/// Creates a new `APInt` from a given `i16` value with a bit-width of 16.
 	#[inline]
 	pub fn from_u16(val: u16) -> APInt {
-		APInt{len: BitWidth::w16(), data: APIntData{inl: Digit(val as u64)}}
+		APInt{len: BitWidth::w16(), data: APIntData{inl: Digit(u64::from(val))}}
 	}
 
 	/// Creates a new `APInt` from a given `i32` value with a bit-width of 32.
 	#[inline]
 	pub fn from_i32(val: i32) -> APInt {
-		APInt{len: BitWidth::w32(), data: APIntData{inl: Digit(val as u64)}}
+		APInt::from_u32(val as u32)
 	}
 
 	/// Creates a new `APInt` from a given `i32` value with a bit-width of 32.
 	#[inline]
 	pub fn from_u32(val: u32) -> APInt {
-		APInt{len: BitWidth::w32(), data: APIntData{inl: Digit(val as u64)}}
+		APInt{len: BitWidth::w32(), data: APIntData{inl: Digit(u64::from(val))}}
 	}
 
 	/// Creates a new `APInt` from a given `i64` value with a bit-width of 64.
 	#[inline]
 	pub fn from_i64(val: i64) -> APInt {
-		APInt{len: BitWidth::w64(), data: APIntData{inl: Digit(val as u64)}}
+		APInt::from_u64(val as u64)
 	}
 
 	/// Creates a new `APInt` from a given `i64` value with a bit-width of 64.

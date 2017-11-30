@@ -57,7 +57,7 @@ impl APInt {
 		/// A `target_width` that is greater than or equal to the `BitWidth` returned by this function
 		/// can store any number representation of the given input length and radix.
 		fn safe_bit_width(radix: Radix, n: usize) -> BitWidth {
-			(n * ((radix.to_u32() as f64).log2().ceil() as usize)).into()
+			(n * ((f64::from(radix.to_u32())).log2().ceil() as usize)).into()
 		}
 
 		/// A `target_width` that is less than the `BitWidth` returned by this function
