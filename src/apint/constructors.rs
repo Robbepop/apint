@@ -89,6 +89,21 @@ impl APInt {
 				     so we can expect `APInt::from_iter` to be successful.")
 	}
 
+	/// Creates a new `APInt` from the given iterator over `Digit`s.
+	/// 
+	/// This results in `APInt` instances with bitwidths that are a multiple
+	/// of a `Digit`s bitwidth (e.g. 64 bit).
+	/// 
+	/// Users of this API may truncate, extend or simply resize the resulting
+	/// `APInt` afterwards to obtain the desired bitwidth. This may be very cheap
+	/// depending on the difference between the actual and target bitwidths.
+	/// For example, `move_truncate`ing a `128` bitwidth `APInt` to `100` is
+	/// relatively cheap and won't allocate memory since both `APInt` instances can use
+	/// the same amount of `Digit`s.
+	/// 
+	/// # Errors
+	/// 
+	/// - If the iterator yields no elements.
 	fn from_iter<I>(digits: I) -> Result<APInt>
 		where I: IntoIterator<Item=Digit>,
 	{
