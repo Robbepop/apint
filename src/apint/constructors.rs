@@ -1,6 +1,7 @@
 
 use apint::{APInt, APIntData};
 use bitwidth::{BitWidth};
+use errors::{Error, Result};
 use storage::{Storage};
 use digit::{Digit};
 use digit;
@@ -70,6 +71,35 @@ impl APInt {
 		APInt{len: BitWidth::w64(), data: APIntData{inl: Digit(val)}}
 	}
 
+	fn from_iter<I, D>(digits: I) -> Result<APInt>
+		where I: IntoIterator<Item=Digit, IntoIter=D>,
+		      D: Iterator<Item=Digit>
+	{
+		let buffer = digits.into_iter().collect::<Vec<_>>();
+		match buffer.len() {
+			0 => {
+				Err(Error::expected_non_empty_digits())
+			}
+			1 => {
+				let first_and_only = *buffer
+					.first()
+					.expect("We have already asserted that `digits.len()` must be at exactly `1`.");
+				Ok(APInt{
+					len: BitWidth::w64(),
+					data: APIntData{inl: first_and_only}
+				})
+			}
+			n => {
+				use std::mem;
+				let bitwidth = BitWidth::new(n * digit::BITS)
+					.expect("We have already asserted that the number of items the given Iterator \
+						     iterates over is greater than `1` and thus non-zero and thus a valid `BitWidth`.");
+				let ptr_buffer = buffer.as_ptr() as *mut Digit;
+				mem::forget(buffer);
+				Ok(APInt{len: bitwidth, data: APIntData{ext: ptr_buffer}})
+			}
+		}
+	}
 	/// Creates a new `APInt` that represents the repetition of the given digit
 	/// up to the given bitwidth.
 	/// 
