@@ -50,7 +50,10 @@ pub enum ErrorKind {
 		target: BitWidth,
 		/// The current actual bit width.
 		current: BitWidth
-	}
+	},
+
+	/// Returned on constructing an `APInt` from an empty iterator of `Digit`s.
+	ExpectedNonEmptyDigits,
 }
 
 /// Represents an error that may occure upon using the `APInt` library.
@@ -186,6 +189,14 @@ impl Error {
 		Error{
 			kind: ErrorKind::InvalidBitAccess{pos, width},
 			message: format!("Encountered invalid bit access at position {:?} with a total bit-width of {:?}.", pos, width),
+			annotation: None
+		}
+	}
+
+	pub(crate) fn expected_non_empty_digits() -> Error {
+		Error{
+			kind: ErrorKind::ExpectedNonEmptyDigits,
+			message: "Encountered an empty iterator upon construction of an `APInt` from a digit iterator.".to_owned(),
 			annotation: None
 		}
 	}
