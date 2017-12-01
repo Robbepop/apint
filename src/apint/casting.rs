@@ -13,10 +13,10 @@ impl Clone for APInt {
 				APInt{len: self.len, data: APIntData{inl: unsafe{self.data.inl}}}
 			}
 			Storage::Ext => {
-				let req_blocks = self.len_blocks();
-				let mut buffer = Vec::with_capacity(req_blocks);
+				let req_digits = self.len_digits();
+				let mut buffer = Vec::with_capacity(req_digits);
 				buffer.extend_from_slice(self.as_digit_slice());
-				debug_assert_eq!(buffer.capacity(), req_blocks);
+				debug_assert_eq!(buffer.capacity(), req_digits);
 				let dst = buffer.as_mut_ptr();
 				::std::mem::forget(buffer);
 				APInt{len: self.len, data: APIntData{ext: dst}}
@@ -138,7 +138,7 @@ impl APInt {
 			}),
 			(Storage::Ext, Storage::Ext) => {
 				let req_blocks     = target_bitwidth.required_blocks();
-				let present_blocks = self.len_blocks();
+				let present_blocks = self.len_digits();
 				assert!(present_blocks <= req_blocks);
 				let mut buffer: Vec<Digit> = Vec::with_capacity(req_blocks);
 				buffer.extend_from_slice(&self.as_digit_slice()[0..present_blocks]);

@@ -9,7 +9,7 @@ use digit;
 impl Drop for APInt {
 	fn drop(&mut self) {
 		if self.len.storage() == Storage::Ext {
-			let len = self.len_blocks();
+			let len = self.len_digits();
 			unsafe{
 				drop(Vec::from_raw_parts(self.data.ext, len, len))
 			}

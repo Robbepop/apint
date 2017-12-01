@@ -55,14 +55,14 @@ impl APInt {
 		self.len.to_usize()
 	}
 
-	/// Returns the number of bit-blocks used internally for value representation.
+	/// Returns the number of digits used internally for value representation.
 	/// 
 	/// # Note
 	/// 
 	/// - This method should not be part of the public interface.
 	/// - The returned values are valid for bit-block sizes of 32 bit.
 	#[inline]
-	pub(in apint) fn len_blocks(&self) -> usize {
+	pub(in apint) fn len_digits(&self) -> usize {
 		self.len.required_blocks()
 	}
 
@@ -129,7 +129,7 @@ impl APInt {
 				slice::from_raw_parts(&self.data.inl, 1)
 			},
 			Storage::Ext => unsafe {
-				slice::from_raw_parts(self.data.ext, self.len_blocks())
+				slice::from_raw_parts(self.data.ext, self.len_digits())
 			}
 		}
 	}
@@ -148,7 +148,7 @@ impl APInt {
 				slice::from_raw_parts_mut(&mut self.data.inl, 1)
 			},
 			Storage::Ext => unsafe {
-				slice::from_raw_parts_mut(self.data.ext, self.len_blocks())
+				slice::from_raw_parts_mut(self.data.ext, self.len_digits())
 			}
 		}
 	}
