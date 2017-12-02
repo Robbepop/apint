@@ -19,7 +19,9 @@ pub enum ErrorKind {
 		/// The string storing the invalid representation of the int for the given radix.
 		input: String,
 		/// The radix that was used.
-		radix: Radix
+		radix: Radix,
+		/// An optional index and character when encountering an invalid character.
+		pos_char: Option<(usize, char)>
 	},
 
 	/// Returned on trying to access an invalid bit position.
@@ -123,8 +125,20 @@ impl Error {
 	{
 		let input = input.into();
 		Error{
-			kind: ErrorKind::InvalidStringRepr{input, radix},
+			kind: ErrorKind::InvalidStringRepr{input, radix, pos_char: None},
 			message: format!("Encountered an invalid string representation for the given radix (= {:?}).", radix),
+			annotation: None
+		}
+	}
+
+	pub(crate) fn invalid_char_in_string_repr<S>(input: S, radix: Radix, pos: usize, ch: char) -> Error
+		where S: Into<String>
+	{
+		let input = input.into();
+		Error{
+			kind: ErrorKind::InvalidStringRepr{input, radix, pos_char: None},
+			message: format!("Encountered an invalid character (= '{:?}') at position {:?} within the given string \
+				              representation for the given radix (= {:?}).", ch, pos, radix),
 			annotation: None
 		}
 	}
