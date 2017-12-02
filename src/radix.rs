@@ -48,6 +48,13 @@ impl Radix {
 		byte < self.to_u8()
 	}
 
+	/// Returns `true` if the number represenatation of this `Radix` is a power of two
+	/// and `false` otherwise.
+	#[inline]
+	pub(crate) fn is_power_of_two(self) -> bool {
+		self.to_u8().is_power_of_two()
+	}
+
 }
 
 impl From<u8> for Radix {
