@@ -55,6 +55,28 @@ impl Radix {
 		self.to_u8().is_power_of_two()
 	}
 
+	/// Returns the number of bits required to store a single digit with this `Radix`.
+	/// 
+	/// This is equivalent to the logarithm of base 2 for this `Radix`.
+	/// 
+	/// # Example
+	/// 
+	/// For binary `Radix` (`= 2`) there are only digits `0` and `1` which can be
+	/// stored in `1` bit each.
+	/// For a hexdec `Radix` (`= 16`) digits are `0`...`9`,`A`...`F` and a digit 
+	/// requires `4` bits to be stored.
+	/// 
+	/// Note: This is only valid for `Radix` instances that represent a radix
+	///       that are a power of two.
+	#[inline]
+	pub(crate) fn bits_per_digit(self) -> usize {
+		assert!(self.is_power_of_two());
+		fn find_last_bit_set(val: u8) -> usize {
+			::std::mem::size_of::<u8>() * 8 - val.leading_zeros() as usize
+		}
+		find_last_bit_set(self.to_u8()) - 1
+	}
+
 }
 
 impl From<u8> for Radix {
