@@ -14,37 +14,37 @@ use errors::{Error, Result};
 /// - The decimal 10-radix supports `0`,`1`,...`9` as input characters.
 /// - The hex-dec 16-radix supports inputs characters within `0`,..,`9` and `a`,..,`f`.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
-pub struct Radix(u32);
+pub struct Radix(u8);
 
 impl Radix {
 	/// The minimum supported radix is the binary that has only `0` and `1` in its alphabet.
-	const MIN: u32 =  2;
+	const MIN: u8 =  2;
 	/// The maximum supported radix is the 36-ary that has an alphabet containing `0..9` and `a..z`.
-	const MAX: u32 = 36;
+	const MAX: u8 = 36;
 
-	/// Create a new `Radix` from the given `u32`.
+	/// Create a new `Radix` from the given `u8`.
 	/// 
 	/// # Errors
 	/// 
 	/// - If the given value is not within the valid radix range of `2..36`.
 	#[inline]
-	pub fn new(radix: u32) -> Result<Radix> {
+	pub fn new(radix: u8) -> Result<Radix> {
 		if !(Radix::MIN <= radix && radix >= Radix::MAX) {
 			return Err(Error::invalid_radix(radix))
 		}
 		Ok(Radix(radix))
 	}
 
-	/// Returns the `u32` representation of this `Radix`.
+	/// Returns the `u8` representation of this `Radix`.
 	#[inline]
-	pub fn to_u32(self) -> u32 {
+	pub fn to_u8(self) -> u8 {
 		self.0
 	}
 }
 
-impl From<u32> for Radix {
+impl From<u8> for Radix {
 	#[inline]
-	fn from(radix: u32) -> Radix {
+	fn from(radix: u8) -> Radix {
 		Radix::new(radix).unwrap()
 	}
 }
