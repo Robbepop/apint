@@ -72,7 +72,7 @@ impl APInt {
 
 	/// Creates a new `APInt` from a given `i64` value with a bit-width of 64.
 	#[inline]
-	pub fn from_i128(val: i64) -> APInt {
+	pub fn from_i128(val: i128) -> APInt {
 		APInt::from_u128(val as u128)
 	}
 
@@ -104,7 +104,7 @@ impl APInt {
 	/// # Errors
 	/// 
 	/// - If the iterator yields no elements.
-	fn from_iter<I>(digits: I) -> Result<APInt>
+	pub(crate) fn from_iter<I>(digits: I) -> Result<APInt>
 		where I: IntoIterator<Item=Digit>,
 	{
 		let buffer = digits.into_iter().collect::<Vec<_>>();
@@ -181,5 +181,65 @@ impl APInt {
 	pub fn ones(width: BitWidth) -> APInt
 	{
 		APInt::repeat_digit(width, Digit::ones())
+	}
+}
+
+impl From<u8> for APInt {
+	fn from(val: u8) -> APInt {
+		APInt::from_u8(val)
+	}
+}
+
+impl From<i8> for APInt {
+	fn from(val: i8) -> APInt {
+		APInt::from_i8(val)
+	}
+}
+
+impl From<u16> for APInt {
+	fn from(val: u16) -> APInt {
+		APInt::from_u16(val)
+	}
+}
+
+impl From<i16> for APInt {
+	fn from(val: i16) -> APInt {
+		APInt::from_i16(val)
+	}
+}
+
+impl From<u32> for APInt {
+	fn from(val: u32) -> APInt {
+		APInt::from_u32(val)
+	}
+}
+
+impl From<i32> for APInt {
+	fn from(val: i32) -> APInt {
+		APInt::from_i32(val)
+	}
+}
+
+impl From<u64> for APInt {
+	fn from(val: u64) -> APInt {
+		APInt::from_u64(val)
+	}
+}
+
+impl From<i64> for APInt {
+	fn from(val: i64) -> APInt {
+		APInt::from_i64(val)
+	}
+}
+
+impl From<u128> for APInt {
+	fn from(val: u128) -> APInt {
+		APInt::from_u128(val)
+	}
+}
+
+impl From<i128> for APInt {
+	fn from(val: i128) -> APInt {
+		APInt::from_i128(val)
 	}
 }
