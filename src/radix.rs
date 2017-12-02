@@ -40,6 +40,14 @@ impl Radix {
 	pub fn to_u8(self) -> u8 {
 		self.0
 	}
+
+	/// Returns `true` if the given byte is a valid ascii representation for this `Radix`
+	/// and `false` otherwise.
+	#[inline]
+	pub(crate) fn is_valid_byte(self, byte: u8) -> bool {
+		byte < self.to_u8()
+	}
+
 }
 
 impl From<u8> for Radix {
