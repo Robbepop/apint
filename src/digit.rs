@@ -38,9 +38,9 @@ const BASE_REPR: DoubleDigitRepr = 1 << BITS;
 
 pub(crate) const BASE: DoubleDigit = DoubleDigit(BASE_REPR);
 
-const REPR_ONE : DigitRepr = 0x0000_0000_0000_0001;
-const REPR_ZERO: DigitRepr = 0x0000_0000_0000_0000;
-const REPR_ONES: DigitRepr = 0xFFFF_FFFF_FFFF_FFFF;
+const REPR_ONE : DigitRepr = 0x1;
+const REPR_ZERO: DigitRepr = 0x0;
+const REPR_ONES: DigitRepr = !REPR_ZERO;
 
 pub(crate) const ONE : Digit = Digit(REPR_ONE);
 pub(crate) const ZERO: Digit = Digit(REPR_ZERO);
