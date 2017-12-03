@@ -1,30 +1,30 @@
-use apint::{APInt};
+use apint::{ApInt};
 use apint::utils::{ZipModelMut};
-use traits::{APIntMutImpl};
+use traits::{ApIntMutImpl};
 use errors::{Result};
 
 //  =======================================================================
 ///  Shift Operations
 /// =======================================================================
-impl APInt {
+impl ApInt {
 
-	/// Creates a new `APInt` that represents the result of this `APInt` left-shifted by the other one.
+	/// Creates a new `ApInt` that represents the result of this `ApInt` left-shifted by the other one.
 	/// 
 	/// # Errors
 	/// 
 	/// - When `self` and `other` have different bit-widths.
-	pub fn checked_shl(&self, other: &APInt) -> Result<APInt> {
+	pub fn checked_shl(&self, other: &ApInt) -> Result<ApInt> {
 		let mut cloned = self.clone();
 		cloned.checked_shl_assign(other)?;
 		Ok(cloned)
 	}
 
-	/// Left-shifts this `APInt` by the amount represented by `other`.
+	/// Left-shifts this `ApInt` by the amount represented by `other`.
 	/// 
 	/// # Errors
 	/// 
 	/// - When `self` and `other` have different bit-widths.
-	pub fn checked_shl_assign(&mut self, other: &APInt) -> Result<()> {
+	pub fn checked_shl_assign(&mut self, other: &ApInt) -> Result<()> {
 		match self.zip_model_mut(other)? {
 			ZipModelMut::Inl(mut left, right) => {
 				left.shl_inplace(&right)
@@ -35,23 +35,23 @@ impl APInt {
 		}
 	}
 
-	/// Creates a new `APInt` that represents the result of this `APInt` logically right-shifted by the other one.
+	/// Creates a new `ApInt` that represents the result of this `ApInt` logically right-shifted by the other one.
 	/// 
 	/// # Errors
 	/// 
 	/// - When `self` and `other` have different bit-widths.
-	pub fn checked_lshr(&self, other: &APInt) -> Result<APInt> {
+	pub fn checked_lshr(&self, other: &ApInt) -> Result<ApInt> {
 		let mut cloned = self.clone();
 		cloned.checked_lshr_assign(other)?;
 		Ok(cloned)
 	}
 
-	/// Logically right-shifts this `APInt` by the amount represented by `other`.
+	/// Logically right-shifts this `ApInt` by the amount represented by `other`.
 	/// 
 	/// # Errors
 	/// 
 	/// - When `self` and `other` have different bit-widths.
-	pub fn checked_lshr_assign(&mut self, other: &APInt) -> Result<()> {
+	pub fn checked_lshr_assign(&mut self, other: &ApInt) -> Result<()> {
 		match self.zip_model_mut(other)? {
 			ZipModelMut::Inl(mut left, right) => {
 				left.lshr_inplace(&right)
@@ -62,23 +62,23 @@ impl APInt {
 		}
 	}
 
-	/// Creates a new `APInt` that represents the result of this `APInt` arithmetically right-shifted by the other one.
+	/// Creates a new `ApInt` that represents the result of this `ApInt` arithmetically right-shifted by the other one.
 	/// 
 	/// # Errors
 	/// 
 	/// - When `self` and `other` have different bit-widths.
-	pub fn checked_ashr(&self, other: &APInt) -> Result<APInt> {
+	pub fn checked_ashr(&self, other: &ApInt) -> Result<ApInt> {
 		let mut cloned = self.clone();
 		cloned.checked_ashr_assign(other)?;
 		Ok(cloned)
 	}
 
-	/// Arithmetically right-shifts this `APInt` by the amount represented by `other`.
+	/// Arithmetically right-shifts this `ApInt` by the amount represented by `other`.
 	/// 
 	/// # Errors
 	/// 
 	/// - When `self` and `other` have different bit-widths.
-	pub fn checked_ashr_assign(&mut self, other: &APInt) -> Result<()> {
+	pub fn checked_ashr_assign(&mut self, other: &ApInt) -> Result<()> {
 		match self.zip_model_mut(other)? {
 			ZipModelMut::Inl(mut left, right) => {
 				left.ashr_inplace(&right)

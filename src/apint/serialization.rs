@@ -1,13 +1,13 @@
 use radix::{Radix};
 use bitwidth::{BitWidth};
-use apint::{APInt};
+use apint::{ApInt};
 use errors::{Error, Result};
 
 //  =======================================================================
 ///  Deserialization
 /// =======================================================================
-impl APInt {
-	/// Parses the given `input` `String` with the given `Radix` and returns an `APInt`
+impl ApInt {
+	/// Parses the given `input` `String` with the given `Radix` and returns an `ApInt`
 	/// with the given `target_width` `BitWidth`.
 	/// 
 	/// **Note:** The given `input` is parsed as big-endian value. This means, the most significant bit (MSB)
@@ -16,26 +16,26 @@ impl APInt {
 	/// The string is assumed to contain no whitespace and contain only values within a subset of the 
 	/// range of `0`..`9` and `a`..`z` depending on the given `radix`.
 	/// 
-	/// The string is assumed to have no sign as `APInt` does not handle signdness.
+	/// The string is assumed to have no sign as `ApInt` does not handle signdness.
 	/// 
 	/// # Errors
 	/// 
 	/// - If `input` is empty.
-	/// - If `input` is not a valid representation for an `APInt` for the given `radix`.
+	/// - If `input` is not a valid representation for an `ApInt` for the given `radix`.
 	/// - If `input` has trailing zero characters (`0`), e.g. `"0042"` instead of `"42"`.
-	/// - If `input` represents an `APInt` value that does not fit into the given `target_bitwidth`.
+	/// - If `input` represents an `ApInt` value that does not fit into the given `target_bitwidth`.
 	/// 
 	/// # Examples
 	/// 
 	/// ```no_run
-	/// # use apint::APInt;
-	/// let a = APInt::from_str_radix( 64, "42", 10);     // ok
-	/// let b = APInt::from_str_radix( 32, "1011011", 2); // ok (dec. = 91)
-	/// let c = APInt::from_str_radix(128, "ffcc00", 16); // ok (dec. = 16763904)
-	/// let c = APInt::from_str_radix(  8, "257", 10);    // Error: 257 does not fit within 8 bits!
-	/// let d = APInt::from_str_radix(100, "hello", 16);  // Error: "hello" is not a valid APInt representation!
+	/// # use apint::ApInt;
+	/// let a = ApInt::from_str_radix( 64, 10, "42");      // ok
+	/// let b = ApInt::from_str_radix( 32,  2, "1011011"); // ok (dec. = 91)
+	/// let c = ApInt::from_str_radix(128, 16, "ffcc00");  // ok (dec. = 16763904)
+	/// let c = ApInt::from_str_radix(  8, 10, "257");     // Error: 257 does not fit within 8 bits!
+	/// let d = ApInt::from_str_radix(100, 16, "hello");   // Error: "hello" is not a valid ApInt representation!
 	/// ```
-	pub fn from_str_radix<W, R, S>(target_width: W, radix: R, input: S) -> Result<APInt>
+	pub fn from_str_radix<W, R, S>(target_width: W, radix: R, input: S) -> Result<ApInt>
 		where W: Into<BitWidth>,
 		      R: Into<Radix>,
 		      S: AsRef<str>
@@ -45,7 +45,7 @@ impl APInt {
 
 		if input.is_empty() {
 			return Err(Error::invalid_string_repr(input, radix)
-				.with_annotation("Cannot parse an empty string into an APInt."))
+				.with_annotation("Cannot parse an empty string into an ApInt."))
 		}
 		if input.starts_with('_') {
 			return Err(Error::invalid_string_repr(input, radix)
@@ -79,7 +79,7 @@ impl APInt {
 		let unsafe_width = unsafe_bit_width(radix, input.len());
 		if target_width < unsafe_width {
 			return Err(Error::invalid_string_repr(input, radix)
-				.with_annotation("The target bit-width does not suffice to represent the given input string as `APInt`."))
+				.with_annotation("The target bit-width does not suffice to represent the given input string as `ApInt`."))
 		}
 
 		// First normalize all characters to plain digit values.
@@ -104,14 +104,14 @@ impl APInt {
 				v.reverse();
 				let bits = radix.bits_per_digit();
 				if digit::BITS % bits == 0 {
-					APInt::from_bitwise_digits(&v, bits)
+					ApInt::from_bitwise_digits(&v, bits)
 				}
 				else {
-					APInt::from_inexact_bitwise_digits(&v, bits)
+					ApInt::from_inexact_bitwise_digits(&v, bits)
 				}
 			}
 			else {
-				APInt::from_radix_digits(&v, radix)
+				ApInt::from_radix_digits(&v, radix)
 			};
 
 		Ok(result)
@@ -123,7 +123,7 @@ impl APInt {
 	// Forked from: https://github.com/rust-num/num/blob/master/bigint/src/biguint.rs#L126
 	// 
 	// TODO: Better document what happens here and why.
-	fn from_bitwise_digits(v: &[u8], bits: usize) -> APInt {
+	fn from_bitwise_digits(v: &[u8], bits: usize) -> ApInt {
 		use digit;
 		use digit::{DigitRepr, Digit};
 
@@ -138,7 +138,7 @@ impl APInt {
 	                	              .fold(0, |acc, &c| (acc << bits) | DigitRepr::from(c)))
 	                .map(Digit);
 
-	    APInt::from_iter(data).unwrap()
+	    ApInt::from_iter(data).unwrap()
 	}
 
 	// Convert from a power of two radix (bits == ilog2(radix)) where bits doesn't evenly divide
@@ -147,7 +147,7 @@ impl APInt {
 	// Forked from: https://github.com/rust-num/num/blob/master/bigint/src/biguint.rs#L143
 	// 
 	// TODO: Better document what happens here and why.
-	fn from_inexact_bitwise_digits(v: &[u8], bits: usize) -> APInt {
+	fn from_inexact_bitwise_digits(v: &[u8], bits: usize) -> ApInt {
 		use digit;
 		use digit::{DigitRepr, Digit};
 
@@ -179,7 +179,7 @@ impl APInt {
 	        data.push(Digit(d));
 	    }
 
-	    APInt::from_iter(data).unwrap()
+	    ApInt::from_iter(data).unwrap()
 	}
 
 	// Read little-endian radix digits.
@@ -188,7 +188,7 @@ impl APInt {
 	// 
 	// TODO: This does not work, yet. Some parts of the algorithm are
 	//       commented-out since the required functionality does not exist, yet.
-	fn from_radix_digits(v: &[u8], radix: Radix) -> APInt {
+	fn from_radix_digits(v: &[u8], radix: Radix) -> ApInt {
 		use digit;
 		use digit::{DigitRepr, Digit};
 
@@ -235,15 +235,15 @@ impl APInt {
 	        // add2(&mut data, &[n]); // TODO: This was commented out.
 	    }
 
-	    APInt::from_iter(data.into_iter().map(Digit)).unwrap()
+	    ApInt::from_iter(data.into_iter().map(Digit)).unwrap()
 	}
 }
 
 //  =======================================================================
 ///  Serialization
 /// =======================================================================
-impl APInt {
-	/// Returns a `String` representation of the binary encoded `APInt` for the given `Radix`.
+impl ApInt {
+	/// Returns a `String` representation of the binary encoded `ApInt` for the given `Radix`.
 	pub fn as_string_with_radix<R>(&self, radix: R) -> String
 		where R: Into<Radix>
 	{

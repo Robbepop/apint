@@ -19,7 +19,7 @@ mod digit_seq;
 mod checks;
 mod algorithm;
 
-pub use apint::APInt;
+pub use apint::ApInt;
 pub use errors::{Result, Error, ErrorKind};
 pub use bitwidth::BitWidth;
 pub use digit::{Bit};

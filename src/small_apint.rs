@@ -4,8 +4,8 @@ use bitwidth::BitWidth;
 use errors::{Result};
 use traits::{
 	Width,
-	APIntImpl,
-	APIntMutImpl,
+	ApIntImpl,
+	ApIntMutImpl,
 };
 use std::ops::{
 	BitAndAssign,
@@ -14,44 +14,44 @@ use std::ops::{
 };
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
-pub(crate) struct SmallAPInt {
+pub(crate) struct SmallApInt {
 	len  : BitWidth,
 	digit: Digit
 }
 
 #[derive(Debug, PartialEq, Eq, Hash)]
-pub(crate) struct SmallAPIntMut<'a> {
+pub(crate) struct SmallApIntMut<'a> {
 	len  : BitWidth,
 	digit: &'a mut Digit
 }
 
-impl SmallAPInt {
+impl SmallApInt {
 	#[inline]
-	pub(crate) fn new<W>(width: W, digit: Digit) -> SmallAPInt
+	pub(crate) fn new<W>(width: W, digit: Digit) -> SmallApInt
 		where W: Into<BitWidth>
 	{
-		SmallAPInt{len: width.into(), digit}
+		SmallApInt{len: width.into(), digit}
 	}
 
 	#[inline]
-	pub(crate) fn one<W>(width: W) -> SmallAPInt
+	pub(crate) fn one<W>(width: W) -> SmallApInt
 		where W: Into<BitWidth>
 	{
-		SmallAPInt::new(width, Digit::one())
+		SmallApInt::new(width, Digit::one())
 	}
 
 	#[inline]
-	pub(crate) fn zero<W>(width: W) -> SmallAPInt
+	pub(crate) fn zero<W>(width: W) -> SmallApInt
 		where W: Into<BitWidth>
 	{
-		SmallAPInt::new(width, Digit::zero())
+		SmallApInt::new(width, Digit::zero())
 	}
 }
 
-impl<'a> SmallAPIntMut<'a> {
+impl<'a> SmallApIntMut<'a> {
 	#[inline]
-	pub(crate) fn new(len: BitWidth, digit: &'a mut Digit) -> SmallAPIntMut {
-		SmallAPIntMut{len, digit}
+	pub(crate) fn new(len: BitWidth, digit: &'a mut Digit) -> SmallApIntMut {
+		SmallApIntMut{len, digit}
 	}
 }
 
@@ -67,63 +67,63 @@ pub(crate) trait DigitMutWrapper {
 
 // ============================================================================
 
-impl Width for SmallAPInt {
+impl Width for SmallApInt {
 	fn width(&self) -> BitWidth { self.len }
 }
 
-impl<'a> Width for &'a SmallAPInt {
+impl<'a> Width for &'a SmallApInt {
 	fn width(&self) -> BitWidth { self.len }
 }
 
-impl<'a> Width for &'a mut SmallAPInt {
+impl<'a> Width for &'a mut SmallApInt {
 	fn width(&self) -> BitWidth { self.len }
 }
 
-impl<'a> Width for SmallAPIntMut<'a> {
+impl<'a> Width for SmallApIntMut<'a> {
 	fn width(&self) -> BitWidth { self.len }
 }
 
-impl<'a> Width for &'a SmallAPIntMut<'a> {
+impl<'a> Width for &'a SmallApIntMut<'a> {
 	fn width(&self) -> BitWidth { self.len }
 }
 
-impl<'a> Width for &'a mut SmallAPIntMut<'a> {
+impl<'a> Width for &'a mut SmallApIntMut<'a> {
 	fn width(&self) -> BitWidth { self.len }
 }
 
 // ============================================================================
 
-impl DigitWrapper for SmallAPInt {
+impl DigitWrapper for SmallApInt {
 	fn digit(&self) -> Digit { self.digit }
 }
 
-impl<'a> DigitWrapper for &'a SmallAPInt {
+impl<'a> DigitWrapper for &'a SmallApInt {
 	fn digit(&self) -> Digit { self.digit }
 }
 
-impl<'a> DigitWrapper for &'a mut SmallAPInt {
+impl<'a> DigitWrapper for &'a mut SmallApInt {
 	fn digit(&self) -> Digit { self.digit }
 }
 
-impl<'a> DigitWrapper for SmallAPIntMut<'a> {
+impl<'a> DigitWrapper for SmallApIntMut<'a> {
 	fn digit(&self) -> Digit { *self.digit }
 }
 
-impl<'a> DigitWrapper for &'a SmallAPIntMut<'a> {
+impl<'a> DigitWrapper for &'a SmallApIntMut<'a> {
 	fn digit(&self) -> Digit { *self.digit }
 }
 
-impl<'a> DigitWrapper for &'a mut SmallAPIntMut<'a> {
+impl<'a> DigitWrapper for &'a mut SmallApIntMut<'a> {
 	fn digit(&self) -> Digit { *self.digit }
 }
 
 // ============================================================================
 
-impl<'a> DigitMutWrapper for SmallAPIntMut<'a> {
+impl<'a> DigitMutWrapper for SmallApIntMut<'a> {
 	fn digit_mut(&mut self) -> &mut Digit { self.digit }
 }
 
-impl<'a> DigitMutWrapper for &'a mut SmallAPIntMut<'a> {
+impl<'a> DigitMutWrapper for &'a mut SmallApIntMut<'a> {
 	fn digit_mut(&mut self) -> &mut Digit { self.digit }
 }
 
@@ -131,7 +131,7 @@ impl<'a> DigitMutWrapper for &'a mut SmallAPIntMut<'a> {
 
 use checks;
 
-impl<T> APIntImpl<SmallAPInt> for T
+impl<T> ApIntImpl<SmallApInt> for T
 	where T: Width + DigitWrapper
 {
 	#[inline]
@@ -146,13 +146,13 @@ impl<T> APIntImpl<SmallAPInt> for T
 	}
 
 	#[inline]
-	fn ult(&self, other: &SmallAPInt) -> Result<bool> {
+	fn ult(&self, other: &SmallApInt) -> Result<bool> {
 		checks::verify_common_bitwidth(self, &other)?;
 		Ok(self.digit().repr() < other.digit().repr())
 	}
 
 	#[inline]
-	fn slt(&self, other: &SmallAPInt) -> Result<bool> {
+	fn slt(&self, other: &SmallApInt) -> Result<bool> {
 		checks::verify_common_bitwidth(self, &other)?;
 		let infate_abs = digit::BITS - self.width().to_usize();
 		let left       = ( self.digit().repr() << infate_abs) as i64;
@@ -161,7 +161,7 @@ impl<T> APIntImpl<SmallAPInt> for T
 	}
 }
 
-impl<T> APIntMutImpl<SmallAPInt> for T
+impl<T> ApIntMutImpl<SmallApInt> for T
 	where T: Width + DigitMutWrapper
 {
 
@@ -211,17 +211,17 @@ impl<T> APIntMutImpl<SmallAPInt> for T
 	}
 
 	#[inline]
-	fn bitand_inplace(&mut self, other: &SmallAPInt) -> Result<()> {
+	fn bitand_inplace(&mut self, other: &SmallApInt) -> Result<()> {
 		Ok(self.digit_mut().bitand_assign(other.digit()))
 	}
 
 	#[inline]
-	fn bitor_inplace(&mut self, other: &SmallAPInt) -> Result<()> {
+	fn bitor_inplace(&mut self, other: &SmallApInt) -> Result<()> {
 		Ok(self.digit_mut().bitor_assign(other.digit()))
 	}
 
 	#[inline]
-	fn bitxor_inplace(&mut self, other: &SmallAPInt) -> Result<()> {
+	fn bitxor_inplace(&mut self, other: &SmallApInt) -> Result<()> {
 		Ok(self.digit_mut().bitxor_assign(other.digit()))
 	}
 
@@ -231,44 +231,44 @@ impl<T> APIntMutImpl<SmallAPInt> for T
 		unimplemented!()
 	}
 
-	fn add_inplace(&mut self, other: &SmallAPInt) -> Result<()> {
+	fn add_inplace(&mut self, other: &SmallApInt) -> Result<()> {
 		unimplemented!()
 	}
 
-	fn sub_inplace(&mut self, other: &SmallAPInt) -> Result<()> {
+	fn sub_inplace(&mut self, other: &SmallApInt) -> Result<()> {
 		unimplemented!()
 	}
 
-	fn mul_inplace(&mut self, other: &SmallAPInt) -> Result<()> {
+	fn mul_inplace(&mut self, other: &SmallApInt) -> Result<()> {
 		unimplemented!()
 	}
 
-	fn sdiv_inplace(&mut self, other: &SmallAPInt) -> Result<()> {
+	fn sdiv_inplace(&mut self, other: &SmallApInt) -> Result<()> {
 		unimplemented!()
 	}
 
-	fn udiv_inplace(&mut self, other: &SmallAPInt) -> Result<()> {
+	fn udiv_inplace(&mut self, other: &SmallApInt) -> Result<()> {
 		unimplemented!()
 	}
 
-	fn srem_inplace(&mut self, other: &SmallAPInt) -> Result<()> {
+	fn srem_inplace(&mut self, other: &SmallApInt) -> Result<()> {
 		unimplemented!()
 	}
 
-	fn urem_inplace(&mut self, other: &SmallAPInt) -> Result<()> {
+	fn urem_inplace(&mut self, other: &SmallApInt) -> Result<()> {
 		unimplemented!()
 	}
 
 
-	fn shl_inplace(&mut self, other: &SmallAPInt) -> Result<()> {
+	fn shl_inplace(&mut self, other: &SmallApInt) -> Result<()> {
 		unimplemented!()
 	}
 
-	fn lshr_inplace(&mut self, other: &SmallAPInt) -> Result<()> {
+	fn lshr_inplace(&mut self, other: &SmallApInt) -> Result<()> {
 		unimplemented!()
 	}
 
-	fn ashr_inplace(&mut self, other: &SmallAPInt) -> Result<()> {
+	fn ashr_inplace(&mut self, other: &SmallApInt) -> Result<()> {
 		unimplemented!()
 	}
 

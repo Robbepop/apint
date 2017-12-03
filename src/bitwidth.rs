@@ -3,7 +3,7 @@ use storage::Storage;
 use bitpos::BitPos;
 use errors::{Result, Error};
 
-/// The `BitWidth` represents the length of an `APInt`.
+/// The `BitWidth` represents the length of an `ApInt`.
 /// 
 /// Its invariant restricts it to always be a positive, non-zero value.
 /// Code that built's on top of `BitWidth` may and should use this invariant.
@@ -95,7 +95,7 @@ impl BitWidth {
 
 	// TODO: Move this method out of this context. (Fits better as constructor of Storage.)
 	// ------------------------------------------------------------------------------------
-	/// Returns a storage specifier that tells the caller if `APInt`'s 
+	/// Returns a storage specifier that tells the caller if `ApInt`'s 
 	/// associated with this bitwidth require an external memory (`Ext`) to store 
 	/// their digits or may use inplace memory (`Inl`).
 	#[inline]

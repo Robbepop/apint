@@ -116,7 +116,7 @@ fn div_rem_digits_by_digit<'a, D>(seq: D, divisor: Digit) -> Digit
 /// 
 /// Returns the carry bit of the addition.
 /// 
-/// This is a raw implementation that can be reused by concrete `APInt` types.
+/// This is a raw implementation that can be reused by concrete `ApInt` types.
 /// 
 /// # Panics
 /// 
@@ -142,7 +142,7 @@ fn add_assign_digits<'l, DL, DR>(lhs: DL, rhs: DR) -> Digit
 /// 
 /// Returns the borrow bit of the subtraction.
 /// 
-/// This is the implementation that can be reused by concrete `APInt` types.
+/// This is the implementation that can be reused by concrete `ApInt` types.
 /// 
 /// # Panics
 /// 

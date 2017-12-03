@@ -22,7 +22,7 @@ impl<W> From<W> for Storage
 impl Storage {
 	/// Returns `true` if the given `BitWidth` is small enough to be stored inline.
 	/// 
-	/// Note: Inline storage in the context of `APInt` means that it is space-optimized
+	/// Note: Inline storage in the context of `ApInt` means that it is space-optimized
 	///       similar to the well-known small-string optimization.
 	#[inline]
 	fn is_inline(width: BitWidth) -> bool {
@@ -31,7 +31,7 @@ impl Storage {
 
 	/// Returns `true` if the given `BitWidth` is large enough to require it to be stored externally.
 	/// 
-	/// Note: External storage in the context of `APInt` means that it is **not** space-optimized
+	/// Note: External storage in the context of `ApInt` means that it is **not** space-optimized
 	///       and thus stored on the heap with indirect access via pointer-to-data.
 	#[inline]
 	fn is_extern(width: BitWidth) -> bool {

@@ -2,10 +2,10 @@
 use digit::{Digit, DigitRepr};
 use errors::{Error, Result};
 
-/// A radix for parsing strings as `APInt`s.
+/// A radix for parsing strings as `ApInt`s.
 /// 
 /// A radix represents the range of valid input characters that represent values
-/// of the to-be-parsed `APInt`.
+/// of the to-be-parsed `ApInt`.
 /// 
 /// Supported radices range from binary radix (`2`) up
 /// to full case-insensitive alphabet and numerals (`36`).

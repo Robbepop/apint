@@ -1,6 +1,6 @@
 use errors::{Result};
 
-/// Represents a bit position within an `APInt`.
+/// Represents a bit position within an `ApInt`.
 /// 
 /// This utility might become useful later, for example
 /// when we reduce the range of valid bit widths for some

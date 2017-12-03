@@ -11,16 +11,16 @@ use digit::{Digit};
 use bitwidth::{BitWidth};
 
 /// An arbitrary precision integer with modulo arithmetics similar to machine integers.
-pub struct APInt {
-	/// The width in bits of this `APInt`.
+pub struct ApInt {
+	/// The width in bits of this `ApInt`.
 	len : BitWidth,
-	/// The actual data (bits) of this `APInt`.
-	data: APIntData
+	/// The actual data (bits) of this `ApInt`.
+	data: ApIntData
 }
 
-union APIntData {
+union ApIntData {
 	/// Inline storage (up to 64 bits) for small-space optimization.
 	inl: Digit,
-	/// Extern storage (>64 bits) for larger `APInt`s.
+	/// Extern storage (>64 bits) for larger `ApInt`s.
 	ext: *mut Digit
 }

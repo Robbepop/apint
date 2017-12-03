@@ -1,16 +1,16 @@
 
-use apint::{APInt, APIntData};
+use apint::{ApInt, ApIntData};
 use errors::{Error, Result};
 
 use bitwidth::{BitWidth};
 use storage::{Storage};
 use digit::{Bit, Digit};
 
-impl Clone for APInt {
+impl Clone for ApInt {
 	fn clone(&self) -> Self {
 		match self.len.storage() {
 			Storage::Inl => {
-				APInt{len: self.len, data: APIntData{inl: unsafe{self.data.inl}}}
+				ApInt{len: self.len, data: ApIntData{inl: unsafe{self.data.inl}}}
 			}
 			Storage::Ext => {
 				let req_digits = self.len_digits();
@@ -19,7 +19,7 @@ impl Clone for APInt {
 				debug_assert_eq!(buffer.capacity(), req_digits);
 				let dst = buffer.as_mut_ptr();
 				::std::mem::forget(buffer);
-				APInt{len: self.len, data: APIntData{ext: dst}}
+				ApInt{len: self.len, data: ApIntData{ext: dst}}
 			}
 		}
 	}
@@ -28,19 +28,19 @@ impl Clone for APInt {
 //  =======================================================================
 ///  Casting: Truncation & Extension
 /// =======================================================================
-impl APInt {
-	/// Creates a new `APInt` that represents this `APInt` truncated to 
+impl ApInt {
+	/// Creates a new `ApInt` that represents this `ApInt` truncated to 
 	/// the given target bit-width.
 	///
 	/// # Panics
 	/// 
-	/// - If `target_bitwidth` is greater than the `APInt`'s current bit-width.
+	/// - If `target_bitwidth` is greater than the `ApInt`'s current bit-width.
 	/// - If `target_bitwidth` is zero (`0`).
 	/// 
 	/// # Note
 	/// 
-	/// Equal to a call to `clone()` if `target_bitwidth` is equal to this `APInt`'s bit-width.
-	pub fn truncate<W>(&self, target_bitwidth: W) -> Result<APInt>
+	/// Equal to a call to `clone()` if `target_bitwidth` is equal to this `ApInt`'s bit-width.
+	pub fn truncate<W>(&self, target_bitwidth: W) -> Result<ApInt>
 		where W: Into<BitWidth>
 	{
 		let target_bitwidth = target_bitwidth.into();
@@ -55,21 +55,21 @@ impl APInt {
 				.into()
 		}
 		if len_bitwidth == self.len_bits() {
-			warn!("APInt::truncate: Truncating to the same bit-width is equal to cloning. \
+			warn!("ApInt::truncate: Truncating to the same bit-width is equal to cloning. \
 				   Do you mean to clone the object instead?");
 			return Ok(self.clone())
 		}
 
 		match (target_bitwidth.storage(), self.len.storage()) {
-			(Storage::Inl, Storage::Inl) => Ok(APInt{
+			(Storage::Inl, Storage::Inl) => Ok(ApInt{
 				len : target_bitwidth,
-				data: APIntData{
+				data: ApIntData{
 					inl: unsafe{self.data.inl.truncated(target_bitwidth).unwrap()}
 				}
 			}),
-			(Storage::Inl, Storage::Ext) => Ok(APInt{
+			(Storage::Inl, Storage::Ext) => Ok(ApInt{
 				len : target_bitwidth,
-				data: APIntData{
+				data: ApIntData{
 					inl: unsafe{(*self.data.ext).truncated(target_bitwidth).unwrap()}
 				}
 			}),
@@ -83,13 +83,13 @@ impl APInt {
 				}
 				let dst = buffer.as_mut_ptr();
 				::std::mem::forget(buffer);
-				Ok(APInt{len: self.len, data: APIntData{ext: dst}})
+				Ok(ApInt{len: self.len, data: ApIntData{ext: dst}})
 			}
 			_ => unreachable!()
 		}
 	}
 
-	/// Creates a new `APInt` that represents the zero-extension of this `APInt` to the given target bit-width.
+	/// Creates a new `ApInt` that represents the zero-extension of this `ApInt` to the given target bit-width.
 	///
 	/// # Semantics (from LLVM)
 	/// 
@@ -98,12 +98,12 @@ impl APInt {
 	/// 
 	/// # Panics
 	/// 
-	/// - If `target_bitwidth` is less than the `APInt`'s current bit-width.
+	/// - If `target_bitwidth` is less than the `ApInt`'s current bit-width.
 	/// 
 	/// # Note
 	/// 
-	/// Equal to a call to `clone()` if `target_bitwidth` is equal to this `APInt`'s bit-width.
-	pub fn zero_extend<W>(&self, target_bitwidth: W) -> Result<APInt>
+	/// Equal to a call to `clone()` if `target_bitwidth` is equal to this `ApInt`'s bit-width.
+	pub fn zero_extend<W>(&self, target_bitwidth: W) -> Result<ApInt>
 		where W: Into<BitWidth>
 	{
 		let target_bitwidth = target_bitwidth.into();
@@ -124,15 +124,15 @@ impl APInt {
 		}
 
 		match (target_bitwidth.storage(), self.len.storage()) {
-			(Storage::Inl, Storage::Inl) => Ok(APInt{
+			(Storage::Inl, Storage::Inl) => Ok(ApInt{
 				len : target_bitwidth,
-				data: APIntData{
+				data: ApIntData{
 					inl: unsafe{self.data.inl.truncated(target_bitwidth).unwrap()}
 				}
 			}),
-			(Storage::Inl, Storage::Ext) => Ok(APInt{
+			(Storage::Inl, Storage::Ext) => Ok(ApInt{
 				len : target_bitwidth,
-				data: APIntData{
+				data: ApIntData{
 					inl: unsafe{(*self.data.ext).truncated(target_bitwidth).unwrap()}
 				}
 			}),
@@ -148,13 +148,13 @@ impl APInt {
 				debug_assert_eq!(buffer.len()     , req_blocks);
 				let dst = buffer.as_mut_ptr();
 				::std::mem::forget(buffer);
-				Ok(APInt{len: self.len, data: APIntData{ext: dst}})
+				Ok(ApInt{len: self.len, data: ApIntData{ext: dst}})
 			}
 			_ => unreachable!()
 		}
 	}
 
-	/// Creates a new `APInt` that represents the sign-extension of this `APInt` to the given target bit-width.
+	/// Creates a new `ApInt` that represents the sign-extension of this `ApInt` to the given target bit-width.
 	/// 
 	/// 
 	/// # Semantic (from LLVM)
@@ -164,12 +164,12 @@ impl APInt {
 	///
 	/// # Panics
 	/// 
-	/// - If `target_bitwidth` is less than the `APInt`'s current bit-width.
+	/// - If `target_bitwidth` is less than the `ApInt`'s current bit-width.
 	/// 
 	/// # Note
 	/// 
-	/// Equal to a call to `clone()` if `target_bitwidth` is equal to this `APInt`'s bit-width.
-	pub fn sign_extend<W>(&self, target_bitwidth: W) -> Result<APInt>
+	/// Equal to a call to `clone()` if `target_bitwidth` is equal to this `ApInt`'s bit-width.
+	pub fn sign_extend<W>(&self, target_bitwidth: W) -> Result<ApInt>
 		where W: Into<BitWidth>
 	{
 		let target_bitwidth = target_bitwidth.into();
@@ -203,7 +203,7 @@ impl APInt {
 	}
 
 	/// TODO: Missing documentation.
-	pub fn zero_resize<W>(&self, target_bitwidth: W) -> APInt
+	pub fn zero_resize<W>(&self, target_bitwidth: W) -> ApInt
 		where W: Into<BitWidth>
 	{
 		let target_bitwidth = target_bitwidth.into();
@@ -220,7 +220,7 @@ impl APInt {
 	}
 
 	/// TODO: Missing documentation.
-	pub fn sign_resize<W>(&self, target_bitwidth: W) -> APInt
+	pub fn sign_resize<W>(&self, target_bitwidth: W) -> ApInt
 		where W: Into<BitWidth>
 	{
 		let target_bitwidth = target_bitwidth.into();

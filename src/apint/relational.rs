@@ -1,10 +1,10 @@
-use apint::{APInt};
+use apint::{ApInt};
 use apint::utils::{ZipModel};
-use traits::{APIntImpl};
+use traits::{ApIntImpl};
 use errors::{Error, Result};
 
-impl PartialEq for APInt {
-	fn eq(&self, other: &APInt) -> bool {
+impl PartialEq for ApInt {
+	fn eq(&self, other: &ApInt) -> bool {
 		if self.len_bits() != other.len_bits() {
 			return false
 		}
@@ -12,15 +12,15 @@ impl PartialEq for APInt {
 	}
 }
 
-impl Eq for APInt {}
+impl Eq for ApInt {}
 
 //  =======================================================================
 ///  Relational Operations
 /// =======================================================================
-impl APInt {
+impl ApInt {
 
 	/// Unsigned less-than comparison with the other bitvec.
-	pub fn ult(&self, other: &APInt) -> Result<bool> {
+	pub fn ult(&self, other: &ApInt) -> Result<bool> {
 		if self.len_bits() != other.len_bits() {
 			return Error::unmatching_bitwidths(self.len_bits(), other.len_bits())
 				.with_annotation(format!("Error occured on unsigned less-than (ult) comparison with {:?} and {:?}.", self, other))
@@ -38,7 +38,7 @@ impl APInt {
 
 	/// Unsigned less-than-or-equals comparison with the other bitvec.
 	#[inline]
-	pub fn ule(&self, other: &APInt) -> Result<bool> {
+	pub fn ule(&self, other: &ApInt) -> Result<bool> {
 		if self.len_bits() != other.len_bits() {
 			return Error::unmatching_bitwidths(self.len_bits(), other.len_bits())
 				.with_annotation(format!("Error occured on unsigned less-than or equals (ule) comparison with {:?} and {:?}.", self, other))
@@ -49,7 +49,7 @@ impl APInt {
 
 	/// Unsigned greater-than comparison with the other bitvec.
 	#[inline]
-	pub fn ugt(&self, other: &APInt) -> Result<bool> {
+	pub fn ugt(&self, other: &ApInt) -> Result<bool> {
 		if self.len_bits() != other.len_bits() {
 			return Error::unmatching_bitwidths(self.len_bits(), other.len_bits())
 				.with_annotation(format!("Error occured on unsigned greater-than (ugt) comparison with {:?} and {:?}.", self, other))
@@ -60,7 +60,7 @@ impl APInt {
 
 	/// Unsigned greater-than-or-equals comparison with the other bitvec.
 	#[inline]
-	pub fn uge(&self, other: &APInt) -> Result<bool> {
+	pub fn uge(&self, other: &ApInt) -> Result<bool> {
 		if self.len_bits() != other.len_bits() {
 			return Error::unmatching_bitwidths(self.len_bits(), other.len_bits())
 				.with_annotation(format!("Error occured on unsigned greater-than or equals (uge) comparison with {:?} and {:?}.", self, other))
@@ -70,7 +70,7 @@ impl APInt {
 	}
 
 	/// Signed less-than comparison with the other bitvec.
-	pub fn slt(&self, other: &APInt) -> Result<bool> {
+	pub fn slt(&self, other: &ApInt) -> Result<bool> {
 		if self.len_bits() != other.len_bits() {
 			return Error::unmatching_bitwidths(self.len_bits(), other.len_bits())
 				.with_annotation(format!("Error occured on unsigned less-than (slt) comparison with {:?} and {:?}.", self, other))
@@ -88,7 +88,7 @@ impl APInt {
 
 	/// Signed less-than-or-equals comparison with the other bitvec.
 	#[inline]
-	pub fn sle(&self, other: &APInt) -> Result<bool> {
+	pub fn sle(&self, other: &ApInt) -> Result<bool> {
 		if self.len_bits() != other.len_bits() {
 			return Error::unmatching_bitwidths(self.len_bits(), other.len_bits())
 				.with_annotation(format!("Error occured on unsigned less-than or equals (sle) comparison with {:?} and {:?}.", self, other))
@@ -99,7 +99,7 @@ impl APInt {
 
 	/// Signed greater-than comparison with the other bitvec.
 	#[inline]
-	pub fn sgt(&self, other: &APInt) -> Result<bool> {
+	pub fn sgt(&self, other: &ApInt) -> Result<bool> {
 		if self.len_bits() != other.len_bits() {
 			return Error::unmatching_bitwidths(self.len_bits(), other.len_bits())
 				.with_annotation(format!("Error occured on unsigned greater-than (sgt) comparison with {:?} and {:?}.", self, other))
@@ -110,7 +110,7 @@ impl APInt {
 
 	/// Signed greater-than-or-equals comparison with the other bitvec.
 	#[inline]
-	pub fn sge(&self, other: &APInt) -> Result<bool> {
+	pub fn sge(&self, other: &ApInt) -> Result<bool> {
 		if self.len_bits() != other.len_bits() {
 			return Error::unmatching_bitwidths(self.len_bits(), other.len_bits())
 				.with_annotation(format!("Error occured on unsigned greater-than or equals (sge) comparison with {:?} and {:?}.", self, other))

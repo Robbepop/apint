@@ -49,7 +49,7 @@ impl<'a> DigitSeqMut<'a> for ContiguousDigitSeqMut<'a> {}
 /// A type that acts as a sequence of digits.
 /// 
 /// This is used as abstraction over the different low-level representations
-/// of an `APInt`.
+/// of an `ApInt`.
 pub(crate) trait AsDigitSeq {
 	type Seq: DigitSeq;
 
@@ -60,7 +60,7 @@ pub(crate) trait AsDigitSeq {
 /// A type that acts as a sequence of mutable digits.
 /// 
 /// This is used as abstraction over the different low-level representations
-/// of an `APInt`.
+/// of an `ApInt`.
 pub(crate) trait AsDigitSeqMut<'a>: AsDigitSeq {
 	type SeqMut: DigitSeqMut<'a>;
 

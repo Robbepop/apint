@@ -14,7 +14,7 @@ pub enum ErrorKind {
 	/// Returned on trying to create a `Radix` from an invalid `u8` representation.
 	InvalidRadix(u8),
 
-	/// Returned whenever trying to parse an invalid string representation for an `APInt`.
+	/// Returned whenever trying to parse an invalid string representation for an `ApInt`.
 	InvalidStringRepr{
 		/// The string storing the invalid representation of the int for the given radix.
 		input: String,
@@ -38,7 +38,7 @@ pub enum ErrorKind {
 	/// Returned on trying to create a `BitWidth` from an invalid `usize` representation.
 	InvalidBitWidth(usize),
 
-	/// Returned on truncating an `APInt` with a bitwidth greater than the current one.
+	/// Returned on truncating an `ApInt` with a bitwidth greater than the current one.
 	TruncationBitWidthTooLarge{
 		/// The target bit width.
 		target: BitWidth,
@@ -46,7 +46,7 @@ pub enum ErrorKind {
 		current: BitWidth
 	},
 
-	/// Returned on extending an `APInt` with a bitwidth less than the current one.
+	/// Returned on extending an `ApInt` with a bitwidth less than the current one.
 	ExtensionBitWidthTooSmall{
 		/// The target bit width.
 		target: BitWidth,
@@ -54,11 +54,11 @@ pub enum ErrorKind {
 		current: BitWidth
 	},
 
-	/// Returned on constructing an `APInt` from an empty iterator of `Digit`s.
+	/// Returned on constructing an `ApInt` from an empty iterator of `Digit`s.
 	ExpectedNonEmptyDigits,
 }
 
-/// Represents an error that may occure upon using the `APInt` library.
+/// Represents an error that may occure upon using the `ApInt` library.
 /// 
 /// All errors have a unique kind which also stores extra information for error reporting.
 /// Besides that an `Error` also stores a message and an optional additional annotation.
@@ -163,7 +163,7 @@ impl Error {
 		let current = current.into();
 		Error{
 			kind: ErrorKind::ExtensionBitWidthTooSmall{target, current},
-			message: format!("Tried to extend an `APInt` with a width of {:?} to a smaller target width of {:?}", current, target),
+			message: format!("Tried to extend an `ApInt` with a width of {:?} to a smaller target width of {:?}", current, target),
 			annotation: None
 		}
 	}
@@ -176,7 +176,7 @@ impl Error {
 		let current = current.into();
 		Error{
 			kind: ErrorKind::TruncationBitWidthTooLarge{target, current},
-			message: format!("Tried to truncate an `APInt` with a width of {:?} to a larger target width of {:?}", current, target),
+			message: format!("Tried to truncate an `ApInt` with a width of {:?} to a larger target width of {:?}", current, target),
 			annotation: None
 		}
 	}
@@ -210,7 +210,7 @@ impl Error {
 	pub(crate) fn expected_non_empty_digits() -> Error {
 		Error{
 			kind: ErrorKind::ExpectedNonEmptyDigits,
-			message: "Encountered an empty iterator upon construction of an `APInt` from a digit iterator.".to_owned(),
+			message: "Encountered an empty iterator upon construction of an `ApInt` from a digit iterator.".to_owned(),
 			annotation: None
 		}
 	}
@@ -240,5 +240,5 @@ impl error::Error for Error {
 	}
 }
 
-/// The `Result` type used in `APInt`.
+/// The `Result` type used in `ApInt`.
 pub type Result<T> = result::Result<T, Error>;

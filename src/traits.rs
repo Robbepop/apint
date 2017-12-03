@@ -6,7 +6,7 @@ pub(crate) trait Width {
 	fn width(&self) -> BitWidth;
 }
 
-pub(crate) trait APIntImpl<I>
+pub(crate) trait ApIntImpl<I>
 	where I: Width
 {
 	fn get(&self, n: usize) -> Result<Bit>;
@@ -16,7 +16,7 @@ pub(crate) trait APIntImpl<I>
 	fn slt(&self, other: &I) -> Result<bool>;
 }
 
-pub(crate) trait APIntMutImpl<I>
+pub(crate) trait ApIntMutImpl<I>
 	where I: Width
 {
 	fn set(&mut self, n: usize) -> Result<()>;

@@ -46,7 +46,7 @@ pub(crate) const ONE : Digit = Digit(REPR_ONE);
 pub(crate) const ZERO: Digit = Digit(REPR_ZERO);
 pub(crate) const ONES: Digit = Digit(REPR_ONES);
 
-/// Represents the set or unset state of a bit within an `APInt`.
+/// Represents the set or unset state of a bit within an `ApInt`.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 pub enum Bit {
 	/// Unset, or `false` or `off` state.
@@ -72,7 +72,7 @@ impl From<Bit> for bool {
 	}
 }
 
-/// A (big) digit within an `APInt` or similar representations.
+/// A (big) digit within an `ApInt` or similar representations.
 /// 
 /// It uses the `DoubleDigit` as computation unit.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]

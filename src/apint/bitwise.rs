@@ -1,7 +1,7 @@
-use apint::{APInt};
+use apint::{ApInt};
 use apint::utils::{Model, ModelMut, ZipModelMut};
 use digit::{Bit};
-use traits::{APIntImpl, APIntMutImpl};
+use traits::{ApIntImpl, ApIntMutImpl};
 use errors::{Result};
 
 use std::ops::{
@@ -15,70 +15,70 @@ use std::ops::{
 
 //  ===========================================================================
 
-impl<'a> BitAnd<&'a APInt> for APInt {
-    type Output = APInt;
+impl<'a> BitAnd<&'a ApInt> for ApInt {
+    type Output = ApInt;
 
-    fn bitand(self, rhs: &'a APInt) -> Self::Output {
+    fn bitand(self, rhs: &'a ApInt) -> Self::Output {
         self.checked_bitand(rhs).unwrap()
     }
 }
 
-impl<'a> BitOr<&'a APInt> for APInt {
-    type Output = APInt;
+impl<'a> BitOr<&'a ApInt> for ApInt {
+    type Output = ApInt;
 
-    fn bitor(self, rhs: &'a APInt) -> Self::Output {
+    fn bitor(self, rhs: &'a ApInt) -> Self::Output {
         self.checked_bitor(rhs).unwrap()
     }
 }
 
-impl<'a> BitXor<&'a APInt> for APInt {
-    type Output = APInt;
+impl<'a> BitXor<&'a ApInt> for ApInt {
+    type Output = ApInt;
 
-    fn bitxor(self, rhs: &'a APInt) -> Self::Output {
+    fn bitxor(self, rhs: &'a ApInt) -> Self::Output {
         self.checked_bitxor(rhs).unwrap()
     }
 }
 
-impl<'a, 'b> BitAnd<&'a APInt> for &'b APInt {
-    type Output = APInt;
+impl<'a, 'b> BitAnd<&'a ApInt> for &'b ApInt {
+    type Output = ApInt;
 
-    fn bitand(self, rhs: &'a APInt) -> Self::Output {
+    fn bitand(self, rhs: &'a ApInt) -> Self::Output {
         self.clone().checked_bitand(rhs).unwrap()
     }
 }
 
-impl<'a, 'b> BitOr<&'a APInt> for &'b APInt {
-    type Output = APInt;
+impl<'a, 'b> BitOr<&'a ApInt> for &'b ApInt {
+    type Output = ApInt;
 
-    fn bitor(self, rhs: &'a APInt) -> Self::Output {
+    fn bitor(self, rhs: &'a ApInt) -> Self::Output {
         self.clone().checked_bitor(rhs).unwrap()
     }
 }
 
-impl<'a, 'b> BitXor<&'a APInt> for &'b APInt {
-    type Output = APInt;
+impl<'a, 'b> BitXor<&'a ApInt> for &'b ApInt {
+    type Output = ApInt;
 
-    fn bitxor(self, rhs: &'a APInt) -> Self::Output {
+    fn bitxor(self, rhs: &'a ApInt) -> Self::Output {
         self.clone().checked_bitxor(rhs).unwrap()
     }
 }
 
 //  ===========================================================================
 
-impl<'a> BitAndAssign<&'a APInt> for APInt {
-    fn bitand_assign(&mut self, rhs: &'a APInt) {
+impl<'a> BitAndAssign<&'a ApInt> for ApInt {
+    fn bitand_assign(&mut self, rhs: &'a ApInt) {
         self.checked_bitand_assign(rhs).unwrap();
     }
 }
 
-impl<'a> BitOrAssign<&'a APInt> for APInt {
-    fn bitor_assign(&mut self, rhs: &'a APInt) {
+impl<'a> BitOrAssign<&'a ApInt> for ApInt {
+    fn bitor_assign(&mut self, rhs: &'a ApInt) {
         self.checked_bitor_assign(rhs).unwrap();
     }
 }
 
-impl<'a> BitXorAssign<&'a APInt> for APInt {
-    fn bitxor_assign(&mut self, rhs: &'a APInt) {
+impl<'a> BitXorAssign<&'a ApInt> for ApInt {
+    fn bitxor_assign(&mut self, rhs: &'a ApInt) {
         self.checked_bitxor_assign(rhs).unwrap();
     }
 }
@@ -86,16 +86,16 @@ impl<'a> BitXorAssign<&'a APInt> for APInt {
 //  ===========================================================================
 ///  Bitwise Operations
 /// ===========================================================================
-impl APInt {
+impl ApInt {
 
-	/// Creates a new bitvev that represents the bitwise-not of the given `APInt`.
-	pub fn bitnot(&self) -> APInt {
+	/// Creates a new bitvev that represents the bitwise-not of the given `ApInt`.
+	pub fn bitnot(&self) -> ApInt {
 		let mut cloned = self.clone();
 		cloned.bitnot_inplace();
 		cloned
 	}
 
-	/// Flip all bits of the given `APInt` inplace.
+	/// Flip all bits of the given `ApInt` inplace.
 	/// 
 	/// This operation operates in-place on `self` and thus does not require dynamic memory allocation.
 	pub fn bitnot_inplace(&mut self) {
@@ -109,8 +109,8 @@ impl APInt {
 		}
 	}
 
-	/// Creates a new bitvec that represents the bitwise-and of both given `APInt`s.
-	pub fn checked_bitand(&self, other: &APInt) -> Result<APInt> {
+	/// Creates a new bitvec that represents the bitwise-and of both given `ApInt`s.
+	pub fn checked_bitand(&self, other: &ApInt) -> Result<ApInt> {
 		let mut cloned = self.clone();
 		cloned.checked_bitand_assign(other)?;
 		Ok(cloned)
@@ -119,7 +119,7 @@ impl APInt {
 	/// Computes bitwise-and of self and other and stores the result in self.
 	/// 
 	/// This operation operates in-place on `self` and thus does not require dynamic memory allocation.
-	pub fn checked_bitand_assign(&mut self, other: &APInt) -> Result<()> {
+	pub fn checked_bitand_assign(&mut self, other: &ApInt) -> Result<()> {
 		match self.zip_model_mut(other)? {
 			ZipModelMut::Inl(mut left, right) => {
 				left.bitand_inplace(&right)
@@ -130,8 +130,8 @@ impl APInt {
 		}
 	}
 
-	/// Creates a new bitvec that represents the bitwise-or of both given `APInt`s.
-	pub fn checked_bitor(&self, other: &APInt) -> Result<APInt> {
+	/// Creates a new bitvec that represents the bitwise-or of both given `ApInt`s.
+	pub fn checked_bitor(&self, other: &ApInt) -> Result<ApInt> {
 		let mut cloned = self.clone();
 		cloned.checked_bitor_assign(other)?;
 		Ok(cloned)
@@ -140,7 +140,7 @@ impl APInt {
 	/// Computes bitwise-or of self and other and stores the result in self.
 	/// 
 	/// This operation operates in-place on `self` and thus does not require dynamic memory allocation.
-	pub fn checked_bitor_assign(&mut self, other: &APInt) -> Result<()> {
+	pub fn checked_bitor_assign(&mut self, other: &ApInt) -> Result<()> {
 		match self.zip_model_mut(other)? {
 			ZipModelMut::Inl(mut left, right) => {
 				left.bitor_inplace(&right)
@@ -151,8 +151,8 @@ impl APInt {
 		}
 	}
 
-	/// Creates a new bitvec that represents the bitwise-xor of both given `APInt`s.
-	pub fn checked_bitxor(&self, other: &APInt) -> Result<APInt> {
+	/// Creates a new bitvec that represents the bitwise-xor of both given `ApInt`s.
+	pub fn checked_bitxor(&self, other: &ApInt) -> Result<ApInt> {
 		let mut cloned = self.clone();
 		cloned.checked_bitxor_assign(other)?;
 		Ok(cloned)
@@ -161,7 +161,7 @@ impl APInt {
 	/// Computes bitwise-xor of self and other and stores the result in self.
 	/// 
 	/// This operation operates in-place on `self` and thus does not require dynamic memory allocation.
-	pub fn checked_bitxor_assign(&mut self, other: &APInt) -> Result<()> {
+	pub fn checked_bitxor_assign(&mut self, other: &ApInt) -> Result<()> {
 		match self.zip_model_mut(other)? {
 			ZipModelMut::Inl(mut left, right) => {
 				left.bitxor_inplace(&right)
@@ -176,7 +176,7 @@ impl APInt {
 //  ===========================================================================
 ///  Bitwise Access
 /// ===========================================================================
-impl APInt {
+impl ApInt {
 	pub fn get(&self, n: usize) -> Result<Bit> {
 		match self.model() {
 			Model::Inl(small) => {
