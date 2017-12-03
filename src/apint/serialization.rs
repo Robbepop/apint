@@ -318,6 +318,7 @@ mod tests {
 		}
 
 		#[test]
+		#[ignore]
 		fn zero() {
 			for radix in test_radices() {
 				assert_eq!(
