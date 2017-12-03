@@ -258,8 +258,73 @@ mod tests {
 	use super::*;
 
 	mod from_str_radix {
+
 		use super::*;
 
+		fn test_radices() -> impl Iterator<Item=Radix> {
+			[2, 4, 8, 16, 32, 7, 10, 36].into_iter().map(|&r| Radix::new(r).unwrap())
+		}
 
+		#[test]
+		fn empty() {
+			for radix in test_radices() {
+				assert_eq!(
+					ApInt::from_str_radix(64, radix, ""),
+					Err(Error::invalid_string_repr("", radix)
+						.with_annotation("Cannot parse an empty string into an ApInt."))
+				)
+			}
+		}
+
+		#[test]
+		fn starts_with_underscore() {
+			for radix in test_radices() {
+				for &input in &["_0", "_123", "__", "_1_0"] {
+					assert_eq!(
+						ApInt::from_str_radix(64, radix, input),
+						Err(Error::invalid_string_repr(input, radix)
+						    .with_annotation("The input string starts with an underscore ('_') instead of a number. \
+						                      The use of underscores is explicitely for separation of digits."))
+					)
+				}
+			}
+		}
+
+		#[test]
+		fn ends_with_underscore() {
+			for radix in test_radices() {
+				for &input in &["0_", "123_", "1_0_"] {
+					assert_eq!(
+						ApInt::from_str_radix(64, radix, input),
+						Err(Error::invalid_string_repr(input, radix)
+						    .with_annotation("The input string ends with an underscore ('_') instead of a number. \
+						                      The use of underscores is explicitely for separation of digits."))
+					)
+				}
+			}
+		}
+
+		#[test]
+		fn leading_zeros() {
+			for radix in test_radices() {
+				for &input in &["00", "0001", "0_1"] {
+					assert_eq!(
+						ApInt::from_str_radix(64, radix, input),
+						Err(Error::invalid_string_repr(input, radix)
+							.with_annotation("The input string starts with zero digits and is not zero."))
+					)
+				}
+			}
+		}
+
+		#[test]
+		fn zero() {
+			for radix in test_radices() {
+				assert_eq!(
+					ApInt::from_str_radix(64, radix, "0"),
+					Ok(ApInt::zero(BitWidth::new(64).unwrap()))
+				)
+			}
+		}
 	}
 }
