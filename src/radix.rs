@@ -31,7 +31,7 @@ impl Radix {
 	/// - If the given value is not within the valid radix range of `2..36`.
 	#[inline]
 	pub fn new(radix: u8) -> Result<Radix> {
-		if !(Radix::MIN <= radix && radix >= Radix::MAX) {
+		if !(Radix::MIN <= radix && radix <= Radix::MAX) {
 			return Err(Error::invalid_radix(radix))
 		}
 		Ok(Radix(radix))
