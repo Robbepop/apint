@@ -47,19 +47,25 @@ impl APInt {
 			return Err(Error::invalid_string_repr(input, radix)
 				.with_annotation("Cannot parse an empty string into an APInt."))
 		}
-		if !input.chars().all(|c| c.is_digit(radix.to_u32())) {
+		if input.starts_with('_') {
 			return Err(Error::invalid_string_repr(input, radix)
-				.with_annotation("The input string contains invalid characters for the given radix."))
+				.with_annotation("The input string starts with an underscore ('_') instead of a number. \
+					              The use of underscores is explicitely for separation of digits."))
+		}
+		if input.ends_with('_') {
+			return Err(Error::invalid_string_repr(input, radix)
+				.with_annotation("The input string ends with an underscore ('_') instead of a number. \
+					              The use of underscores is explicitely for separation of digits."))
 		}
 		if input.len() >= 2 && input.starts_with('0') {
 			return Err(Error::invalid_string_repr(input, radix)
-				.with_annotation("The input string starts with zero digits."))
+				.with_annotation("The input string starts with zero digits and is not zero."))
 		}
 
 		/// A `target_width` that is greater than or equal to the `BitWidth` returned by this function
 		/// can store any number representation of the given input length and radix.
 		fn safe_bit_width(radix: Radix, n: usize) -> BitWidth {
-			(n * ((f64::from(radix.to_u32())).log2().ceil() as usize)).into()
+			(n * ((f64::from(radix.to_u8())).log2().ceil() as usize)).into()
 		}
 
 		/// A `target_width` that is less than the `BitWidth` returned by this function
@@ -76,7 +82,160 @@ impl APInt {
 				.with_annotation("The target bit-width does not suffice to represent the given input string as `APInt`."))
 		}
 
-		Ok(APInt::zero(target_width)) // TODO: Proper parsing.
+		// First normalize all characters to plain digit values.
+		let mut v = Vec::with_capacity(input.len());
+		for (i, b) in input.bytes().enumerate() {
+			let d = match b {
+				b'0'...b'9' => b - b'0',
+				b'a'...b'z' => b - b'a' + 10,
+				b'A'...b'Z' => b - b'A' + 10,
+				b'_' => continue,
+				_ => ::std::u8::MAX
+			};
+			if !radix.is_valid_byte(d) {
+				return Err(Error::invalid_char_in_string_repr(input, radix, i, char::from(b)))
+			}
+			v.push(d);
+		}
+
+		let result =
+			if radix.is_power_of_two() {
+				use digit;
+				v.reverse();
+				let bits = radix.bits_per_digit();
+				if digit::BITS % bits == 0 {
+					APInt::from_bitwise_digits(&v, bits)
+				}
+				else {
+					APInt::from_inexact_bitwise_digits(&v, bits)
+				}
+			}
+			else {
+				APInt::from_radix_digits(&v, radix)
+			};
+
+		Ok(result)
+	}
+
+	// Convert from a power of two radix (bits == ilog2(radix)) where bits evenly divides
+	// Digit::BITS.
+	// 
+	// Forked from: https://github.com/rust-num/num/blob/master/bigint/src/biguint.rs#L126
+	// 
+	// TODO: Better document what happens here and why.
+	fn from_bitwise_digits(v: &[u8], bits: usize) -> APInt {
+		use digit;
+		use digit::{DigitRepr, Digit};
+
+	    debug_assert!(!v.is_empty() && bits <= 8 && digit::BITS % bits == 0);
+	    debug_assert!(v.iter().all(|&c| (DigitRepr::from(c)) < (1 << bits)));
+
+	    let radix_digits_per_digit = digit::BITS / bits;
+
+	    let data = v.chunks(radix_digits_per_digit)
+	                .map(|chunk| chunk.iter()
+	                	              .rev()
+	                	              .fold(0, |acc, &c| (acc << bits) | DigitRepr::from(c)))
+	                .map(Digit);
+
+	    APInt::from_iter(data).unwrap()
+	}
+
+	// Convert from a power of two radix (bits == ilog2(radix)) where bits doesn't evenly divide
+	// Digit::BITS.
+	// 
+	// Forked from: https://github.com/rust-num/num/blob/master/bigint/src/biguint.rs#L143
+	// 
+	// TODO: Better document what happens here and why.
+	fn from_inexact_bitwise_digits(v: &[u8], bits: usize) -> APInt {
+		use digit;
+		use digit::{DigitRepr, Digit};
+
+	    debug_assert!(!v.is_empty() && bits <= 8 && digit::BITS % bits != 0);
+	    debug_assert!(v.iter().all(|&c| (DigitRepr::from(c)) < (1 << bits)));
+
+	    let len_digits = (v.len() * bits + digit::BITS - 1) / digit::BITS;
+	    let mut data = Vec::with_capacity(len_digits);
+
+	    let mut d = 0;
+	    let mut dbits = 0; // Number of bits we currently have in d.
+
+	    // Walk v accumulating bits in d; whenever we accumulate digit::BITS in d, spit out a digit:
+	    for &c in v {
+	        d |= (DigitRepr::from(c)) << dbits;
+	        dbits += bits;
+
+	        if dbits >= digit::BITS {
+	            data.push(Digit(d));
+	            dbits -= digit::BITS;
+	            // If `dbits` was greater than `digit::BITS`, we dropped some of the bits in c
+	            // (they couldn't fit in d) - grab the bits we lost here:
+	            d = (DigitRepr::from(c)) >> (bits - dbits);
+	        }
+	    }
+
+	    if dbits > 0 {
+	        debug_assert!(dbits < digit::BITS);
+	        data.push(Digit(d));
+	    }
+
+	    APInt::from_iter(data).unwrap()
+	}
+
+	// Read little-endian radix digits.
+	// 
+	// Forked from: https://github.com/rust-num/num/blob/master/bigint/src/biguint.rs#L177
+	// 
+	// TODO: This does not work, yet. Some parts of the algorithm are
+	//       commented-out since the required functionality does not exist, yet.
+	fn from_radix_digits(v: &[u8], radix: Radix) -> APInt {
+		use digit;
+		use digit::{DigitRepr, Digit};
+
+	    debug_assert!(!v.is_empty() && !radix.is_power_of_two());
+	    debug_assert!(v.iter().all(|&c| radix.is_valid_byte(c)));
+
+	    // Estimate how big the result will be, so we can pre-allocate it.
+	    let bits = (f64::from(radix.to_u8())).log2() * v.len() as f64;
+	    let big_digits = (bits / digit::BITS as f64).ceil();
+	    let mut data = Vec::with_capacity(big_digits as usize);
+
+	    let (base, power) = radix.get_radix_base();
+	    let radix = DigitRepr::from(radix.to_u8());
+
+	    let r = v.len() % power;
+	    let i = if r == 0 {
+	        power
+	    } else {
+	        r
+	    };
+	    let (head, tail) = v.split_at(i);
+
+	    let first = head.iter().fold(0, |acc, &d| acc * radix + DigitRepr::from(d));
+	    data.push(first);
+
+	    debug_assert!(tail.len() % power == 0);
+	    for chunk in tail.chunks(power) {
+	        if data.last() != Some(&0) {
+	            data.push(0);
+	        }
+
+	        let mut carry = 0;
+	        for d in &mut data {
+	            // *d = mac_with_carry(0, *d, base, &mut carry); // TODO! This was commented out.
+
+				// // fn carry_mul_add(a: Digit, b: Digit, c: Digit, carry: Digit) -> DigitAndCarry
+				// // Returns the result of `(a + (b * c)) + carry` and its implied carry value.
+
+	            // let DigitAndCarry(d, carry) = carry_mul_add(digit::ZERO, *d, base, carry); // TODO! This was commented out.
+	        }
+	        debug_assert!(carry == 0);
+
+	        let n = chunk.iter().fold(0, |acc, &d| acc * radix + DigitRepr::from(d));
+	        // add2(&mut data, &[n]); // TODO: This was commented out.
+	    }
+
+	    APInt::from_iter(data.into_iter().map(Digit)).unwrap()
 	}
 }
 
@@ -91,5 +250,16 @@ impl APInt {
 		let radix = radix.into();
 
 		unimplemented!();
+	}
+}
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+
+	mod from_str_radix {
+		use super::*;
+
+
 	}
 }
