@@ -242,11 +242,15 @@ mod tests {
 			[2, 4, 8, 16, 32, 7, 10, 36].into_iter().map(|&r| Radix::new(r).unwrap())
 		}
 
+		fn test_pow2_radices() -> impl Iterator<Item=Radix> {
+			[2, 4, 8, 16, 32].into_iter().map(|&r| Radix::new(r).unwrap())
+		}
+
 		#[test]
 		fn empty() {
 			for radix in test_radices() {
 				assert_eq!(
-					ApInt::from_str_radix(64, radix, ""),
+					ApInt::from_str_radix(radix, ""),
 					Err(Error::invalid_string_repr("", radix)
 						.with_annotation("Cannot parse an empty string into an ApInt."))
 				)
@@ -258,7 +262,7 @@ mod tests {
 			for radix in test_radices() {
 				for &input in &["_0", "_123", "__", "_1_0"] {
 					assert_eq!(
-						ApInt::from_str_radix(64, radix, input),
+						ApInt::from_str_radix(radix, input),
 						Err(Error::invalid_string_repr(input, radix)
 						    .with_annotation("The input string starts with an underscore ('_') instead of a number. \
 						                      The use of underscores is explicitely for separation of digits."))
@@ -272,7 +276,7 @@ mod tests {
 			for radix in test_radices() {
 				for &input in &["0_", "123_", "1_0_"] {
 					assert_eq!(
-						ApInt::from_str_radix(64, radix, input),
+						ApInt::from_str_radix(radix, input),
 						Err(Error::invalid_string_repr(input, radix)
 						    .with_annotation("The input string ends with an underscore ('_') instead of a number. \
 						                      The use of underscores is explicitely for separation of digits."))
@@ -282,26 +286,51 @@ mod tests {
 		}
 
 		#[test]
-		fn leading_zeros() {
+		fn zero() {
 			for radix in test_radices() {
-				for &input in &["00", "0001", "0_1"] {
-					assert_eq!(
-						ApInt::from_str_radix(64, radix, input),
-						Err(Error::invalid_string_repr(input, radix)
-							.with_annotation("The input string starts with zero digits and is not zero."))
-					)
-				}
+				assert_eq!(
+					ApInt::from_str_radix(radix, "0"),
+					Ok(ApInt::zero(BitWidth::new(64).unwrap()))
+				)
 			}
 		}
 
 		#[test]
-		#[ignore]
-		fn zero() {
-			for radix in test_radices() {
-				assert_eq!(
-					ApInt::from_str_radix(64, radix, "0"),
-					Ok(ApInt::zero(BitWidth::new(64).unwrap()))
-				)
+		fn small_values() {
+			let samples = vec![
+				// (Radix, Input String, Expected ApInt)
+
+				( 2,  "0",  0),
+				( 8,  "0",  0),
+				(10,  "0",  0),
+				(16,  "0",  0),
+
+				( 2,  "1",  1),
+				( 8,  "1",  1),
+				(10,  "1",  1),
+				(16,  "1",  1),
+
+				( 2, "10",  2),
+				( 8, "10",  8),
+				(10, "10", 10),
+				(16, "10", 16),
+
+				( 2, "11",  3),
+				( 8, "11",  9),
+				(10, "11", 11),
+				(16, "11", 17),
+
+				( 2, "1001_0011", 0b1001_0011),
+				// ( 8, "",  9),
+				// (10, "11", 11),
+				// (16, "11", 17),
+			];
+			for sample in &samples {
+				let radix = Radix::new(sample.0).unwrap();
+				let input = sample.1;
+				let result = ApInt::from_str_radix(radix, input).unwrap();
+				let expected = ApInt::from_u64(sample.2);
+				assert_eq!(result, expected)
 			}
 		}
 	}
