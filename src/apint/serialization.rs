@@ -29,15 +29,14 @@ impl ApInt {
 	/// 
 	/// ```no_run
 	/// # use apint::ApInt;
-	/// let a = ApInt::from_str_radix( 64, 10, "42");      // ok
-	/// let b = ApInt::from_str_radix( 32,  2, "1011011"); // ok (dec. = 91)
-	/// let c = ApInt::from_str_radix(128, 16, "ffcc00");  // ok (dec. = 16763904)
-	/// let c = ApInt::from_str_radix(  8, 10, "257");     // Error: 257 does not fit within 8 bits!
-	/// let d = ApInt::from_str_radix(100, 16, "hello");   // Error: "hello" is not a valid ApInt representation!
+	/// let a = ApInt::from_str_radix(10, "42");      // ok
+	/// let b = ApInt::from_str_radix( 2, "1011011"); // ok (dec. = 91)
+	/// let c = ApInt::from_str_radix(16, "ffcc00");  // ok (dec. = 16763904)
+	/// let c = ApInt::from_str_radix(10, "257");     // Error: 257 does not fit within 8 bits!
+	/// let d = ApInt::from_str_radix(16, "hello");   // Error: "hello" is not a valid ApInt representation!
 	/// ```
-	pub fn from_str_radix<W, R, S>(target_width: W, radix: R, input: S) -> Result<ApInt>
-		where W: Into<BitWidth>,
-		      R: Into<Radix>,
+	pub fn from_str_radix<R, S>(radix: R, input: S) -> Result<ApInt>
+		where R: Into<Radix>,
 		      S: AsRef<str>
 	{
 		let radix = radix.into();
@@ -56,26 +55,6 @@ impl ApInt {
 			return Err(Error::invalid_string_repr(input, radix)
 				.with_annotation("The input string ends with an underscore ('_') instead of a number. \
 					              The use of underscores is explicitely for separation of digits."))
-		}
-
-		/// A `target_width` that is greater than or equal to the `BitWidth` returned by this function
-		/// can store any number representation of the given input length and radix.
-		fn safe_bit_width(radix: Radix, n: usize) -> BitWidth {
-			(n * ((f64::from(radix.to_u8())).log2().ceil() as usize)).into()
-		}
-
-		/// A `target_width` that is less than the `BitWidth` returned by this function
-		/// can **never** store any number representation of the given input length and radix.
-		fn unsafe_bit_width(radix: Radix, n: usize) -> BitWidth {
-			safe_bit_width(radix, n - 1)
-		}
-
-		let target_width = target_width.into();
-		let safe_width = safe_bit_width(radix, input.len());
-		let unsafe_width = unsafe_bit_width(radix, input.len());
-		if target_width < unsafe_width {
-			return Err(Error::invalid_string_repr(input, radix)
-				.with_annotation("The target bit-width does not suffice to represent the given input string as `ApInt`."))
 		}
 
 		// First normalize all characters to plain digit values.
