@@ -6,12 +6,14 @@ use storage::{Storage};
 use digit::{Digit};
 use digit;
 
+use std::ptr::Unique;
+
 impl Drop for ApInt {
 	fn drop(&mut self) {
 		if self.len.storage() == Storage::Ext {
 			let len = self.len_digits();
 			unsafe{
-				drop(Vec::from_raw_parts(self.data.ext, len, len))
+				drop(Vec::from_raw_parts(self.data.ext.as_ptr(), len, len))
 			}
 		}
 	}
@@ -128,7 +130,7 @@ impl ApInt {
 						     iterates over is greater than `1` and thus non-zero and thus a valid `BitWidth`.");
 				let ptr_buffer = buffer.as_ptr() as *mut Digit;
 				mem::forget(buffer);
-				Ok(ApInt{len: bitwidth, data: ApIntData{ext: ptr_buffer}})
+				Ok(ApInt{len: bitwidth, data: ApIntData{ext: unsafe{ Unique::new_unchecked(ptr_buffer) }}})
 			}
 		}
 	}
@@ -155,7 +157,7 @@ impl ApInt {
 				assert_eq!(buffer.capacity(), req_blocks);
 				let ptr_buffer = buffer.as_ptr() as *mut Digit;
 				mem::forget(buffer);
-				ApInt{len: bitwidth, data: ApIntData{ext: ptr_buffer}}
+				ApInt{len: bitwidth, data: ApIntData{ext: unsafe{ Unique::new_unchecked(ptr_buffer) }}}
 			}
 		}
 	}

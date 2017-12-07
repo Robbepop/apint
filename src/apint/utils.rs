@@ -129,7 +129,7 @@ impl ApInt {
 				slice::from_raw_parts(&self.data.inl, 1)
 			},
 			Storage::Ext => unsafe {
-				slice::from_raw_parts(self.data.ext, self.len_digits())
+				slice::from_raw_parts(self.data.ext.as_ptr(), self.len_digits())
 			}
 		}
 	}
@@ -148,7 +148,7 @@ impl ApInt {
 				slice::from_raw_parts_mut(&mut self.data.inl, 1)
 			},
 			Storage::Ext => unsafe {
-				slice::from_raw_parts_mut(self.data.ext, self.len_digits())
+				slice::from_raw_parts_mut(self.data.ext.as_ptr(), self.len_digits())
 			}
 		}
 	}

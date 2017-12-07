@@ -6,6 +6,8 @@ use bitwidth::{BitWidth};
 use storage::{Storage};
 use digit::{Bit, Digit};
 
+use std::ptr::Unique;
+
 impl Clone for ApInt {
 	fn clone(&self) -> Self {
 		match self.len.storage() {
@@ -19,7 +21,7 @@ impl Clone for ApInt {
 				debug_assert_eq!(buffer.capacity(), req_digits);
 				let dst = buffer.as_mut_ptr();
 				::std::mem::forget(buffer);
-				ApInt{len: self.len, data: ApIntData{ext: dst}}
+				ApInt{len: self.len, data: ApIntData{ext: unsafe{ Unique::new_unchecked(dst) }}}
 			}
 		}
 	}
@@ -70,7 +72,7 @@ impl ApInt {
 			(Storage::Inl, Storage::Ext) => Ok(ApInt{
 				len : target_bitwidth,
 				data: ApIntData{
-					inl: unsafe{(*self.data.ext).truncated(target_bitwidth).unwrap()}
+					inl: unsafe{(*self.data.ext.as_ptr()).truncated(target_bitwidth).unwrap()}
 				}
 			}),
 			(Storage::Ext, Storage::Ext) => {
@@ -81,9 +83,7 @@ impl ApInt {
 				if let Some(excess_bits) = target_bitwidth.excess_bits() {
 					buffer.last_mut().unwrap().truncate(excess_bits).unwrap();
 				}
-				let dst = buffer.as_mut_ptr();
-				::std::mem::forget(buffer);
-				Ok(ApInt{len: self.len, data: ApIntData{ext: dst}})
+				Ok(ApInt::from_iter(buffer).unwrap())
 			}
 			_ => unreachable!()
 		}
@@ -133,7 +133,7 @@ impl ApInt {
 			(Storage::Inl, Storage::Ext) => Ok(ApInt{
 				len : target_bitwidth,
 				data: ApIntData{
-					inl: unsafe{(*self.data.ext).truncated(target_bitwidth).unwrap()}
+					inl: unsafe{(*self.data.ext.as_ptr()).truncated(target_bitwidth).unwrap()}
 				}
 			}),
 			(Storage::Ext, Storage::Ext) => {
@@ -146,9 +146,7 @@ impl ApInt {
 				buffer.resize(rest, Digit::zero());
 				debug_assert_eq!(buffer.capacity(), req_blocks);
 				debug_assert_eq!(buffer.len()     , req_blocks);
-				let dst = buffer.as_mut_ptr();
-				::std::mem::forget(buffer);
-				Ok(ApInt{len: self.len, data: ApIntData{ext: dst}})
+				Ok(ApInt::from_iter(buffer).unwrap())
 			}
 			_ => unreachable!()
 		}

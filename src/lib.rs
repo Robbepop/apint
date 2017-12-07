@@ -1,5 +1,6 @@
 #![feature(i128_type)]
 #![feature(conservative_impl_trait)]
+#![feature(unique)]
 
 #![allow(dead_code)]
 #![allow(unused_variables)]
