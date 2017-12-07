@@ -255,3 +255,30 @@ impl From<i128> for ApInt {
 		ApInt::from_i128(val)
 	}
 }
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+
+	fn test_values_u8() -> impl Iterator<Item=u8> {
+		[0, 1, 2, 4, 8, 16, 32, 64, 128, 255, 10, 42, 99, 123].into_iter().map(|&i| i)
+	}
+
+	#[test]
+	fn from_u8_i8() {
+		for val in test_values_u8() {
+			let explicit_u8 = ApInt::from_u8(val);
+			let explicit_i8 = ApInt::from_i8(val as i8);
+			let implicit_u8 = ApInt::from(val);
+			let implicit_i8 = ApInt::from(val as i8);
+			let expected = ApInt{
+				len : BitWidth::w8(),
+				data: ApIntData{inl: Digit(u64::from(val))}
+			};
+			assert_eq!(explicit_u8, explicit_i8);
+			assert_eq!(explicit_u8, implicit_i8);
+			assert_eq!(explicit_u8, implicit_u8);
+			assert_eq!(explicit_u8, expected);
+		}
+	}
+}
