@@ -369,4 +369,35 @@ mod tests {
 		}
 	}
 
+	fn test_values_u32() -> impl Iterator<Item=u32> {
+		test_values_u16()
+			.map(u32::from)
+			.chain(powers_from_to(16..32)
+				.map(|v| v as u32))
+			.chain([
+				u32::max_value(),
+				1_000_000,
+				999_999_999,
+				1_234_567_890
+			].into_iter().map(|v| *v))
+	}
+
+	#[test]
+	fn from_w32() {
+		for val in test_values_u32() {
+			let explicit_u32 = ApInt::from_u32(val);
+			let explicit_i32 = ApInt::from_i32(val as i32);
+			let implicit_u32 = ApInt::from(val);
+			let implicit_i32 = ApInt::from(val as i32);
+			let expected = ApInt{
+				len : BitWidth::w32(),
+				data: ApIntData{inl: Digit(u64::from(val))}
+			};
+			assert_eq!(explicit_u32, explicit_i32);
+			assert_eq!(explicit_u32, implicit_i32);
+			assert_eq!(explicit_u32, implicit_u32);
+			assert_eq!(explicit_u32, expected);
+		}
+	}
+
 }
