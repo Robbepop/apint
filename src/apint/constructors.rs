@@ -431,4 +431,36 @@ mod tests {
 		}
 	}
 
+	fn test_values_u128() -> impl Iterator<Item=u128> {
+		test_values_u64()
+			.map(u128::from)
+			.chain(powers_from_to(64..128)
+				.map(|v| v as u128))
+			.chain([
+				u128::max_value(),
+				1_000_000_000_000_000_000_000_000,
+				999_999_999_999_999_999_999_999_999,
+				0x0123_4567_89AB_CDEF_FEDC_BA98_7654_3210
+			].into_iter().map(|v| *v))
+	}
+
+	#[test]
+	fn from_w128() {
+		use digit::{Digit, DigitRepr};
+		for val in test_values_u128() {
+			let explicit_u128 = ApInt::from_u128(val);
+			let explicit_i128 = ApInt::from_i128(val as i128);
+			let implicit_u128 = ApInt::from(val);
+			let implicit_i128 = ApInt::from(val as i128);
+			let expected = ApInt::from_iter(
+				vec![
+					Digit((val & u128::from(u64::max_value())) as DigitRepr),
+					Digit((val >> 64) as DigitRepr)
+				]).unwrap();
+			assert_eq!(explicit_u128, explicit_i128);
+			assert_eq!(explicit_u128, implicit_i128);
+			assert_eq!(explicit_u128, implicit_u128);
+			assert_eq!(explicit_u128, expected);
+		}
+	}
 }
