@@ -400,4 +400,35 @@ mod tests {
 		}
 	}
 
+	fn test_values_u64() -> impl Iterator<Item=u64> {
+		test_values_u32()
+			.map(u64::from)
+			.chain(powers_from_to(32..64)
+				.map(|v| v as u64))
+			.chain([
+				u64::max_value(),
+				1_000_000_000_000,
+				999_999_999_999_999_999,
+				0x0123_4567_89AB_CDEF
+			].into_iter().map(|v| *v))
+	}
+
+	#[test]
+	fn from_w64() {
+		for val in test_values_u64() {
+			let explicit_u64 = ApInt::from_u64(val);
+			let explicit_i64 = ApInt::from_i64(val as i64);
+			let implicit_u64 = ApInt::from(val);
+			let implicit_i64 = ApInt::from(val as i64);
+			let expected = ApInt{
+				len : BitWidth::w64(),
+				data: ApIntData{inl: Digit(u64::from(val))}
+			};
+			assert_eq!(explicit_u64, explicit_i64);
+			assert_eq!(explicit_u64, implicit_i64);
+			assert_eq!(explicit_u64, implicit_u64);
+			assert_eq!(explicit_u64, expected);
+		}
+	}
+
 }
