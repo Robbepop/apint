@@ -79,6 +79,29 @@ impl Radix {
 		find_last_bit_set(self.to_u8()) - 1
 	}
 
+	/// Returns the exact number of bits required to store a single digit
+	/// with this `Radix` if possible; else `None` is returned.
+	/// 
+	/// # Example
+	/// 
+	/// For binary `Radix` (`= 2`) there are only digits `0` and `1` which can be
+	/// stored in `1` bit each.
+	/// For a hexdec `Radix` (`= 16`) digits are `0`...`9`,`A`...`F` and a digit 
+	/// requires `4` bits to be stored.
+	/// For a decimal `Radix` (`= 10`) digits `None` is returned.
+	/// 
+	/// Note: This always returns `None` for `Radix` instances that are a
+	///       power of two.
+	#[inline]
+	pub(crate) fn exact_bits_per_digit(self) -> Option<usize> {
+		if self.is_power_of_two() {
+			Some(self.bits_per_digit())
+		}
+		else {
+			None
+		}
+	}
+
 	/// Returns the greatest power of the radix <= digit::BASE.
 	/// 
 	/// Note: This operation is only valid for `Radix` instances that are not a power-of-two.
