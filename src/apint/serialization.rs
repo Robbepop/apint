@@ -33,8 +33,9 @@ impl ApInt {
 	/// let a = ApInt::from_str_radix(10, "42");      // ok
 	/// let b = ApInt::from_str_radix( 2, "1011011"); // ok (dec. = 91)
 	/// let c = ApInt::from_str_radix(16, "ffcc00");  // ok (dec. = 16763904)
-	/// let c = ApInt::from_str_radix(10, "257");     // Error: 257 does not fit within 8 bits!
-	/// let d = ApInt::from_str_radix(16, "hello");   // Error: "hello" is not a valid ApInt representation!
+	/// let c = ApInt::from_str_radix(10, "256");     // Error: 256 does not fit within 8 bits!
+	/// let d = ApInt::from_str_radix( 2, "01020");   // Error: Invalid digit '2' at position 3 for given radix.
+	/// let e = ApInt::from_str_radix(16, "hello");   // Error: "hello" is not a valid ApInt representation!
 	/// ```
 	pub fn from_str_radix<R, S>(radix: R, input: S) -> Result<ApInt>
 		where R: Into<Radix>,
