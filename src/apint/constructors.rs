@@ -261,11 +261,12 @@ mod tests {
 	use super::*;
 
 	fn test_values_u8() -> impl Iterator<Item=u8> {
-		[0, 1, 2, 4, 8, 16, 32, 64, 128, 255, 10, 42, 99, 123].into_iter().map(|&i| i)
+		[0, 1, 2, 4, 8, 16, 32, 64, 128, u8::max_value(), 10, 42, 99, 123]
+			.into_iter().map(|&i| i)
 	}
 
 	#[test]
-	fn from_u8_i8() {
+	fn from_w8() {
 		for val in test_values_u8() {
 			let explicit_u8 = ApInt::from_u8(val);
 			let explicit_i8 = ApInt::from_i8(val as i8);
@@ -281,4 +282,33 @@ mod tests {
 			assert_eq!(explicit_u8, expected);
 		}
 	}
+
+	fn test_values_u16() -> impl Iterator<Item=u16> {
+		fn test_values_just_u16() -> impl Iterator<Item=u16> {
+			[
+				256, 512, 1024, 2048, 4096, 8192, 16384, 32768,
+				u16::max_value(), 500, 1000, 1337, 7777, 42_000
+			].into_iter().map(|&i| i)
+		}
+		test_values_u8().map(|v| v as u16).chain(test_values_just_u16())
+	}
+
+	#[test]
+	fn from_w16() {
+		for val in test_values_u16() {
+			let explicit_u16 = ApInt::from_u16(val);
+			let explicit_i16 = ApInt::from_i16(val as i16);
+			let implicit_u16 = ApInt::from(val);
+			let implicit_i16 = ApInt::from(val as i16);
+			let expected = ApInt{
+				len : BitWidth::w16(),
+				data: ApIntData{inl: Digit(u64::from(val))}
+			};
+			assert_eq!(explicit_u16, explicit_i16);
+			assert_eq!(explicit_u16, implicit_i16);
+			assert_eq!(explicit_u16, implicit_u16);
+			assert_eq!(explicit_u16, expected);
+		}
+	}
+
 }
