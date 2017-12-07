@@ -5,6 +5,8 @@ use apint::{ApInt};
 use small_apint::{SmallApInt, SmallApIntMut};
 use large_apint::{LargeApInt, LargeApIntMut};
 use errors::{Error, Result};
+use traits::Width;
+use bitwidth::BitWidth;
 
 use std::fmt;
 
@@ -43,6 +45,12 @@ pub(crate) enum ZipModel<'a, 'b> {
 pub(crate) enum ZipModelMut<'a, 'b> {
 	Inl(SmallApIntMut<'a>, SmallApInt),
 	Ext(LargeApIntMut<'a>, LargeApInt<'b>)
+}
+
+impl Width for ApInt {
+	fn width(&self) -> BitWidth {
+		BitWidth::new(self.len_bits()).unwrap()
+	}
 }
 
 //  =======================================================================
