@@ -260,9 +260,62 @@ impl From<i128> for ApInt {
 mod tests {
 	use super::*;
 
+	use std::ops::Range;
+
+	fn powers() -> impl Iterator<Item=u128> {
+		(0..128).map(|p| 1 << p)
+	}
+
+	fn powers_from_to(range: Range<usize>) -> impl Iterator<Item=u128> {
+		powers().skip(range.start).take(range.end - range.start)
+	}
+
+	mod tests {
+		use super::{powers, powers_from_to};
+
+		#[test]
+		fn test_powers() {
+			let mut pows = powers();
+			assert_eq!(pows.next(), Some(1 << 0));
+			assert_eq!(pows.next(), Some(1 << 1));
+			assert_eq!(pows.next(), Some(1 << 2));
+			assert_eq!(pows.next(), Some(1 << 3));
+			assert_eq!(pows.next(), Some(1 << 4));
+			assert_eq!(pows.next(), Some(1 << 5));
+			assert_eq!(pows.last(), Some(1 << 127));
+		}
+
+		#[test]
+		fn test_powers_from_to() {
+			{
+				let mut powsft = powers_from_to(0..4);
+				assert_eq!(powsft.next(), Some(1 << 0));
+				assert_eq!(powsft.next(), Some(1 << 1));
+				assert_eq!(powsft.next(), Some(1 << 2));
+				assert_eq!(powsft.next(), Some(1 << 3));
+				assert_eq!(powsft.next(), None);
+			}
+			{
+				let mut powsft = powers_from_to(4..7);
+				assert_eq!(powsft.next(), Some(1 << 4));
+				assert_eq!(powsft.next(), Some(1 << 5));
+				assert_eq!(powsft.next(), Some(1 << 6));
+				assert_eq!(powsft.next(), None);
+			}
+		}
+	}
+
 	fn test_values_u8() -> impl Iterator<Item=u8> {
-		[0, 1, 2, 4, 8, 16, 32, 64, 128, u8::max_value(), 10, 42, 99, 123]
-			.into_iter().map(|&i| i)
+		powers_from_to(0..8)
+			.map(|v| v as u8)
+			.chain([
+				u8::max_value(),
+				10,
+				42,
+				99,
+				123
+			].into_iter()
+			 .map(|v| *v))
 	}
 
 	#[test]
@@ -284,13 +337,18 @@ mod tests {
 	}
 
 	fn test_values_u16() -> impl Iterator<Item=u16> {
-		fn test_values_just_u16() -> impl Iterator<Item=u16> {
-			[
-				256, 512, 1024, 2048, 4096, 8192, 16384, 32768,
-				u16::max_value(), 500, 1000, 1337, 7777, 42_000
-			].into_iter().map(|&i| i)
-		}
-		test_values_u8().map(|v| v as u16).chain(test_values_just_u16())
+		test_values_u8()
+			.map(u16::from)
+			.chain(powers_from_to(8..16)
+				.map(|v| v as u16))
+			.chain([
+				u16::max_value(),
+				500,
+				1000,
+				1337,
+				7777,
+				42_000
+			].into_iter().map(|v| *v))
 	}
 
 	#[test]
