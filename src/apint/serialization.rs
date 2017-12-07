@@ -105,7 +105,7 @@ impl ApInt {
 		use digit::{DigitRepr, Digit};
 
 	    debug_assert!(!v.is_empty() && bits <= 8 && digit::BITS % bits == 0);
-	    debug_assert!(v.iter().all(|&c| (DigitRepr::from(c)) < (1 << bits)));
+	    debug_assert!(v.iter().all(|&c| DigitRepr::from(c) < (1 << bits)));
 
 	    let radix_digits_per_digit = digit::BITS / bits;
 
