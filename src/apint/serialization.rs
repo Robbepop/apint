@@ -57,10 +57,6 @@ impl ApInt {
 				.with_annotation("The input string ends with an underscore ('_') instead of a number. \
 					              The use of underscores is explicitely for separation of digits."))
 		}
-		if input.len() >= 2 && input.starts_with('0') {
-			return Err(Error::invalid_string_repr(input, radix)
-				.with_annotation("The input string starts with zero digits and is not zero."))
-		}
 
 		/// A `target_width` that is greater than or equal to the `BitWidth` returned by this function
 		/// can store any number representation of the given input length and radix.
