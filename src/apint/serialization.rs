@@ -2,6 +2,7 @@ use radix::{Radix};
 use bitwidth::{BitWidth};
 use apint::{ApInt};
 use errors::{Error, Result};
+use digit;
 
 //  =======================================================================
 ///  Deserialization
@@ -73,9 +74,8 @@ impl ApInt {
 			v.push(d);
 		}
 
-		let result =
-			if radix.is_power_of_two() {
-				use digit;
+		let result = match radix.exact_bits_per_digit() {
+			Some(bits) => {
 				v.reverse();
 				let bits = radix.bits_per_digit();
 				if digit::BITS % bits == 0 {
@@ -85,9 +85,11 @@ impl ApInt {
 					ApInt::from_inexact_bitwise_digits(&v, bits)
 				}
 			}
-			else {
+			None => {
 				ApInt::from_radix_digits(&v, radix)
-			};
+			}
+		};
+
 
 		Ok(result)
 	}
