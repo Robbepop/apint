@@ -81,7 +81,6 @@ impl ApInt {
 	}
 
 	/// Creates a new `ApInt` from a given `i64` value with a bit-width of 64.
-	#[inline]
 	pub fn from_u128(val: u128) -> ApInt {
 		let buffer = vec![
 			Digit((val & 0xFFFF_FFFF_FFFF_FFFF) as u64),
