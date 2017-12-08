@@ -1,5 +1,4 @@
 use radix::{Radix};
-use bitwidth::{BitWidth};
 use apint::{ApInt};
 use errors::{Error, Result};
 use digit;
@@ -234,6 +233,8 @@ impl ApInt {
 #[cfg(test)]
 mod tests {
 	use super::*;
+
+	use bitwidth::{BitWidth};
 
 	mod from_str_radix {
 
