@@ -7,14 +7,26 @@ use large_apint::{LargeApInt, LargeApIntMut};
 use errors::{Error, Result};
 use traits::Width;
 use bitwidth::BitWidth;
+use small_apint::DigitWrapper;
+use large_apint::DigitSliceWrapper;
 
 use std::fmt;
 
 impl fmt::Debug for ApInt {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		match self.model() {
-			Model::Inl(small) => small.fmt(f),
-			Model::Ext(large) => large.fmt(f)
+			Model::Inl(small) => {
+				f.debug_struct("ApInt")
+					.field("len", &small.width())
+					.field("digit", &small.digit())
+					.finish()
+			},
+			Model::Ext(large) => {
+				f.debug_struct("ApInt")
+					.field("len", &large.width())
+					.field("digits", &large.digits())
+					.finish()
+			}
 		}
 	}
 }
