@@ -6,6 +6,7 @@
 #![allow(unused_variables)]
 
 #[macro_use] extern crate log;
+extern crate smallvec;
 
 mod errors;
 mod traits;

@@ -6,6 +6,8 @@ use storage::{Storage};
 use digit::{Digit};
 use digit;
 
+use smallvec::SmallVec;
+
 use std::ptr::Unique;
 
 impl Drop for ApInt {
@@ -109,7 +111,7 @@ impl ApInt {
 	pub(crate) fn from_iter<I>(digits: I) -> Result<ApInt>
 		where I: IntoIterator<Item=Digit>,
 	{
-		let buffer = digits.into_iter().collect::<Vec<_>>();
+		let buffer = digits.into_iter().collect::<SmallVec<[Digit; 1]>>();
 		match buffer.len() {
 			0 => {
 				Err(Error::expected_non_empty_digits())
