@@ -97,7 +97,7 @@ fn wide_div(hi: Digit, lo: Digit, divisor: Digit) -> (Digit, Digit) {
 /// Returns the remainder.
 /// 
 /// **TODO**: Find out what this exactly does and why it exits.
-fn div_rem_digits_by_digit<'a, D>(seq: D, divisor: Digit) -> Digit
+fn div_rem_digits_by_digit<'a, D: 'a>(seq: D, divisor: Digit) -> Digit
 	where D: AsDigitSeqMut<'a>,
 	      D::SeqMut: DoubleEndedIterator
 {
@@ -121,9 +121,9 @@ fn div_rem_digits_by_digit<'a, D>(seq: D, divisor: Digit) -> Digit
 /// # Panics
 /// 
 /// - If `lhs` and `rhs` do not have a common bit-width.
-fn add_assign_digits<'l, DL, DR>(lhs: DL, rhs: DR) -> Digit
+fn add_assign_digits<'l, 'r, DL: 'l, DR: 'r>(lhs: DL, rhs: DR) -> Digit
 	where DL: AsDigitSeqMut<'l> + Width,
-	      DR: AsDigitSeq + Width
+	      DR: AsDigitSeq<'r> + Width
 {
 	checks::assert_common_bitwidth(&lhs, &rhs);
 
@@ -147,9 +147,9 @@ fn add_assign_digits<'l, DL, DR>(lhs: DL, rhs: DR) -> Digit
 /// # Panics
 /// 
 /// - If `lhs` and `rhs` do not have a common bit-width.
-fn sub_assign_digits<'l, DL, DR>(lhs: DL, rhs: DR) -> Digit
+fn sub_assign_digits<'l, 'r, DL, DR>(lhs: DL, rhs: DR) -> Digit
 	where DL: AsDigitSeqMut<'l> + Width,
-	      DR: AsDigitSeq + Width
+	      DR: AsDigitSeq<'r> + Width
 {
 	checks::assert_common_bitwidth(&lhs, &rhs);
 
