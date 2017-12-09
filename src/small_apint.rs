@@ -34,7 +34,24 @@ pub(crate) struct SmallApIntMut<'a> {
 	digit: &'a mut Digit
 }
 
-impl SmallApInt {
+impl<'a> SmallApInt<'a> {
+	pub fn most_significant_digit(&self) -> Digit {
+		self.digit
+	}
+
+	pub fn most_significant_bit(&self) -> Bit {
+		self.digit.most_significant_bit()
+	}
+}
+
+impl<'a> SmallApIntMut<'a> {
+	pub fn into_most_significant_digit_mut(self) -> &'a mut Digit {
+		self.digit
+	}
+}
+
+// ============================================================================
+
 impl<'a> AsDigitSeq<'a> for SmallApInt<'a> {
 	type Seq = ContiguousDigitSeq<'a>;
 
