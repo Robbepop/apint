@@ -8,7 +8,12 @@ use errors::{Error, Result};
 use traits::Width;
 use bitwidth::BitWidth;
 use small_apint::DigitWrapper;
-use large_apint::DigitSliceWrapper;
+use digit_seq::{
+	AsDigitSeq,
+	AsDigitSeqMut,
+	ContiguousDigitSeq,
+	ContiguousDigitSeqMut
+};
 
 use std::fmt;
 
@@ -27,6 +32,30 @@ impl fmt::Debug for ApInt {
 					.field("digits", &large.digits())
 					.finish()
 			}
+		}
+	}
+}
+
+// ============================================================================
+
+impl<'a> AsDigitSeq<'a> for &'a ApInt {
+	type Seq = ContiguousDigitSeq<'a>;
+
+	fn digits(self) -> Self::Seq {
+		match self.model() {
+			Model::Inl(small) => small.digits(),
+			Model::Ext(large) => large.digits()
+		}
+	}
+}
+
+impl<'a> AsDigitSeqMut<'a> for &'a mut ApInt {
+	type SeqMut = ContiguousDigitSeqMut<'a>;
+
+	fn digits_mut(self) -> Self::SeqMut {
+		match self.model_mut() {
+			ModelMut::Inl(small) => small.digits_mut(),
+			ModelMut::Ext(large) => large.digits_mut()
 		}
 	}
 }
