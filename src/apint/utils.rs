@@ -112,7 +112,7 @@ impl ApInt {
 	/// - The returned values are valid for bit-block sizes of 32 bit.
 	#[inline]
 	pub(in apint) fn len_digits(&self) -> usize {
-		self.len.required_blocks()
+		self.len.required_digits()
 	}
 
 	#[inline]

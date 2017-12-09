@@ -68,8 +68,8 @@ impl ApInt {
 			)
 		}
 
-		let actual_req_digits = self.width().required_blocks();
-		let target_req_digits = target_width.required_blocks();
+		let actual_req_digits = self.width().required_digits();
+		let target_req_digits = target_width.required_digits();
 
 		if actual_req_digits == target_req_digits {
 			// We can do a cheap truncation, here!
@@ -177,7 +177,7 @@ impl ApInt {
 				}
 			}),
 			(Storage::Ext, Storage::Ext) => {
-				let req_blocks     = target_bitwidth.required_blocks();
+				let req_blocks     = target_bitwidth.required_digits();
 				let present_blocks = self.len_digits();
 				assert!(present_blocks <= req_blocks);
 				let mut buffer: Vec<Digit> = Vec::with_capacity(req_blocks);

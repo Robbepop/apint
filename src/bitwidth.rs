@@ -112,7 +112,7 @@ impl BitWidth {
 	/// Returns the number of digit-blocks that are required to represent any 
 	/// value with a bit-width equal to `self`.
 	#[inline]
-	pub(crate) fn required_blocks(&self) -> usize {
+	pub(crate) fn required_digits(&self) -> usize {
 		((self.to_usize() - 1) / digit::BITS) + 1
 	}
 }
