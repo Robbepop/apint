@@ -137,30 +137,21 @@ impl ApInt {
 	}
 
 	/// Creates a new `ApInt` that represents the repetition of the given digit
-	/// up to the given bitwidth.
+	/// up to the given target bitwidth.
 	/// 
 	/// Note: The last digit in the generated sequence is truncated to make the `ApInt`'s
 	///       value representation fit the given bit-width.
-	fn repeat_digit<D>(bitwidth: BitWidth, digit: D) -> ApInt
+	#[deprecated]
+	fn repeat_digit<D>(target_width: BitWidth, digit: D) -> ApInt
 		where D: Into<Digit>
 	{
+		use std::iter;
 		let digit = digit.into();
-		match bitwidth.storage() {
-			Storage::Inl => {
-				ApInt{len: bitwidth, data: ApIntData{inl: digit.truncated(bitwidth).unwrap()}}
-			}
-			Storage::Ext => {
-				use std::mem;
-				let req_blocks = bitwidth.required_blocks();
-				let mut buffer = vec![digit; req_blocks];
-				let last_width = bitwidth.to_usize() % digit::BITS;
-				buffer.last_mut().unwrap().truncate(last_width).unwrap();
-				assert_eq!(buffer.capacity(), req_blocks);
-				let ptr_buffer = buffer.as_ptr() as *mut Digit;
-				mem::forget(buffer);
-				ApInt{len: bitwidth, data: ApIntData{ext: unsafe{ Unique::new_unchecked(ptr_buffer) }}}
-			}
-		}
+		let req_digits = target_width.required_blocks();
+		ApInt::from_iter(iter::repeat(digit).take(req_digits))
+			.unwrap()
+			.into_truncate(target_width)
+			.unwrap()
 	}
 
 	/// Creates a new `ApInt` with the given bit-width that represents zero.
