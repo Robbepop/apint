@@ -7,6 +7,13 @@ use traits::{
 	ApIntImpl,
 	ApIntMutImpl,
 };
+use digit_seq::{
+	AsDigitSeq,
+	AsDigitSeqMut,
+	ContiguousDigitSeq,
+	ContiguousDigitSeqMut
+};
+
 use std::ops::{
 	BitAndAssign,
 	BitOrAssign,
@@ -26,6 +33,37 @@ pub(crate) struct SmallApIntMut<'a> {
 }
 
 impl SmallApInt {
+impl<'a> AsDigitSeq<'a> for SmallApInt<'a> {
+	type Seq = ContiguousDigitSeq<'a>;
+
+	fn digits(self) -> Self::Seq {
+		use std::slice;
+		ContiguousDigitSeq::from(unsafe{
+			slice::from_raw_parts(&self.digit as *const Digit, 1)})
+	}
+}
+
+impl<'a> AsDigitSeq<'a> for SmallApIntMut<'a> {
+	type Seq = ContiguousDigitSeq<'a>;
+
+	fn digits(self) -> Self::Seq {
+		use std::slice;
+		ContiguousDigitSeq::from(unsafe{
+			slice::from_raw_parts(self.digit as *const Digit, 1)})
+	}
+}
+impl<'a> AsDigitSeqMut<'a> for SmallApIntMut<'a> {
+	type SeqMut = ContiguousDigitSeqMut<'a>;
+
+	fn digits_mut(self) -> Self::SeqMut {
+		use std::slice;
+		ContiguousDigitSeqMut::from(unsafe{
+			slice::from_raw_parts_mut(self.digit as *mut Digit, 1)})
+	}
+}
+
+// ============================================================================
+
 	#[inline]
 	pub(crate) fn new<W>(width: W, digit: Digit) -> SmallApInt
 		where W: Into<BitWidth>
