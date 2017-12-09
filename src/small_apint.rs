@@ -19,11 +19,13 @@ use std::ops::{
 	BitOrAssign,
 	BitXorAssign
 };
+use std::marker::PhantomData;
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
-pub(crate) struct SmallApInt {
+pub(crate) struct SmallApInt<'a> {
 	len  : BitWidth,
-	digit: Digit
+	digit: Digit,
+	life : PhantomData<&'a ()>
 }
 
 #[derive(Debug, PartialEq, Eq, Hash)]
@@ -64,22 +66,23 @@ impl<'a> AsDigitSeqMut<'a> for SmallApIntMut<'a> {
 
 // ============================================================================
 
+impl<'a> SmallApInt<'a> {
 	#[inline]
-	pub(crate) fn new<W>(width: W, digit: Digit) -> SmallApInt
+	pub(crate) fn new<W>(width: W, digit: Digit) -> SmallApInt<'a>
 		where W: Into<BitWidth>
 	{
-		SmallApInt{len: width.into(), digit}
+		SmallApInt{len: width.into(), digit, life: PhantomData}
 	}
 
 	#[inline]
-	pub(crate) fn one<W>(width: W) -> SmallApInt
+	pub(crate) fn one<W>(width: W) -> SmallApInt<'a>
 		where W: Into<BitWidth>
 	{
 		SmallApInt::new(width, Digit::one())
 	}
 
 	#[inline]
-	pub(crate) fn zero<W>(width: W) -> SmallApInt
+	pub(crate) fn zero<W>(width: W) -> SmallApInt<'a>
 		where W: Into<BitWidth>
 	{
 		SmallApInt::new(width, Digit::zero())
@@ -105,15 +108,15 @@ pub(crate) trait DigitMutWrapper {
 
 // ============================================================================
 
-impl Width for SmallApInt {
+impl<'a> Width for SmallApInt<'a> {
 	fn width(&self) -> BitWidth { self.len }
 }
 
-impl<'a> Width for &'a SmallApInt {
+impl<'a> Width for &'a SmallApInt<'a> {
 	fn width(&self) -> BitWidth { self.len }
 }
 
-impl<'a> Width for &'a mut SmallApInt {
+impl<'a> Width for &'a mut SmallApInt<'a> {
 	fn width(&self) -> BitWidth { self.len }
 }
 
@@ -131,15 +134,15 @@ impl<'a> Width for &'a mut SmallApIntMut<'a> {
 
 // ============================================================================
 
-impl DigitWrapper for SmallApInt {
+impl<'a> DigitWrapper for SmallApInt<'a> {
 	fn digit(&self) -> Digit { self.digit }
 }
 
-impl<'a> DigitWrapper for &'a SmallApInt {
+impl<'a> DigitWrapper for &'a SmallApInt<'a> {
 	fn digit(&self) -> Digit { self.digit }
 }
 
-impl<'a> DigitWrapper for &'a mut SmallApInt {
+impl<'a> DigitWrapper for &'a mut SmallApInt<'a> {
 	fn digit(&self) -> Digit { self.digit }
 }
 
@@ -169,7 +172,7 @@ impl<'a> DigitMutWrapper for &'a mut SmallApIntMut<'a> {
 
 use checks;
 
-impl<T> ApIntImpl<SmallApInt> for T
+impl<'a, T> ApIntImpl<SmallApInt<'a>> for T
 	where T: Width + DigitWrapper
 {
 	#[inline]
@@ -199,7 +202,7 @@ impl<T> ApIntImpl<SmallApInt> for T
 	}
 }
 
-impl<T> ApIntMutImpl<SmallApInt> for T
+impl<'a, T> ApIntMutImpl<SmallApInt<'a>> for T
 	where T: Width + DigitMutWrapper
 {
 
