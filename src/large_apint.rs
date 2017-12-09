@@ -2,6 +2,13 @@ use errors::{Result};
 use digit::{Bit, Digit};
 use bitwidth::BitWidth;
 use traits::{Width, ApIntImpl, ApIntMutImpl};
+use digit_seq::{
+	AsDigitSeq,
+	AsDigitSeqMut,
+	ContiguousDigitSeq,
+	ContiguousDigitSeqMut
+};
+
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub(crate) struct LargeApInt<'a> {
