@@ -9,8 +9,7 @@ use digit_seq::{
 	ContiguousDigitSeqMut
 };
 
-
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 pub(crate) struct LargeApInt<'a> {
 	len   : BitWidth,
 	digits: &'a [Digit]
