@@ -35,7 +35,7 @@ impl fmt::Debug for ApInt {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) enum Model<'a> {
-	Inl(SmallApInt),
+	Inl(SmallApInt<'a>),
 	Ext(LargeApInt<'a>)
 }
 
@@ -49,13 +49,13 @@ pub(crate) enum ModelMut<'a> {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) enum ZipModel<'a, 'b> {
-	Inl(SmallApInt, SmallApInt),
+	Inl(SmallApInt<'a>, SmallApInt<'b>),
 	Ext(LargeApInt<'a>, LargeApInt<'b>)
 }
 
 #[derive(Debug, PartialEq, Eq)]
 pub(crate) enum ZipModelMut<'a, 'b> {
-	Inl(SmallApIntMut<'a>, SmallApInt),
+	Inl(SmallApIntMut<'a>, SmallApInt<'b>),
 	Ext(LargeApIntMut<'a>, LargeApInt<'b>)
 }
 
@@ -92,7 +92,7 @@ impl ApInt {
 	}
 
 	#[inline]
-	pub(in apint) fn model(&self) -> Model {
+	pub(in apint) fn model<'a>(&'a self) -> Model<'a> {
 		match self.storage() {
 			Storage::Inl => Model::Inl(SmallApInt::new(self.len, unsafe{self.data.inl})),
 			Storage::Ext => Model::Ext(LargeApInt::new(self.len, self.as_digit_slice()))
@@ -100,7 +100,7 @@ impl ApInt {
 	}
 
 	#[inline]
-	pub(in apint) fn model_mut(&mut self) -> ModelMut {
+	pub(in apint) fn model_mut<'a>(&'a mut self) -> ModelMut<'a> {
 		match self.storage() {
 			Storage::Inl => ModelMut::Inl(SmallApIntMut::new(self.len, unsafe{&mut self.data.inl})),
 			Storage::Ext => ModelMut::Ext(LargeApIntMut::new(self.len, self.as_digit_slice_mut()))
