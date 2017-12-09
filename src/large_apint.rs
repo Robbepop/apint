@@ -57,45 +57,45 @@ impl<'a> LargeApIntMut<'a> {
 // ============================================================================
 
 pub(crate) trait DigitSliceWrapper {
-	fn digits(&self) -> &[Digit];
+	fn digits_slice(&self) -> &[Digit];
 }
 
 pub(crate) trait DigitMutSliceWrapper {
-	fn digits_mut(&mut self) -> &mut [Digit];
+	fn digits_slice_mut(&mut self) -> &mut [Digit];
 }
 
 impl<'a> DigitSliceWrapper for LargeApInt<'a> {
-	fn digits(&self) -> &[Digit] {
+	fn digits_slice(&self) -> &[Digit] {
 		self.digits
 	}
 }
 
 impl<'a> DigitSliceWrapper for &'a LargeApInt<'a> {
-	fn digits(&self) -> &[Digit] {
+	fn digits_slice(&self) -> &[Digit] {
 		self.digits
 	}
 }
 
 impl<'a> DigitSliceWrapper for &'a mut LargeApInt<'a> {
-	fn digits(&self) -> &[Digit] {
+	fn digits_slice(&self) -> &[Digit] {
 		self.digits
 	}
 }
 
 impl<'a> DigitSliceWrapper for LargeApIntMut<'a> {
-	fn digits(&self) -> &[Digit] {
+	fn digits_slice(&self) -> &[Digit] {
 		self.digits
 	}
 }
 
 impl<'a> DigitSliceWrapper for &'a LargeApIntMut<'a> {
-	fn digits(&self) -> &[Digit] {
+	fn digits_slice(&self) -> &[Digit] {
 		self.digits
 	}
 }
 
 impl<'a> DigitSliceWrapper for &'a mut LargeApIntMut<'a> {
-	fn digits(&self) -> &[Digit] {
+	fn digits_slice(&self) -> &[Digit] {
 		self.digits
 	}
 }
@@ -103,13 +103,13 @@ impl<'a> DigitSliceWrapper for &'a mut LargeApIntMut<'a> {
 // ============================================================================
 
 impl<'a> DigitMutSliceWrapper for LargeApIntMut<'a> {
-	fn digits_mut(&mut self) -> &mut [Digit] {
+	fn digits_slice_mut(&mut self) -> &mut [Digit] {
 		self.digits
 	}
 }
 
 impl<'a> DigitMutSliceWrapper for &'a mut LargeApIntMut<'a> {
-	fn digits_mut(&mut self) -> &mut [Digit] {
+	fn digits_slice_mut(&mut self) -> &mut [Digit] {
 		self.digits
 	}
 }
