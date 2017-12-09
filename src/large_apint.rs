@@ -17,6 +17,24 @@ pub(crate) struct LargeApIntMut<'a> {
 
 // ============================================================================
 
+impl<'a> AsDigitSeq<'a> for LargeApInt<'a> {
+	type Seq = ContiguousDigitSeq<'a>;
+
+	fn digits(self) -> Self::Seq {
+		ContiguousDigitSeq::from(self.digits)
+	}
+}
+
+impl<'a> AsDigitSeqMut<'a> for LargeApIntMut<'a> {
+	type SeqMut = ContiguousDigitSeqMut<'a>;
+
+	fn digits_mut(self) -> Self::SeqMut {
+		ContiguousDigitSeqMut::from(self.digits)
+	}
+}
+
+// ============================================================================
+
 impl<'a> LargeApInt<'a> {
 	pub(crate) fn new(len: BitWidth, digits: &'a [Digit]) -> LargeApInt {
 		LargeApInt{len, digits}
