@@ -249,6 +249,15 @@ impl Width for DoubleDigit {
 ///  Bitwise access
 /// ===========================================================================
 impl Digit {
+	/// Returns the most significant `Bit` of this `Digit`.
+	/// 
+	/// Note: The most significant `Bit` is also the sign bit 
+	///       for signed integers.
+	#[inline]
+	pub fn most_significant_bit(self) -> Bit {
+		Bit::from((self.repr() >> (BITS - 1)) != 0)
+	}
+
 	/// Returns `true` if the `n`th bit is set to `1`, else returns `false`.
 	/// 
 	/// # Errors
