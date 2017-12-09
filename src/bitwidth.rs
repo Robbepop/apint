@@ -84,8 +84,16 @@ impl BitWidth {
 		self.0
 	}
 
-	// TODO: Move this method out of this context. (Does not fit here!)
-	// ----------------------------------------------------------------
+	/// Returns the number of exceeding bits that is implied for `ApInt`
+	/// instances with this `BitWidth`.
+	/// 
+	/// For example for an `ApInt` with a `BitWidth` of `140` bits requires
+	/// exactly `3` digits (each with its `64` bits). The third however,
+	/// only requires `140 - 128 = 12` bits of its `64` bits in total to
+	/// represent the `ApInt` instance. So `excess_bits` returns `12` for
+	/// a `BitWidth` that is equal to `140`.
+	/// 
+	/// *Note:* A better name for this method has yet to be found!
 	pub(crate) fn excess_bits(self) -> Option<usize> {
 		match self.to_usize() % digit::BITS {
 			0 => None,
@@ -93,24 +101,30 @@ impl BitWidth {
 		}
 	}
 
+	/// Returns the exceeding `BitWidth` of this `BitWidth`.
+	/// 
+	/// *Note:* This is just a simple wrapper around the `excess_bits` method.
+	///         Read the documentation of `excess_bits` for more information 
+	///         about what is actually returned by this.
 	pub(crate) fn excess_width(self) -> Option<BitWidth> {
 		self.excess_bits().map(|bits| BitWidth::from(bits))
 	}
 
-	// TODO: Move this method out of this context. (Fits better as constructor of Storage.)
-	// ------------------------------------------------------------------------------------
 	/// Returns a storage specifier that tells the caller if `ApInt`'s 
 	/// associated with this bitwidth require an external memory (`Ext`) to store 
 	/// their digits or may use inplace memory (`Inl`).
+	/// 
+	/// *Note:* Maybe this method should be removed. A constructor for
+	///         `Storage` fits better for this purpose.
 	#[inline]
 	pub(crate) fn storage(self) -> Storage {
 		Storage::from(self)
 	}
 
-	// TODO: Move this method out of this context. (Does not fit here!)
-	// ----------------------------------------------------------------
-	/// Returns the number of digit-blocks that are required to represent any 
-	/// value with a bit-width equal to `self`.
+	/// Returns the number of digits that are required to represent an
+	/// `ApInt` with this `BitWidth`.
+	/// 
+	/// *Note:* Maybe we should move this method somewhere else?
 	#[inline]
 	pub(crate) fn required_digits(&self) -> usize {
 		((self.to_usize() - 1) / digit::BITS) + 1
