@@ -178,12 +178,24 @@ impl ApInt {
 	/// 
 	/// The `Block` is returned as a `ComputeBlock` that adds an associated bit-width to it.
 	pub(in apint) fn most_significant_digit(&self) -> Digit {
-		unimplemented!()
+		match self.model() {
+			Model::Inl(small) => small.most_significant_digit(),
+			Model::Ext(large) => large.most_significant_digit()
+		}
+	}
+
+	pub(in apint) fn most_significant_digit_mut(&mut self) -> &mut Digit {
+		match self.model_mut() {
+			ModelMut::Inl(small) => small.into_most_significant_digit_mut(),
+			ModelMut::Ext(large) => large.into_most_significant_digit_mut()
+		}
 	}
 
 	/// Returns `true` if the most significant bit of the `ApInt` is set, `false` otherwise.
-	pub(in apint) fn most_significant_bit(&self) -> bool {
-		unimplemented!()
+	pub(in apint) fn most_significant_bit(&self) -> Bit {
+		match self.model() {
+			Model::Inl(small) => small.most_significant_bit(),
+			Model::Ext(large) => large.most_significant_bit()
+		}
 	}
-
 }
