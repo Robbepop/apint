@@ -1,6 +1,6 @@
 
 use storage::{Storage};
-use digit::{Digit};
+use digit::{Digit, Bit};
 use apint::{ApInt};
 use small_apint::{SmallApInt, SmallApIntMut};
 use large_apint::{LargeApInt, LargeApIntMut};
