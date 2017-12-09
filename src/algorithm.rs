@@ -101,7 +101,6 @@ fn div_rem_digits_by_digit<'a, D: 'a>(seq: D, divisor: Digit) -> Digit
 	where D: AsDigitSeqMut<'a>,
 	      D::SeqMut: DoubleEndedIterator
 {
-	let mut seq = seq;
 	let mut rem = digit::ZERO;
 	for digit in seq.digits_mut().rev() {
 		let (q, r) = wide_div(rem, *digit, divisor);
@@ -127,7 +126,6 @@ fn add_assign_digits<'l, 'r, DL: 'l, DR: 'r>(lhs: DL, rhs: DR) -> Digit
 {
 	checks::assert_common_bitwidth(&lhs, &rhs);
 
-	let mut lhs = lhs;
 	let mut dac = DigitAndCarry::new(digit::ZERO);
 	for (l, r) in lhs.digits_mut().zip(rhs.digits()) {
 		dac.digit = r;
