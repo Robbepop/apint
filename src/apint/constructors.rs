@@ -5,6 +5,7 @@ use errors::{Error, Result};
 use storage::{Storage};
 use digit::{Digit};
 use digit;
+use traits::Width;
 
 use smallvec::SmallVec;
 
@@ -147,11 +148,13 @@ impl ApInt {
 	{
 		use std::iter;
 		let digit = digit.into();
-		let req_digits = target_width.required_blocks();
-		ApInt::from_iter(iter::repeat(digit).take(req_digits))
-			.unwrap()
-			.into_truncate(target_width)
-			.unwrap()
+		let req_digits = target_width.required_digits();
+		let untruncated = ApInt::from_iter(iter::repeat(digit).take(req_digits))
+			.unwrap();
+		if target_width != untruncated.width() {
+			return untruncated.into_truncate(target_width).unwrap()
+		}
+		untruncated
 	}
 
 	/// Creates a new `ApInt` with the given bit-width that represents zero.
