@@ -16,6 +16,13 @@ pub(crate) struct ContiguousDigitSeq<'a> {
 	digits: slice::Iter<'a, Digit>
 }
 
+impl<'a> From<&'a [Digit]> for ContiguousDigitSeq<'a> {
+	#[inline]
+	fn from(slice: &'a [Digit]) -> ContiguousDigitSeq<'a> {
+		ContiguousDigitSeq{digits: slice.iter()}
+	}
+}
+
 impl<'a> Iterator for ContiguousDigitSeq<'a> {
 	type Item = Digit;
 
@@ -33,6 +40,13 @@ impl<'a> DigitSeq<'a> for ContiguousDigitSeq<'a> {}
 #[derive(Debug)]
 pub(crate) struct ContiguousDigitSeqMut<'a> {
 	digits: slice::IterMut<'a, Digit>
+}
+
+impl<'a> From<&'a mut [Digit]> for ContiguousDigitSeqMut<'a> {
+	#[inline]
+	fn from(slice: &'a mut [Digit]) -> ContiguousDigitSeqMut<'a> {
+		ContiguousDigitSeqMut{digits: slice.iter_mut()}
+	}
 }
 
 impl<'a> Iterator for ContiguousDigitSeqMut<'a> {
