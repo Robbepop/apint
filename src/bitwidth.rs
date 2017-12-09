@@ -93,6 +93,10 @@ impl BitWidth {
 		}
 	}
 
+	pub(crate) fn excess_width(self) -> Option<BitWidth> {
+		self.excess_bits().map(|bits| BitWidth::from(bits))
+	}
+
 	// TODO: Move this method out of this context. (Fits better as constructor of Storage.)
 	// ------------------------------------------------------------------------------------
 	/// Returns a storage specifier that tells the caller if `ApInt`'s 
