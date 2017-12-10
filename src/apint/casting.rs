@@ -121,6 +121,24 @@ impl ApInt {
 		}
 	}
 
+	pub fn into_strict_truncate<W>(self, target_width: W) -> Result<ApInt>
+		where W: Into<BitWidth>
+	{
+		let actual_width = self.width();
+		let target_width = target_width.into();
+
+		if target_width == actual_width {
+			return
+				Error::truncation_bitwidth_too_large(target_width, actual_width)
+					.with_annotation(
+						"Cannot strictly truncate an `ApInt` to the same bitwidth.")
+					.into()
+		}
+
+		assert!(target_width < actual_width);
+		self.into_truncate(target_width)
+	}
+
 	/// Creates a new `ApInt` that represents this `ApInt` truncated to 
 	/// the given target bit-width.
 	///
@@ -137,6 +155,14 @@ impl ApInt {
 	{
 		self.clone().into_truncate(target_width)
 	}
+
+	pub fn strict_truncate<W>(&self, target_width: W) -> Result<ApInt>
+		where W: Into<BitWidth>
+	{
+		self.clone().into_strict_truncate(target_width)
+	}
+
+	// ========================================================================
 
 	pub fn into_zero_extend<W>(self, target_width: W) -> Result<ApInt>
 		where W: Into<BitWidth>
