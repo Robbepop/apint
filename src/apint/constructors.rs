@@ -146,19 +146,23 @@ impl ApInt {
 	/// 
 	/// Note: The last digit in the generated sequence is truncated to make the `ApInt`'s
 	///       value representation fit the given bit-width.
-	#[deprecated]
 	fn repeat_digit<D>(target_width: BitWidth, digit: D) -> ApInt
 		where D: Into<Digit>
 	{
 		use std::iter;
 		let digit = digit.into();
 		let req_digits = target_width.required_digits();
-		let untruncated = ApInt::from_iter(iter::repeat(digit).take(req_digits))
-			.unwrap();
-		if target_width != untruncated.width() {
-			return untruncated.into_truncate(target_width).unwrap()
-		}
-		untruncated
+		ApInt::from_iter(iter::repeat(digit).take(req_digits))
+			.expect("Since `required_digits` always returns `1` or more \
+			         required digits we can safely assume that this operation \
+			         never fails.")
+			.into_truncate(target_width)
+			.expect("Since `BitWidth::required_digits` always returns the upper bound \
+			         for the number of digits required to represent the given `BitWidth` \
+			         and `ApInt::from_iter` will use exactly this upper bound \
+			         we can safely assume that `target_width` is always equal or \
+			         less than what `ApInt::from_iter` returns and thus truncation will \
+			         never fail.")
 	}
 
 	/// Creates a new `ApInt` with the given bit-width that represents zero.
