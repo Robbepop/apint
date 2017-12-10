@@ -426,11 +426,12 @@ impl ApInt {
 	/// # Note
 	/// 
 	/// This operation will forward to
-	/// (`into_truncate`)[struct.ApInt.html#method.into_truncate]
+	/// 
+	/// - [`into_truncate`](struct.ApInt.html#method.into_truncate)
 	/// if `target_width` is less than or equal to the width of
-	/// the given `ApInt` or to
-	/// (`into_zero_extend`)[struct.ApInt.html#method.into_zero_extend]
-	/// otherwise.
+	/// the given `ApInt`
+	/// - [`into_zero_extend`](struct.ApInt.html#method.into_zero_extend)
+	/// otherwise
 	pub fn into_zero_resize<W>(self, target_width: W) -> ApInt
 		where W: Into<BitWidth>
 	{
@@ -454,11 +455,12 @@ impl ApInt {
 	/// # Note
 	/// 
 	/// This operation will forward to
-	/// (`into_strict_truncate`)[struct.ApInt.html#method.into_strict_truncate]
+	/// 
+	/// - [`into_strict_truncate`](struct.ApInt.html#method.into_strict_truncate)
 	/// if `target_width` is less than or equal to the width of
-	/// the given `ApInt` or to
-	/// (`into_strict_zero_extend`)[struct.ApInt.html#method.into_strict_zero_extend]
-	/// otherwise.
+	/// the given `ApInt`
+	/// - [`into_strict_zero_extend`](struct.ApInt.html#method.into_strict_zero_extend)
+	/// otherwise
 	/// 
 	/// # Errors
 	/// 
@@ -482,11 +484,12 @@ impl ApInt {
 	/// # Note
 	/// 
 	/// This operation will forward to
-	/// (`into_truncate`)[struct.ApInt.html#method.into_truncate]
+	/// 
+	/// - [`into_truncate`](struct.ApInt.html#method.into_truncate)
 	/// if `target_width` is less than or equal to the width of
-	/// the given `ApInt` or to
-	/// (`into_sign_extend`)[struct.ApInt.html#method.into_sign_extend]
-	/// otherwise.
+	/// the given `ApInt`
+	/// - [`into_sign_extend`](struct.ApInt.html#method.into_sign_extend)
+	/// otherwise
 	pub fn into_sign_resize<W>(self, target_width: W) -> ApInt
 		where W: Into<BitWidth>
 	{
@@ -510,11 +513,12 @@ impl ApInt {
 	/// # Note
 	/// 
 	/// This operation will forward to
-	/// (`into_strict_truncate`)[struct.ApInt.html#method.into_strict_truncate]
+	/// 
+	/// - [`into_strict_truncate`](struct.ApInt.html#method.into_strict_truncate)
 	/// if `target_width` is less than or equal to the width of
-	/// the given `ApInt` or to
-	/// (`into_strict_sign_extend`)[struct.ApInt.html#method.into_strict_sign_extend]
-	/// otherwise.
+	/// the given `ApInt`
+	/// - [`into_strict_sign_extend`](struct.ApInt.html#method.into_strict_sign_extend)
+	/// otherwise
 	/// 
 	/// # Errors
 	/// 
