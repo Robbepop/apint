@@ -5,7 +5,6 @@ use errors::{Error, Result};
 use storage::{Storage};
 use digit::{Digit};
 use digit;
-use traits::Width;
 
 use smallvec::SmallVec;
 
