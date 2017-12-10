@@ -533,24 +533,80 @@ impl ApInt {
 		}
 	}
 
+	/// Returns a new `ApInt` that is equal to the given `ApInt`
+	/// zero-resized to the given `target_width`.
+	/// 
+	/// # Note
+	/// 
+	/// - This will never reuse memory inplace and may even
+	///   heap-allocate if the given `ApInt` is larger than what
+	///   can be space-optimized.
+	/// - This is equal to a call to `clone()` if `target_width`
+	///   is equal to the bitwidth of the given `ApInt`.
+	/// - This will always perform worse than a call to
+	///   [`into_zero_resize`](struct.ApInt.html#method.into_zero_resize)
 	pub fn zero_resize<W>(&self, target_width: W) -> ApInt
 		where W: Into<BitWidth>
 	{
 		self.clone().into_zero_resize(target_width)
 	}
 
+	/// Tries to create an `ApInt` that is equal to the given `ApInt`
+	/// strictly zero-resized to the given `target_width`.
+	/// 
+	/// # Note
+	/// 
+	/// - This will never reuse memory inplace and may even
+	///   heap-allocate if the given `ApInt` is larger than what
+	///   can be space-optimized.
+	/// - This is equal to a call to `clone()` if `target_width`
+	///   is equal to the bitwidth of the given `ApInt`.
+	/// - This will always perform worse than a call to
+	///   [`into_strict_zero_resize`](struct.ApInt.html#method.into_strict_zero_resize)
+	/// 
+	/// # Errors
+	/// 
+	/// - If `target_width` is equal to the width of the given `ApInt`.
 	pub fn strict_zero_resize<W>(&self, target_width: W) -> Result<ApInt>
 		where W: Into<BitWidth>
 	{
 		self.clone().into_strict_zero_resize(target_width)
 	}
 
+	/// Returns a new `ApInt` that is equal to the given `ApInt`
+	/// sign-resized to the given `target_width`.
+	/// 
+	/// # Note
+	/// 
+	/// - This will never reuse memory inplace and may even
+	///   heap-allocate if the given `ApInt` is larger than what
+	///   can be space-optimized.
+	/// - This is equal to a call to `clone()` if `target_width`
+	///   is equal to the bitwidth of the given `ApInt`.
+	/// - This will always perform worse than a call to
+	///   [`into_sign_resize`](struct.ApInt.html#method.into_sign_resize)
 	pub fn sign_resize<W>(&self, target_width: W) -> ApInt
 		where W: Into<BitWidth>
 	{
 		self.clone().into_sign_resize(target_width)
 	}
 
+	/// Tries to create an `ApInt` that is equal to the given `ApInt`
+	/// strictly sign-resized to the given `target_width`.
+	/// 
+	/// # Note
+	/// 
+	/// - This will never reuse memory inplace and may even
+	///   heap-allocate if the given `ApInt` is larger than what
+	///   can be space-optimized.
+	/// - This is equal to a call to `clone()` if `target_width`
+	///   is equal to the bitwidth of the given `ApInt`.
+	/// - This will always perform worse than a call to
+	///   [`into_strict_sign_resize`](struct.ApInt.html#method.into_strict_sign_resize)
+	/// 
+	/// # Errors
+	/// 
+	/// - If `target_width` is equal to the width of the given `ApInt`.
 	pub fn strict_sign_resize<W>(&self, target_width: W) -> Result<ApInt>
 		where W: Into<BitWidth>
 	{
