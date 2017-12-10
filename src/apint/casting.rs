@@ -322,40 +322,91 @@ impl ApInt {
 
 	// ========================================================================
 
+	pub fn into_zero_resize<W>(self, target_width: W) -> ApInt
+		where W: Into<BitWidth>
+	{
+		let actual_width = self.width();
+		let target_width = target_width.into();
+
+		if target_width <= actual_width {
+			self.into_truncate(target_width)
+			    .expect("It was asserted that the target truncation `BitWidth` \
+			             is valid for this operation.")
+		}
+		else {
+			self.into_zero_extend(target_width)
+			    .expect("It was asserted that the target zero-extension `BitWidth` \
+			             is valid for this operation.")
 		}
 	}
 
-	/// TODO: Missing documentation.
-	pub fn zero_resize<W>(&self, target_bitwidth: W) -> ApInt
+	pub fn into_strict_zero_resize<W>(self, target_width: W) -> Result<ApInt>
 		where W: Into<BitWidth>
 	{
-		let target_bitwidth = target_bitwidth.into();
-		let len_bitwidth    = target_bitwidth.to_usize();
+		let actual_width = self.width();
+		let target_width = target_width.into();
 
-		if len_bitwidth <= self.len_bits() {
-			self.truncate(target_bitwidth)
-			    .expect("truncate cannot fail if the target bitwidth is smaller than the current")
+		if target_width <= actual_width {
+			self.into_strict_truncate(target_width)
 		}
 		else {
-			self.zero_extend(target_bitwidth)
-			    .expect("zero_extend cannot fail if the target bitwidth is larger than the current")
+			self.into_strict_zero_extend(target_width)
 		}
 	}
 
-	/// TODO: Missing documentation.
-	pub fn sign_resize<W>(&self, target_bitwidth: W) -> ApInt
+	pub fn into_sign_resize<W>(self, target_width: W) -> ApInt
 		where W: Into<BitWidth>
 	{
-		let target_bitwidth = target_bitwidth.into();
-		let len_bitwidth    = target_bitwidth.to_usize();
+		let actual_width = self.width();
+		let target_width = target_width.into();
 
-		if len_bitwidth <= self.len_bits() {
-			self.truncate(target_bitwidth)
-			    .expect("truncate cannot fail if the target bitwidth is smaller than the current")
+		if target_width <= actual_width {
+			self.into_truncate(target_width)
+			    .expect("It was asserted that the target truncation `BitWidth` \
+			             is valid for this operation.")
 		}
 		else {
-			self.sign_extend(target_bitwidth)
-			    .expect("zero_extend cannot fail if the target bitwidth is larger than the current")
+			self.into_sign_extend(target_width)
+			    .expect("It was asserted that the target sign-extension `BitWidth` \
+			             is valid for this operation.")
 		}
+	}
+
+	pub fn into_strict_sign_resize<W>(self, target_width: W) -> Result<ApInt>
+		where W: Into<BitWidth>
+	{
+		let actual_width = self.width();
+		let target_width = target_width.into();
+
+		if target_width <= actual_width {
+			self.into_strict_truncate(target_width)
+		}
+		else {
+			self.into_strict_sign_extend(target_width)
+		}
+	}
+
+	pub fn zero_resize<W>(&self, target_width: W) -> ApInt
+		where W: Into<BitWidth>
+	{
+		self.clone().into_zero_resize(target_width)
+	}
+
+	pub fn strict_zero_resize<W>(&self, target_width: W) -> Result<ApInt>
+		where W: Into<BitWidth>
+	{
+		self.clone().into_strict_zero_resize(target_width)
+	}
+
+	pub fn sign_resize<W>(&self, target_width: W) -> ApInt
+		where W: Into<BitWidth>
+	{
+		self.clone().into_sign_resize(target_width)
+	}
+
+	pub fn strict_sign_resize<W>(&self, target_width: W) -> Result<ApInt>
+		where W: Into<BitWidth>
+	{
+		self.clone().into_strict_sign_resize(target_width)
 	}
 }
