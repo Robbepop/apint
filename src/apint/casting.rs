@@ -290,6 +290,38 @@ impl ApInt {
 		unimplemented!()
 	}
 
+	pub fn into_strict_sign_extend<W>(self, target_width: W) -> Result<ApInt>
+		where W: Into<BitWidth>
+	{
+		let actual_width = self.width();
+		let target_width = target_width.into();
+
+		if target_width == actual_width {
+			return
+				Error::extension_bitwidth_too_small(target_width, actual_width)
+					.with_annotation(
+						"Cannot strictly sign-extend an `ApInt` to the same bitwidth.")
+					.into()
+		}
+
+		assert!(target_width > actual_width);
+		self.into_sign_extend(target_width)
+	}
+
+	pub fn sign_extend<W>(&self, target_width: W) -> Result<ApInt>
+		where W: Into<BitWidth>
+	{
+		self.clone().into_sign_extend(target_width)
+	}
+
+	pub fn strict_sign_extend<W>(&self, target_width: W) -> Result<ApInt>
+		where W: Into<BitWidth>
+	{
+		self.clone().into_strict_sign_extend(target_width)
+	}
+
+	// ========================================================================
+
 		}
 	}
 
