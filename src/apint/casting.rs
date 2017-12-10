@@ -421,6 +421,16 @@ impl ApInt {
 
 	// ========================================================================
 
+	/// Resizes the given `ApInt` inplace to the given `target_width`.
+	/// 
+	/// # Note
+	/// 
+	/// This operation will forward to
+	/// (`into_truncate`)[struct.ApInt.html#method.into_truncate]
+	/// if `target_width` is less than or equal to the width of
+	/// the given `ApInt` or to
+	/// (`into_zero_extend`)[struct.ApInt.html#method.into_zero_extend]
+	/// otherwise.
 	pub fn into_zero_resize<W>(self, target_width: W) -> ApInt
 		where W: Into<BitWidth>
 	{
@@ -439,6 +449,20 @@ impl ApInt {
 		}
 	}
 
+	/// Tries to strictly resize the given `ApInt` inplace to the given `target_width`.
+	/// 
+	/// # Note
+	/// 
+	/// This operation will forward to
+	/// (`into_strict_truncate`)[struct.ApInt.html#method.into_strict_truncate]
+	/// if `target_width` is less than or equal to the width of
+	/// the given `ApInt` or to
+	/// (`into_strict_zero_extend`)[struct.ApInt.html#method.into_strict_zero_extend]
+	/// otherwise.
+	/// 
+	/// # Errors
+	/// 
+	/// - If `target_width` is equal to the width of the given `ApInt`.
 	pub fn into_strict_zero_resize<W>(self, target_width: W) -> Result<ApInt>
 		where W: Into<BitWidth>
 	{
@@ -453,6 +477,16 @@ impl ApInt {
 		}
 	}
 
+	/// Resizes the given `ApInt` inplace to the given `target_width`.
+	/// 
+	/// # Note
+	/// 
+	/// This operation will forward to
+	/// (`into_truncate`)[struct.ApInt.html#method.into_truncate]
+	/// if `target_width` is less than or equal to the width of
+	/// the given `ApInt` or to
+	/// (`into_sign_extend`)[struct.ApInt.html#method.into_sign_extend]
+	/// otherwise.
 	pub fn into_sign_resize<W>(self, target_width: W) -> ApInt
 		where W: Into<BitWidth>
 	{
@@ -471,6 +505,20 @@ impl ApInt {
 		}
 	}
 
+	/// Tries to strictly resize the given `ApInt` inplace to the given `target_width`.
+	/// 
+	/// # Note
+	/// 
+	/// This operation will forward to
+	/// (`into_strict_truncate`)[struct.ApInt.html#method.into_strict_truncate]
+	/// if `target_width` is less than or equal to the width of
+	/// the given `ApInt` or to
+	/// (`into_strict_sign_extend`)[struct.ApInt.html#method.into_strict_sign_extend]
+	/// otherwise.
+	/// 
+	/// # Errors
+	/// 
+	/// - If `target_width` is equal to the width of the given `ApInt`.
 	pub fn into_strict_sign_resize<W>(self, target_width: W) -> Result<ApInt>
 		where W: Into<BitWidth>
 	{
