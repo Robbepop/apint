@@ -111,7 +111,7 @@ impl ApInt {
 	pub(crate) fn from_iter<I>(digits: I) -> Result<ApInt>
 		where I: IntoIterator<Item=Digit>,
 	{
-		let buffer = digits.into_iter().collect::<SmallVec<[Digit; 1]>>();
+		let mut buffer = digits.into_iter().collect::<SmallVec<[Digit; 1]>>();
 		match buffer.len() {
 			0 => {
 				Err(Error::expected_non_empty_digits())
@@ -130,6 +130,10 @@ impl ApInt {
 				let bitwidth = BitWidth::new(n * digit::BITS)
 					.expect("We have already asserted that the number of items the given Iterator \
 						     iterates over is greater than `1` and thus non-zero and thus a valid `BitWidth`.");
+				let req_digits = bitwidth.required_digits();
+				buffer.shrink_to_fit();
+				assert_eq!(buffer.capacity(), req_digits);
+				assert_eq!(buffer.len()     , req_digits);
 				let ptr_buffer = buffer.as_ptr() as *mut Digit;
 				mem::forget(buffer);
 				Ok(ApInt{len: bitwidth, data: ApIntData{ext: unsafe{ Unique::new_unchecked(ptr_buffer) }}})
