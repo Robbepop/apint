@@ -44,18 +44,19 @@ impl Clone for ApInt {
 /// =======================================================================
 impl ApInt {
 	/// Tries to truncate this `ApInt` inplace to the given `target_width`
-	/// or creates a new `ApInt` with a width of the given `target_width`
-	/// if this is not possible.
+	/// or creates a new `ApInt` with a width of `target_width` otherwise.
 	/// 
-	/// *Note:* This may be a cheap operation if it can reuse the memory of
-	///         the old (`self`) instance.
+	/// # Note
 	/// 
-	/// *Note:* Truncation is inplace as long as `self` and the resulting
-	///         `ApInt` require the same amount of `Digit`s.
+	/// - This may be a cheap operation if it can reuse the memory of
+	///   the old (`self`) instance. Truncation is inplace as long as `self` and the resulting
+	///   `ApInt` require the same amount of `Digit`s.
+	/// - This is equal to a simple `move` operation if `target_width`
+	///   is equal to the given `ApInt` bitwidth.
 	/// 
 	/// # Errors
 	/// 
-	/// - If the `target_width` is *not* less than the current width.
+	/// - If the `target_width` is **not** less than the current width.
 	pub fn into_truncate<W>(self, target_width: W) -> Result<ApInt>
 		where W: Into<BitWidth>
 	{
@@ -122,6 +123,14 @@ impl ApInt {
 		}
 	}
 
+	/// Tries to truncate this `ApInt` inplace to the given `target_width`
+	/// or creates a new `ApInt` with a width of `target_width` otherwise.
+	/// 
+	/// [For more information look into `into_truncate`](struct.ApInt.html#method.into_truncate).
+	/// 
+	/// # Errors
+	/// 
+	/// - If `target_width` is equal to or less than the bitwidth of the given `ApInt`.
 	pub fn into_strict_truncate<W>(self, target_width: W) -> Result<ApInt>
 		where W: Into<BitWidth>
 	{
@@ -140,23 +149,35 @@ impl ApInt {
 		self.into_truncate(target_width)
 	}
 
-	/// Creates a new `ApInt` that represents this `ApInt` truncated to 
-	/// the given target bit-width.
-	///
-	/// # Panics
-	/// 
-	/// - If `target_bitwidth` is greater than the `ApInt`'s current bit-width.
-	/// - If `target_bitwidth` is zero (`0`).
+	/// Creates a new `ApInt` that represents the given `ApInt` truncated
+	/// to the given target `BitWidth`.
 	/// 
 	/// # Note
 	/// 
-	/// Equal to a call to `clone()` if `target_bitwidth` is equal to this `ApInt`'s bit-width.
+	/// - This will never reuse memory inplace and may even
+	///   heap-allocate if the given `ApInt` is larger than what
+	///   can be space-optimized.
+	/// - This is equal to a call to `clone()` if `target_width`
+	///   is equal to the bitwidth of the given `ApInt`.
+	/// - This will always perform worse than `into_truncate`.
+	/// 
+	/// # Errors
+	/// 
+	/// - If the `target_width` is *not* less than the current width.
 	pub fn truncate<W>(&self, target_width: W) -> Result<ApInt>
 		where W: Into<BitWidth>
 	{
 		self.clone().into_truncate(target_width)
 	}
 
+	/// Creates a new `ApInt` that represents the given `ApInt` truncated
+	/// to the given target `BitWidth`.
+	/// 
+	/// [For more information look into `truncate`](struct.ApInt.html#method.truncate).
+	/// 
+	/// # Errors
+	/// 
+	/// - If `target_width` is equal to or less than the bitwidth of the given `ApInt`.
 	pub fn strict_truncate<W>(&self, target_width: W) -> Result<ApInt>
 		where W: Into<BitWidth>
 	{
