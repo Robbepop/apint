@@ -14,16 +14,25 @@ impl Clone for ApInt {
 	fn clone(&self) -> Self {
 		match self.storage() {
 			Storage::Inl => {
-				ApInt{len: self.len, data: ApIntData{inl: unsafe{self.data.inl}}}
+				ApInt{
+					len: self.len,
+					data: ApIntData{inl: unsafe{self.data.inl}}
+				}
 			}
 			Storage::Ext => {
+				use std::mem;
 				let req_digits = self.len_digits();
-				let mut buffer = Vec::with_capacity(req_digits);
-				buffer.extend_from_slice(self.as_digit_slice());
-				debug_assert_eq!(buffer.capacity(), req_digits);
+				let mut buffer = self.as_digit_slice().to_vec();
+				debug_assert_eq!(buffer.len(), buffer.capacity());
+				debug_assert_eq!(buffer.len(), req_digits);
 				let dst = buffer.as_mut_ptr();
-				::std::mem::forget(buffer);
-				ApInt{len: self.len, data: ApIntData{ext: unsafe{ Unique::new_unchecked(dst) }}}
+				mem::forget(buffer);
+				ApInt{
+					len: self.len,
+					data: ApIntData {
+						ext: unsafe{ Unique::new_unchecked(dst) }
+					}
+				}
 			}
 		}
 	}
