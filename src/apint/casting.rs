@@ -261,36 +261,35 @@ impl ApInt {
 	/// # Note
 	/// 
 	/// Equal to a call to `clone()` if `target_bitwidth` is equal to this `ApInt`'s bit-width.
-	pub fn sign_extend<W>(&self, target_bitwidth: W) -> Result<ApInt>
+	pub fn into_sign_extend<W>(self, target_width: W) -> Result<ApInt>
 		where W: Into<BitWidth>
 	{
-		let target_bitwidth = target_bitwidth.into();
-		let len_bitwidth    = target_bitwidth.to_usize();
+		let actual_width = self.width();
+		let target_width = target_width.into();
 
-		if len_bitwidth < self.len_bits() {
-			return Error::extension_bitwidth_too_small(len_bitwidth, self.len_bits())
-				.with_annotation(format!(
-					"Cannot sign-extend bit-width of {:?} to {:?} bits. \
-					 Do you mean to truncate the instance instead?",
-					self.len_bits(), target_bitwidth))
+		if target_width == actual_width {
+			return Ok(self)
+		}
+
+		if !(target_width > actual_width) {
+			return Error::extension_bitwidth_too_small(target_width, actual_width)
+				.with_annotation(
+					format!(
+						"Cannot sign-extend bit-width of {:?} to {:?} bits. \
+						 Do you mean to truncate the instance instead?",
+						actual_width, target_width
+					)
+				)
 				.into()
 		}
-		if len_bitwidth == self.len_bits() {
-			warn!("Sign-extending to the same bit-width is equal to cloning. \
-				   Do you mean to clone the object instead?");
-			return Ok(self.clone())
+
+		if self.most_significant_bit() == Bit::Unset {
+			return self.into_zero_extend(target_width)
 		}
 
-		match self.sign_bit() {
-			Bit::Set => {
-				unimplemented!();
-				// if let Some(excess_bits) = target_bitwidth.excess_bits() {
-				// 	buffer.last_mut().unwrap().truncate(excess_bits);
-				// }
-			}
-			Bit::Unset => {
-				self.zero_extend(target_bitwidth)
-			}
+		unimplemented!()
+	}
+
 		}
 	}
 
