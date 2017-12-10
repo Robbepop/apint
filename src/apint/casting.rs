@@ -22,9 +22,10 @@ impl Clone for ApInt {
 			Storage::Ext => {
 				use std::mem;
 				let req_digits = self.len_digits();
-				let mut buffer = self.as_digit_slice().to_vec();
-				debug_assert_eq!(buffer.len(), buffer.capacity());
-				debug_assert_eq!(buffer.len(), req_digits);
+				let mut buffer = self.as_digit_slice()
+					.to_vec()
+					.into_boxed_slice();
+				assert_eq!(buffer.len(), req_digits);
 				let dst = buffer.as_mut_ptr();
 				mem::forget(buffer);
 				ApInt{
