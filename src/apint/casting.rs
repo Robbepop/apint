@@ -58,26 +58,26 @@ impl ApInt {
 	pub fn into_truncate<W>(self, target_width: W) -> Result<ApInt>
 		where W: Into<BitWidth>
 	{
+		let actual_width = self.width();
 		let target_width = target_width.into();
 
+		if target_width == actual_width {
+			return Ok(self)
+		}
+
 		if !(target_width < self.width()) {
-			if target_width == self.width() {
-				warn!("ApInt::into_truncate: Tried to truncate to the same \
-					   bit width as the origin. Do you mean to `clone` or \
-					   resize the `ApInt` instance instead?")
-			}
-			return Err(
-				Error::truncation_bitwidth_too_large(target_width, self.width())
+			return
+				Error::truncation_bitwidth_too_large(target_width, actual_width)
 					.with_annotation(format!(
 						"Cannot truncate `ApInt` with a width of {:?}
 						 to an `ApInt` with a width of {:?} bits. \
 						 Do you mean to extend the instance instead?",
-						self.width().to_usize(),
+						actual_width.to_usize(),
 						target_width.to_usize()))
-			)
+					.into()
 		}
 
-		let actual_req_digits = self.width().required_digits();
+		let actual_req_digits = actual_width.required_digits();
 		let target_req_digits = target_width.required_digits();
 
 		if actual_req_digits == target_req_digits {
