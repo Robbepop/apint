@@ -67,7 +67,7 @@ impl ApInt {
 			return Ok(self)
 		}
 
-		if !(target_width < self.width()) {
+		if target_width > self.width() {
 			return
 				Error::truncation_bitwidth_too_large(target_width, actual_width)
 					.with_annotation(format!(
@@ -196,7 +196,7 @@ impl ApInt {
 			return Ok(self)
 		}
 
-		if !(target_width > actual_width) {
+		if target_width < actual_width {
 			return Error::extension_bitwidth_too_small(target_width, actual_width)
 				.with_annotation(format!(
 					"Cannot zero-extend bit-width of {:?} to {:?} bits. \
@@ -293,7 +293,7 @@ impl ApInt {
 			return Ok(self)
 		}
 
-		if !(target_width > actual_width) {
+		if target_width < actual_width {
 			return Error::extension_bitwidth_too_small(target_width, actual_width)
 				.with_annotation(
 					format!(
