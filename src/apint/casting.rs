@@ -170,6 +170,10 @@ impl ApInt {
 		let actual_width = self.width();
 		let target_width = target_width.into();
 
+		if target_width == actual_width {
+			return Ok(self)
+		}
+
 		if !(target_width > actual_width) {
 			return Error::extension_bitwidth_too_small(target_width, actual_width)
 				.with_annotation(format!(
@@ -209,11 +213,38 @@ impl ApInt {
 		}
 	}
 
+	pub fn into_strict_zero_extend<W>(self, target_width: W) -> Result<ApInt>
+		where W: Into<BitWidth>
+	{
+		let actual_width = self.width();
+		let target_width = target_width.into();
+
+		if target_width == actual_width {
+			return
+				Error::extension_bitwidth_too_small(target_width, actual_width)
+					.with_annotation(
+						"Cannot strictly zero-extend an `ApInt` to the same bitwidth.")
+					.into()
+		}
+
+		assert!(target_width > actual_width);
+		self.into_zero_extend(target_width)
+	}
+
+
 	pub fn zero_extend<W>(&self, target_width: W) -> Result<ApInt>
 		where W: Into<BitWidth>
 	{
 		self.clone().into_zero_extend(target_width)
 	}
+
+	pub fn strict_zero_extend<W>(&self, target_width: W) -> Result<ApInt>
+		where W: Into<BitWidth>
+	{
+		self.clone().into_strict_zero_extend(target_width)
+	}
+
+	// ========================================================================
 
 	/// Creates a new `ApInt` that represents the sign-extension of this `ApInt` to the given target bit-width.
 	/// 
