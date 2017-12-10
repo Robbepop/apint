@@ -194,6 +194,7 @@ impl ApInt {
 	/// # Note
 	/// 
 	/// Equal to a call to `clone()` if `target_bitwidth` is equal to this `ApInt`'s bit-width.
+	#[deprecated]
 	pub fn old_zero_extend<W>(&self, target_bitwidth: W) -> Result<ApInt>
 		where W: Into<BitWidth>
 	{
