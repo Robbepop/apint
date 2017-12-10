@@ -253,7 +253,7 @@ impl ApInt {
 	/// Tries to zero-extend this `ApInt` inplace to the given `target_width`
 	/// or creates a new `ApInt` with a width of `target_width` otherwise.
 	/// 
-	/// [For more information look into `into_zero_extend`](struct.ApInt.html#method.into_truncate).
+	/// [For more information look into `into_zero_extend`](struct.ApInt.html#method.into_zero_extend).
 	/// 
 	/// # Errors
 	/// 
@@ -290,7 +290,7 @@ impl ApInt {
 	/// 
 	/// # Errors
 	/// 
-	/// - If the `target_width` is *not* less than the current width.
+	/// - If the `target_width` is less than the current width.
 	pub fn zero_extend<W>(&self, target_width: W) -> Result<ApInt>
 		where W: Into<BitWidth>
 	{
