@@ -4,7 +4,7 @@ use errors::{Error, Result};
 
 use bitwidth::{BitWidth};
 use storage::{Storage};
-use digit::{Bit, Digit};
+use digit::{Bit};
 use traits::Width;
 use digit_seq::AsDigitSeq;
 
