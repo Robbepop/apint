@@ -187,6 +187,20 @@ impl ApInt {
 
 	// ========================================================================
 
+	/// Tries to zero-extend this `ApInt` inplace to the given `target_width`
+	/// or creates a new `ApInt` with a width of `target_width` otherwise.
+	/// 
+	/// # Note
+	/// 
+	/// - This may be a cheap operation if it can reuse the memory of
+	///   the old (`self`) instance. Zero-extension is inplace as long as `self`
+	///   and the resulting `ApInt` require the same amount of `Digit`s.
+	/// - This is equal to a simple `move` operation if `target_width`
+	///   is equal to the given `ApInt` bitwidth.
+	/// 
+	/// # Errors
+	/// 
+	/// - If the `target_width` is less than the current width.
 	pub fn into_zero_extend<W>(self, target_width: W) -> Result<ApInt>
 		where W: Into<BitWidth>
 	{
@@ -217,7 +231,7 @@ impl ApInt {
 			// For example when given an `ApInt` with a `BitWidth` of `100` bits
 			// and we want to zero-extend it to `120` bits then both `BitWidth`
 			// require exactly `2` digits for their representation and we can simply
-			// set the `BitWidth` of the consumed `ApInt` to the target width 
+			// set the `BitWidth` of the consumed `ApInt` to the target width
 			// and we are done.
 			let mut this = self;
 			this.len = target_width;
@@ -236,6 +250,14 @@ impl ApInt {
 		}
 	}
 
+	/// Tries to zero-extend this `ApInt` inplace to the given `target_width`
+	/// or creates a new `ApInt` with a width of `target_width` otherwise.
+	/// 
+	/// [For more information look into `into_zero_extend`](struct.ApInt.html#method.into_truncate).
+	/// 
+	/// # Errors
+	/// 
+	/// - If `target_width` is equal to or less than the bitwidth of the given `ApInt`.
 	pub fn into_strict_zero_extend<W>(self, target_width: W) -> Result<ApInt>
 		where W: Into<BitWidth>
 	{
@@ -254,13 +276,36 @@ impl ApInt {
 		self.into_zero_extend(target_width)
 	}
 
-
+	/// Creates a new `ApInt` that represents the given `ApInt` zero-extended
+	/// to the given target `BitWidth`.
+	/// 
+	/// # Note
+	/// 
+	/// - This will never reuse memory inplace and may even
+	///   heap-allocate if the given `ApInt` is larger than what
+	///   can be space-optimized.
+	/// - This is equal to a call to `clone()` if `target_width`
+	///   is equal to the bitwidth of the given `ApInt`.
+	/// - This will always perform worse than `into_zero_extend`.
+	/// 
+	/// # Errors
+	/// 
+	/// - If the `target_width` is *not* less than the current width.
 	pub fn zero_extend<W>(&self, target_width: W) -> Result<ApInt>
 		where W: Into<BitWidth>
 	{
 		self.clone().into_zero_extend(target_width)
 	}
 
+	/// Creates a new `ApInt` that represents the given `ApInt` zero-extended
+	/// to the given target `BitWidth`.
+	/// 
+	/// [For more information look into `zero_extend`](struct.ApInt.html#method.zero_extend).
+	/// 
+	/// # Errors
+	/// 
+	/// - If `target_width` is equal to or less than or equal to the bitwidth
+	///   of the given `ApInt`.
 	pub fn strict_zero_extend<W>(&self, target_width: W) -> Result<ApInt>
 		where W: Into<BitWidth>
 	{
