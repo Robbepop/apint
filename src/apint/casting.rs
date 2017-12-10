@@ -314,21 +314,20 @@ impl ApInt {
 
 	// ========================================================================
 
-	/// Creates a new `ApInt` that represents the sign-extension of this `ApInt` to the given target bit-width.
-	/// 
-	/// 
-	/// # Semantic (from LLVM)
-	/// 
-	/// The ‘sext‘ instruction performs a sign extension by copying the sign bit (highest order bit) of the value until it reaches the target bit-width.
-	/// When sign extending from `i1`, the extension always results in `-1` or `0`.
-	///
-	/// # Panics
-	/// 
-	/// - If `target_bitwidth` is less than the `ApInt`'s current bit-width.
+	/// Tries to sign-extend this `ApInt` inplace to the given `target_width`
+	/// or creates a new `ApInt` with a width of `target_width` otherwise.
 	/// 
 	/// # Note
 	/// 
-	/// Equal to a call to `clone()` if `target_bitwidth` is equal to this `ApInt`'s bit-width.
+	/// - This may be a cheap operation if it can reuse the memory of
+	///   the old (`self`) instance. Sign-extension is inplace as long as `self`
+	///   and the resulting `ApInt` require the same amount of `Digit`s.
+	/// - This is equal to a simple `move` operation if `target_width`
+	///   is equal to the given `ApInt` bitwidth.
+	/// 
+	/// # Errors
+	/// 
+	/// - If the `target_width` is less than the current width.
 	pub fn into_sign_extend<W>(self, target_width: W) -> Result<ApInt>
 		where W: Into<BitWidth>
 	{
@@ -358,6 +357,14 @@ impl ApInt {
 		unimplemented!()
 	}
 
+	/// Tries to sign-extend this `ApInt` inplace to the given `target_width`
+	/// or creates a new `ApInt` with a width of `target_width` otherwise.
+	/// 
+	/// [For more information look into `into_sign_extend`](struct.ApInt.html#method.into_sign_extend).
+	/// 
+	/// # Errors
+	/// 
+	/// - If `target_width` is equal to or less than the bitwidth of the given `ApInt`.
 	pub fn into_strict_sign_extend<W>(self, target_width: W) -> Result<ApInt>
 		where W: Into<BitWidth>
 	{
@@ -376,12 +383,36 @@ impl ApInt {
 		self.into_sign_extend(target_width)
 	}
 
+	/// Creates a new `ApInt` that represents the given `ApInt` sign-extended
+	/// to the given target `BitWidth`.
+	/// 
+	/// # Note
+	/// 
+	/// - This will never reuse memory inplace and may even
+	///   heap-allocate if the given `ApInt` is larger than what
+	///   can be space-optimized.
+	/// - This is equal to a call to `clone()` if `target_width`
+	///   is equal to the bitwidth of the given `ApInt`.
+	/// - This will always perform worse than `into_sign_extend`.
+	/// 
+	/// # Errors
+	/// 
+	/// - If the `target_width` is less than the current width.
 	pub fn sign_extend<W>(&self, target_width: W) -> Result<ApInt>
 		where W: Into<BitWidth>
 	{
 		self.clone().into_sign_extend(target_width)
 	}
 
+	/// Creates a new `ApInt` that represents the given `ApInt` sign-extended
+	/// to the given target `BitWidth`.
+	/// 
+	/// [For more information look into `sign_extend`](struct.ApInt.html#method.sign_extend).
+	/// 
+	/// # Errors
+	/// 
+	/// - If `target_width` is equal to or less than or equal to the bitwidth
+	///   of the given `ApInt`.
 	pub fn strict_sign_extend<W>(&self, target_width: W) -> Result<ApInt>
 		where W: Into<BitWidth>
 	{
