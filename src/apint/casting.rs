@@ -12,7 +12,7 @@ use std::ptr::Unique;
 
 impl Clone for ApInt {
 	fn clone(&self) -> Self {
-		match self.len.storage() {
+		match self.storage() {
 			Storage::Inl => {
 				ApInt{len: self.len, data: ApIntData{inl: unsafe{self.data.inl}}}
 			}
@@ -129,6 +129,57 @@ impl ApInt {
 		self.clone().into_truncate(target_width)
 	}
 
+	pub fn into_zero_extend<W>(self, target_width: W) -> Result<ApInt>
+		where W: Into<BitWidth>
+	{
+		let actual_width = self.width();
+		let target_width = target_width.into();
+
+		if !(target_width > actual_width) {
+			return Error::extension_bitwidth_too_small(target_width, actual_width)
+				.with_annotation(format!(
+					"Cannot zero-extend bit-width of {:?} to {:?} bits. \
+					 Do you mean to truncate the instance instead?",
+					actual_width, target_width))
+				.into()
+		}
+
+		let actual_req_digits = actual_width.required_digits();
+		let target_req_digits = target_width.required_digits();
+
+		if actual_req_digits == target_req_digits {
+			// We can do a cheap zero-extension here.
+			// 
+			// In this case we can reuse the heap memory of the consumed `ApInt`.
+			// 
+			// For example when given an `ApInt` with a `BitWidth` of `100` bits
+			// and we want to zero-extend it to `120` bits then both `BitWidth`
+			// require exactly `2` digits for their representation and we can simply
+			// set the `BitWidth` of the consumed `ApInt` to the target width 
+			// and we are done.
+			let mut this = self;
+			this.len = target_width;
+			Ok(this)
+		}
+		else {
+			// In this case we cannot reuse the consumed `ApInt`'s heap memory but
+			// must allocate a new buffer that fits for the required amount of digits
+			// for the target width. Also we need to `memcpy` the digits of the
+			// extended `ApInt` to the newly allocated buffer.
+			use digit;
+			use std::iter;
+			assert!(target_req_digits > actual_req_digits);
+			let additional_digits = target_req_digits - actual_req_digits;
+			ApInt::from_iter(self.digits().chain(iter::repeat(digit::ZERO)))
+		}
+	}
+
+	pub fn zero_extend<W>(&self, target_width: W) -> Result<ApInt>
+		where W: Into<BitWidth>
+	{
+		self.clone().into_zero_extend(target_width)
+	}
+
 	/// Creates a new `ApInt` that represents the zero-extension of this `ApInt` to the given target bit-width.
 	///
 	/// # Semantics (from LLVM)
@@ -143,7 +194,7 @@ impl ApInt {
 	/// # Note
 	/// 
 	/// Equal to a call to `clone()` if `target_bitwidth` is equal to this `ApInt`'s bit-width.
-	pub fn zero_extend<W>(&self, target_bitwidth: W) -> Result<ApInt>
+	pub fn old_zero_extend<W>(&self, target_bitwidth: W) -> Result<ApInt>
 		where W: Into<BitWidth>
 	{
 		let target_bitwidth = target_bitwidth.into();
