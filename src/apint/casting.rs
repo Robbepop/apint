@@ -56,7 +56,7 @@ impl ApInt {
 	/// 
 	/// # Errors
 	/// 
-	/// - If the `target_width` is **not** less than the current width.
+	/// - If the `target_width` is greater than the current width.
 	pub fn into_truncate<W>(self, target_width: W) -> Result<ApInt>
 		where W: Into<BitWidth>
 	{
@@ -130,7 +130,7 @@ impl ApInt {
 	/// 
 	/// # Errors
 	/// 
-	/// - If `target_width` is equal to or less than the bitwidth of the given `ApInt`.
+	/// - If `target_width` is equal to or greater than the bitwidth of the given `ApInt`.
 	pub fn into_strict_truncate<W>(self, target_width: W) -> Result<ApInt>
 		where W: Into<BitWidth>
 	{
@@ -163,7 +163,7 @@ impl ApInt {
 	/// 
 	/// # Errors
 	/// 
-	/// - If the `target_width` is *not* less than the current width.
+	/// - If the `target_width` is greater than the current width.
 	pub fn truncate<W>(&self, target_width: W) -> Result<ApInt>
 		where W: Into<BitWidth>
 	{
@@ -177,7 +177,8 @@ impl ApInt {
 	/// 
 	/// # Errors
 	/// 
-	/// - If `target_width` is equal to or less than the bitwidth of the given `ApInt`.
+	/// - If `target_width` is equal to or greater than or equal to the bitwidth
+	///   of the given `ApInt`.
 	pub fn strict_truncate<W>(&self, target_width: W) -> Result<ApInt>
 		where W: Into<BitWidth>
 	{
