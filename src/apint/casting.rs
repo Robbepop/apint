@@ -357,7 +357,49 @@ impl ApInt {
 			return self.into_zero_extend(target_width)
 		}
 
-		unimplemented!()
+		let actual_req_digits = actual_width.required_digits();
+		let target_req_digits = target_width.required_digits();
+
+		if actual_req_digits == target_req_digits {
+			// We can do a cheap sign-extension here.
+			// 
+			// In this case we can reuse the heap memory of the consumed `ApInt`.
+			// 
+			// For example when given an `ApInt` with a `BitWidth` of `100` bits
+			// and we want to sign-extend it to `120` bits then both `BitWidth`
+			// require exactly `2` digits for their representation and we can simply
+			// set the `BitWidth` of the consumed `ApInt` to the target width
+			// and we are done.
+			let mut this = self;
+			this.len = target_width;
+			// TODO: Mutate most-sifnigicant-digit of `self`.
+			//
+			//       M.S.D. can be extended to `target_width` by first
+			//       simply extending it to full `64` bits and then truncating
+			//       it again. (Maybe there is a more efficient way?)
+			Ok(this)
+		}
+		else {
+			// In this case we cannot reuse the consumed `ApInt`'s heap memory but
+			// must allocate a new buffer that fits for the required amount of digits
+			// for the target width. Also we need to `memcpy` the digits of the
+			// extended `ApInt` to the newly allocated buffer.
+			use digit;
+			use std::iter;
+			assert!(target_req_digits > actual_req_digits);
+			let additional_digits = target_req_digits - actual_req_digits;
+			// TODO: Mutate most-sifnigicant-digit of `self`.
+			//       Even though we instantiate a new `ApInt` it is okay
+			//       to mutate the old one since this method consumes it anyway.
+			//
+			//       M.S.D. can be extended to `target_width` by first
+			//       simply extending it to full `64` bits and then truncating
+			//       it again. (Maybe there is a more efficient way?)
+			ApInt::from_iter(
+				self.digits()
+				    .chain(iter::repeat(digit::ONES).take(additional_digits)))
+				.and_then(|apint| apint.into_truncate(target_width))
+		}
 	}
 
 	/// Tries to sign-extend this `ApInt` inplace to the given `target_width`
