@@ -5,7 +5,7 @@ use errors::{Result};
 /// This utility might become useful later, for example
 /// when we reduce the range of valid bit widths for some
 /// optimization oportunities.
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct BitPos(usize);
 
 impl BitPos {
