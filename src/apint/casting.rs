@@ -246,7 +246,10 @@ impl ApInt {
 			use std::iter;
 			assert!(target_req_digits > actual_req_digits);
 			let additional_digits = target_req_digits - actual_req_digits;
-			ApInt::from_iter(self.digits().chain(iter::repeat(digit::ZERO)))
+			ApInt::from_iter(
+				self.digits()
+				    .chain(iter::repeat(digit::ZERO).take(additional_digits)))
+				.and_then(|apint| apint.into_truncate(target_width))
 		}
 	}
 
