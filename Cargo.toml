@@ -9,7 +9,7 @@ keywords   = ["int", "integer", "precision", "arbitrary"]
 
 repository = "https://github.com/robbepop/apint"
 documentation = "https://docs.rs/apint"
-description = """This library provides efficient integers with arbitrary precision for modulo arithmetic."""
+description = """Arbitrary precision integers library."""
 categories = ["data-structures"]
 
 [dependencies]
