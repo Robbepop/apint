@@ -370,13 +370,17 @@ impl ApInt {
 			// require exactly `2` digits for their representation and we can simply
 			// set the `BitWidth` of the consumed `ApInt` to the target width
 			// and we are done.
+
 			let mut this = self;
 			this.len = target_width;
-			// TODO: Mutate most-sifnigicant-digit of `self`.
-			//
-			//       M.S.D. can be extended to `target_width` by first
-			//       simply extending it to full `64` bits and then truncating
-			//       it again. (Maybe there is a more efficient way?)
+
+			// Fill most-significant-digit of `self` with `1` starting from its
+			// most-significant bit up to the `target_width`.
+			use digit;
+			let start = digit::BITS - (this.most_significant_digit().repr().leading_zeros() as usize);
+			let end   = target_width.excess_bits().unwrap_or(digit::BITS);
+			this.most_significant_digit_mut().set_all_within(start..end)?;
+
 			Ok(this)
 		}
 		else {
@@ -388,15 +392,15 @@ impl ApInt {
 			use std::iter;
 			assert!(target_req_digits > actual_req_digits);
 			let additional_digits = target_req_digits - actual_req_digits;
-			// TODO: Mutate most-sifnigicant-digit of `self`.
-			//       Even though we instantiate a new `ApInt` it is okay
-			//       to mutate the old one since this method consumes it anyway.
-			//
-			//       M.S.D. can be extended to `target_width` by first
-			//       simply extending it to full `64` bits and then truncating
-			//       it again. (Maybe there is a more efficient way?)
+
+
+			// Fill most-significant-digit of `self` with `1` starting from its most-significant bit.
+			let mut this = self;
+			let start = digit::BITS - (this.most_significant_digit().repr().leading_zeros() as usize);
+			this.most_significant_digit_mut().set_all_within(start..digit::BITS)?;
+
 			ApInt::from_iter(
-				self.digits()
+				this.digits()
 				    .chain(iter::repeat(digit::ONES).take(additional_digits)))
 				.and_then(|apint| apint.into_truncate(target_width))
 		}
