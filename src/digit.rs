@@ -20,6 +20,8 @@ use std::ops::{
 	Rem
 };
 
+use std::ops::Range;
+
 /// The type for the internal `Digit` representation.
 /// 
 /// Must be exactly half the size of `DoubleDigitRepr`.
@@ -245,7 +247,7 @@ impl Digit {
 	/// 
 	/// - If `range.start < range.end`
 	/// - If **not** `range.end < digit::BITS`
-	pub fn set_all_within<P>(&mut self, range: ::std::ops::Range<P>) -> Result<()>
+	pub fn set_all_within<P>(&mut self, range: Range<P>) -> Result<()>
 		where P: Into<BitPos>
 	{
 		let start = range.start.into();
@@ -271,7 +273,10 @@ impl Digit {
 		//          If we subtract one from it we get `0x0011111`.
 		//          Now we only need to shift the `1` block to the correct
 		//          position.
-		self.0 = self.repr() | (((1 << count) - 1)) << start_idx;
+		self.0 |= (((1 << count) - 1)) << start_idx;
+
+		Ok(())
+	}
 
 		Ok(())
 	}
