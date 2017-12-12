@@ -13,5 +13,4 @@ description = """Arbitrary precision integers library."""
 categories = ["data-structures"]
 
 [dependencies]
-log = "0.3"
 smallvec = "0.6"
