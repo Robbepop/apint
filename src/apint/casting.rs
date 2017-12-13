@@ -754,11 +754,90 @@ mod tests {
 		}
 	}
 
-	mod zero_extend {
+	mod into_zero_extend {
 		use super::*;
+
+		/// Test for zero-extension to the same bit width.
+		#[test]
+		#[ignore]
+		fn equal_width() {
+		}
+
+		/// Test for zero-extension to a bit width that is
+		/// greater than the current bit width and thus an error.
+		#[test]
+		#[ignore]
+		fn fail_width() {
+		}
+
+		/// Test for zero-extension between bit widths that
+		/// can be stored entirely on the stack.
+		#[test]
+		#[ignore]
+		fn inl() {
+		}
+
+		/// Test for zero-extension where a heap-allocated
+		/// `ApInt` is zero-extended to a purely stack-allocated one.
+		#[test]
+		#[ignore]
+		fn ext_to_inl() {
+		}
+
+		/// Test for zero-extension where origin and target `ApInt`
+		/// are both entirely heap-allocated.
+		#[test]
+		#[ignore]
+		fn ext() {
+		}
 	}
 
-	mod sign_extend {
+	mod into_strict_zero_extend {
+		use super::*;
+
+		/// Test for zero-extension to a non-strict zero-extension width
+		/// which results in an error.
+		#[test]
+		#[ignore]
+		fn fail_strict() {
+		}
+
+		/// Test to assert equality for any other case than the
+		/// strict zero-extension width case to `into_zero_extend`.
+		#[test]
+		#[ignore]
+		fn equal_to_into_zero_extend() {
+		}
+	}
+
+	mod zero_extend {
+		use super::*;
+
+		/// Test to assert behavioural equality to `into_zero_extend`.
+		#[test]
+		#[ignore]
+		fn equal_to_into_zero_extend() {
+		}
+	}
+
+	mod strict_zero_extend {
+		use super::*;
+
+		/// Test for zero-extension to a non-strict zero-extension width
+		/// which results in an error.
+		#[test]
+		#[ignore]
+		fn fail_strict() {
+		}
+
+		/// Test to assert behavioural equality to `into_strict_zero_extend`.
+		#[test]
+		#[ignore]
+		fn equal_to_into_strict_zero_extend() {
+		}
+	}
+
+	mod into_sign_extend {
 		use super::*;
 	}
 }
