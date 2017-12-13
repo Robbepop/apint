@@ -666,3 +666,99 @@ impl ApInt {
 		self.clone().into_strict_sign_resize(target_width)
 	}
 }
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+
+	mod into_truncate {
+		use super::*;
+
+		/// Test for truncation to the same bit width.
+		#[test]
+		#[ignore]
+		fn equal_width() {
+		}
+
+		/// Test for truncation to a bit width that is
+		/// greater than the current bit width and thus an error.
+		#[test]
+		#[ignore]
+		fn fail_width() {
+		}
+
+		/// Test for truncation between bit widths that
+		/// can be stored entirely on the stack.
+		#[test]
+		#[ignore]
+		fn inl() {
+		}
+
+		/// Test for truncation where a heap-allocated
+		/// `ApInt` is truncated to a purely stack-allocated one.
+		#[test]
+		#[ignore]
+		fn ext_to_inl() {
+		}
+
+		/// Test for truncation where origin and target `ApInt`
+		/// are both entirely heap-allocated.
+		#[test]
+		#[ignore]
+		fn ext() {
+		}
+	}
+
+	mod into_strict_truncate {
+		use super::*;
+
+		/// Test for truncation to a non-strict truncation width
+		/// which results in an error.
+		#[test]
+		#[ignore]
+		fn fail_strict() {
+		}
+
+		/// Test to assert equality for any other case than the
+		/// strict truncation width case to `into_truncate`.
+		#[test]
+		#[ignore]
+		fn equal_to_into_truncate() {
+		}
+	}
+
+	mod truncate {
+		use super::*;
+
+		/// Test to assert behavioural equality to `into_truncate`.
+		#[test]
+		#[ignore]
+		fn equal_to_into_truncate() {
+		}
+	}
+
+	mod strict_truncate {
+		use super::*;
+
+		/// Test for truncation to a non-strict truncation width
+		/// which results in an error.
+		#[test]
+		#[ignore]
+		fn fail_strict() {
+		}
+
+		/// Test to assert behavioural equality to `into_strict_truncate`.
+		#[test]
+		#[ignore]
+		fn equal_to_into_strict_truncate() {
+		}
+	}
+
+	mod zero_extend {
+		use super::*;
+	}
+
+	mod sign_extend {
+		use super::*;
+	}
+}
