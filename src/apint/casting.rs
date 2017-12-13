@@ -839,5 +839,85 @@ mod tests {
 
 	mod into_sign_extend {
 		use super::*;
+
+		/// Test for sign-extension to the same bit width.
+		#[test]
+		#[ignore]
+		fn equal_width() {
+		}
+
+		/// Test for sign-extension to a bit width that is
+		/// greater than the current bit width and thus an error.
+		#[test]
+		#[ignore]
+		fn fail_width() {
+		}
+
+		/// Test for sign-extension between bit widths that
+		/// can be stored entirely on the stack.
+		#[test]
+		#[ignore]
+		fn inl() {
+		}
+
+		/// Test for sign-extension where a heap-allocated
+		/// `ApInt` is sign-extended to a purely stack-allocated one.
+		#[test]
+		#[ignore]
+		fn ext_to_inl() {
+		}
+
+		/// Test for sign-extension where origin and target `ApInt`
+		/// are both entirely heap-allocated.
+		#[test]
+		#[ignore]
+		fn ext() {
+		}
 	}
+
+	mod into_strict_sign_extend {
+		use super::*;
+
+		/// Test for sign-extension to a non-strict sign-extension width
+		/// which results in an error.
+		#[test]
+		#[ignore]
+		fn fail_strict() {
+		}
+
+		/// Test to assert equality for any other case than the
+		/// strict sign-extension width case to `into_sign_extend`.
+		#[test]
+		#[ignore]
+		fn equal_to_into_zero_extend() {
+		}
+	}
+
+	mod sign_extend {
+		use super::*;
+
+		/// Test to assert behavioural equality to `into_sign_extend`.
+		#[test]
+		#[ignore]
+		fn equal_to_into_zero_extend() {
+		}
+	}
+
+	mod strict_sign_extend {
+		use super::*;
+
+		/// Test for sign-extension to a non-strict sign-extension width
+		/// which results in an error.
+		#[test]
+		#[ignore]
+		fn fail_strict() {
+		}
+
+		/// Test to assert behavioural equality to `into_strict_sign_extend`.
+		#[test]
+		#[ignore]
+		fn equal_to_into_strict_sign_extend() {
+		}
+	}
+
 }
