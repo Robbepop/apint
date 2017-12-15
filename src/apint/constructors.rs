@@ -10,14 +10,30 @@ use smallvec::SmallVec;
 
 use std::ptr::Unique;
 
-impl Drop for ApInt {
-	fn drop(&mut self) {
+impl ApInt {
+	/// Deallocates memory that may be allocated by this `ApInt`.
+	/// 
+	/// `ApInt` instances with a bit width larger than `64` bits
+	/// allocate their digits on the heap. With `drop_digits` this
+	/// memory can be freed.
+	/// 
+	/// **Note:** This is extremely unsafe, only use this if the
+	///           `ApInt` no longer needs its digits.
+	/// 
+	/// **Note:** This is `unsafe` since it violates invariants
+	///           of the `ApInt`.
+	pub(in apint) unsafe fn drop_digits(&mut self) {
 		if self.len.storage() == Storage::Ext {
 			let len = self.len_digits();
-			unsafe{
-				drop(Vec::from_raw_parts(self.data.ext.as_ptr(), len, len))
-			}
+			drop(Vec::from_raw_parts(
+				self.data.ext.as_ptr(), len, len))
 		}
+	}
+}
+
+impl Drop for ApInt {
+	fn drop(&mut self) {
+		unsafe{self.drop_digits()}
 	}
 }
 
