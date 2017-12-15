@@ -781,6 +781,23 @@ mod tests {
 		}
 	}
 
+	mod strict_assign {
+		use super::*;
+
+		/// Test for assigning to a non-strict assigning width
+		/// which results in an error.
+		#[test]
+		#[ignore]
+		fn fail_strict() {
+		}
+
+		/// Test to assert equality to non-strict assign.
+		#[test]
+		#[ignore]
+		fn equal_to_assign() {
+		}
+	}
+
 	mod into_truncate {
 		use super::*;
 
