@@ -1,5 +1,5 @@
 
-use apint::{ApInt, ApIntData};
+use apint::{ApInt};
 use errors::{Error, Result};
 
 use bitwidth::{BitWidth};
@@ -7,8 +7,6 @@ use storage::{Storage};
 use digit::{Bit};
 use traits::Width;
 use digit_seq::AsDigitSeq;
-
-use std::ptr::Unique;
 
 impl Clone for ApInt {
 	fn clone(&self) -> Self {
