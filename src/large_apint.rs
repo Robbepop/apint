@@ -174,7 +174,7 @@ impl<'a> Width for &'a mut LargeApIntMut<'a> {
 impl<'a, T> ApIntImpl<LargeApInt<'a>> for T
 	where T: Width + DigitSliceWrapper
 {
-	fn get(&self, n: usize) -> Result<Bit> {
+	fn get(&self, _n: usize) -> Result<Bit> {
 		unimplemented!()
 	}
 
@@ -182,11 +182,11 @@ impl<'a, T> ApIntImpl<LargeApInt<'a>> for T
 		unimplemented!()
 	}
 
-	fn ult(&self, other: &LargeApInt) -> Result<bool> {
+	fn ult(&self, _other: &LargeApInt) -> Result<bool> {
 		unimplemented!()
 	}
 
-	fn slt(&self, other: &LargeApInt) -> Result<bool> {
+	fn slt(&self, _other: &LargeApInt) -> Result<bool> {
 		unimplemented!()
 	}
 }
@@ -196,7 +196,7 @@ impl<'a, T> ApIntMutImpl<LargeApInt<'a>> for T
 {
 
 	#[inline]
-	fn set(&mut self, n: usize) -> Result<()> {
+	fn set(&mut self, _n: usize) -> Result<()> {
 		unimplemented!()
 	}
 
@@ -206,7 +206,7 @@ impl<'a, T> ApIntMutImpl<LargeApInt<'a>> for T
 	}
 
 	#[inline]
-	fn unset(&mut self, n: usize) -> Result<()> {
+	fn unset(&mut self, _n: usize) -> Result<()> {
 		unimplemented!()
 	}
 
@@ -216,7 +216,7 @@ impl<'a, T> ApIntMutImpl<LargeApInt<'a>> for T
 	}
 
 	#[inline]
-	fn flip(&mut self, n: usize) -> Result<()> {
+	fn flip(&mut self, _n: usize) -> Result<()> {
 		unimplemented!()
 	}
 
@@ -232,17 +232,17 @@ impl<'a, T> ApIntMutImpl<LargeApInt<'a>> for T
 	}
 
 	#[inline]
-	fn bitand_inplace(&mut self, other: &LargeApInt) -> Result<()> {
+	fn bitand_inplace(&mut self, _other: &LargeApInt) -> Result<()> {
 		unimplemented!()
 	}
 
 	#[inline]
-	fn bitor_inplace(&mut self, other: &LargeApInt) -> Result<()> {
+	fn bitor_inplace(&mut self, _other: &LargeApInt) -> Result<()> {
 		unimplemented!()
 	}
 
 	#[inline]
-	fn bitxor_inplace(&mut self, other: &LargeApInt) -> Result<()> {
+	fn bitxor_inplace(&mut self, _other: &LargeApInt) -> Result<()> {
 		unimplemented!()
 	}
 
@@ -251,44 +251,44 @@ impl<'a, T> ApIntMutImpl<LargeApInt<'a>> for T
 		unimplemented!()
 	}
 
-	fn add_inplace(&mut self, other: &LargeApInt) -> Result<()> {
+	fn add_inplace(&mut self, _other: &LargeApInt) -> Result<()> {
 		unimplemented!()
 	}
 
-	fn sub_inplace(&mut self, other: &LargeApInt) -> Result<()> {
+	fn sub_inplace(&mut self, _other: &LargeApInt) -> Result<()> {
 		unimplemented!()
 	}
 
-	fn mul_inplace(&mut self, other: &LargeApInt) -> Result<()> {
+	fn mul_inplace(&mut self, _other: &LargeApInt) -> Result<()> {
 		unimplemented!()
 	}
 
-	fn sdiv_inplace(&mut self, other: &LargeApInt) -> Result<()> {
+	fn sdiv_inplace(&mut self, _other: &LargeApInt) -> Result<()> {
 		unimplemented!()
 	}
 
-	fn udiv_inplace(&mut self, other: &LargeApInt) -> Result<()> {
+	fn udiv_inplace(&mut self, _other: &LargeApInt) -> Result<()> {
 		unimplemented!()
 	}
 
-	fn srem_inplace(&mut self, other: &LargeApInt) -> Result<()> {
+	fn srem_inplace(&mut self, _other: &LargeApInt) -> Result<()> {
 		unimplemented!()
 	}
 
-	fn urem_inplace(&mut self, other: &LargeApInt) -> Result<()> {
+	fn urem_inplace(&mut self, _other: &LargeApInt) -> Result<()> {
 		unimplemented!()
 	}
 
 
-	fn shl_inplace(&mut self, other: &LargeApInt) -> Result<()> {
+	fn shl_inplace(&mut self, _other: &LargeApInt) -> Result<()> {
 		unimplemented!()
 	}
 
-	fn lshr_inplace(&mut self, other: &LargeApInt) -> Result<()> {
+	fn lshr_inplace(&mut self, _other: &LargeApInt) -> Result<()> {
 		unimplemented!()
 	}
 
-	fn ashr_inplace(&mut self, other: &LargeApInt) -> Result<()> {
+	fn ashr_inplace(&mut self, _other: &LargeApInt) -> Result<()> {
 		unimplemented!()
 	}
 

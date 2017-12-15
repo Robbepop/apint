@@ -289,44 +289,44 @@ impl<'a, T> ApIntMutImpl<SmallApInt<'a>> for T
 		unimplemented!()
 	}
 
-	fn add_inplace(&mut self, other: &SmallApInt) -> Result<()> {
+	fn add_inplace(&mut self, _other: &SmallApInt) -> Result<()> {
 		unimplemented!()
 	}
 
-	fn sub_inplace(&mut self, other: &SmallApInt) -> Result<()> {
+	fn sub_inplace(&mut self, _other: &SmallApInt) -> Result<()> {
 		unimplemented!()
 	}
 
-	fn mul_inplace(&mut self, other: &SmallApInt) -> Result<()> {
+	fn mul_inplace(&mut self, _other: &SmallApInt) -> Result<()> {
 		unimplemented!()
 	}
 
-	fn sdiv_inplace(&mut self, other: &SmallApInt) -> Result<()> {
+	fn sdiv_inplace(&mut self, _other: &SmallApInt) -> Result<()> {
 		unimplemented!()
 	}
 
-	fn udiv_inplace(&mut self, other: &SmallApInt) -> Result<()> {
+	fn udiv_inplace(&mut self, _other: &SmallApInt) -> Result<()> {
 		unimplemented!()
 	}
 
-	fn srem_inplace(&mut self, other: &SmallApInt) -> Result<()> {
+	fn srem_inplace(&mut self, _other: &SmallApInt) -> Result<()> {
 		unimplemented!()
 	}
 
-	fn urem_inplace(&mut self, other: &SmallApInt) -> Result<()> {
+	fn urem_inplace(&mut self, _other: &SmallApInt) -> Result<()> {
 		unimplemented!()
 	}
 
 
-	fn shl_inplace(&mut self, other: &SmallApInt) -> Result<()> {
+	fn shl_inplace(&mut self, _other: &SmallApInt) -> Result<()> {
 		unimplemented!()
 	}
 
-	fn lshr_inplace(&mut self, other: &SmallApInt) -> Result<()> {
+	fn lshr_inplace(&mut self, _other: &SmallApInt) -> Result<()> {
 		unimplemented!()
 	}
 
-	fn ashr_inplace(&mut self, other: &SmallApInt) -> Result<()> {
+	fn ashr_inplace(&mut self, _other: &SmallApInt) -> Result<()> {
 		unimplemented!()
 	}
 

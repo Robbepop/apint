@@ -77,7 +77,6 @@ impl ApInt {
 		let result = match radix.exact_bits_per_digit() {
 			Some(bits) => {
 				v.reverse();
-				let bits = radix.bits_per_digit();
 				if digit::BITS % bits == 0 {
 					ApInt::from_bitwise_digits(&v, bits)
 				}
@@ -177,7 +176,7 @@ impl ApInt {
 	    let big_digits = (bits / digit::BITS as f64).ceil();
 	    let mut data = Vec::with_capacity(big_digits as usize);
 
-	    let (base, power) = radix.get_radix_base();
+	    let (_base, power) = radix.get_radix_base();
 	    let radix = DigitRepr::from(radix.to_u8());
 
 	    let r = v.len() % power;
@@ -198,7 +197,7 @@ impl ApInt {
 	        }
 
 	        let mut carry = 0;
-	        for d in &mut data {
+	        for _d in &mut data {
 	            // *d = mac_with_carry(0, *d, base, &mut carry); // TODO! This was commented out.
 
 				// // fn carry_mul_add(a: Digit, b: Digit, c: Digit, carry: Digit) -> DigitAndCarry
@@ -208,7 +207,7 @@ impl ApInt {
 	        }
 	        debug_assert!(carry == 0);
 
-	        let n = chunk.iter().fold(0, |acc, &d| acc * radix + DigitRepr::from(d));
+	        let _n = chunk.iter().fold(0, |acc, &d| acc * radix + DigitRepr::from(d));
 	        // add2(&mut data, &[n]); // TODO: This was commented out.
 	    }
 
@@ -224,7 +223,7 @@ impl ApInt {
 	pub fn as_string_with_radix<R>(&self, radix: R) -> String
 		where R: Into<Radix>
 	{
-		let radix = radix.into();
+		let _radix = radix.into();
 
 		unimplemented!();
 	}
