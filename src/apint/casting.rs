@@ -671,6 +671,12 @@ impl ApInt {
 mod tests {
 	use super::*;
 
+	fn test_inl_widths() -> impl Iterator<Item=BitWidth> {
+		[ 1,  2,  4,  8, 16, 32, 64,
+		 10, 20, 30, 40, 50, 60, 63].into_iter()
+		                            .map(|&n| BitWidth::new(n).unwrap())
+	}
+
 	mod clone {
 		use super::*;
 
