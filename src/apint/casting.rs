@@ -739,6 +739,53 @@ mod tests {
 		                            .map(|&n| BitWidth::new(n).unwrap())
 	}
 
+	fn test_apints() -> impl Iterator<Item=ApInt> {
+		vec![
+			ApInt::from_u8(0),
+			ApInt::from_u8(1),
+			ApInt::from_u8(42),
+			ApInt::from_u8(0xF0),
+			ApInt::from_u8(0x0F),
+			ApInt::all_set(BitWidth::w8()),
+
+			ApInt::from_u16(0),
+			ApInt::from_u16(1),
+			ApInt::from_u16(42),
+			ApInt::from_u16(1337),
+			ApInt::from_u16(0xFF00),
+			ApInt::from_u16(0x0FF0),
+			ApInt::from_u16(0x00FF),
+			ApInt::all_set(BitWidth::w16()),
+
+			ApInt::from_u32(0),
+			ApInt::from_u32(1),
+			ApInt::from_u32(42),
+			ApInt::from_u32(1337),
+			ApInt::from_u32(0xFFFF_0000),
+			ApInt::from_u32(0x00FF_FF00),
+			ApInt::from_u32(0x0000_FFFF),
+			ApInt::all_set(BitWidth::w32()),
+
+			ApInt::from_u64(0),
+			ApInt::from_u64(1),
+			ApInt::from_u64(42),
+			ApInt::from_u64(1337),
+			ApInt::from_u64(0xFFFF_FFFF_0000_0000),
+			ApInt::from_u64(0x0000_FFFF_FFFF_0000),
+			ApInt::from_u64(0x0000_0000_FFFF_FFFF),
+			ApInt::all_set(BitWidth::w64()),
+
+			ApInt::from_u128(0),
+			ApInt::from_u128(1),
+			ApInt::from_u128(42),
+			ApInt::from_u128(1337),
+			ApInt::from_u128(0xFFFF_FFFF_FFFF_FFFF_0000_0000_0000_0000),
+			ApInt::from_u128(0x0000_0000_FFFF_FFFF_FFFF_FFFF_0000_0000),
+			ApInt::from_u128(0x0000_0000_0000_0000_FFFF_FFFF_FFFF_FFFF),
+			ApInt::all_set(BitWidth::w128()),
+		].into_iter()
+	}
+
 	mod clone {
 		use super::*;
 
