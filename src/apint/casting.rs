@@ -802,7 +802,9 @@ mod tests {
 		#[test]
 		#[ignore]
 		fn clone() {
-
+			for apint in test_apints() {
+				assert_eq!(apint, apint.clone())
+			}
 		}
 	}
 
