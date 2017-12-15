@@ -174,17 +174,17 @@ impl ApInt {
 		ApInt::from_u64(1).zero_extend(width).unwrap()
 	}
 
-	/// Creates a new `ApInt` with the given bit-width that has all bits set.
+	/// Creates a new `ApInt` with the given bit width that has all bits unset.
 	/// 
-	/// This is equal to calling `ApInt::zero(..)` with the given `width`.
-	pub fn zeros(width: BitWidth) -> ApInt {
+	/// **Note:** This is equal to calling `ApInt::zero(..)` with the given `width`.
+	pub fn all_unset(width: BitWidth) -> ApInt {
 		ApInt::zero(width)
 	}
 
 	/// Creates a new `ApInt` with the given bit-width that has all bits set.
-	pub fn ones(width: BitWidth) -> ApInt
+	pub fn all_set(width: BitWidth) -> ApInt
 	{
-		ApInt::repeat_digit(width, Digit::ones())
+		ApInt::repeat_digit(width, digit::ONES)
 	}
 }
 
