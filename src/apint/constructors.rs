@@ -42,6 +42,40 @@ impl Drop for ApInt {
 /// =======================================================================
 impl ApInt {
 
+	/// Creates a new small `ApInt` from the given `BitWidth` and `Digit`.
+	/// 
+	/// Small `ApInt` instances are stored entirely on the stack.
+	/// 
+	/// # Panics
+	/// 
+	/// - If the given `width` represents a `BitWidth` larger than `64` bits.
+	#[inline]
+	pub(in apint) fn new_inl(width: BitWidth, digit: Digit) -> ApInt {
+		assert_eq!(width.storage(), Storage::Inl);
+		ApInt{
+			len: width,
+			data: ApIntData{ inl: digit }}
+	}
+
+	/// Creates a new large `ApInt` from the given `BitWidth` and `Digit`.
+	/// 
+	/// Large `ApInt` instances allocate their digits on the heap.
+	/// 
+	/// **Note:** This operation is unsafe since the buffer length behind the
+	///           given `ext_ptr` must be trusted.
+	/// 
+	/// # Panics
+	/// 
+	/// - If the given `width` represents a `BitWidth` smaller than
+	///   or equal to `64` bits.
+	pub(in apint) unsafe fn new_ext(width: BitWidth, ext_ptr: *mut Digit) -> ApInt {
+		assert_eq!(width.storage(), Storage::Ext);
+		ApInt{
+			len: width,
+			data: ApIntData{ ext: Unique::new_unchecked(ext_ptr) }
+		}
+	}
+
 	/// Creates a new `ApInt` from a given `i8` value with a bit-width of 8.
 	#[inline]
 	pub fn from_i8(val: i8) -> ApInt {
@@ -51,7 +85,7 @@ impl ApInt {
 	/// Creates a new `ApInt` from a given `i8` value with a bit-width of 8.
 	#[inline]
 	pub fn from_u8(val: u8) -> ApInt {
-		ApInt{len: BitWidth::w8(), data: ApIntData{inl: Digit(u64::from(val))}}
+		ApInt::new_inl(BitWidth::w8(), Digit(u64::from(val)))
 	}
 
 	/// Creates a new `ApInt` from a given `i16` value with a bit-width of 16.
@@ -63,7 +97,7 @@ impl ApInt {
 	/// Creates a new `ApInt` from a given `i16` value with a bit-width of 16.
 	#[inline]
 	pub fn from_u16(val: u16) -> ApInt {
-		ApInt{len: BitWidth::w16(), data: ApIntData{inl: Digit(u64::from(val))}}
+		ApInt::new_inl(BitWidth::w16(), Digit(u64::from(val)))
 	}
 
 	/// Creates a new `ApInt` from a given `i32` value with a bit-width of 32.
@@ -75,7 +109,7 @@ impl ApInt {
 	/// Creates a new `ApInt` from a given `i32` value with a bit-width of 32.
 	#[inline]
 	pub fn from_u32(val: u32) -> ApInt {
-		ApInt{len: BitWidth::w32(), data: ApIntData{inl: Digit(u64::from(val))}}
+		ApInt::new_inl(BitWidth::w32(), Digit(u64::from(val)))
 	}
 
 	/// Creates a new `ApInt` from a given `i64` value with a bit-width of 64.
@@ -87,7 +121,7 @@ impl ApInt {
 	/// Creates a new `ApInt` from a given `i64` value with a bit-width of 64.
 	#[inline]
 	pub fn from_u64(val: u64) -> ApInt {
-		ApInt{len: BitWidth::w64(), data: ApIntData{inl: Digit(val)}}
+		ApInt::new_inl(BitWidth::w64(), Digit(val))
 	}
 
 	/// Creates a new `ApInt` from a given `i64` value with a bit-width of 64.
@@ -135,10 +169,7 @@ impl ApInt {
 				let first_and_only = *buffer
 					.first()
 					.expect("We have already asserted that `digits.len()` must be at exactly `1`.");
-				Ok(ApInt{
-					len: BitWidth::w64(),
-					data: ApIntData{inl: first_and_only}
-				})
+				Ok(ApInt::new_inl(BitWidth::w64(), first_and_only))
 			}
 			n => {
 				use std::mem;
@@ -151,7 +182,7 @@ impl ApInt {
 				assert_eq!(buffer.len()     , req_digits);
 				let ptr_buffer = buffer.as_ptr() as *mut Digit;
 				mem::forget(buffer);
-				Ok(ApInt{len: bitwidth, data: ApIntData{ext: unsafe{ Unique::new_unchecked(ptr_buffer) }}})
+				Ok(unsafe{ ApInt::new_ext(bitwidth, ptr_buffer) })
 			}
 		}
 	}
