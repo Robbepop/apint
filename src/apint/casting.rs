@@ -800,7 +800,6 @@ mod tests {
 		/// - Memory addresses of `c` and `o` won't overlap. (No aliasing!)
 		///   This is enforced by safe Rust.
 		#[test]
-		#[ignore]
 		fn clone() {
 			for apint in test_apints() {
 				assert_eq!(apint, apint.clone())
