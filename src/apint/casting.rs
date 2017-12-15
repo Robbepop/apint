@@ -671,6 +671,26 @@ impl ApInt {
 mod tests {
 	use super::*;
 
+	mod clone {
+		use super::*;
+
+		/// Test Clone impl of `ApInt`.
+		/// 
+		/// Invariants between the origin `ApInt` `o` and for the cloned `c` are:
+		/// 
+		/// - `o` and `c` have same bit widths
+		/// - If `o` is heap-allocated then `c` is, too and vice versa for stack.
+		/// - `o` and `c` have an equal amount of digits and the values of their
+		///   digits is equal and in the same order.
+		/// - Memory addresses of `c` and `o` won't overlap. (No aliasing!)
+		///   This is enforced by safe Rust.
+		#[test]
+		#[ignore]
+		fn clone() {
+
+		}
+	}
+
 	mod into_truncate {
 		use super::*;
 
