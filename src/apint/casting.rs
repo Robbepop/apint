@@ -68,6 +68,28 @@ impl ApInt {
 		self.len = rhs.len;
 	}
 
+	/// Strictly assigns `rhs` to this `ApInt`.
+	/// 
+	/// After this operation `rhs` and `self` are equal to each other.
+	/// 
+	/// **Note:** Strict assigns protect against mutating the bit width
+	/// of `self` and thus return an error instead of executing a probably
+	/// expensive `assign` operation.
+	/// 
+	/// # Errors
+	/// 
+	/// - If `rhs` and `self` have unmatching bit widths.
+	pub fn strict_assign(&mut self, rhs: &ApInt) -> Result<()> {
+		if self.width() != rhs.width() {
+			return Error::unmatching_bitwidths(self.width(), rhs.width())
+				.with_annotation(format!(
+					"Occured while trying to `strict_assign` {:?} to {:?}.", self, rhs))
+				.into()
+		}
+		self.as_digit_slice_mut()
+			.copy_from_slice(rhs.as_digit_slice());
+		Ok(())
+	}
 }
 
 //  =======================================================================
