@@ -121,7 +121,7 @@ impl ApInt {
 	}
 
 	#[inline]
-	pub(in apint) fn model<'a>(&'a self) -> Model<'a> {
+	pub(in apint) fn model(&self) -> Model {
 		match self.storage() {
 			Storage::Inl => Model::Inl(SmallApInt::new(self.len, unsafe{self.data.inl})),
 			Storage::Ext => Model::Ext(LargeApInt::new(self.len, self.as_digit_slice()))
@@ -129,7 +129,7 @@ impl ApInt {
 	}
 
 	#[inline]
-	pub(in apint) fn model_mut<'a>(&'a mut self) -> ModelMut<'a> {
+	pub(in apint) fn model_mut(&mut self) -> ModelMut {
 		match self.storage() {
 			Storage::Inl => ModelMut::Inl(SmallApIntMut::new(self.len, unsafe{&mut self.data.inl})),
 			Storage::Ext => ModelMut::Ext(LargeApIntMut::new(self.len, self.as_digit_slice_mut()))

@@ -273,7 +273,7 @@ impl Digit {
 		//          If we subtract one from it we get `0x0011111`.
 		//          Now we only need to shift the `1` block to the correct
 		//          position.
-		self.0 |= (((1 << count) - 1)) << start_idx;
+		self.0 |= ((1 << count) - 1) << start_idx;
 
 		Ok(())
 	}
@@ -319,7 +319,7 @@ impl Digit {
 		//          If we subtract one from it we get `0x0000_1111`.
 		//          Now we only need to shift the `1` block to the correct
 		//          position and big-negate the result.
-		self.0 &= !((((1 << count) - 1)) << start_idx);
+		self.0 &= !(((1 << count) - 1) << start_idx);
 
 		Ok(())
 	}

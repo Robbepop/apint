@@ -151,6 +151,9 @@ fn sub_assign_digits<'l, 'r, DL, DR>(lhs: DL, rhs: DR) -> Digit
 {
 	checks::assert_common_bitwidth(&lhs, &rhs);
 
+	let _lhs = lhs; // Silence clippy. (ToDo: Replace by impl.)
+	let _rhs = rhs; // Silence clippy. (ToDo: Replace by impl.)
+
 	unimplemented!()
 
 	// let mut borrow = 0;
