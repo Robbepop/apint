@@ -3,7 +3,7 @@
 #![feature(unique)]
 
 #![allow(dead_code)]
-#![allow(unused_variables)]
+// #![allow(unused_variables)]
 
 extern crate smallvec;
 

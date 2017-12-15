@@ -40,39 +40,39 @@ impl Clone for ApInt {
 }
 
 impl ApInt {
-	/// Assigns `rhs` to this `ApInt`.
-	/// 
-	/// This mutates digits and may affect the bitwidth of `self`
-	/// which **might result in an expensive operations**.
-	/// 
-	/// After this operation `rhs` and `self` are equal to each other.
+	// Assigns `rhs` to this `ApInt`.
+	//
+	// This mutates digits and may affect the bitwidth of `self`
+	// which **might result in an expensive operations**.
+	//
+	// After this operation `rhs` and `self` are equal to each other.
 	pub fn assign(&mut self, rhs: &ApInt) {
 		if self.len_digits() == rhs.len_digits() {
-			/// If `self` and `rhs` require the same amount of digits
-			/// for their representation we can simply utilize `ApInt`
-			/// invariants and basically `memcpy` from `rhs` to `self`.
-			/// Afterwards a simple adjustment of the length is sufficient.
-			/// (At the end of this method.)
+			// If `self` and `rhs` require the same amount of digits
+			// for their representation we can simply utilize `ApInt`
+			// invariants and basically `memcpy` from `rhs` to `self`.
+			// Afterwards a simple adjustment of the length is sufficient.
+			// (At the end of this method.)
 			self.as_digit_slice_mut()
 			    .copy_from_slice(rhs.as_digit_slice());
 		}
 		else {
-			/// In this case `rhs` and `self` require an unequal amount
-			/// of digits for their representation which means that the
-			/// digits that may be allocated by `self` must be dropped.
-			///
-			/// Note that `ApInt::drop_digits` only deallocates if possible.
+			// In this case `rhs` and `self` require an unequal amount
+			// of digits for their representation which means that the
+			// digits that may be allocated by `self` must be dropped.
+			//
+			// Note that `ApInt::drop_digits` only deallocates if possible.
 			unsafe{ self.drop_digits(); }
 
 			match rhs.storage() {
 				Storage::Inl => {
-					/// If `rhs` is a small `ApInt` we can simply update
-					/// the `digit` field of `self` and we are done.
+					// If `rhs` is a small `ApInt` we can simply update
+					// the `digit` field of `self` and we are done.
 					self.data.inl = unsafe{ rhs.data.inl };
 				}
 				Storage::Ext => {
-					/// If `rhs` is a large heap-allocated `ApInt` we first
-					/// need to expensively clone its buffer and feed it to `self`.
+					// If `rhs` is a large heap-allocated `ApInt` we first
+					// need to expensively clone its buffer and feed it to `self`.
 					let cloned = rhs.clone();
 					self.data.ext = unsafe{ cloned.data.ext };
 					use std::mem;
@@ -80,8 +80,8 @@ impl ApInt {
 				}
 			}
 		}
-		/// Since all cases may need bit width adjustment we outsourced it
-		/// to the end of this method.
+		// Since all cases may need bit width adjustment we outsourced it
+		// to the end of this method.
 		self.len = rhs.len;
 	}
 
