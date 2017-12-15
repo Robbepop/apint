@@ -120,3 +120,40 @@ impl ApInt {
 	}
 
 }
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+
+	mod partial_eq {
+		use super::*;
+
+		#[test]
+		fn simple_small() {
+			let a = ApInt::from_u8(42);
+			let b = ApInt::from_u8(42);
+			let c = ApInt::from_u8(77);
+			let d = ApInt::from_u16(42);
+			assert_eq!(a, b);
+			assert_ne!(a, c);
+			assert_ne!(a, d);
+			assert_ne!(b, c);
+			assert_ne!(b, d);
+			assert_ne!(c, d);
+		}
+
+		#[test]
+		fn simple_large() {
+			let a = ApInt::from_u128(42);
+			let b = ApInt::from_u128(42);
+			let c = ApInt::from_u128(1337);
+			let d = ApInt::from_u64(42);
+			assert_eq!(a, b);
+			assert_ne!(a, c);
+			assert_ne!(a, d);
+			assert_ne!(b, c);
+			assert_ne!(b, d);
+			assert_ne!(c, d);
+		}
+	}
+}
