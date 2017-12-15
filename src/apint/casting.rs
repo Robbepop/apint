@@ -728,6 +728,37 @@ mod tests {
 		}
 	}
 
+	mod assign {
+		use super::*;
+
+		/// Test for assigning to the same bit width.
+		#[test]
+		#[ignore]
+		fn equal_width() {
+		}
+
+		/// Test for assigning between bit widths that
+		/// can be stored entirely on the stack.
+		#[test]
+		#[ignore]
+		fn inl() {
+		}
+
+		/// Test for assigning where a heap-allocated
+		/// `ApInt` is truncated to a purely stack-allocated one.
+		#[test]
+		#[ignore]
+		fn ext_to_inl() {
+		}
+
+		/// Test for assigning where origin and target `ApInt`
+		/// are both entirely heap-allocated.
+		#[test]
+		#[ignore]
+		fn ext() {
+		}
+	}
+
 	mod into_truncate {
 		use super::*;
 
