@@ -171,7 +171,7 @@ impl ApInt {
 
 	/// Creates a new `ApInt` with the given bit-width that represents one.
 	pub fn one(width: BitWidth) -> ApInt {
-		ApInt::from_u64(1).zero_extend(width).unwrap()
+		ApInt::from_u64(1).into_zero_extend(width).unwrap()
 	}
 
 	/// Creates a new `ApInt` with the given bit width that has all bits unset.
