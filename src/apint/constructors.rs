@@ -166,7 +166,7 @@ impl ApInt {
 	/// # Errors
 	/// 
 	/// - If the iterator yields no elements.
-	pub(crate) fn from_iter<I>(digits: I) -> Result<ApInt>
+	pub(in apint) fn from_iter<I>(digits: I) -> Result<ApInt>
 		where I: IntoIterator<Item=Digit>,
 	{
 		let mut buffer = digits.into_iter().collect::<SmallVec<[Digit; 1]>>();
@@ -201,7 +201,7 @@ impl ApInt {
 	/// 
 	/// Note: The last digit in the generated sequence is truncated to make the `ApInt`'s
 	///       value representation fit the given bit-width.
-	fn repeat_digit<D>(target_width: BitWidth, digit: D) -> ApInt
+	pub(in apint) fn repeat_digit<D>(target_width: BitWidth, digit: D) -> ApInt
 		where D: Into<Digit>
 	{
 		use std::iter;
