@@ -142,7 +142,7 @@ impl ApInt {
 	/// Creates a new `ApInt` from a given `i64` value with a bit-width of 64.
 	pub fn from_u128(val: u128) -> ApInt {
 		let hi = (val >> digit::BITS) as u64;
-		let lo = (val & 0xFFFF_FFFF_FFFF_FFFF) as u64;
+		let lo = (val & ((1u128 << 64) - 1)) as u64;
 		ApInt::from([hi, lo])
 	}
 
