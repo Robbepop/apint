@@ -462,15 +462,13 @@ impl ApInt {
 	// ========================================================================
 
 	/// Tries to sign-extend this `ApInt` inplace to the given `target_width`
-	/// or creates a new `ApInt` with a width of `target_width` otherwise.
+	/// and returns the result.
 	/// 
 	/// # Note
 	/// 
-	/// - This may be a cheap operation if it can reuse the memory of
-	///   the old (`self`) instance. Sign-extension is inplace as long as `self`
-	///   and the resulting `ApInt` require the same amount of `Digit`s.
-	/// - This is equal to a simple `move` operation if `target_width`
-	///   is equal to the given `ApInt` bitwidth.
+	/// - This is useful for method chaining.
+	/// - For more details look into
+	///   [`sign_extend_inplace`](struct.ApInt.html#method.sign_extend_inplace).
 	/// 
 	/// # Errors
 	/// 
@@ -478,11 +476,50 @@ impl ApInt {
 	pub fn into_sign_extend<W>(self, target_width: W) -> Result<ApInt>
 		where W: Into<BitWidth>
 	{
+		let mut this = self;
+		this.sign_extend_inplace(target_width)?;
+		Ok(this)
+	}
+
+	/// Tries to strictly sign-extend this `ApInt` inplace to the given `target_width`
+	/// and returns the result.
+	/// 
+	/// # Note
+	/// 
+	/// - This is useful for method chaining.
+	/// - For more details look into
+	///   [`strict_sign_extend_inplace`](struct.ApInt.html#method.strict_sign_extend_inplace).
+	/// 
+	/// # Errors
+	/// 
+	/// - If `target_width` is equal to or greater than the bitwidth of the given `ApInt`.
+	pub fn into_strict_sign_extend<W>(self, target_width: W) -> Result<ApInt>
+		where W: Into<BitWidth>
+	{
+		let mut this = self;
+		this.strict_sign_extend_inplace(target_width)?;
+		Ok(this)
+	}
+
+	/// Tries to sign-extend this `ApInt` inplace to the given `target_width`.
+	/// 
+	/// # Note
+	/// 
+	/// - This is a no-op if `self.width()` and `target_width` are equal.
+	/// - This operation is inplace as long as `self.width()` and `target_width`
+	///   require the same amount of digits for their representation.
+	/// 
+	/// # Errors
+	/// 
+	/// - If the `target_width` is less than the current width.
+	pub fn sign_extend_inplace<W>(&mut self, target_width: W) -> Result<()>
+		where W: Into<BitWidth>
+	{
 		let actual_width = self.width();
 		let target_width = target_width.into();
 
 		if target_width == actual_width {
-			return Ok(self)
+			return Ok(())
 		}
 
 		if target_width < actual_width {
@@ -498,7 +535,8 @@ impl ApInt {
 		}
 
 		if self.most_significant_bit() == Bit::Unset {
-			return self.into_zero_extend(target_width)
+			self.zero_extend_inplace(target_width)?;
+			return Ok(())
 		}
 
 		let actual_req_digits = actual_width.required_digits();
@@ -515,17 +553,14 @@ impl ApInt {
 			// set the `BitWidth` of the consumed `ApInt` to the target width
 			// and we are done.
 
-			let mut this = self;
-			this.len = target_width;
+			self.len = target_width;
 
 			// Fill most-significant-digit of `self` with `1` starting from its
 			// most-significant bit up to the `target_width`.
 			use digit;
-			let start = digit::BITS - (this.most_significant_digit().repr().leading_zeros() as usize);
+			let start = digit::BITS - (self.most_significant_digit().repr().leading_zeros() as usize);
 			let end   = target_width.excess_bits().unwrap_or(digit::BITS);
-			this.most_significant_digit_mut().set_all_within(start..end)?;
-
-			Ok(this)
+			self.most_significant_digit_mut().set_all_within(start..end)?;
 		}
 		else {
 			// In this case we cannot reuse the consumed `ApInt`'s heap memory but
@@ -537,28 +572,33 @@ impl ApInt {
 			assert!(target_req_digits > actual_req_digits);
 			let additional_digits = target_req_digits - actual_req_digits;
 
-
 			// Fill most-significant-digit of `self` with `1` starting from its most-significant bit.
-			let mut this = self;
-			let start = digit::BITS - (this.most_significant_digit().repr().leading_zeros() as usize);
-			this.most_significant_digit_mut().set_all_within(start..digit::BITS)?;
+			let start = digit::BITS - (self.most_significant_digit().repr().leading_zeros() as usize);
+			self.most_significant_digit_mut().set_all_within(start..digit::BITS)?;
 
-			ApInt::from_iter(
-				this.digits()
+			let extended_copy = ApInt::from_iter(
+				self.digits()
 				    .chain(iter::repeat(digit::ONES).take(additional_digits)))
-				.and_then(|apint| apint.into_truncate(target_width))
+				.and_then(|apint| apint.into_truncate(target_width))?;
+			*self = extended_copy;
 		}
+
+		Ok(())
 	}
 
-	/// Tries to sign-extend this `ApInt` inplace to the given `target_width`
-	/// or creates a new `ApInt` with a width of `target_width` otherwise.
+	/// Tries to strictly sign-extends this `ApInt` inplace to the given `target_width`.
 	/// 
-	/// [For more information look into `into_sign_extend`](struct.ApInt.html#method.into_sign_extend).
+	/// # Note
+	/// 
+	/// - Strict sign-extension means that the resulting `ApInt` is ensured to have
+	///   a larger `BitWidth` than before this operation.
+	/// - For more details look into
+	///   [`sign_extend_inplace`](struct.ApInt.html#method.sign_extend_inplace).
 	/// 
 	/// # Errors
 	/// 
-	/// - If `target_width` is equal to or less than the bitwidth of the given `ApInt`.
-	pub fn into_strict_sign_extend<W>(self, target_width: W) -> Result<ApInt>
+	/// - If `target_width` is equal to or greater than the bitwidth of the given `ApInt`.
+	pub fn strict_sign_extend_inplace<W>(&mut self, target_width: W) -> Result<()>
 		where W: Into<BitWidth>
 	{
 		let actual_width = self.width();
@@ -573,7 +613,8 @@ impl ApInt {
 		}
 
 		assert!(target_width > actual_width);
-		self.into_sign_extend(target_width)
+		self.sign_extend_inplace(target_width)?;
+		Ok(())
 	}
 
 	/// Creates a new `ApInt` that represents the given `ApInt` sign-extended
