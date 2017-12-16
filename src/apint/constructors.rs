@@ -323,6 +323,40 @@ impl From<i128> for ApInt {
 	}
 }
 
+macro_rules! impl_from_array_for_apint {
+	($n:expr) => {
+		impl From<[i64; $n]> for ApInt {
+			fn from(val: [i64; $n]) -> ApInt {
+				<Self as From<[u64; $n]>>::from(
+					unsafe{ ::std::mem::transmute::<[i64; $n], [u64; $n]>(val) })
+			}
+		}
+
+		impl From<[u64; $n]> for ApInt {
+			fn from(val: [u64; $n]) -> ApInt {
+				let buffer = val.into_iter()
+								.rev()
+								.cloned()
+								.map(Digit)
+								.collect::<Vec<Digit>>();
+				assert_eq!(buffer.len(), $n);
+				ApInt::from_iter(buffer)
+					.expect("We asserted that `buffer.len()` is exactly `$n` \
+								so we can expect `ApInt::from_iter` to be successful.")
+			}
+		}
+	}
+}
+
+impl_from_array_for_apint!(3);  // 192 bits
+impl_from_array_for_apint!(4);  // 256 bits
+impl_from_array_for_apint!(5);  // 320 bits
+impl_from_array_for_apint!(6);  // 384 bits
+impl_from_array_for_apint!(7);  // 448 bits
+impl_from_array_for_apint!(8);  // 512 bits
+impl_from_array_for_apint!(16); // 1024 bits
+impl_from_array_for_apint!(32); // 2048 bits
+
 #[cfg(test)]
 mod tests {
 	use super::*;
