@@ -244,6 +244,15 @@ impl ApInt {
 	}
 }
 
+impl<B> From<B> for ApInt
+	where B: Into<Bit>
+{
+	#[inline]
+	fn from(bit: B) -> ApInt {
+		ApInt::from_bit(bit)
+	}
+}
+
 impl From<u8> for ApInt {
 	#[inline]
 	fn from(val: u8) -> ApInt {
