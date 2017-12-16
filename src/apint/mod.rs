@@ -8,7 +8,8 @@ mod shift;
 mod serialization;
 
 #[cfg(feature = "rand_support")]
-mod random;
+mod rand_impl;
+
 
 use digit::{Digit};
 use bitwidth::{BitWidth};
