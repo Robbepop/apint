@@ -15,3 +15,7 @@ categories = ["data-structures"]
 [dependencies]
 smallvec = "0.6"
 rand = "0.3"
+
+[badges]
+travis-ci = { repository = "Robbepop/apint" }
+appveyor = { repository = "Robbepop/apint", branch = "master", service = "github" }
