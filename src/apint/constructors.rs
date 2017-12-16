@@ -386,6 +386,24 @@ mod tests {
 	}
 
 	#[test]
+	fn from_bit() {
+		{
+			let explicit = ApInt::from_bit(Bit::Set);
+			let implicit = ApInt::from(Bit::Set);
+			let expected = ApInt::new_inl(BitWidth::w1(), Digit::one());
+			assert_eq!(explicit, implicit);
+			assert_eq!(explicit, expected);
+		}
+		{
+			let explicit = ApInt::from_bit(Bit::Unset);
+			let implicit = ApInt::from(Bit::Unset);
+			let expected = ApInt::new_inl(BitWidth::w1(), Digit::zero());
+			assert_eq!(explicit, implicit);
+			assert_eq!(explicit, expected);
+		}
+	}
+
+	#[test]
 	fn from_w8() {
 		for val in test_values_u8() {
 			let explicit_u8 = ApInt::from_u8(val);
