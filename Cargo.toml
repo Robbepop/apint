@@ -18,6 +18,7 @@ rand = { version = "0.3", optional = true }
 serde = { version = "1.0.0", optional = true }
 
 [features]
+default = ["rand_support", "serde_support"]
 rand_support = ["rand"]
 serde_support = ["serde"]
 
