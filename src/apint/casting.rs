@@ -30,12 +30,12 @@ impl Clone for ApInt {
 }
 
 impl ApInt {
-	// Assigns `rhs` to this `ApInt`.
-	//
-	// This mutates digits and may affect the bitwidth of `self`
-	// which **might result in an expensive operations**.
-	//
-	// After this operation `rhs` and `self` are equal to each other.
+	/// Assigns `rhs` to this `ApInt`.
+	///
+	/// This mutates digits and may affect the bitwidth of `self`
+	/// which **might result in an expensive operations**.
+	///
+	/// After this operation `rhs` and `self` are equal to each other.
 	pub fn assign(&mut self, rhs: &ApInt) {
 		if self.len_digits() == rhs.len_digits() {
 			// If `self` and `rhs` require the same amount of digits
