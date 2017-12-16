@@ -110,7 +110,7 @@ impl ApInt {
 	/// 
 	/// - This is useful for method chaining.
 	/// - For more details look into
-	///   [`truncate_inplace`](struct.ApInt.html#method.truncate_inplace).
+	///   [`truncate`](struct.ApInt.html#method.truncate).
 	/// 
 	/// # Errors
 	/// 
@@ -119,7 +119,7 @@ impl ApInt {
 		where W: Into<BitWidth>
 	{
 		let mut this = self;
-		this.truncate_inplace(target_width)?;
+		this.truncate(target_width)?;
 		Ok(this)
 	}
 
@@ -130,7 +130,7 @@ impl ApInt {
 	/// 
 	/// - This is useful for method chaining.
 	/// - For more details look into
-	///   [`strict_truncate_inplace`](struct.ApInt.html#method.strict_truncate_inplace).
+	///   [`strict_truncate`](struct.ApInt.html#method.strict_truncate).
 	/// 
 	/// # Errors
 	/// 
@@ -139,7 +139,7 @@ impl ApInt {
 		where W: Into<BitWidth>
 	{
 		let mut this = self;
-		this.strict_truncate_inplace(target_width)?;
+		this.strict_truncate(target_width)?;
 		Ok(this)
 	}
 
@@ -154,7 +154,7 @@ impl ApInt {
 	/// # Errors
 	/// 
 	/// - If the `target_width` is greater than the current width.
-	pub fn truncate_inplace<W>(&mut self, target_width: W) -> Result<()>
+	pub fn truncate<W>(&mut self, target_width: W) -> Result<()>
 		where W: Into<BitWidth>
 	{
 		let actual_width = self.width();
@@ -214,7 +214,7 @@ impl ApInt {
 			// with bit precision.
 			// This will simply call the `then` branch of this method.
 			if truncated_copy.width() != target_width {
-				truncated_copy.truncate_inplace(target_width)?;
+				truncated_copy.truncate(target_width)?;
 			}
 			*self = truncated_copy;
 		}
@@ -228,12 +228,12 @@ impl ApInt {
 	/// - Strict truncation means that the resulting `ApInt` is ensured to have
 	///   a smaller `BitWidth` than before this operation.
 	/// - For more details look into
-	///   [`truncate_inplace`](struct.ApInt.html#method.truncate_inplace).
+	///   [`truncate`](struct.ApInt.html#method.truncate).
 	/// 
 	/// # Errors
 	/// 
 	/// - If `target_width` is equal to or greater than the bitwidth of the given `ApInt`.
-	pub fn strict_truncate_inplace<W>(&mut self, target_width: W) -> Result<()>
+	pub fn strict_truncate<W>(&mut self, target_width: W) -> Result<()>
 		where W: Into<BitWidth>
 	{
 		let actual_width = self.width();
@@ -248,7 +248,7 @@ impl ApInt {
 		}
 
 		assert!(target_width < actual_width);
-		self.truncate_inplace(target_width)
+		self.truncate(target_width)
 	}
 
 	// ========================================================================
@@ -260,7 +260,7 @@ impl ApInt {
 	/// 
 	/// - This is useful for method chaining.
 	/// - For more details look into
-	///   [`zero_extend_inplace`](struct.ApInt.html#method.zero_extend_inplace).
+	///   [`zero_extend`](struct.ApInt.html#method.zero_extend).
 	/// 
 	/// # Errors
 	/// 
@@ -269,7 +269,7 @@ impl ApInt {
 		where W: Into<BitWidth>
 	{
 		let mut this = self;
-		this.zero_extend_inplace(target_width)?;
+		this.zero_extend(target_width)?;
 		Ok(this)
 	}
 
@@ -280,7 +280,7 @@ impl ApInt {
 	/// 
 	/// - This is useful for method chaining.
 	/// - For more details look into
-	///   [`strict_zero_extend_inplace`](struct.ApInt.html#method.strict_zero_extend_inplace).
+	///   [`strict_zero_extend`](struct.ApInt.html#method.strict_zero_extend).
 	/// 
 	/// # Errors
 	/// 
@@ -289,7 +289,7 @@ impl ApInt {
 		where W: Into<BitWidth>
 	{
 		let mut this = self;
-		this.strict_zero_extend_inplace(target_width)?;
+		this.strict_zero_extend(target_width)?;
 		Ok(this)
 	}
 
@@ -304,7 +304,7 @@ impl ApInt {
 	/// # Errors
 	/// 
 	/// - If the `target_width` is less than the current width.
-	pub fn zero_extend_inplace<W>(&mut self, target_width: W) -> Result<()>
+	pub fn zero_extend<W>(&mut self, target_width: W) -> Result<()>
 		where W: Into<BitWidth>
 	{
 		let actual_width = self.width();
@@ -363,12 +363,12 @@ impl ApInt {
 	/// - Strict zero-extension means that the resulting `ApInt` is ensured to have
 	///   a larger `BitWidth` than before this operation.
 	/// - For more details look into
-	///   [`zero_extend_inplace`](struct.ApInt.html#method.zero_extend_inplace).
+	///   [`zero_extend`](struct.ApInt.html#method.zero_extend).
 	/// 
 	/// # Errors
 	/// 
 	/// - If `target_width` is equal to or greater than the bitwidth of the given `ApInt`.
-	pub fn strict_zero_extend_inplace<W>(&mut self, target_width: W) -> Result<()>
+	pub fn strict_zero_extend<W>(&mut self, target_width: W) -> Result<()>
 		where W: Into<BitWidth>
 	{
 		let actual_width = self.width();
@@ -383,7 +383,7 @@ impl ApInt {
 		}
 
 		assert!(target_width > actual_width);
-		self.zero_extend_inplace(target_width)?;
+		self.zero_extend(target_width)?;
 		Ok(())
 	}
 
@@ -396,7 +396,7 @@ impl ApInt {
 	/// 
 	/// - This is useful for method chaining.
 	/// - For more details look into
-	///   [`sign_extend_inplace`](struct.ApInt.html#method.sign_extend_inplace).
+	///   [`sign_extend`](struct.ApInt.html#method.sign_extend).
 	/// 
 	/// # Errors
 	/// 
@@ -405,7 +405,7 @@ impl ApInt {
 		where W: Into<BitWidth>
 	{
 		let mut this = self;
-		this.sign_extend_inplace(target_width)?;
+		this.sign_extend(target_width)?;
 		Ok(this)
 	}
 
@@ -416,7 +416,7 @@ impl ApInt {
 	/// 
 	/// - This is useful for method chaining.
 	/// - For more details look into
-	///   [`strict_sign_extend_inplace`](struct.ApInt.html#method.strict_sign_extend_inplace).
+	///   [`strict_sign_extend`](struct.ApInt.html#method.strict_sign_extend).
 	/// 
 	/// # Errors
 	/// 
@@ -425,7 +425,7 @@ impl ApInt {
 		where W: Into<BitWidth>
 	{
 		let mut this = self;
-		this.strict_sign_extend_inplace(target_width)?;
+		this.strict_sign_extend(target_width)?;
 		Ok(this)
 	}
 
@@ -440,7 +440,7 @@ impl ApInt {
 	/// # Errors
 	/// 
 	/// - If the `target_width` is less than the current width.
-	pub fn sign_extend_inplace<W>(&mut self, target_width: W) -> Result<()>
+	pub fn sign_extend<W>(&mut self, target_width: W) -> Result<()>
 		where W: Into<BitWidth>
 	{
 		let actual_width = self.width();
@@ -463,7 +463,7 @@ impl ApInt {
 		}
 
 		if self.most_significant_bit() == Bit::Unset {
-			self.zero_extend_inplace(target_width)?;
+			self.zero_extend(target_width)?;
 			return Ok(())
 		}
 
@@ -521,12 +521,12 @@ impl ApInt {
 	/// - Strict sign-extension means that the resulting `ApInt` is ensured to have
 	///   a larger `BitWidth` than before this operation.
 	/// - For more details look into
-	///   [`sign_extend_inplace`](struct.ApInt.html#method.sign_extend_inplace).
+	///   [`sign_extend`](struct.ApInt.html#method.sign_extend).
 	/// 
 	/// # Errors
 	/// 
 	/// - If `target_width` is equal to or greater than the bitwidth of the given `ApInt`.
-	pub fn strict_sign_extend_inplace<W>(&mut self, target_width: W) -> Result<()>
+	pub fn strict_sign_extend<W>(&mut self, target_width: W) -> Result<()>
 		where W: Into<BitWidth>
 	{
 		let actual_width = self.width();
@@ -541,7 +541,7 @@ impl ApInt {
 		}
 
 		assert!(target_width > actual_width);
-		self.sign_extend_inplace(target_width)?;
+		self.sign_extend(target_width)?;
 		Ok(())
 	}
 
@@ -625,10 +625,10 @@ impl ApInt {
 	/// 
 	/// This operation will forward to
 	/// 
-	/// - [`truncate_inplace`](struct.ApInt.html#method.truncate_inplace)
+	/// - [`truncate`](struct.ApInt.html#method.truncate)
 	///   if `target_width` is less than or equal to the width of
 	///   the given `ApInt`
-	/// - [`zero_extend_inplace`](struct.ApInt.html#method.zero_extend_inplace)
+	/// - [`zero_extend`](struct.ApInt.html#method.zero_extend)
 	///   otherwise
 	pub fn zero_resize<W>(&mut self, target_width: W)
 		where W: Into<BitWidth>
@@ -637,12 +637,12 @@ impl ApInt {
 		let target_width = target_width.into();
 
 		if target_width <= actual_width {
-			self.truncate_inplace(target_width)
+			self.truncate(target_width)
 			    .expect("It was asserted that `target_width` is \
 			             a valid truncation `BitWidth` in this context.")
 		}
 		else {
-			self.zero_extend_inplace(target_width)
+			self.zero_extend(target_width)
 			    .expect("It was asserted that `target_width` is \
 			             a valid zero-extension `BitWidth` in this context.")
 		}
@@ -654,10 +654,10 @@ impl ApInt {
 	/// 
 	/// This operation will forward to
 	/// 
-	/// - [`strict_truncate_inplace`](struct.ApInt.html#method.strict_truncate_inplace)
+	/// - [`strict_truncate`](struct.ApInt.html#method.strict_truncate)
 	///   if `target_width` is less than or equal to the width of
 	///   the given `ApInt`
-	/// - [`strict_zero_extend_inplace`](struct.ApInt.html#method.strict_zero_extend_inplace)
+	/// - [`strict_zero_extend`](struct.ApInt.html#method.strict_zero_extend)
 	///   otherwise
 	/// 
 	/// # Errors
@@ -670,10 +670,10 @@ impl ApInt {
 		let target_width = target_width.into();
 
 		if target_width <= actual_width {
-			self.strict_truncate_inplace(target_width)
+			self.strict_truncate(target_width)
 		}
 		else {
-			self.strict_zero_extend_inplace(target_width)
+			self.strict_zero_extend(target_width)
 		}
 	}
 
@@ -683,10 +683,10 @@ impl ApInt {
 	/// 
 	/// This operation will forward to
 	/// 
-	/// - [`truncate_inplace`](struct.ApInt.html#method.truncate_inplace)
+	/// - [`truncate`](struct.ApInt.html#method.truncate)
 	///   if `target_width` is less than or equal to the width of
 	///   the given `ApInt`
-	/// - [`sign_extend_inplace`](struct.ApInt.html#method.sign_extend_inplace)
+	/// - [`sign_extend`](struct.ApInt.html#method.sign_extend)
 	///   otherwise
 	pub fn sign_resize<W>(&mut self, target_width: W)
 		where W: Into<BitWidth>
@@ -695,12 +695,12 @@ impl ApInt {
 		let target_width = target_width.into();
 
 		if target_width <= actual_width {
-			self.truncate_inplace(target_width)
+			self.truncate(target_width)
 			    .expect("It was asserted that `target_width` is \
 			             a valid truncation `BitWidth` in this context.")
 		}
 		else {
-			self.sign_extend_inplace(target_width)
+			self.sign_extend(target_width)
 			    .expect("It was asserted that `target_width` is \
 			             a valid sign-extension `BitWidth` in this context.")
 		}
@@ -712,10 +712,10 @@ impl ApInt {
 	/// 
 	/// This operation will forward to
 	/// 
-	/// - [`strict_truncate_inplace`](struct.ApInt.html#method.strict_truncate_inplace)
+	/// - [`strict_truncate`](struct.ApInt.html#method.strict_truncate)
 	///   if `target_width` is less than or equal to the width of
 	///   the given `ApInt`
-	/// - [`strict_sign_extend_inplace`](struct.ApInt.html#method.strict_sign_extend_inplace)
+	/// - [`strict_sign_extend`](struct.ApInt.html#method.strict_sign_extend)
 	///   otherwise
 	/// 
 	/// # Errors
@@ -728,10 +728,10 @@ impl ApInt {
 		let target_width = target_width.into();
 
 		if target_width <= actual_width {
-			self.strict_truncate_inplace(target_width)
+			self.strict_truncate(target_width)
 		}
 		else {
-			self.strict_sign_extend_inplace(target_width)
+			self.strict_sign_extend(target_width)
 		}
 	}
 }
