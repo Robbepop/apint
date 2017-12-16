@@ -335,10 +335,10 @@ macro_rules! impl_from_array_for_apint {
 		impl From<[u64; $n]> for ApInt {
 			fn from(val: [u64; $n]) -> ApInt {
 				let buffer = val.into_iter()
-								.rev()
-								.cloned()
-								.map(Digit)
-								.collect::<Vec<Digit>>();
+				                .rev()
+				                .cloned()
+				                .map(Digit)
+				                .collect::<Vec<Digit>>();
 				assert_eq!(buffer.len(), $n);
 				ApInt::from_iter(buffer)
 					.expect("We asserted that `buffer.len()` is exactly `$n` \
@@ -348,6 +348,7 @@ macro_rules! impl_from_array_for_apint {
 	}
 }
 
+impl_from_array_for_apint!(2);  // 128 bits
 impl_from_array_for_apint!(3);  // 192 bits
 impl_from_array_for_apint!(4);  // 256 bits
 impl_from_array_for_apint!(5);  // 320 bits
