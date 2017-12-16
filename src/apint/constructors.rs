@@ -147,7 +147,7 @@ impl ApInt {
 		];
 		assert_eq!(buffer.len(), 2);
 		ApInt::from_iter(buffer)
-			.expect("We just asserted that `buffer.len()` is exactly 2 \
+			.expect("We asserted that `buffer.len()` is exactly `2` \
 				     so we can expect `ApInt::from_iter` to be successful.")
 	}
 
