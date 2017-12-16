@@ -251,42 +251,6 @@ impl ApInt {
 		self.truncate_inplace(target_width)
 	}
 
-	/// Creates a new `ApInt` that represents the given `ApInt` truncated
-	/// to the given target `BitWidth`.
-	/// 
-	/// # Note
-	/// 
-	/// - This will never reuse memory inplace and may even
-	///   heap-allocate if the given `ApInt` is larger than what
-	///   can be space-optimized.
-	/// - This is equal to a call to `clone()` if `target_width`
-	///   is equal to the bitwidth of the given `ApInt`.
-	/// - This will always perform worse than `into_truncate`.
-	/// 
-	/// # Errors
-	/// 
-	/// - If the `target_width` is greater than the current width.
-	pub fn truncate<W>(&self, target_width: W) -> Result<ApInt>
-		where W: Into<BitWidth>
-	{
-		self.clone().into_truncate(target_width)
-	}
-
-	/// Creates a new `ApInt` that represents the given `ApInt` truncated
-	/// to the given target `BitWidth`.
-	/// 
-	/// [For more information look into `truncate`](struct.ApInt.html#method.truncate).
-	/// 
-	/// # Errors
-	/// 
-	/// - If `target_width` is equal to or greater than or equal to the bitwidth
-	///   of the given `ApInt`.
-	pub fn strict_truncate<W>(&self, target_width: W) -> Result<ApInt>
-		where W: Into<BitWidth>
-	{
-		self.clone().into_strict_truncate(target_width)
-	}
-
 	// ========================================================================
 
 	/// Tries to zero-extend this `ApInt` inplace to the given `target_width`
@@ -421,42 +385,6 @@ impl ApInt {
 		assert!(target_width > actual_width);
 		self.zero_extend_inplace(target_width)?;
 		Ok(())
-	}
-
-	/// Creates a new `ApInt` that represents the given `ApInt` zero-extended
-	/// to the given target `BitWidth`.
-	/// 
-	/// # Note
-	/// 
-	/// - This will never reuse memory inplace and may even
-	///   heap-allocate if the given `ApInt` is larger than what
-	///   can be space-optimized.
-	/// - This is equal to a call to `clone()` if `target_width`
-	///   is equal to the bitwidth of the given `ApInt`.
-	/// - This will always perform worse than `into_zero_extend`.
-	/// 
-	/// # Errors
-	/// 
-	/// - If the `target_width` is less than the current width.
-	pub fn zero_extend<W>(&self, target_width: W) -> Result<ApInt>
-		where W: Into<BitWidth>
-	{
-		self.clone().into_zero_extend(target_width)
-	}
-
-	/// Creates a new `ApInt` that represents the given `ApInt` zero-extended
-	/// to the given target `BitWidth`.
-	/// 
-	/// [For more information look into `zero_extend`](struct.ApInt.html#method.zero_extend).
-	/// 
-	/// # Errors
-	/// 
-	/// - If `target_width` is equal to or less than or equal to the bitwidth
-	///   of the given `ApInt`.
-	pub fn strict_zero_extend<W>(&self, target_width: W) -> Result<ApInt>
-		where W: Into<BitWidth>
-	{
-		self.clone().into_strict_zero_extend(target_width)
 	}
 
 	// ========================================================================
@@ -615,42 +543,6 @@ impl ApInt {
 		assert!(target_width > actual_width);
 		self.sign_extend_inplace(target_width)?;
 		Ok(())
-	}
-
-	/// Creates a new `ApInt` that represents the given `ApInt` sign-extended
-	/// to the given target `BitWidth`.
-	/// 
-	/// # Note
-	/// 
-	/// - This will never reuse memory inplace and may even
-	///   heap-allocate if the given `ApInt` is larger than what
-	///   can be space-optimized.
-	/// - This is equal to a call to `clone()` if `target_width`
-	///   is equal to the bitwidth of the given `ApInt`.
-	/// - This will always perform worse than `into_sign_extend`.
-	/// 
-	/// # Errors
-	/// 
-	/// - If the `target_width` is less than the current width.
-	pub fn sign_extend<W>(&self, target_width: W) -> Result<ApInt>
-		where W: Into<BitWidth>
-	{
-		self.clone().into_sign_extend(target_width)
-	}
-
-	/// Creates a new `ApInt` that represents the given `ApInt` sign-extended
-	/// to the given target `BitWidth`.
-	/// 
-	/// [For more information look into `sign_extend`](struct.ApInt.html#method.sign_extend).
-	/// 
-	/// # Errors
-	/// 
-	/// - If `target_width` is equal to or less than or equal to the bitwidth
-	///   of the given `ApInt`.
-	pub fn strict_sign_extend<W>(&self, target_width: W) -> Result<ApInt>
-		where W: Into<BitWidth>
-	{
-		self.clone().into_strict_sign_extend(target_width)
 	}
 
 	// ========================================================================
