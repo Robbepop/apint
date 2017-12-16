@@ -220,24 +220,24 @@ impl ApInt {
 			         never fail.")
 	}
 
-	/// Creates a new `ApInt` with the given bit-width that represents zero.
+	/// Creates a new `ApInt` with the given bit width that represents zero.
 	pub fn zero(width: BitWidth) -> ApInt {
 		ApInt::repeat_digit(width, digit::ZERO)
 	}
 
-	/// Creates a new `ApInt` with the given bit-width that represents one.
+	/// Creates a new `ApInt` with the given bit width that represents one.
 	pub fn one(width: BitWidth) -> ApInt {
-		ApInt::from_u64(1).into_zero_extend(width).unwrap()
+		ApInt::from_u64(1).into_zero_resize(width)
 	}
 
 	/// Creates a new `ApInt` with the given bit width that has all bits unset.
 	/// 
-	/// **Note:** This is equal to calling `ApInt::zero(..)` with the given `width`.
+	/// **Note:** This is equal to calling `ApInt::zero` with the given `width`.
 	pub fn all_unset(width: BitWidth) -> ApInt {
 		ApInt::zero(width)
 	}
 
-	/// Creates a new `ApInt` with the given bit-width that has all bits set.
+	/// Creates a new `ApInt` with the given bit width that has all bits set.
 	pub fn all_set(width: BitWidth) -> ApInt
 	{
 		ApInt::repeat_digit(width, digit::ONES)
