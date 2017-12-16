@@ -53,7 +53,14 @@ Currently only a few parts of the implementation are done - especially the imple
 - Full `ApInt` implementation.
 - `ApsInt` API built on top of `ApInt` to add signedness information as it is done in LLVM.
 - Extensive test suite to provide a decent quality implementation guarantee.
-- Hopefully soon on stable - as soon as [128-bit integers][17] are stabilized.
+
+## Unstable Features Used
+
+These features need to be stabilized before this crate can be used on the stable channel.
+
+- [`#![feature(i128_type)]`][17]
+- [`#![feature(conservative_impl_trait)]`][18]
+- [`#![feature(unique)]`][19]
 
 ## License
 
@@ -90,3 +97,5 @@ additional terms or conditions.
 [16]: https://codecov.io/gh/Robbepop/apint/branch/master
 
 [17]: https://github.com/rust-lang/rust/issues/35118
+[18]: https://github.com/rust-lang/rust/issues/34511
+[19]: https://github.com/rust-lang/rust/issues/27730
