@@ -10,6 +10,8 @@ mod serialization;
 #[cfg(feature = "rand_support")]
 mod rand_impl;
 
+#[cfg(feature = "serde_support")]
+mod serde_impl;
 
 use digit::{Digit};
 use bitwidth::{BitWidth};

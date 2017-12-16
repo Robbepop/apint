@@ -9,6 +9,9 @@ extern crate smallvec;
 #[cfg(feature = "rand_support")]
 extern crate rand;
 
+#[cfg(feature = "serde_support")]
+extern crate serde;
+
 mod errors;
 mod traits;
 mod digit;
