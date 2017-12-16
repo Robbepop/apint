@@ -57,6 +57,20 @@ pub enum Bit {
 	Set = 1
 }
 
+impl Bit {
+	/// Converts this `Bit` into a `bool`.
+	/// 
+	/// - `Unset` to `false`
+	/// - `Set` to `true`
+	#[inline]
+	pub fn to_bool(self) -> bool {
+		match self {
+			Bit::Unset => false,
+			Bit::Set   => true
+		}
+	}
+}
+
 impl From<bool> for Bit {
 	#[inline]
 	fn from(flag: bool) -> Bit {
@@ -67,10 +81,7 @@ impl From<bool> for Bit {
 impl From<Bit> for bool {
 	#[inline]
 	fn from(bit: Bit) -> bool {
-		match bit {
-			Bit::Set   => true,
-			Bit::Unset => false
-		}
+		bit.to_bool()
 	}
 }
 
