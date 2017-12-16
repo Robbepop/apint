@@ -5,6 +5,7 @@
 #![allow(dead_code)]
 
 extern crate smallvec;
+extern crate rand;
 
 mod errors;
 mod traits;

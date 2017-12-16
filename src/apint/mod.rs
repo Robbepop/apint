@@ -6,6 +6,7 @@ mod relational;
 mod arithmetic;
 mod shift;
 mod serialization;
+mod random;
 
 use digit::{Digit};
 use bitwidth::{BitWidth};
