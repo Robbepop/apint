@@ -104,15 +104,13 @@ impl ApInt {
 /// =======================================================================
 impl ApInt {
 	/// Tries to truncate this `ApInt` inplace to the given `target_width`
-	/// or creates a new `ApInt` with a width of `target_width` otherwise.
+	/// and returns the result.
 	/// 
 	/// # Note
 	/// 
-	/// - This may be a cheap operation if it can reuse the memory of
-	///   the old (`self`) instance. Truncation is inplace as long as `self` and the resulting
-	///   `ApInt` require the same amount of `Digit`s.
-	/// - This is equal to a simple `move` operation if `target_width`
-	///   is equal to the given `ApInt` bitwidth.
+	/// - This is useful for method chaining.
+	/// - For more details look into
+	///   [`truncate_inplace`](struct.ApInt.html#method.truncate_inplace).
 	/// 
 	/// # Errors
 	/// 
@@ -120,11 +118,50 @@ impl ApInt {
 	pub fn into_truncate<W>(self, target_width: W) -> Result<ApInt>
 		where W: Into<BitWidth>
 	{
+		let mut this = self;
+		this.truncate_inplace(target_width)?;
+		Ok(this)
+	}
+
+	/// Tries to strictly truncate this `ApInt` inplace to the given `target_width`
+	/// and returns the result.
+	/// 
+	/// # Note
+	/// 
+	/// - This is useful for method chaining.
+	/// - For more details look into
+	///   [`strict_truncate_inplace`](struct.ApInt.html#method.strict_truncate_inplace).
+	/// 
+	/// # Errors
+	/// 
+	/// - If `target_width` is equal to or greater than the bitwidth of the given `ApInt`.
+	pub fn into_strict_truncate<W>(self, target_width: W) -> Result<ApInt>
+		where W: Into<BitWidth>
+	{
+		let mut this = self;
+		this.strict_truncate_inplace(target_width)?;
+		Ok(this)
+	}
+
+	/// Tries to truncate this `ApInt` inplace to the given `target_width`.
+	/// 
+	/// # Note
+	/// 
+	/// - This is a no-op if `self.width()` and `target_width` are equal.
+	/// - This operation is inplace as long as `self.width()` and `target_width`
+	///   require the same amount of digits for their representation.
+	/// 
+	/// # Errors
+	/// 
+	/// - If the `target_width` is greater than the current width.
+	pub fn truncate_inplace<W>(&mut self, target_width: W) -> Result<()>
+		where W: Into<BitWidth>
+	{
 		let actual_width = self.width();
 		let target_width = target_width.into();
 
 		if target_width == actual_width {
-			return Ok(self)
+			return Ok(())
 		}
 
 		if target_width > self.width() {
@@ -154,12 +191,10 @@ impl ApInt {
 			let excess_width = target_width.excess_bits()
 				.expect("We already filtered cases where `excess_bits` may return `None` \
 					     by requiring that `self.width() > target_width`.");
-			let mut this = self;
-			this.most_significant_digit_mut()
+			self.most_significant_digit_mut()
 				.truncate(excess_width)
 				.expect("Excess bits are guaranteed to be within the bounds for valid \
 					     truncation of a single `Digit`.");
-			Ok(this)
 		}
 		else {
 			// We need to copy the digits for a correct truncation, here!
@@ -170,28 +205,35 @@ impl ApInt {
 			// is required since no memory can be reused.
 			// The same applies to all bit widths that require a different
 			// amount of digits for their representation.
-			let req_digits = self.digits().take(target_req_digits);
-			let truncated_digits = ApInt::from_iter(req_digits).unwrap();
+			let mut truncated_copy = {
+				let req_digits = self.digits().take(target_req_digits);
+				ApInt::from_iter(req_digits).unwrap()
+			};
 			// We just truncated with digit precision, not with bit precision.
 			// The next step is to recursively truncate `truncated_digits`
 			// with bit precision.
 			// This will simply call the `then` branch of this method.
-			if truncated_digits.width() == target_width {
-				return Ok(truncated_digits)
+			if truncated_copy.width() != target_width {
+				truncated_copy.truncate_inplace(target_width)?;
 			}
-			truncated_digits.into_truncate(target_width)
+			*self = truncated_copy;
 		}
+		Ok(())
 	}
 
-	/// Tries to truncate this `ApInt` inplace to the given `target_width`
-	/// or creates a new `ApInt` with a width of `target_width` otherwise.
+	/// Tries to strictly truncate this `ApInt` inplace to the given `target_width`.
 	/// 
-	/// [For more information look into `into_truncate`](struct.ApInt.html#method.into_truncate).
+	/// # Note
+	/// 
+	/// - Strict truncation means that the resulting `ApInt` is ensured to have
+	///   a smaller `BitWidth` than before this operation.
+	/// - For more details look into
+	///   [`truncate_inplace`](struct.ApInt.html#method.truncate_inplace).
 	/// 
 	/// # Errors
 	/// 
 	/// - If `target_width` is equal to or greater than the bitwidth of the given `ApInt`.
-	pub fn into_strict_truncate<W>(self, target_width: W) -> Result<ApInt>
+	pub fn strict_truncate_inplace<W>(&mut self, target_width: W) -> Result<()>
 		where W: Into<BitWidth>
 	{
 		let actual_width = self.width();
@@ -206,7 +248,7 @@ impl ApInt {
 		}
 
 		assert!(target_width < actual_width);
-		self.into_truncate(target_width)
+		self.truncate_inplace(target_width)
 	}
 
 	/// Creates a new `ApInt` that represents the given `ApInt` truncated
