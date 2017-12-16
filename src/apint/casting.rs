@@ -290,15 +290,13 @@ impl ApInt {
 	// ========================================================================
 
 	/// Tries to zero-extend this `ApInt` inplace to the given `target_width`
-	/// or creates a new `ApInt` with a width of `target_width` otherwise.
+	/// and returns the result.
 	/// 
 	/// # Note
 	/// 
-	/// - This may be a cheap operation if it can reuse the memory of
-	///   the old (`self`) instance. Zero-extension is inplace as long as `self`
-	///   and the resulting `ApInt` require the same amount of `Digit`s.
-	/// - This is equal to a simple `move` operation if `target_width`
-	///   is equal to the given `ApInt` bitwidth.
+	/// - This is useful for method chaining.
+	/// - For more details look into
+	///   [`zero_extend_inplace`](struct.ApInt.html#method.zero_extend_inplace).
 	/// 
 	/// # Errors
 	/// 
@@ -306,11 +304,50 @@ impl ApInt {
 	pub fn into_zero_extend<W>(self, target_width: W) -> Result<ApInt>
 		where W: Into<BitWidth>
 	{
+		let mut this = self;
+		this.zero_extend_inplace(target_width)?;
+		Ok(this)
+	}
+
+	/// Tries to strictly zero-extend this `ApInt` inplace to the given `target_width`
+	/// and returns the result.
+	/// 
+	/// # Note
+	/// 
+	/// - This is useful for method chaining.
+	/// - For more details look into
+	///   [`strict_zero_extend_inplace`](struct.ApInt.html#method.strict_zero_extend_inplace).
+	/// 
+	/// # Errors
+	/// 
+	/// - If `target_width` is equal to or greater than the bitwidth of the given `ApInt`.
+	pub fn into_strict_zero_extend<W>(self, target_width: W) -> Result<ApInt>
+		where W: Into<BitWidth>
+	{
+		let mut this = self;
+		this.strict_zero_extend_inplace(target_width)?;
+		Ok(this)
+	}
+
+	/// Tries to zero-extend this `ApInt` inplace to the given `target_width`.
+	/// 
+	/// # Note
+	/// 
+	/// - This is a no-op if `self.width()` and `target_width` are equal.
+	/// - This operation is inplace as long as `self.width()` and `target_width`
+	///   require the same amount of digits for their representation.
+	/// 
+	/// # Errors
+	/// 
+	/// - If the `target_width` is less than the current width.
+	pub fn zero_extend_inplace<W>(&mut self, target_width: W) -> Result<()>
+		where W: Into<BitWidth>
+	{
 		let actual_width = self.width();
 		let target_width = target_width.into();
 
 		if target_width == actual_width {
-			return Ok(self)
+			return Ok(())
 		}
 
 		if target_width < actual_width {
@@ -335,9 +372,7 @@ impl ApInt {
 			// require exactly `2` digits for their representation and we can simply
 			// set the `BitWidth` of the consumed `ApInt` to the target width
 			// and we are done.
-			let mut this = self;
-			this.len = target_width;
-			Ok(this)
+			self.len = target_width;
 		}
 		else {
 			// In this case we cannot reuse the consumed `ApInt`'s heap memory but
@@ -348,22 +383,28 @@ impl ApInt {
 			use std::iter;
 			assert!(target_req_digits > actual_req_digits);
 			let additional_digits = target_req_digits - actual_req_digits;
-			ApInt::from_iter(
+			let extended_clone = ApInt::from_iter(
 				self.digits()
 				    .chain(iter::repeat(digit::ZERO).take(additional_digits)))
-				.and_then(|apint| apint.into_truncate(target_width))
+				.and_then(|apint| apint.into_truncate(target_width))?;
+			*self = extended_clone;
 		}
+		Ok(())
 	}
 
-	/// Tries to zero-extend this `ApInt` inplace to the given `target_width`
-	/// or creates a new `ApInt` with a width of `target_width` otherwise.
+	/// Tries to strictly zero-extends this `ApInt` inplace to the given `target_width`.
 	/// 
-	/// [For more information look into `into_zero_extend`](struct.ApInt.html#method.into_zero_extend).
+	/// # Note
+	/// 
+	/// - Strict zero-extension means that the resulting `ApInt` is ensured to have
+	///   a larger `BitWidth` than before this operation.
+	/// - For more details look into
+	///   [`zero_extend_inplace`](struct.ApInt.html#method.zero_extend_inplace).
 	/// 
 	/// # Errors
 	/// 
-	/// - If `target_width` is equal to or less than the bitwidth of the given `ApInt`.
-	pub fn into_strict_zero_extend<W>(self, target_width: W) -> Result<ApInt>
+	/// - If `target_width` is equal to or greater than the bitwidth of the given `ApInt`.
+	pub fn strict_zero_extend_inplace<W>(&mut self, target_width: W) -> Result<()>
 		where W: Into<BitWidth>
 	{
 		let actual_width = self.width();
@@ -378,7 +419,8 @@ impl ApInt {
 		}
 
 		assert!(target_width > actual_width);
-		self.into_zero_extend(target_width)
+		self.zero_extend_inplace(target_width)?;
+		Ok(())
 	}
 
 	/// Creates a new `ApInt` that represents the given `ApInt` zero-extended
