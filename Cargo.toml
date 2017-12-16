@@ -14,7 +14,10 @@ categories = ["data-structures"]
 
 [dependencies]
 smallvec = "0.6"
-rand = "0.3"
+rand = { version = "0.3", optional = true }
+
+[features]
+rand_support = ["rand"]
 
 [badges]
 travis-ci = { repository = "Robbepop/apint" }

@@ -5,6 +5,8 @@
 #![allow(dead_code)]
 
 extern crate smallvec;
+
+#[cfg(feature = "rand_support")]
 extern crate rand;
 
 mod errors;

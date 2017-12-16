@@ -6,6 +6,8 @@ mod relational;
 mod arithmetic;
 mod shift;
 mod serialization;
+
+#[cfg(feature = "rand_support")]
 mod random;
 
 use digit::{Digit};
