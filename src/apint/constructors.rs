@@ -141,14 +141,9 @@ impl ApInt {
 
 	/// Creates a new `ApInt` from a given `i64` value with a bit-width of 64.
 	pub fn from_u128(val: u128) -> ApInt {
-		let buffer = vec![
-			Digit((val & 0xFFFF_FFFF_FFFF_FFFF) as u64),
-			Digit((val >> digit::BITS) as u64)
-		];
-		assert_eq!(buffer.len(), 2);
-		ApInt::from_iter(buffer)
-			.expect("We asserted that `buffer.len()` is exactly `2` \
-				     so we can expect `ApInt::from_iter` to be successful.")
+		let hi = (val >> digit::BITS) as u64;
+		let lo = (val & 0xFFFF_FFFF_FFFF_FFFF) as u64;
+		ApInt::from([hi, lo])
 	}
 
 	/// Creates a new `ApInt` from the given iterator over `Digit`s.
