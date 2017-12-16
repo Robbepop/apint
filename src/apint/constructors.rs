@@ -3,7 +3,7 @@ use apint::{ApInt, ApIntData};
 use bitwidth::{BitWidth};
 use errors::{Error, Result};
 use storage::{Storage};
-use digit::{Digit};
+use digit::{Bit, Digit};
 use digit;
 
 use smallvec::SmallVec;
@@ -74,6 +74,15 @@ impl ApInt {
 			len: width,
 			data: ApIntData{ ext: Unique::new_unchecked(ext_ptr) }
 		}
+	}
+
+	/// Creates a new `ApInt` from the given `Bit` value with a bit width of `1`.
+	/// 
+	/// This function is generic over types that are convertible to `Bit` such as `bool`.
+	pub fn from_bit<B>(bit: B) -> ApInt
+		where B: Into<Bit>
+	{
+		ApInt::new_inl(BitWidth::w1(), Digit(bit.into().to_bool() as u64))
 	}
 
 	/// Creates a new `ApInt` from a given `i8` value with a bit-width of 8.
