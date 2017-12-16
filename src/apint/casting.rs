@@ -655,200 +655,192 @@ impl ApInt {
 
 	// ========================================================================
 
-	/// Resizes the given `ApInt` inplace to the given `target_width`.
+	/// Zero-resizes this `ApInt` to the given `target_width`
+	/// and returns the result.
 	/// 
 	/// # Note
 	/// 
-	/// This operation will forward to
-	/// 
-	/// - [`into_truncate`](struct.ApInt.html#method.into_truncate)
-	/// if `target_width` is less than or equal to the width of
-	/// the given `ApInt`
-	/// - [`into_zero_extend`](struct.ApInt.html#method.into_zero_extend)
-	/// otherwise
+	/// - This is useful for method chaining.
+	/// - For more details look into
+	///   [`zero_resize`](struct.ApInt.html#method.zero_resize).
 	pub fn into_zero_resize<W>(self, target_width: W) -> ApInt
 		where W: Into<BitWidth>
 	{
-		let actual_width = self.width();
-		let target_width = target_width.into();
-
-		if target_width <= actual_width {
-			self.into_truncate(target_width)
-			    .expect("It was asserted that the target truncation `BitWidth` \
-			             is valid for this operation.")
-		}
-		else {
-			self.into_zero_extend(target_width)
-			    .expect("It was asserted that the target zero-extension `BitWidth` \
-			             is valid for this operation.")
-		}
+		let mut this = self;
+		this.zero_resize(target_width);
+		this
 	}
 
-	/// Tries to strictly resize the given `ApInt` inplace to the given `target_width`.
+	/// Tries to strictly zero-resize this `ApInt` to the given `target_width`
+	/// and returns the result.
 	/// 
 	/// # Note
 	/// 
-	/// This operation will forward to
-	/// 
-	/// - [`into_strict_truncate`](struct.ApInt.html#method.into_strict_truncate)
-	/// if `target_width` is less than or equal to the width of
-	/// the given `ApInt`
-	/// - [`into_strict_zero_extend`](struct.ApInt.html#method.into_strict_zero_extend)
-	/// otherwise
+	/// - This is useful for method chaining.
+	/// - For more details look into
+	///   [`strict_zero_resize`](struct.ApInt.html#method.strict_zero_resize).
 	/// 
 	/// # Errors
 	/// 
-	/// - If `target_width` is equal to the width of the given `ApInt`.
+	/// - If `target_width` is equal to the bitwidth of the given `ApInt`.
 	pub fn into_strict_zero_resize<W>(self, target_width: W) -> Result<ApInt>
 		where W: Into<BitWidth>
 	{
-		let actual_width = self.width();
-		let target_width = target_width.into();
-
-		if target_width <= actual_width {
-			self.into_strict_truncate(target_width)
-		}
-		else {
-			self.into_strict_zero_extend(target_width)
-		}
+		let mut this = self;
+		this.strict_zero_resize(target_width)?;
+		Ok(this)
 	}
 
-	/// Resizes the given `ApInt` inplace to the given `target_width`.
+	/// Sign-resizes this `ApInt` to the given `target_width`
+	/// and returns the result.
 	/// 
 	/// # Note
 	/// 
-	/// This operation will forward to
-	/// 
-	/// - [`into_truncate`](struct.ApInt.html#method.into_truncate)
-	/// if `target_width` is less than or equal to the width of
-	/// the given `ApInt`
-	/// - [`into_sign_extend`](struct.ApInt.html#method.into_sign_extend)
-	/// otherwise
+	/// - This is useful for method chaining.
+	/// - For more details look into
+	///   [`sign_resize`](struct.ApInt.html#method.sign_resize).
 	pub fn into_sign_resize<W>(self, target_width: W) -> ApInt
 		where W: Into<BitWidth>
 	{
-		let actual_width = self.width();
-		let target_width = target_width.into();
-
-		if target_width <= actual_width {
-			self.into_truncate(target_width)
-			    .expect("It was asserted that the target truncation `BitWidth` \
-			             is valid for this operation.")
-		}
-		else {
-			self.into_sign_extend(target_width)
-			    .expect("It was asserted that the target sign-extension `BitWidth` \
-			             is valid for this operation.")
-		}
+		let mut this = self;
+		this.sign_resize(target_width);
+		this
 	}
 
-	/// Tries to strictly resize the given `ApInt` inplace to the given `target_width`.
+	/// Tries to strictly sign-resize this `ApInt` to the given `target_width`
+	/// and returns the result.
+	/// 
+	/// # Note
+	/// 
+	/// - This is useful for method chaining.
+	/// - For more details look into
+	///   [`strict_sign_resize`](struct.ApInt.html#method.strict_sign_resize).
+	/// 
+	/// # Errors
+	/// 
+	/// - If `target_width` is equal to the bitwidth of the given `ApInt`.
+	pub fn into_strict_sign_resize<W>(self, target_width: W) -> Result<ApInt>
+		where W: Into<BitWidth>
+	{
+		let mut this = self;
+		this.strict_sign_resize(target_width)?;
+		Ok(this)
+	}
+
+	/// Zero-resizes the given `ApInt` inplace.
 	/// 
 	/// # Note
 	/// 
 	/// This operation will forward to
 	/// 
-	/// - [`into_strict_truncate`](struct.ApInt.html#method.into_strict_truncate)
-	/// if `target_width` is less than or equal to the width of
-	/// the given `ApInt`
-	/// - [`into_strict_sign_extend`](struct.ApInt.html#method.into_strict_sign_extend)
-	/// otherwise
-	/// 
-	/// # Errors
-	/// 
-	/// - If `target_width` is equal to the width of the given `ApInt`.
-	pub fn into_strict_sign_resize<W>(self, target_width: W) -> Result<ApInt>
+	/// - [`truncate_inplace`](struct.ApInt.html#method.truncate_inplace)
+	///   if `target_width` is less than or equal to the width of
+	///   the given `ApInt`
+	/// - [`zero_extend_inplace`](struct.ApInt.html#method.zero_extend_inplace)
+	///   otherwise
+	pub fn zero_resize<W>(&mut self, target_width: W)
 		where W: Into<BitWidth>
 	{
 		let actual_width = self.width();
 		let target_width = target_width.into();
 
 		if target_width <= actual_width {
-			self.into_strict_truncate(target_width)
+			self.truncate_inplace(target_width)
+			    .expect("It was asserted that `target_width` is \
+			             a valid truncation `BitWidth` in this context.")
 		}
 		else {
-			self.into_strict_sign_extend(target_width)
+			self.zero_extend_inplace(target_width)
+			    .expect("It was asserted that `target_width` is \
+			             a valid zero-extension `BitWidth` in this context.")
 		}
 	}
 
-	/// Returns a new `ApInt` that is equal to the given `ApInt`
-	/// zero-resized to the given `target_width`.
+	/// Strictly zero-resizes the given `ApInt` inplace.
 	/// 
 	/// # Note
 	/// 
-	/// - This will never reuse memory inplace and may even
-	///   heap-allocate if the given `ApInt` is larger than what
-	///   can be space-optimized.
-	/// - This is equal to a call to `clone()` if `target_width`
-	///   is equal to the bitwidth of the given `ApInt`.
-	/// - This will always perform worse than a call to
-	///   [`into_zero_resize`](struct.ApInt.html#method.into_zero_resize)
-	pub fn zero_resize<W>(&self, target_width: W) -> ApInt
-		where W: Into<BitWidth>
-	{
-		self.clone().into_zero_resize(target_width)
-	}
-
-	/// Tries to create an `ApInt` that is equal to the given `ApInt`
-	/// strictly zero-resized to the given `target_width`.
+	/// This operation will forward to
 	/// 
-	/// # Note
-	/// 
-	/// - This will never reuse memory inplace and may even
-	///   heap-allocate if the given `ApInt` is larger than what
-	///   can be space-optimized.
-	/// - This is equal to a call to `clone()` if `target_width`
-	///   is equal to the bitwidth of the given `ApInt`.
-	/// - This will always perform worse than a call to
-	///   [`into_strict_zero_resize`](struct.ApInt.html#method.into_strict_zero_resize)
+	/// - [`strict_truncate_inplace`](struct.ApInt.html#method.strict_truncate_inplace)
+	///   if `target_width` is less than or equal to the width of
+	///   the given `ApInt`
+	/// - [`strict_zero_extend_inplace`](struct.ApInt.html#method.strict_zero_extend_inplace)
+	///   otherwise
 	/// 
 	/// # Errors
 	/// 
-	/// - If `target_width` is equal to the width of the given `ApInt`.
-	pub fn strict_zero_resize<W>(&self, target_width: W) -> Result<ApInt>
+	/// - If `target_width` is equal to the bitwidth of the given `ApInt`.
+	pub fn strict_zero_resize<W>(&mut self, target_width: W) -> Result<()>
 		where W: Into<BitWidth>
 	{
-		self.clone().into_strict_zero_resize(target_width)
+		let actual_width = self.width();
+		let target_width = target_width.into();
+
+		if target_width <= actual_width {
+			self.strict_truncate_inplace(target_width)
+		}
+		else {
+			self.strict_zero_extend_inplace(target_width)
+		}
 	}
 
-	/// Returns a new `ApInt` that is equal to the given `ApInt`
-	/// sign-resized to the given `target_width`.
+	/// Sign-resizes the given `ApInt` inplace.
 	/// 
 	/// # Note
 	/// 
-	/// - This will never reuse memory inplace and may even
-	///   heap-allocate if the given `ApInt` is larger than what
-	///   can be space-optimized.
-	/// - This is equal to a call to `clone()` if `target_width`
-	///   is equal to the bitwidth of the given `ApInt`.
-	/// - This will always perform worse than a call to
-	///   [`into_sign_resize`](struct.ApInt.html#method.into_sign_resize)
-	pub fn sign_resize<W>(&self, target_width: W) -> ApInt
+	/// This operation will forward to
+	/// 
+	/// - [`truncate_inplace`](struct.ApInt.html#method.truncate_inplace)
+	///   if `target_width` is less than or equal to the width of
+	///   the given `ApInt`
+	/// - [`sign_extend_inplace`](struct.ApInt.html#method.sign_extend_inplace)
+	///   otherwise
+	pub fn sign_resize<W>(&mut self, target_width: W)
 		where W: Into<BitWidth>
 	{
-		self.clone().into_sign_resize(target_width)
+		let actual_width = self.width();
+		let target_width = target_width.into();
+
+		if target_width <= actual_width {
+			self.truncate_inplace(target_width)
+			    .expect("It was asserted that `target_width` is \
+			             a valid truncation `BitWidth` in this context.")
+		}
+		else {
+			self.sign_extend_inplace(target_width)
+			    .expect("It was asserted that `target_width` is \
+			             a valid sign-extension `BitWidth` in this context.")
+		}
 	}
 
-	/// Tries to create an `ApInt` that is equal to the given `ApInt`
-	/// strictly sign-resized to the given `target_width`.
+	/// Strictly sign-resizes the given `ApInt` inplace.
 	/// 
 	/// # Note
 	/// 
-	/// - This will never reuse memory inplace and may even
-	///   heap-allocate if the given `ApInt` is larger than what
-	///   can be space-optimized.
-	/// - This is equal to a call to `clone()` if `target_width`
-	///   is equal to the bitwidth of the given `ApInt`.
-	/// - This will always perform worse than a call to
-	///   [`into_strict_sign_resize`](struct.ApInt.html#method.into_strict_sign_resize)
+	/// This operation will forward to
+	/// 
+	/// - [`strict_truncate_inplace`](struct.ApInt.html#method.strict_truncate_inplace)
+	///   if `target_width` is less than or equal to the width of
+	///   the given `ApInt`
+	/// - [`strict_sign_extend_inplace`](struct.ApInt.html#method.strict_sign_extend_inplace)
+	///   otherwise
 	/// 
 	/// # Errors
 	/// 
-	/// - If `target_width` is equal to the width of the given `ApInt`.
-	pub fn strict_sign_resize<W>(&self, target_width: W) -> Result<ApInt>
+	/// - If `target_width` is equal to the bitwidth of the given `ApInt`.
+	pub fn strict_sign_resize<W>(&mut self, target_width: W) -> Result<()>
 		where W: Into<BitWidth>
 	{
-		self.clone().into_strict_sign_resize(target_width)
+		let actual_width = self.width();
+		let target_width = target_width.into();
+
+		if target_width <= actual_width {
+			self.strict_truncate_inplace(target_width)
+		}
+		else {
+			self.strict_sign_extend_inplace(target_width)
+		}
 	}
 }
 
