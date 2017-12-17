@@ -226,8 +226,7 @@ mod tests {
     use serde_test::{
         Token,
         Configure,
-        assert_tokens,
-        assert_ser_tokens
+        assert_tokens
     };
 
     mod compact {

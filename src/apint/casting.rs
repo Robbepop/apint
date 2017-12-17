@@ -894,7 +894,7 @@ mod tests {
 	}
 
 	mod strict_assign {
-		use super::*;
+		// use super::*;
 
 		/// Test for assigning to a non-strict assigning width
 		/// which results in an error.
@@ -911,7 +911,7 @@ mod tests {
 	}
 
 	mod into_truncate {
-		use super::*;
+		// use super::*;
 
 		/// Test for truncation to the same bit width.
 		#[test]
@@ -949,7 +949,7 @@ mod tests {
 	}
 
 	mod into_strict_truncate {
-		use super::*;
+		// use super::*;
 
 		/// Test for truncation to a non-strict truncation width
 		/// which results in an error.
@@ -967,7 +967,7 @@ mod tests {
 	}
 
 	mod truncate {
-		use super::*;
+		// use super::*;
 
 		/// Test to assert behavioural equality to `into_truncate`.
 		#[test]
@@ -977,7 +977,7 @@ mod tests {
 	}
 
 	mod strict_truncate {
-		use super::*;
+		// use super::*;
 
 		/// Test for truncation to a non-strict truncation width
 		/// which results in an error.
@@ -994,7 +994,7 @@ mod tests {
 	}
 
 	mod into_zero_extend {
-		use super::*;
+		// use super::*;
 
 		/// Test for zero-extension to the same bit width.
 		#[test]
@@ -1032,7 +1032,7 @@ mod tests {
 	}
 
 	mod into_strict_zero_extend {
-		use super::*;
+		// use super::*;
 
 		/// Test for zero-extension to a non-strict zero-extension width
 		/// which results in an error.
@@ -1050,7 +1050,7 @@ mod tests {
 	}
 
 	mod zero_extend {
-		use super::*;
+		// use super::*;
 
 		/// Test to assert behavioural equality to `into_zero_extend`.
 		#[test]
@@ -1060,7 +1060,7 @@ mod tests {
 	}
 
 	mod strict_zero_extend {
-		use super::*;
+		// use super::*;
 
 		/// Test for zero-extension to a non-strict zero-extension width
 		/// which results in an error.
@@ -1077,7 +1077,7 @@ mod tests {
 	}
 
 	mod into_sign_extend {
-		use super::*;
+		// use super::*;
 
 		/// Test for sign-extension to the same bit width.
 		#[test]
@@ -1115,7 +1115,7 @@ mod tests {
 	}
 
 	mod into_strict_sign_extend {
-		use super::*;
+		// use super::*;
 
 		/// Test for sign-extension to a non-strict sign-extension width
 		/// which results in an error.
@@ -1133,7 +1133,7 @@ mod tests {
 	}
 
 	mod sign_extend {
-		use super::*;
+		// use super::*;
 
 		/// Test to assert behavioural equality to `into_sign_extend`.
 		#[test]
@@ -1143,7 +1143,7 @@ mod tests {
 	}
 
 	mod strict_sign_extend {
-		use super::*;
+		// use super::*;
 
 		/// Test for sign-extension to a non-strict sign-extension width
 		/// which results in an error.
