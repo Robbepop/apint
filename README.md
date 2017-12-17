@@ -90,9 +90,9 @@ additional terms or conditions.
 [9]: ./LICENSE-MIT
 [10]: ./LICENSE-APACHE
 [11]: https://docs.rs/apint/badge.svg
-[12]: https://docs.rs/apint/0.0.0-alpha.3
+[12]: https://docs.rs/apint/0.0.0-alpha.4
 [13]: https://img.shields.io/crates/v/apint.svg
-[14]: https://crates.io/crates/apint/0.0.0-alpha.3
+[14]: https://crates.io/crates/apint/0.0.0-alpha.4
 [15]: https://codecov.io/gh/robbepop/apint/branch/master/graph/badge.svg
 [16]: https://codecov.io/gh/Robbepop/apint/branch/master
 
