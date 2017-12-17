@@ -74,8 +74,6 @@ pub(crate) enum ModelMut<'a> {
 	Ext(LargeApIntMut<'a>)
 }
 
-// ============================================================================
-
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) enum ZipModel<'a, 'b> {
 	Inl(SmallApInt<'a>, SmallApInt<'b>),
@@ -88,7 +86,11 @@ pub(crate) enum ZipModelMut<'a, 'b> {
 	Ext(LargeApIntMut<'a>, LargeApInt<'b>)
 }
 
+// ============================================================================
+
 impl Width for ApInt {
+	/// Returns the `BitWidth` of this `ApInt`.
+	#[inline]
 	fn width(&self) -> BitWidth {
 		BitWidth::new(self.len_bits()).unwrap()
 	}
@@ -98,23 +100,23 @@ impl Width for ApInt {
 ///  Utility & Helper Methods
 /// =======================================================================
 impl ApInt {
-	/// Returns the bit-width of this `ApInt` as `usize`.
+	/// Returns the number of bits of the bit width of this `ApInt`.
 	#[inline]
 	pub(in apint) fn len_bits(&self) -> usize {
 		self.len.to_usize()
 	}
 
-	/// Returns the number of digits used internally for value representation.
-	/// 
-	/// # Note
-	/// 
-	/// - This method should not be part of the public interface.
-	/// - The returned values are valid for bit-block sizes of 32 bit.
+	/// Returns the number of digits used internally for the value
+	/// representation of this `ApInt`.
 	#[inline]
 	pub(in apint) fn len_digits(&self) -> usize {
 		self.len.required_digits()
 	}
 
+	/// Returns the storage specifier of this `ApInt`.
+	/// 
+	/// This is `Storage::Inl` for `ApInt` instances that can be stored
+	/// entirely on the stack and `Storage::Ext` otherwise.
 	#[inline]
 	pub(in apint) fn storage(&self) -> Storage {
 		self.len.storage()
@@ -136,6 +138,11 @@ impl ApInt {
 		}
 	}
 
+	/// Zips both given `ApInt` instances to simplify access to their data.
+	/// 
+	/// # Errors
+	/// 
+	/// - If both given `ApInt` instances have non-matching bit widths.
 	pub(in apint) fn zip_model<'a, 'b>(&'a self, other: &'b ApInt) -> Result<ZipModel<'a, 'b>> {
 		if self.len_bits() != other.len_bits() {
 			return Error::unmatching_bitwidths(self.len_bits(), other.len_bits()).into()
@@ -150,6 +157,11 @@ impl ApInt {
 		})
 	}
 
+	/// Mutably zips both given `ApInt` instances to simplify access to their data.
+	/// 
+	/// # Errors
+	/// 
+	/// - If both given `ApInt` instances have non-matching bit widths.
 	pub(in apint) fn zip_model_mut<'a, 'b>(&'a mut self, other: &'b ApInt) -> Result<ZipModelMut<'a, 'b>> {
 		if self.len_bits() != other.len_bits() {
 			return Error::unmatching_bitwidths(self.len_bits(), other.len_bits()).into()
@@ -164,13 +176,7 @@ impl ApInt {
 		})
 	}
 
-	/// Returns a slice over the digits stored within this `ApInt`.
-	/// 
-	/// # Note
-	/// 
-	/// This might be less of a help when implementing algorithms since `Digit`
-	/// does not have a proper knowledge of its actually used bits.
-	/// Refer to `ComputeBlocks` instead which is returned by some iterators.
+	/// Returns a slice over the `Digit`s of this `ApInt` in little-endian order.
 	pub(crate) fn as_digit_slice(&self) -> &[Digit] {
 		use std::slice;
 		match self.len.storage() {
@@ -183,13 +189,7 @@ impl ApInt {
 		}
 	}
 
-	/// Returns a slice over the mutable digits stored within this `ApInt`.
-	/// 
-	/// # Note
-	/// 
-	/// This might be less of a help when implementing algorithms since `Digit`
-	/// does not have a proper knowledge of its actually used bits.
-	/// Refer to `ComputeBlocks` instead which is returned by some iterators.
+	/// Returns a mutable slice over the `Digit`s of this `ApInt` in little-endian order.
 	pub(crate) fn as_digit_slice_mut(&mut self) -> &mut [Digit] {
 		use std::slice;
 		match self.len.storage() {
@@ -202,10 +202,7 @@ impl ApInt {
 		}
 	}
 
-	/// Returns a reference to the internal `Block` that is representing the
-	/// most significant bits of the represented value.
-	/// 
-	/// The `Block` is returned as a `ComputeBlock` that adds an associated bit-width to it.
+	/// Returns the most significant `Digit` of this `ApInt`.
 	pub(in apint) fn most_significant_digit(&self) -> Digit {
 		match self.model() {
 			Model::Inl(small) => small.most_significant_digit(),
@@ -213,6 +210,7 @@ impl ApInt {
 		}
 	}
 
+	/// Returns a mutable reference to the most significant `Digit` of this `ApInt`.
 	pub(in apint) fn most_significant_digit_mut(&mut self) -> &mut Digit {
 		match self.model_mut() {
 			ModelMut::Inl(small) => small.into_most_significant_digit_mut(),
@@ -220,7 +218,8 @@ impl ApInt {
 		}
 	}
 
-	/// Returns `true` if the most significant bit of the `ApInt` is set, `false` otherwise.
+	/// Returns `Bit::Set` if the most significant bit of this `ApInt` is set
+	/// and `Bit::Unset` otherwise.
 	pub(in apint) fn most_significant_bit(&self) -> Bit {
 		match self.model() {
 			Model::Inl(small) => small.most_significant_bit(),
@@ -228,4 +227,3 @@ impl ApInt {
 		}
 	}
 }
-
