@@ -234,17 +234,33 @@ mod tests {
         use super::*;
 
         #[test]
-        #[ignore]
-        fn test_small_ser() {
+        fn test_small() {
             let x = ApInt::from_u64(0xFEDC_BA98_7654_3210);
             let expected = &[
                 Token::Tuple{ len: 2 },
                 Token::U64(64),
-                Token::Bytes(
-                    &[0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10]),
+                Token::Seq{ len: Some(1) },
+                Token::U64(0xFEDC_BA98_7654_3210),
+                Token::SeqEnd,
                 Token::TupleEnd
             ];
-            assert_ser_tokens(&x.compact(), expected)
+            assert_tokens(&x.compact(), expected)
+        }
+
+        #[test]
+        fn test_large() {
+            let x = ApInt::from_u128(
+                0xFEDC_BA98_7654_3210__0101_1010_0110_1001);
+            let expected = &[
+                Token::Tuple{ len: 2 },
+                Token::U64(128),
+                Token::Seq{ len: Some(2) },
+                Token::U64(0x0101_1010_0110_1001),
+                Token::U64(0xFEDC_BA98_7654_3210),
+                Token::SeqEnd,
+                Token::TupleEnd
+            ];
+            assert_tokens(&x.compact(), expected)
         }
     }
 
