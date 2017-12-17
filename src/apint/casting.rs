@@ -827,8 +827,18 @@ mod tests {
 
 		/// Test for assigning to the same bit width.
 		#[test]
-		#[ignore]
 		fn equal_width() {
+			for apint in test_apints() {
+				let width         = apint.width();
+				let mut all_set   = ApInt::all_set(width);
+				let mut all_unset = ApInt::all_unset(width);
+				assert_ne!(all_set, all_unset);
+				all_set.assign(&apint);
+				all_unset.assign(&apint);
+				assert_eq!(all_set, all_unset);
+				assert_eq!(apint, all_set);
+				assert_eq!(apint, all_unset);
+			}
 		}
 
 		/// Test for assigning between bit widths that
