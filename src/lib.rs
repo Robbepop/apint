@@ -12,6 +12,9 @@ extern crate rand;
 #[cfg(feature = "serde_support")]
 extern crate serde;
 
+#[cfg(all(test, feature = "serde_support"))]
+extern crate serde_test;
+
 mod errors;
 mod traits;
 mod digit;

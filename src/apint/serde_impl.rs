@@ -195,3 +195,46 @@ impl<'de> Deserialize<'de> for ApInt {
     }
 }
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    use serde_test::{Token, assert_tokens};
+
+    #[test]
+    fn test_small() {
+        let x = ApInt::from_u64(42);
+        assert_tokens(&x, &[
+            Token::Struct{
+                name: "ApInt",
+                len: 3
+            },
+            Token::Str("width"),
+            Token::U64(64),
+            Token::Str("digits"),
+            Token::Seq{ len: Some(1) },
+            Token::U64(42),
+            Token::SeqEnd,
+            Token::StructEnd
+        ]);
+    }
+
+    #[test]
+    fn test_large() {
+        let x = ApInt::from_u128(1337);
+        assert_tokens(&x, &[
+            Token::Struct{
+                name: "ApInt",
+                len: 3
+            },
+            Token::Str("width"),
+            Token::U64(128),
+            Token::Str("digits"),
+            Token::Seq{ len: Some(2) },
+            Token::U64(1337),
+            Token::U64(0),
+            Token::SeqEnd,
+            Token::StructEnd
+        ]);
+    }
+}
