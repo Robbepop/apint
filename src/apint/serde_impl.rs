@@ -199,12 +199,12 @@ impl<'de> Deserialize<'de> for ApInt {
 mod tests {
     use super::*;
 
-    use serde_test::{Token, assert_tokens};
+    use serde_test::{Token, Configure, assert_tokens};
 
     #[test]
     fn test_small() {
         let x = ApInt::from_u64(42);
-        assert_tokens(&x, &[
+        let expected = &[
             Token::Struct{
                 name: "ApInt",
                 len: 2
@@ -216,13 +216,15 @@ mod tests {
             Token::U64(42),
             Token::SeqEnd,
             Token::StructEnd
-        ]);
+        ];
+        assert_tokens(&x.clone().compact(), expected);
+        assert_tokens(&x.clone().readable(), expected);
     }
 
     #[test]
     fn test_large() {
         let x = ApInt::from_u128(1337);
-        assert_tokens(&x, &[
+        let expected = &[
             Token::Struct{
                 name: "ApInt",
                 len: 2
@@ -235,6 +237,8 @@ mod tests {
             Token::U64(0),
             Token::SeqEnd,
             Token::StructEnd
-        ]);
+        ];
+        assert_tokens(&x.clone().compact(), expected);
+        assert_tokens(&x.clone().readable(), expected);
     }
 }
