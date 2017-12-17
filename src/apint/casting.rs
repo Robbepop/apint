@@ -793,6 +793,14 @@ mod tests {
 		].into_iter()
 	}
 
+	fn test_inl_apints() -> impl Iterator<Item=ApInt> {
+		test_apints().filter(|apint| apint.storage() == Storage::Inl)
+	}
+
+	fn test_ext_apints() -> impl Iterator<Item=ApInt> {
+		test_apints().filter(|apint| apint.storage() == Storage::Ext)
+	}
+
 	mod clone {
 		use super::*;
 
