@@ -20,7 +20,7 @@ impl Serialize for ApInt {
         where S: Serializer
     {
         use serde::ser::SerializeStruct;
-        let mut s = serializer.serialize_struct("ApInt", 3)?;
+        let mut s = serializer.serialize_struct("ApInt", 2)?;
         s.serialize_field("width", &(self.len.to_usize() as u64))?;
         s.serialize_field("digits", self.as_digit_slice())?;
         s.end()
@@ -207,7 +207,7 @@ mod tests {
         assert_tokens(&x, &[
             Token::Struct{
                 name: "ApInt",
-                len: 3
+                len: 2
             },
             Token::Str("width"),
             Token::U64(64),
@@ -225,7 +225,7 @@ mod tests {
         assert_tokens(&x, &[
             Token::Struct{
                 name: "ApInt",
-                len: 3
+                len: 2
             },
             Token::Str("width"),
             Token::U64(128),
