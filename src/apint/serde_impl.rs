@@ -32,7 +32,7 @@ impl Serialize for ApInt {
         else {
             let mut s = serializer.serialize_tuple(2)?;
             s.serialize_element(&len_digits)?;
-            s.serialize_element(self.digits_as_bytes())?;
+            s.serialize_element(&self.as_digit_slice())?;
             s.end()
         }
     }
@@ -192,14 +192,12 @@ impl<'de> Deserialize<'de> for ApInt {
                         )
                     )?;
  
-                let expected_digits = width.required_digits();
-                let mut digits: Vec<Digit> = Vec::with_capacity(expected_digits);
+                let digits: Vec<Digit> = seq.next_element()?
+                                            .ok_or_else(|| de::Error::invalid_length(1, &self))?;
 
-                for n in 0..expected_digits {
-                    let digit: Digit = Digit(
-                        seq.next_element()?
-                           .ok_or_else(|| de::Error::invalid_length(1+n, &self))?);
-                    digits.push(digit);
+                if width.required_digits() != digits.len() {
+                    return Err(de::Error::invalid_value(
+                        de::Unexpected::Seq, &"unexpected number of digits found"))
                 }
 
                 Ok(ApInt::from_iter(digits)
