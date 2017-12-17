@@ -202,6 +202,46 @@ impl ApInt {
 		}
 	}
 
+	/// Returns a slice to the underlying bytes of the digits of this `ApInt`.
+	pub(crate) fn digits_as_bytes(&self) -> &[u8] {
+		use std::slice;
+		use std::mem;
+		match self.len.storage() {
+			Storage::Inl => unsafe {
+				slice::from_raw_parts(
+					&self.data.inl as *const Digit as *const u8,
+					mem::size_of::<Digit>()
+				)
+			},
+			Storage::Ext => unsafe {
+				slice::from_raw_parts(
+					self.data.ext.as_ptr() as *const u8,
+					self.len_digits() * mem::size_of::<Digit>()
+				)
+			}
+		}
+	}
+
+	/// Returns a mutable slice to the underlying bytes of the digits of this `ApInt`.
+	pub(crate) fn digits_as_bytes_mut(&mut self) -> &mut [u8] {
+		use std::slice;
+		use std::mem;
+		match self.len.storage() {
+			Storage::Inl => unsafe {
+				slice::from_raw_parts_mut(
+					&mut self.data.inl as *mut Digit as *mut u8,
+					mem::size_of::<Digit>()
+				)
+			},
+			Storage::Ext => unsafe {
+				slice::from_raw_parts_mut(
+					self.data.ext.as_ptr() as *mut u8,
+					self.len_digits() * mem::size_of::<Digit>()
+				)
+			}
+		}
+	}
+
 	/// Returns a reference to the internal `Block` that is representing the
 	/// most significant bits of the represented value.
 	/// 
