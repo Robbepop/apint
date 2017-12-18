@@ -209,7 +209,7 @@ impl ApInt {
 	}
 
 	/// Returns a slice over the `Digit`s of this `ApInt` in little-endian order.
-	pub(crate) fn as_digit_slice(&self) -> &[Digit] {
+	pub(in apint) fn as_digit_slice(&self) -> &[Digit] {
 		use std::slice;
 		match self.len.storage() {
 			Storage::Inl => unsafe {
@@ -222,7 +222,7 @@ impl ApInt {
 	}
 
 	/// Returns a mutable slice over the `Digit`s of this `ApInt` in little-endian order.
-	pub(crate) fn as_digit_slice_mut(&mut self) -> &mut [Digit] {
+	pub(in apint) fn as_digit_slice_mut(&mut self) -> &mut [Digit] {
 		use std::slice;
 		match self.len.storage() {
 			Storage::Inl => unsafe {
