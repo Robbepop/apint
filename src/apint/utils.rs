@@ -236,26 +236,61 @@ impl ApInt {
 
 	/// Returns the most significant `Digit` of this `ApInt`.
 	pub(in apint) fn most_significant_digit(&self) -> Digit {
-		match self.model() {
-			Model::Inl(small) => small.most_significant_digit(),
-			Model::Ext(large) => large.most_significant_digit()
+		match self.access_data() {
+			DataAccess::Inl(digit) => digit,
+			DataAccess::Ext(digits) => {
+				digits.last().unwrap().clone()
+			}
 		}
 	}
 
 	/// Returns a mutable reference to the most significant `Digit` of this `ApInt`.
 	pub(in apint) fn most_significant_digit_mut(&mut self) -> &mut Digit {
-		match self.model_mut() {
-			ModelMut::Inl(small) => small.into_most_significant_digit_mut(),
-			ModelMut::Ext(large) => large.into_most_significant_digit_mut()
+		match self.access_data_mut() {
+			DataAccessMut::Inl(digit) => digit,
+			DataAccessMut::Ext(digits) => {
+				digits.last_mut().unwrap()
+			}
+		}
+	}
+
+	/// Returns the least significant `Digit` of this `ApInt`.
+	pub(in apint) fn least_significant_digit(&self) -> Digit {
+		match self.access_data() {
+			DataAccess::Inl(digit) => digit,
+			DataAccess::Ext(digits) => digits[0]
+		}
+	}
+
+	/// Returns a mutable reference to the least significant `Digit` of this `ApInt`.
+	pub(in apint) fn least_significant_digit_mut(&mut self) -> &mut Digit {
+		match self.access_data_mut() {
+			DataAccessMut::Inl(digit) => digit,
+			DataAccessMut::Ext(digits) => {
+				digits.first_mut().unwrap()
+			}
 		}
 	}
 
 	/// Returns `Bit::Set` if the most significant bit of this `ApInt` is set
 	/// and `Bit::Unset` otherwise.
 	pub(in apint) fn most_significant_bit(&self) -> Bit {
-		match self.model() {
-			Model::Inl(small) => small.most_significant_bit(),
-			Model::Ext(large) => large.most_significant_bit()
+		match self.access_data() {
+			DataAccess::Inl(digit) => digit.most_significant_bit(),
+			DataAccess::Ext(_) => {
+				self.most_significant_digit().most_significant_bit()
+			}
+		}
+	}
+
+	/// Returns `Bit::Set` if the least significant bit of this `ApInt` is set
+	/// and `Bit::Unset` otherwise.
+	pub(in apint) fn least_significant_bit(&self) -> Bit {
+		match self.access_data() {
+			DataAccess::Inl(digit) => digit.least_significant_bit(),
+			DataAccess::Ext(_) => {
+				self.least_significant_digit().least_significant_bit()
+			}
 		}
 	}
 }
