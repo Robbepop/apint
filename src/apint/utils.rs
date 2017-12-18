@@ -88,6 +88,20 @@ pub(crate) enum ZipModelMut<'a, 'b> {
 
 // ============================================================================
 
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+pub(crate) enum DataAccess<'a> {
+	Inl(Digit),
+	Ext(&'a [Digit])
+}
+
+#[derive(Debug, PartialEq, Eq)]
+pub(crate) enum DataAccessMut<'a> {
+	Inl(&'a mut Digit),
+	Ext(&'a mut [Digit])
+}
+
+// ============================================================================
+
 impl Width for ApInt {
 	/// Returns the `BitWidth` of this `ApInt`.
 	#[inline]
@@ -135,6 +149,24 @@ impl ApInt {
 		match self.storage() {
 			Storage::Inl => ModelMut::Inl(SmallApIntMut::new(self.len, unsafe{&mut self.data.inl})),
 			Storage::Ext => ModelMut::Ext(LargeApIntMut::new(self.len, self.as_digit_slice_mut()))
+		}
+	}
+
+	/// Accesses the internal `Digit` data of this `ApInt` in a safe way.
+	#[inline]
+	pub(in apint) fn access_data(&self) -> DataAccess {
+		match self.storage() {
+			Storage::Inl => DataAccess::Inl(unsafe{self.data.inl}),
+			Storage::Ext => DataAccess::Ext(self.as_digit_slice())
+		}
+	}
+
+	/// Mutably accesses the internal `Digit` data of this `ApInt` in a safe way.
+	#[inline]
+	pub(in apint) fn access_data_mut(&mut self) -> DataAccessMut {
+		match self.storage() {
+			Storage::Inl => DataAccessMut::Inl(unsafe{&mut self.data.inl}),
+			Storage::Ext => DataAccessMut::Ext(self.as_digit_slice_mut())
 		}
 	}
 
