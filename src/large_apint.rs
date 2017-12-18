@@ -23,24 +23,6 @@ pub(crate) struct LargeApIntMut<'a> {
 
 // ============================================================================
 
-impl<'a> LargeApInt<'a> {
-	pub fn most_significant_digit(&self) -> Digit {
-		self.digits().last().unwrap()
-	}
-
-	pub fn most_significant_bit(&self) -> Bit {
-		self.digits().last().unwrap().most_significant_bit()
-	}
-}
-
-impl<'a> LargeApIntMut<'a> {
-	pub fn into_most_significant_digit_mut(self) -> &'a mut Digit {
-		self.digits_mut().last().unwrap()
-	}
-}
-
-// ============================================================================
-
 impl<'a> AsDigitSeq<'a> for LargeApInt<'a> {
 	type Seq = ContiguousDigitSeq<'a>;
 
