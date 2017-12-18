@@ -363,6 +363,15 @@ impl Digit {
 		Bit::from((self.repr() >> (BITS - 1)) != 0)
 	}
 
+	/// Returns the least significant `Bit` of this `Digit`.
+	/// 
+	/// Note: This may be useful to determine if a `Digit`
+	///       represents an even or an uneven number for example.
+	#[inline]
+	pub fn least_significant_bit(self) -> Bit {
+		Bit::from((self.repr() & 0x1) != 0)
+	}
+
 	/// Returns `true` if the `n`th bit is set to `1`, else returns `false`.
 	/// 
 	/// # Errors
