@@ -3,6 +3,7 @@ use apint::utils::{Model, ModelMut, ZipModelMut};
 use digit::{Bit};
 use traits::{ApIntImpl, ApIntMutImpl};
 use errors::{Result};
+use apint::utils::DataAccessMut;
 
 use std::ops::{
 	BitAnd,
@@ -18,23 +19,15 @@ use std::ops::{
 /// ===========================================================================
 impl ApInt {
 
-	/// Creates a new bitvev that represents the bitwise-not of the given `ApInt`.
-	pub fn bitnot(&self) -> ApInt {
-		let mut cloned = self.clone();
-		cloned.bitnot_inplace();
-		cloned
-	}
-
-	/// Flip all bits of the given `ApInt` inplace.
-	/// 
-	/// This operation operates in-place on `self` and thus does not require dynamic memory allocation.
-	pub fn bitnot_inplace(&mut self) {
-		match self.model_mut() {
-			ModelMut::Inl(mut small) => {
-				small.bitnot_inplace()
+	/// Flip all bits of this `ApInt` inplace.
+	pub fn bitnot(&mut self) {
+		match self.access_data_mut() {
+			DataAccessMut::Inl(digit) => {
+				*digit = !(*digit);
 			}
-			ModelMut::Ext(mut large) => {
-				large.bitnot_inplace()
+			DataAccessMut::Ext(digits) => {
+				digits.into_iter()
+				      .for_each(|digit| *digit = !(*digit))
 			}
 		}
 	}
