@@ -212,6 +212,13 @@ impl Digit {
 		self.0
 	}
 
+	/// Returns a mutable reference to the underlying representation
+	/// of this `Digit`.
+	#[inline]
+	pub fn repr_mut(&mut self) -> &mut DigitRepr {
+		&mut self.0
+	}
+
 	/// Returns the `DoubleDigit` representation of this `Digit`.
 	#[inline]
 	pub(crate) fn dd(self) -> DoubleDigit {
