@@ -35,6 +35,7 @@ impl ApInt {
 				      .for_each(|digit| *digit = !(*digit))
 			}
 		}
+		// TODO: Clear excess bits (we finally need a utility method for this)
 	}
 
 	/// Tries to bit-and assign this `ApInt` inplace to `rhs`
