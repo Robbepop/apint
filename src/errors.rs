@@ -1,6 +1,7 @@
 use bitwidth::BitWidth;
 use bitpos::BitPos;
 use radix::Radix;
+use apint::{ShiftAmount};
 
 use std::result;
 use std::error;
@@ -9,7 +10,7 @@ use std::fmt;
 /// Represents the kind of an `Error`.
 /// 
 /// This also stores the unique information tied to the error report.
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum ErrorKind {
 	/// Returned on trying to create a `Radix` from an invalid `u8` representation.
 	InvalidRadix(u8),
@@ -29,6 +30,14 @@ pub enum ErrorKind {
 		/// The invalid bit position that was tried to access.
 		pos: BitPos,
 		/// The upper bound for valid bit positions in this context.
+		width: BitWidth
+	},
+
+	/// Returned on trying to shift with an invalid shift amount.
+	InvalidShiftAmount{
+		/// The invalid shift amount.
+		shift_amount: ShiftAmount,
+		/// The bit width for which this shift amount of invalid.
 		width: BitWidth
 	},
 
@@ -62,7 +71,7 @@ pub enum ErrorKind {
 /// 
 /// All errors have a unique kind which also stores extra information for error reporting.
 /// Besides that an `Error` also stores a message and an optional additional annotation.
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Error{
 	kind      : ErrorKind,
 	message   : String,
@@ -190,6 +199,19 @@ impl Error {
 		Error{
 			kind: ErrorKind::UnmatchingBitwidth(lhs, rhs),
 			message: format!("Encountered invalid operation on entities with non-matching bit-widths of {:?} and {:?}.", lhs, rhs),
+			annotation: None
+		}
+	}
+
+	pub(crate) fn invalid_shift_amount<S, W>(shift_amount: S, width: W) -> Error
+		where S: Into<ShiftAmount>,
+		      W: Into<BitWidth>
+	{
+		let shift_amount = shift_amount.into();
+		let width = width.into();
+		Error{
+			kind: ErrorKind::InvalidShiftAmount{shift_amount, width},
+			message: format!("Encountered invalid shift amount of {:?} on bit-width with {:?} bits.", shift_amount, width),
 			annotation: None
 		}
 	}
