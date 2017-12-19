@@ -1,7 +1,7 @@
 use apint::{ApInt};
-use apint::utils::{ZipModelMut};
-use traits::{ApIntMutImpl};
+use apint::utils::{DataAccessMut};
 use errors::{Result};
+use checks;
 
 /// Represents an amount of bits to shift a value like an `ApInt`.
 /// 
@@ -32,85 +32,122 @@ impl From<usize> for ShiftAmount {
 /// =======================================================================
 impl ApInt {
 
-	/// Creates a new `ApInt` that represents the result of this `ApInt` left-shifted by the other one.
+	/// Shift this `ApInt` left by the given `shift_amount` bits.
+	/// 
+	/// This operation is inplace and will **not** allocate memory.
 	/// 
 	/// # Errors
 	/// 
-	/// - When `self` and `other` have different bit-widths.
-	pub fn checked_shl(&self, other: &ApInt) -> Result<ApInt> {
-		let mut cloned = self.clone();
-		cloned.checked_shl_assign(other)?;
-		Ok(cloned)
-	}
-
-	/// Left-shifts this `ApInt` by the amount represented by `other`.
-	/// 
-	/// # Errors
-	/// 
-	/// - When `self` and `other` have different bit-widths.
-	pub fn checked_shl_assign(&mut self, other: &ApInt) -> Result<()> {
-		match self.zip_model_mut(other)? {
-			ZipModelMut::Inl(mut left, right) => {
-				left.shl_inplace(&right)
+	/// - If the given `shift_amount` is invalid for the bit width of this `ApInt`.
+	pub fn checked_shl_assign<S>(&mut self, shift_amount: S) -> Result<()>
+		where S: Into<ShiftAmount>
+	{
+		let shift_amount = shift_amount.into();
+		checks::verify_shift_amount(self, shift_amount)?;
+		match self.access_data_mut() {
+			DataAccessMut::Inl(digit) => {
+				*digit.repr_mut() <<= shift_amount.to_usize();
 			}
-			ZipModelMut::Ext(mut left, right) => {
-				left.shl_inplace(&right)
+			DataAccessMut::Ext(_digits) => {
+				unimplemented!()
 			}
 		}
+		Ok(())
 	}
 
-	/// Creates a new `ApInt` that represents the result of this `ApInt` logically right-shifted by the other one.
+	/// Shift this `ApInt` left by the given `shift_amount` bits and returns the result.
+	/// 
+	/// This operation is inplace and will **not** allocate memory.
 	/// 
 	/// # Errors
 	/// 
-	/// - When `self` and `other` have different bit-widths.
-	pub fn checked_lshr(&self, other: &ApInt) -> Result<ApInt> {
-		let mut cloned = self.clone();
-		cloned.checked_lshr_assign(other)?;
-		Ok(cloned)
+	/// - If the given `shift_amount` is invalid for the bit width of this `ApInt`.
+	pub fn into_checked_shl<S>(self, shift_amount: S) -> Result<ApInt>
+		where S: Into<ShiftAmount>
+	{
+		let mut this = self;
+		this.checked_shl_assign(shift_amount)?;
+		Ok(this)
 	}
 
-	/// Logically right-shifts this `ApInt` by the amount represented by `other`.
+	/// Logically right-shifts this `ApInt` by the given `shift_amount` bits.
+	/// 
+	/// This operation is inplace and will **not** allocate memory.
 	/// 
 	/// # Errors
 	/// 
-	/// - When `self` and `other` have different bit-widths.
-	pub fn checked_lshr_assign(&mut self, other: &ApInt) -> Result<()> {
-		match self.zip_model_mut(other)? {
-			ZipModelMut::Inl(mut left, right) => {
-				left.lshr_inplace(&right)
+	/// - If the given `shift_amount` is invalid for the bit width of this `ApInt`.
+	pub fn checked_lshr_assign<S>(&mut self, shift_amount: S) -> Result<()>
+		where S: Into<ShiftAmount>
+	{
+		let shift_amount = shift_amount.into();
+		checks::verify_shift_amount(self, shift_amount)?;
+		match self.access_data_mut() {
+			DataAccessMut::Inl(digit) => {
+				*digit.repr_mut() >>= shift_amount.to_usize();
 			}
-			ZipModelMut::Ext(mut left, right) => {
-				left.lshr_inplace(&right)
-			}
-		}
-	}
-
-	/// Creates a new `ApInt` that represents the result of this `ApInt` arithmetically right-shifted by the other one.
-	/// 
-	/// # Errors
-	/// 
-	/// - When `self` and `other` have different bit-widths.
-	pub fn checked_ashr(&self, other: &ApInt) -> Result<ApInt> {
-		let mut cloned = self.clone();
-		cloned.checked_ashr_assign(other)?;
-		Ok(cloned)
-	}
-
-	/// Arithmetically right-shifts this `ApInt` by the amount represented by `other`.
-	/// 
-	/// # Errors
-	/// 
-	/// - When `self` and `other` have different bit-widths.
-	pub fn checked_ashr_assign(&mut self, other: &ApInt) -> Result<()> {
-		match self.zip_model_mut(other)? {
-			ZipModelMut::Inl(mut left, right) => {
-				left.ashr_inplace(&right)
-			}
-			ZipModelMut::Ext(mut left, right) => {
-				left.ashr_inplace(&right)
+			DataAccessMut::Ext(_digits) => {
+				unimplemented!()
 			}
 		}
+		Ok(())
+	}
+
+	/// Logically right-shifts this `ApInt` by the given `shift_amount` bits
+	/// and returns the result.
+	/// 
+	/// This operation is inplace and will **not** allocate memory.
+	/// 
+	/// # Errors
+	/// 
+	/// - If the given `shift_amount` is invalid for the bit width of this `ApInt`.
+	pub fn into_checked_lshr<S>(self, shift_amount: S) -> Result<ApInt>
+		where S: Into<ShiftAmount>
+	{
+		let mut this = self;
+		this.checked_lshr_assign(shift_amount)?;
+		Ok(this)
+	}
+
+	/// Arithmetically right-shifts this `ApInt` by the given `shift_amount` bits.
+	/// 
+	/// This operation is inplace and will **not** allocate memory.
+	/// 
+	/// # Errors
+	/// 
+	/// - If the given `shift_amount` is invalid for the bit width of this `ApInt`.
+	pub fn checked_ashr_assign<S>(&mut self, shift_amount: S) -> Result<()>
+		where S: Into<ShiftAmount>
+	{
+		let shift_amount = shift_amount.into();
+		checks::verify_shift_amount(self, shift_amount)?;
+		match self.access_data_mut() {
+			DataAccessMut::Inl(digit) => {
+				let signed = digit.repr() as i64;
+				let shifted = signed >> shift_amount.to_usize();
+				*digit.repr_mut() = shifted as u64;
+			}
+			DataAccessMut::Ext(_digits) => {
+				unimplemented!()
+			}
+		}
+		Ok(())
+	}
+
+	/// Arithmetically right-shifts this `ApInt` by the given `shift_amount` bits
+	/// and returns the result.
+	/// 
+	/// This operation is inplace and will **not** allocate memory.
+	/// 
+	/// # Errors
+	/// 
+	/// - If the given `shift_amount` is invalid for the bit width of this `ApInt`.
+	pub fn into_checked_ashr<S>(self, shift_amount: S) -> Result<ApInt>
+		where S: Into<ShiftAmount>
+	{
+		let mut this = self;
+		this.checked_ashr_assign(shift_amount)?;
+		Ok(this)
 	}
 
 }
