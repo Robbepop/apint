@@ -100,6 +100,18 @@ pub(crate) enum DataAccessMut<'a> {
 	Ext(&'a mut [Digit])
 }
 
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+pub(crate) enum ZipDataAccess<'a, 'b> {
+	Inl(Digit, Digit),
+	Ext(&'a [Digit], &'b [Digit])
+}
+
+#[derive(Debug, PartialEq, Eq)]
+pub(crate) enum ZipDataAccessMut<'a, 'b> {
+	Inl(&'a mut Digit, Digit),
+	Ext(&'a mut [Digit], &'b [Digit])
+}
+
 // ============================================================================
 
 impl Width for ApInt {
@@ -136,22 +148,6 @@ impl ApInt {
 		self.len.storage()
 	}
 
-	#[inline]
-	pub(in apint) fn model(&self) -> Model {
-		match self.storage() {
-			Storage::Inl => Model::Inl(SmallApInt::new(self.len, unsafe{self.data.inl})),
-			Storage::Ext => Model::Ext(LargeApInt::new(self.len, self.as_digit_slice()))
-		}
-	}
-
-	#[inline]
-	pub(in apint) fn model_mut(&mut self) -> ModelMut {
-		match self.storage() {
-			Storage::Inl => ModelMut::Inl(SmallApIntMut::new(self.len, unsafe{&mut self.data.inl})),
-			Storage::Ext => ModelMut::Ext(LargeApIntMut::new(self.len, self.as_digit_slice_mut()))
-		}
-	}
-
 	/// Accesses the internal `Digit` data of this `ApInt` in a safe way.
 	#[inline]
 	pub(in apint) fn access_data(&self) -> DataAccess {
@@ -167,6 +163,68 @@ impl ApInt {
 		match self.storage() {
 			Storage::Inl => DataAccessMut::Inl(unsafe{&mut self.data.inl}),
 			Storage::Ext => DataAccessMut::Ext(self.as_digit_slice_mut())
+		}
+	}
+
+	/// Zips both given `ApInt` instances and tries to access their data in a safe way.
+	/// 
+	/// # Errors
+	/// 
+	/// - If both given `ApInt` instances have non-matching bit widths.
+	pub(in apint) fn zip_access_data<'a, 'b>(&'a self, other: &'b ApInt) -> Result<ZipDataAccess<'a, 'b>> {
+		if self.width() != other.width() {
+			return Error::unmatching_bitwidths(self.width(), other.width()).into()
+		}
+		Ok(match self.storage() {
+			Storage::Inl => {
+				ZipDataAccess::Inl(
+					unsafe{ self.data.inl},
+					unsafe{other.data.inl})
+			},
+			Storage::Ext => {
+				ZipDataAccess::Ext(
+					self.as_digit_slice(),
+					other.as_digit_slice())
+			}
+		})
+	}
+
+	/// Zips both given `ApInt` instances and tries to mutably access their data in a safe way.
+	/// 
+	/// # Errors
+	/// 
+	/// - If both given `ApInt` instances have non-matching bit widths.
+	pub(in apint) fn zip_access_data_mut<'a, 'b>(&'a mut self, other: &'b ApInt) -> Result<ZipDataAccessMut<'a, 'b>> {
+		if self.width() != other.width() {
+			return Error::unmatching_bitwidths(self.width(), other.width()).into()
+		}
+		Ok(match self.storage() {
+			Storage::Inl => {
+				ZipDataAccessMut::Inl(
+					unsafe{&mut self.data.inl},
+					unsafe{other.data.inl})
+			},
+			Storage::Ext => {
+				ZipDataAccessMut::Ext(
+					self.as_digit_slice_mut(),
+					other.as_digit_slice())
+			}
+		})
+	}
+
+	#[inline]
+	pub(in apint) fn model(&self) -> Model {
+		match self.storage() {
+			Storage::Inl => Model::Inl(SmallApInt::new(self.len, unsafe{self.data.inl})),
+			Storage::Ext => Model::Ext(LargeApInt::new(self.len, self.as_digit_slice()))
+		}
+	}
+
+	#[inline]
+	pub(in apint) fn model_mut(&mut self) -> ModelMut {
+		match self.storage() {
+			Storage::Inl => ModelMut::Inl(SmallApIntMut::new(self.len, unsafe{&mut self.data.inl})),
+			Storage::Ext => ModelMut::Ext(LargeApIntMut::new(self.len, self.as_digit_slice_mut()))
 		}
 	}
 
