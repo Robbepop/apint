@@ -188,17 +188,4 @@ impl<'a, T> ApIntMutImpl<LargeApInt<'a>> for T
 		unimplemented!()
 	}
 
-
-	fn shl_inplace(&mut self, _other: &LargeApInt) -> Result<()> {
-		unimplemented!()
-	}
-
-	fn lshr_inplace(&mut self, _other: &LargeApInt) -> Result<()> {
-		unimplemented!()
-	}
-
-	fn ashr_inplace(&mut self, _other: &LargeApInt) -> Result<()> {
-		unimplemented!()
-	}
-
 }

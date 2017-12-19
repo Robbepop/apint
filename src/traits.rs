@@ -16,8 +16,4 @@ pub(crate) trait ApIntMutImpl<I>
 	fn udiv_inplace(&mut self, other: &I) -> Result<()>;
 	fn srem_inplace(&mut self, other: &I) -> Result<()>;
 	fn urem_inplace(&mut self, other: &I) -> Result<()>;
-
-	fn shl_inplace(&mut self, other: &I) -> Result<()>;
-	fn lshr_inplace(&mut self, other: &I) -> Result<()>;
-	fn ashr_inplace(&mut self, other: &I) -> Result<()>;
 }
