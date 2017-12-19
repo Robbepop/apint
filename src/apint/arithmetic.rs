@@ -1,31 +1,376 @@
 use apint::{ApInt};
-use apint::utils::{ModelMut, ZipModelMut};
-use traits::{ApIntMutImpl};
+use apint::utils::{
+	DataAccessMut,
+	ZipDataAccessMut
+};
+use traits::{Width};
 use errors::{Result};
 
 use std::ops::{
 	Neg,
 	Add,
+	Sub,
 	Mul,
 	AddAssign,
+	SubAssign,
 	MulAssign
 };
+
+//  =======================================================================
+///  Arithmetic Operations
+/// =======================================================================
+impl ApInt {
+
+	/// Negates this `ApInt` inplace and returns the result.
+	/// 
+	/// **Note:** This will **not** allocate memory.
+	pub fn into_negate(self) -> ApInt {
+		let mut this = self;
+		this.negate();
+		this
+	}
+
+	/// Negates this `ApInt` inplace.
+	/// 
+	/// **Note:** This will **not** allocate memory.
+	pub fn negate(&mut self) {
+		let width = self.width();
+		match self.access_data_mut() {
+			DataAccessMut::Inl(digit) => {
+				*digit.repr_mut() = (-(digit.repr() as i64)) as u64;
+				if let Some(bits) = width.excess_bits() {
+					digit.retain_last_n(bits)
+					     .expect("`width.excess_bits` will always return a number \
+					              of bits that is compatible for use in a `Digit`.");
+				}
+			}
+			DataAccessMut::Ext(_digits) => {
+				unimplemented!()
+			}
+		}
+	}
+
+	/// Adds `rhs` to `self` and returns the result.
+	/// 
+	/// **Note:** This will **not** allocate memory.
+	/// 
+	/// # Errors
+	/// 
+	/// - If `self` and `rhs` have unmatching bit widths.
+	pub fn into_checked_add(self, rhs: &ApInt) -> Result<ApInt> {
+		let mut this = self;
+		this.checked_add_assign(rhs)?;
+		Ok(this)
+	}
+
+	/// Add-assigns `rhs` to `self` inplace.
+	/// 
+	/// **Note:** This will **not** allocate memory.
+	/// 
+	/// # Errors
+	/// 
+	/// - If `self` and `rhs` have unmatching bit widths.
+	pub fn checked_add_assign(&mut self, rhs: &ApInt) -> Result<()> {
+		let width = self.width();
+		match self.zip_access_data_mut(rhs)? {
+			ZipDataAccessMut::Inl(lhs, rhs) => {
+				*lhs.repr_mut() += rhs.repr();
+				if let Some(bits) = width.excess_bits() {
+					lhs.retain_last_n(bits)
+					     .expect("`width.excess_bits` will always return a number \
+					              of bits that is compatible for use in a `Digit`.");
+				}
+			}
+			ZipDataAccessMut::Ext(_lhs, _rhs) => {
+				unimplemented!()
+			}
+		}
+		Ok(())
+	}
+
+	/// Subtracts `rhs` from `self` and returns the result.
+	/// 
+	/// # Note
+	/// 
+	/// In the low-level bit-wise representation there is no difference between signed
+	/// and unsigned subtraction of fixed bit-width integers. (Cite: LLVM)
+	/// 
+	/// # Errors
+	/// 
+	/// - If `self` and `rhs` have unmatching bit widths.
+	pub fn into_checked_sub(self, rhs: &ApInt) -> Result<ApInt> {
+		let mut this = self;
+		this.checked_add_assign(rhs)?;
+		Ok(this)
+	}
+
+	/// Subtract-assigns `rhs` from `self` inplace.
+	/// 
+	/// # Note
+	/// 
+	/// In the low-level bit-wise representation there is no difference between signed
+	/// and unsigned subtraction of fixed bit-width integers. (Cite: LLVM)
+	/// 
+	/// # Errors
+	/// 
+	/// - If `self` and `rhs` have unmatching bit widths.
+	pub fn checked_sub_assign(&mut self, rhs: &ApInt) -> Result<()> {
+		match self.zip_access_data_mut(rhs)? {
+			ZipDataAccessMut::Inl(_lhs, _rhs) => {
+				unimplemented!()
+			}
+			ZipDataAccessMut::Ext(_lhs, _rhs) => {
+				unimplemented!()
+			}
+		}
+	}
+
+	/// Subtracts `rhs` from `self` and returns the result.
+	/// 
+	/// # Note
+	/// 
+	/// In the low-level bit-wise representation there is no difference between signed
+	/// and unsigned multiplication of fixed bit-width integers. (Cite: LLVM)
+	/// 
+	/// # Errors
+	/// 
+	/// - If `self` and `rhs` have unmatching bit widths.
+	pub fn into_checked_mul(self, rhs: &ApInt) -> Result<ApInt> {
+		let mut this = self;
+		this.checked_mul_assign(rhs)?;
+		Ok(this)
+	}
+
+	/// Multiply-assigns `rhs` to `self` inplace.
+	/// 
+	/// # Note
+	/// 
+	/// In the low-level bit-wise representation there is no difference between signed
+	/// and unsigned multiplication of fixed bit-width integers. (Cite: LLVM)
+	/// 
+	/// # Errors
+	/// 
+	/// - If `self` and `rhs` have unmatching bit widths.
+	pub fn checked_mul_assign(&mut self, rhs: &ApInt) -> Result<()> {
+		match self.zip_access_data_mut(rhs)? {
+			ZipDataAccessMut::Inl(_lhs, _rhs) => {
+				unimplemented!()
+			}
+			ZipDataAccessMut::Ext(_lhs, _rhs) => {
+				unimplemented!()
+			}
+		}
+	}
+
+	/// Divides `self` by `rhs` using **unsigned** interpretation and returns the result.
+	/// 
+	/// # Note
+	/// 
+	/// - This operation will **not** allocate memory and computes inplace of `self`.
+	/// - In the low-level machine abstraction signed division and unsigned division
+	///   are two different operations.
+	/// 
+	/// # Errors
+	/// 
+	/// - If `self` and `rhs` have unmatching bit widths.
+	pub fn into_checked_udiv(self, rhs: &ApInt) -> Result<ApInt> {
+		let mut this = self;
+		this.checked_udiv_assign(rhs)?;
+		Ok(this)
+	}
+
+	/// Assignes `self` to the division of `self` by `rhs` using **unsigned**
+	/// interpretation of the values.
+	/// 
+	/// # Note
+	/// 
+	/// - This operation will **not** allocate memory and computes inplace of `self`.
+	/// - In the low-level machine abstraction signed division and unsigned division
+	///   are two different operations.
+	/// 
+	/// # Errors
+	/// 
+	/// - If `self` and `rhs` have unmatching bit widths.
+	pub fn checked_udiv_assign(&mut self, rhs: &ApInt) -> Result<()> {
+		match self.zip_access_data_mut(rhs)? {
+			ZipDataAccessMut::Inl(_lhs, _rhs) => {
+				unimplemented!()
+			}
+			ZipDataAccessMut::Ext(_lhs, _rhs) => {
+				unimplemented!()
+			}
+		}
+	}
+
+	/// Divides `self` by `rhs` using **signed** interpretation and returns the result.
+	/// 
+	/// # Note
+	/// 
+	/// - This operation will **not** allocate memory and computes inplace of `self`.
+	/// - In the low-level machine abstraction signed division and unsigned division
+	///   are two different operations.
+	/// 
+	/// # Errors
+	/// 
+	/// - If `self` and `rhs` have unmatching bit widths.
+	pub fn into_checked_sdiv(self, rhs: &ApInt) -> Result<ApInt> {
+		let mut this = self;
+		this.checked_sdiv_assign(rhs)?;
+		Ok(this)
+	}
+
+	/// Assignes `self` to the division of `self` by `rhs` using **signed**
+	/// interpretation of the values.
+	/// 
+	/// # Note
+	/// 
+	/// - This operation will **not** allocate memory and computes inplace of `self`.
+	/// - In the low-level machine abstraction signed division and unsigned division
+	///   are two different operations.
+	/// 
+	/// # Errors
+	/// 
+	/// - If `self` and `rhs` have unmatching bit widths.
+	pub fn checked_sdiv_assign(&mut self, rhs: &ApInt) -> Result<()> {
+		match self.zip_access_data_mut(rhs)? {
+			ZipDataAccessMut::Inl(_lhs, _rhs) => {
+				unimplemented!()
+			}
+			ZipDataAccessMut::Ext(_lhs, _rhs) => {
+				unimplemented!()
+			}
+		}
+	}
+
+	/// Calculates the **unsigned** remainder of `self` by `rhs` and returns the result.
+	/// 
+	/// # Note
+	/// 
+	/// - This operation will **not** allocate memory and computes inplace of `self`.
+	/// - In the low-level machine abstraction signed division and unsigned division
+	///   are two different operations.
+	/// 
+	/// # Errors
+	/// 
+	/// - If `self` and `rhs` have unmatching bit widths.
+	pub fn into_checked_urem(self, rhs: &ApInt) -> Result<ApInt> {
+		let mut this = self;
+		this.checked_urem_assign(rhs)?;
+		Ok(this)
+	}
+
+	/// Assignes `self` to the **unsigned** remainder of `self` by `rhs`.
+	/// 
+	/// # Note
+	/// 
+	/// - This operation will **not** allocate memory and computes inplace of `self`.
+	/// - In the low-level machine abstraction signed division and unsigned division
+	///   are two different operations.
+	/// 
+	/// # Errors
+	/// 
+	/// - If `self` and `rhs` have unmatching bit widths.
+	pub fn checked_urem_assign(&mut self, rhs: &ApInt) -> Result<()> {
+		match self.zip_access_data_mut(rhs)? {
+			ZipDataAccessMut::Inl(_lhs, _rhs) => {
+				unimplemented!()
+			}
+			ZipDataAccessMut::Ext(_lhs, _rhs) => {
+				unimplemented!()
+			}
+		}
+	}
+
+	/// Calculates the **signed** remainder of `self` by `rhs` and returns the result.
+	/// 
+	/// # Note
+	/// 
+	/// - This operation will **not** allocate memory and computes inplace of `self`.
+	/// - In the low-level machine abstraction signed division and unsigned division
+	///   are two different operations.
+	/// 
+	/// # Errors
+	/// 
+	/// - If `self` and `rhs` have unmatching bit widths.
+	pub fn into_checked_srem(self, rhs: &ApInt) -> Result<ApInt> {
+		let mut this = self;
+		this.checked_urem_assign(rhs)?;
+		Ok(this)
+	}
+
+	/// Assignes `self` to the **signed** remainder of `self` by `rhs`.
+	/// 
+	/// # Note
+	/// 
+	/// - This operation will **not** allocate memory and computes inplace of `self`.
+	/// - In the low-level machine abstraction signed division and unsigned division
+	///   are two different operations.
+	/// 
+	/// # Errors
+	/// 
+	/// - If `self` and `rhs` have unmatching bit widths.
+	pub fn checked_srem_assign(&mut self, rhs: &ApInt) -> Result<()> {
+		match self.zip_access_data_mut(rhs)? {
+			ZipDataAccessMut::Inl(_lhs, _rhs) => {
+				unimplemented!()
+			}
+			ZipDataAccessMut::Ext(_lhs, _rhs) => {
+				unimplemented!()
+			}
+		}
+	}
+
+}
+
+// ============================================================================
+//  Standard `ops` trait implementations.
+// ----------------------------------------------------------------------------
+// 
+//  `ApInt` implements some `std::ops` traits for improved usability.
+//  Only traits for operations that do not depend on the signedness
+//  interpretation of the specific `ApInt` instance are actually implemented.
+//  Operations like `mul`, `div` and `rem` are not expected to have an
+//  implementation since a favor in unsigned or signed cannot be decided.
+// ============================================================================
+
+// ============================================================================
+//  Unary arithmetic negation: `std::ops::Add` and `std::ops::AddAssign`
+// ============================================================================
 
 impl Neg for ApInt {
 	type Output = ApInt;
 
-	fn neg(mut self) -> Self::Output {
-		self.negate_inplace();
+	fn neg(self) -> Self::Output {
+		self.into_negate()
+	}
+}
+
+impl<'a> Neg for &'a ApInt {
+	type Output = ApInt;
+
+	fn neg(self) -> Self::Output {
+		self.clone().into_negate()
+	}
+}
+
+impl<'a> Neg for &'a mut ApInt {
+	type Output = &'a mut ApInt;
+
+	fn neg(self) -> Self::Output {
+		self.negate();
 		self
 	}
 }
 
+// ============================================================================
+//  Add and Add-Assign: `std::ops::Add` and `std::ops::AddAssign`
+// ============================================================================
+
 impl<'a> Add<&'a ApInt> for ApInt {
 	type Output = ApInt;
 
-	fn add(mut self, rhs: &'a ApInt) -> Self::Output {
-		self.checked_add_assign(rhs).unwrap();
-		self
+	fn add(self, rhs: &'a ApInt) -> Self::Output {
+		self.into_checked_add(rhs).unwrap()
 	}
 }
 
@@ -33,24 +378,51 @@ impl<'a, 'b> Add<&'a ApInt> for &'b ApInt {
 	type Output = ApInt;
 
 	fn add(self, rhs: &'a ApInt) -> Self::Output {
-		let mut cloned = self.clone();
-		cloned.checked_add_assign(rhs).unwrap();
-		cloned
+		self.clone().into_checked_add(rhs).unwrap()
 	}
 }
 
 impl<'a> AddAssign<&'a ApInt> for ApInt {
 	fn add_assign(&mut self, rhs: &'a ApInt) {
-		self.checked_add_assign(rhs).unwrap();
+		self.checked_add_assign(rhs).unwrap()
 	}
 }
+
+// ============================================================================
+//  Sub and Sub-Assign: `std::ops::Sub` and `std::ops::SubAssign`
+// ============================================================================
+
+impl<'a> Sub<&'a ApInt> for ApInt {
+	type Output = ApInt;
+
+	fn sub(self, rhs: &'a ApInt) -> Self::Output {
+		self.into_checked_sub(rhs).unwrap()
+	}
+}
+
+impl<'a, 'b> Sub<&'a ApInt> for &'b ApInt {
+	type Output = ApInt;
+
+	fn sub(self, rhs: &'a ApInt) -> Self::Output {
+		self.clone().into_checked_sub(rhs).unwrap()
+	}
+}
+
+impl<'a> SubAssign<&'a ApInt> for ApInt {
+	fn sub_assign(&mut self, rhs: &'a ApInt) {
+		self.checked_sub_assign(rhs).unwrap()
+	}
+}
+
+// ============================================================================
+//  Mul and Mul-Assign: `std::ops::Mul` and `std::ops::MulAssign`
+// ============================================================================
 
 impl<'a> Mul<&'a ApInt> for ApInt {
 	type Output = ApInt;
 
-	fn mul(mut self, rhs: &'a ApInt) -> Self::Output {
-		self.checked_mul_assign(rhs).unwrap();
-		self
+	fn mul(self, rhs: &'a ApInt) -> Self::Output {
+		self.into_checked_mul(rhs).unwrap()
 	}
 }
 
@@ -58,9 +430,7 @@ impl<'a, 'b> Mul<&'a ApInt> for &'b ApInt {
 	type Output = ApInt;
 
 	fn mul(self, rhs: &'a ApInt) -> Self::Output {
-		let mut cloned = self.clone();
-		cloned.checked_mul_assign(rhs).unwrap();
-		cloned
+		self.clone().into_checked_mul(rhs).unwrap()
 	}
 }
 
@@ -68,175 +438,4 @@ impl<'a> MulAssign<&'a ApInt> for ApInt {
 	fn mul_assign(&mut self, rhs: &'a ApInt) {
 		self.checked_mul_assign(rhs).unwrap();
 	}
-}
-
-//  =======================================================================
-///  Arithmetic Operations
-/// =======================================================================
-impl ApInt {
-
-	/// Returns a new `ApInt` that represents the negation of this `ApInt`.
-	/// 
-	/// This may allocate heap memory!
-	pub fn negate(&self) -> ApInt {
-		let mut cloned = self.clone();
-		cloned.negate_inplace();
-		cloned
-	}
-
-	/// Negates this `ApInt` inplace as if it was a signed integer.
-	/// 
-	/// This does not allocate heap memory!
-	pub fn negate_inplace(&mut self) {
-		match self.model_mut() {
-			ModelMut::Inl(mut small) => {
-				small.neg_inplace()
-			}
-			ModelMut::Ext(mut large) => {
-				large.neg_inplace()
-			}
-		}
-	}
-
-	/// Creates a new `ApInt` that represents the addition of both given `ApInt`s.
-	/// 
-	/// # Note
-	/// 
-	/// In the low-level bit-wise representation there is no difference between signed
-	/// and unsigned addition of fixed bit-width integers. (Cite: LLVM)
-	pub fn checked_add(&self, other: &ApInt) -> Result<ApInt> {
-		let mut cloned = self.clone();
-		cloned.checked_add_assign(other)?;
-		Ok(cloned)
-	}
-
-	pub fn checked_add_assign(&mut self, other: &ApInt) -> Result<()> {
-		match self.zip_model_mut(other)? {
-			ZipModelMut::Inl(mut lhs, rhs) => {
-				lhs.add_inplace(&rhs)
-			}
-			ZipModelMut::Ext(mut lhs, rhs) => {
-				lhs.add_inplace(&rhs)
-			}
-		}
-	}
-
-	/// Creates a new `ApInt` that represents the signed subtraction of both given `ApInt`s.
-	/// 
-	/// # Note
-	/// 
-	/// In the low-level bit-wise representation there is no difference between signed
-	/// and unsigned subtraction of fixed bit-width integers. (Cite: LLVM)
-	pub fn checked_sub(&self, other: &ApInt) -> Result<ApInt> {
-		let mut cloned = self.clone();
-		cloned.checked_sub_assign(other)?;
-		Ok(cloned)
-	}
-
-	pub fn checked_sub_assign(&mut self, other: &ApInt) -> Result<()> {
-		match self.zip_model_mut(other)? {
-			ZipModelMut::Inl(mut lhs, rhs) => {
-				lhs.sub_inplace(&rhs)
-			}
-			ZipModelMut::Ext(mut lhs, rhs) => {
-				lhs.sub_inplace(&rhs)
-			}
-		}
-	}
-
-	/// Creates a new `ApInt` that represents the multiplication of both given `ApInt`s.
-	/// 
-	/// # Note
-	/// 
-	/// In the low-level bit-wise representation there is no difference between signed
-	/// and unsigned multiplication of fixed bit-width integers. (Cite: LLVM)
-	pub fn checked_mul(&self, other: &ApInt) -> Result<ApInt> {
-		let mut cloned = self.clone();
-		cloned.checked_mul_assign(other)?;
-		Ok(cloned)
-	}
-
-	pub fn checked_mul_assign(&mut self, other: &ApInt) -> Result<()> {
-		match self.zip_model_mut(other)? {
-			ZipModelMut::Inl(mut lhs, rhs) => {
-				lhs.mul_inplace(&rhs)
-			}
-			ZipModelMut::Ext(mut lhs, rhs) => {
-				lhs.mul_inplace(&rhs)
-			}
-		}
-	}
-
-	/// Creates a new `ApInt` that represents the unsigned multiplication of both given `ApInt`s.
-	pub fn checked_udiv(&self, other: &ApInt) -> Result<ApInt> {
-		let mut cloned = self.clone();
-		cloned.checked_udiv_assign(other)?;
-		Ok(cloned)
-	}
-
-	pub fn checked_udiv_assign(&mut self, other: &ApInt) -> Result<()> {
-		match self.zip_model_mut(other)? {
-			ZipModelMut::Inl(mut lhs, rhs) => {
-				lhs.udiv_inplace(&rhs)
-			}
-			ZipModelMut::Ext(mut lhs, rhs) => {
-				lhs.udiv_inplace(&rhs)
-			}
-		}
-	}
-
-	/// Creates a new `ApInt` that represents the signed multiplication of both given `ApInt`s.
-	pub fn checked_sdiv(&self, other: &ApInt) -> Result<ApInt> {
-		let mut cloned = self.clone();
-		cloned.checked_sdiv_assign(other)?;
-		Ok(cloned)
-	}
-
-	pub fn checked_sdiv_assign(&mut self, other: &ApInt) -> Result<()> {
-		match self.zip_model_mut(other)? {
-			ZipModelMut::Inl(mut lhs, rhs) => {
-				lhs.sdiv_inplace(&rhs)
-			}
-			ZipModelMut::Ext(mut lhs, rhs) => {
-				lhs.sdiv_inplace(&rhs)
-			}
-		}
-	}
-
-	/// Creates a new `ApInt` that represents the unsigned remainder of both given `ApInt`s.
-	pub fn checked_urem(&self, other: &ApInt) -> Result<ApInt> {
-		let mut cloned = self.clone();
-		cloned.checked_urem_assign(other)?;
-		Ok(cloned)
-	}
-
-	pub fn checked_urem_assign(&mut self, other: &ApInt) -> Result<()> {
-		match self.zip_model_mut(other)? {
-			ZipModelMut::Inl(mut lhs, rhs) => {
-				lhs.urem_inplace(&rhs)
-			}
-			ZipModelMut::Ext(mut lhs, rhs) => {
-				lhs.urem_inplace(&rhs)
-			}
-		}
-	}
-
-	/// Creates a new `ApInt` that represents the signed remainder of both given `ApInt`s.
-	pub fn checked_srem(&self, other: &ApInt) -> Result<ApInt> {
-		let mut cloned = self.clone();
-		cloned.checked_srem_assign(other)?;
-		Ok(cloned)
-	}
-
-	pub fn checked_srem_assign(&mut self, other: &ApInt) -> Result<()> {
-		match self.zip_model_mut(other)? {
-			ZipModelMut::Inl(mut lhs, rhs) => {
-				lhs.srem_inplace(&rhs)
-			}
-			ZipModelMut::Ext(mut lhs, rhs) => {
-				lhs.srem_inplace(&rhs)
-			}
-		}
-	}
-
 }
