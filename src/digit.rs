@@ -378,42 +378,54 @@ impl Digit {
 	/// 
 	/// If the given `n` is greater than the digit size.
 	#[inline]
-	pub fn get(self, n: usize) -> Result<Bit> {
-		checks::verify_bit_access(&self, n)?;
-		Ok(Bit::from(((self.repr() >> n) & 0x01) == 1))
+	pub fn get<P>(self, pos: P) -> Result<Bit>
+		where P: Into<BitPos>
+	{
+		let pos = pos.into();
+		checks::verify_bit_access(&self, pos)?;
+		Ok(Bit::from(((self.repr() >> pos.to_usize()) & 0x01) == 1))
 	}
 
-	/// Sets the `n`th bit in the digit to `1`.
+	/// Sets the bit at position `pos` to `1`.
 	/// 
 	/// # Errors
 	/// 
 	/// If the given `n` is greater than the digit size.
 	#[inline]
-	pub fn set(&mut self, n: usize) -> Result<()> {
-		checks::verify_bit_access(self, n)?;
-		Ok(self.0 |= 0x01 << n)
+	pub fn set<P>(&mut self, pos: P) -> Result<()>
+		where P: Into<BitPos>
+	{
+		let pos = pos.into();
+		checks::verify_bit_access(self, pos)?;
+		Ok(self.0 |= 0x01 << pos.to_usize())
 	}
 
-	/// Sets the `n`th bit in the digit to `0`.
+	/// Sets the bit at position `pos` to `0`.
 	/// 
 	/// # Errors
 	/// 
 	/// If the given `n` is greater than the digit size.
 	#[inline]
-	pub fn unset(&mut self, n: usize) -> Result<()> {
-		checks::verify_bit_access(self, n)?;
-		Ok(self.0 &= !(0x01 << n))
+	pub fn unset<P>(&mut self, pos: P) -> Result<()>
+		where P: Into<BitPos>
+	{
+		let pos = pos.into();
+		checks::verify_bit_access(self, pos)?;
+		Ok(self.0 &= !(0x01 << pos.to_usize()))
 	}
 
-	/// Flips `n`th bit.
+	/// Flips the bit at position `pos`.
 	/// 
 	/// # Errors
 	/// 
 	/// If the given `n` is greater than the digit size.
 	#[inline]
-	pub fn flip(&mut self, n: usize) -> Result<()> {
-		checks::verify_bit_access(self, n)?;
-		Ok(self.0 ^= 0x01 << n)
+	pub fn flip<P>(&mut self, pos: P) -> Result<()>
+		where P: Into<BitPos>
+	{
+		let pos = pos.into();
+		checks::verify_bit_access(self, pos)?;
+		Ok(self.0 ^= 0x01 << pos.to_usize())
 	}
 
 	/// Sets all bits in this digit to `1`.
