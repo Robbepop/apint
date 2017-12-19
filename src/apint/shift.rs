@@ -3,6 +3,30 @@ use apint::utils::{ZipModelMut};
 use traits::{ApIntMutImpl};
 use errors::{Result};
 
+/// Represents an amount of bits to shift a value like an `ApInt`.
+/// 
+/// The purpose of this type is to create a generic abstraction
+/// over input types that may act as a `ShiftAmount` for shift
+/// operations.
+#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
+pub struct ShiftAmount(usize);
+
+impl ShiftAmount {
+	/// Returns the internal shift amount representation as `usize`.
+	#[inline]
+	pub(crate) fn to_usize(self) -> usize {
+		self.0
+	}
+}
+
+impl From<usize> for ShiftAmount {
+	/// Returns a new `ShiftAmount` from the given `usize`.
+	#[inline]
+	fn from(val: usize) -> ShiftAmount {
+		ShiftAmount(val)
+	}
+}
+
 //  =======================================================================
 ///  Shift Operations
 /// =======================================================================
