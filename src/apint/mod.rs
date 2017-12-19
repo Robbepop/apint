@@ -16,6 +16,8 @@ mod serde_impl;
 use digit::{Digit};
 use bitwidth::{BitWidth};
 
+pub(crate) use self::shift::{ShiftAmount};
+
 use std::ptr::Unique;
 
 /// An arbitrary precision integer with modulo arithmetics similar to machine integers.
