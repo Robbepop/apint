@@ -1,6 +1,7 @@
 use digit;
 use storage::Storage;
 use bitpos::BitPos;
+use apint::{ShiftAmount};
 use errors::{Result, Error};
 
 /// The `BitWidth` represents the length of an `ApInt`.
@@ -56,6 +57,14 @@ impl BitWidth {
 		where P: Into<BitPos>
 	{
 		pos.into().to_usize() < self.0
+	}
+
+	/// Returns `true` if the given `ShiftAmount` is valid for this `BitWidth`.
+	#[inline]
+	pub(crate) fn is_valid_shift_amount<S>(self, shift_amount: S) -> bool
+		where S: Into<ShiftAmount>
+	{
+		shift_amount.into().to_usize() < self.0
 	}
 
 	/// Returns a `BitPos` at the given position if the position is valid for this `BitWidth`;
