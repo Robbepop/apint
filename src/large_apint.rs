@@ -1,7 +1,7 @@
 use errors::{Result};
-use digit::{Bit, Digit};
+use digit::{Digit};
 use bitwidth::BitWidth;
-use traits::{Width, ApIntImpl, ApIntMutImpl};
+use traits::{Width, ApIntMutImpl};
 use digit_seq::{
 	AsDigitSeq,
 	AsDigitSeqMut,
@@ -153,82 +153,9 @@ impl<'a> Width for &'a mut LargeApIntMut<'a> {
 
 // ============================================================================
 
-impl<'a, T> ApIntImpl<LargeApInt<'a>> for T
-	where T: Width + DigitSliceWrapper
-{
-	fn get(&self, _n: usize) -> Result<Bit> {
-		unimplemented!()
-	}
-
-	fn sign_bit(&self) -> Bit {
-		unimplemented!()
-	}
-
-	fn ult(&self, _other: &LargeApInt) -> Result<bool> {
-		unimplemented!()
-	}
-
-	fn slt(&self, _other: &LargeApInt) -> Result<bool> {
-		unimplemented!()
-	}
-}
-
 impl<'a, T> ApIntMutImpl<LargeApInt<'a>> for T
 	where T: Width + DigitMutSliceWrapper
 {
-
-	#[inline]
-	fn set(&mut self, _n: usize) -> Result<()> {
-		unimplemented!()
-	}
-
-	#[inline]
-	fn set_all(&mut self) {
-		unimplemented!()
-	}
-
-	#[inline]
-	fn unset(&mut self, _n: usize) -> Result<()> {
-		unimplemented!()
-	}
-
-	#[inline]
-	fn unset_all(&mut self) {
-		unimplemented!()
-	}
-
-	#[inline]
-	fn flip(&mut self, _n: usize) -> Result<()> {
-		unimplemented!()
-	}
-
-	#[inline]
-	fn flip_all(&mut self) {
-		unimplemented!()
-	}
-
-
-	#[inline]
-	fn bitnot_inplace(&mut self) {
-		unimplemented!()
-	}
-
-	#[inline]
-	fn bitand_inplace(&mut self, _other: &LargeApInt) -> Result<()> {
-		unimplemented!()
-	}
-
-	#[inline]
-	fn bitor_inplace(&mut self, _other: &LargeApInt) -> Result<()> {
-		unimplemented!()
-	}
-
-	#[inline]
-	fn bitxor_inplace(&mut self, _other: &LargeApInt) -> Result<()> {
-		unimplemented!()
-	}
-
-
 	fn neg_inplace(&mut self) {
 		unimplemented!()
 	}

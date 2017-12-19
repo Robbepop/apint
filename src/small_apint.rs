@@ -1,10 +1,8 @@
-use digit;
-use digit::{Bit, Digit};
+use digit::{Digit};
 use bitwidth::BitWidth;
 use errors::{Result};
 use traits::{
 	Width,
-	ApIntImpl,
 	ApIntMutImpl,
 };
 use digit_seq::{
@@ -14,11 +12,6 @@ use digit_seq::{
 	ContiguousDigitSeqMut
 };
 
-use std::ops::{
-	BitAndAssign,
-	BitOrAssign,
-	BitXorAssign
-};
 use std::marker::PhantomData;
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
@@ -171,103 +164,9 @@ impl<'a> DigitMutWrapper for &'a mut SmallApIntMut<'a> {
 
 // ============================================================================
 
-use checks;
-
-impl<'a, T> ApIntImpl<SmallApInt<'a>> for T
-	where T: Width + DigitWrapper
-{
-	#[inline]
-	fn get(&self, n: usize) -> Result<Bit> {
-		checks::verify_bit_access(self, n)?;
-		self.digit().get(n)
-	}
-
-	#[inline]
-	fn sign_bit(&self) -> Bit {
-		self.get(self.width().to_usize() - 1).unwrap()
-	}
-
-	#[inline]
-	fn ult(&self, other: &SmallApInt) -> Result<bool> {
-		checks::verify_common_bitwidth(self, &other)?;
-		Ok(self.digit().repr() < other.digit().repr())
-	}
-
-	#[inline]
-	fn slt(&self, other: &SmallApInt) -> Result<bool> {
-		checks::verify_common_bitwidth(self, &other)?;
-		let infate_abs = digit::BITS - self.width().to_usize();
-		let left       = ( self.digit().repr() << infate_abs) as i64;
-		let right      = (other.digit().repr() << infate_abs) as i64;
-		Ok(left < right)
-	}
-}
-
 impl<'a, T> ApIntMutImpl<SmallApInt<'a>> for T
 	where T: Width + DigitMutWrapper
 {
-
-	#[inline]
-	fn set(&mut self, n: usize) -> Result<()> {
-		checks::verify_bit_access(self, n)?;
-		self.digit_mut().set(n)
-	}
-
-	#[inline]
-	fn set_all(&mut self) {
-		self.digit_mut().set_all();
-		let valid_bits = self.width().to_usize();
-		self.digit_mut().retain_last_n(valid_bits).unwrap();
-	}
-
-	#[inline]
-	fn unset(&mut self, n: usize) -> Result<()> {
-		checks::verify_bit_access(self, n)?;
-		self.digit_mut().unset(n)
-	}
-
-	#[inline]
-	fn unset_all(&mut self) {
-		self.digit_mut().unset_all()
-	}
-
-	#[inline]
-	fn flip(&mut self, n: usize) -> Result<()> {
-		checks::verify_bit_access(self, n)?;
-		self.digit_mut().flip(n)
-	}
-
-	#[inline]
-	fn flip_all(&mut self) {
-		self.digit_mut().flip_all();
-		let valid_bits = self.width().to_usize();
-		self.digit_mut().retain_last_n(valid_bits).unwrap();
-	}
-
-
-	#[inline]
-	fn bitnot_inplace(&mut self) {
-		let width = self.width().to_usize();
-		self.digit_mut().not_inplace();
-		self.digit_mut().retain_last_n(width).unwrap();
-	}
-
-	#[inline]
-	fn bitand_inplace(&mut self, other: &SmallApInt) -> Result<()> {
-		Ok(self.digit_mut().bitand_assign(other.digit()))
-	}
-
-	#[inline]
-	fn bitor_inplace(&mut self, other: &SmallApInt) -> Result<()> {
-		Ok(self.digit_mut().bitor_assign(other.digit()))
-	}
-
-	#[inline]
-	fn bitxor_inplace(&mut self, other: &SmallApInt) -> Result<()> {
-		Ok(self.digit_mut().bitxor_assign(other.digit()))
-	}
-
-
 	fn neg_inplace(&mut self) {
 		// Negating a twos-complement number is accomplished by inverting all bits and adding 1.
 		unimplemented!()

@@ -1,7 +1,10 @@
 use apint::{ApInt};
-use apint::utils::{ZipModel};
-use traits::{ApIntImpl};
+use apint::utils::{
+	ZipDataAccess
+};
 use errors::{Error, Result};
+use traits::Width;
+use digit;
 
 impl PartialEq for ApInt {
 	fn eq(&self, other: &ApInt) -> bool {
@@ -26,12 +29,12 @@ impl ApInt {
 				.with_annotation(format!("Error occured on unsigned less-than (ult) comparison with {:?} and {:?}.", self, other))
 				.into()
 		}
-		match self.zip_model(other)? {
-			ZipModel::Inl(left, right) => {
-				left.ult(&right)
+		match self.zip_access_data(other)? {
+			ZipDataAccess::Inl(lhs, rhs) => {
+				Ok(lhs.repr() < rhs.repr())
 			}
-			ZipModel::Ext(left, right) => {
-				left.ult(&right)
+			ZipDataAccess::Ext(_lhs, _rhs) => {
+				unimplemented!() // TODO
 			}
 		}
 	}
@@ -76,12 +79,15 @@ impl ApInt {
 				.with_annotation(format!("Error occured on unsigned less-than (slt) comparison with {:?} and {:?}.", self, other))
 				.into()
 		}
-		match self.zip_model(other)? {
-			ZipModel::Inl(left, right) => {
-				left.slt(&right)
+		match self.zip_access_data(other)? {
+			ZipDataAccess::Inl(lhs, rhs) => {
+				let infate_abs = digit::BITS - self.width().to_usize();
+				let lhs = (lhs.repr() << infate_abs) as i64;
+				let rhs = (rhs.repr() << infate_abs) as i64;
+				Ok(lhs < rhs)
 			}
-			ZipModel::Ext(left, right) => {
-				left.slt(&right)
+			ZipDataAccess::Ext(_lhs, _rhs) => {
+				unimplemented!() // TODO
 			}
 		}
 	}
