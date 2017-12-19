@@ -1,9 +1,14 @@
 use apint::{ApInt};
-use apint::utils::{Model, ModelMut, ZipModelMut};
 use digit::{Bit};
-use traits::{ApIntImpl, ApIntMutImpl};
+use digit;
 use errors::{Result};
-use apint::utils::DataAccessMut;
+use apint::utils::{
+	DataAccess,
+	DataAccessMut,
+	ZipDataAccessMut
+};
+use bitpos::{BitPos};
+use checks;
 
 use std::ops::{
 	BitAnd,
@@ -32,67 +37,112 @@ impl ApInt {
 		}
 	}
 
-	/// Creates a new bitvec that represents the bitwise-and of both given `ApInt`s.
-	pub fn checked_bitand(&self, other: &ApInt) -> Result<ApInt> {
-		let mut cloned = self.clone();
-		cloned.checked_bitand_assign(other)?;
-		Ok(cloned)
+	/// Tries to bit-and assign this `ApInt` inplace to `rhs`
+	/// and returns the result.
+	/// 
+	/// **Note:** This forwards to
+	/// [`checked_bitand`](struct.ApInt.html#method.checked_bitand).
+	/// 
+	/// # Errors
+	/// 
+	/// If `self` and `rhs` have unmatching bit widths.
+	pub fn into_checked_bitand(self, rhs: &ApInt) -> Result<ApInt> {
+		let mut this = self;
+		this.checked_bitand_assign(rhs)?;
+		Ok(this)
 	}
 
-	/// Computes bitwise-and of self and other and stores the result in self.
+	/// Bit-and assigns all bits of this `ApInt` with the bits of `rhs`.
 	/// 
-	/// This operation operates in-place on `self` and thus does not require dynamic memory allocation.
-	pub fn checked_bitand_assign(&mut self, other: &ApInt) -> Result<()> {
-		match self.zip_model_mut(other)? {
-			ZipModelMut::Inl(mut left, right) => {
-				left.bitand_inplace(&right)
+	/// **Note:** This operation is inplace of `self` and won't allocate memory.
+	/// 
+	/// # Errors
+	/// 
+	/// If `self` and `rhs` have unmatching bit widths.
+	pub fn checked_bitand_assign(&mut self, rhs: &ApInt) -> Result<()> {
+		match self.zip_access_data_mut(rhs)? {
+			ZipDataAccessMut::Inl(lhs, rhs) => {
+				*lhs &= rhs
 			}
-			ZipModelMut::Ext(mut left, right) => {
-				left.bitand_inplace(&right)
+			ZipDataAccessMut::Ext(lhs, rhs) => {
+				lhs.into_iter()
+				   .zip(rhs.into_iter())
+				   .for_each(|(l, r)| *l &= *r)
 			}
 		}
+		Ok(())
 	}
 
-	/// Creates a new bitvec that represents the bitwise-or of both given `ApInt`s.
-	pub fn checked_bitor(&self, other: &ApInt) -> Result<ApInt> {
-		let mut cloned = self.clone();
-		cloned.checked_bitor_assign(other)?;
-		Ok(cloned)
-	}
-
-	/// Computes bitwise-or of self and other and stores the result in self.
+	/// Tries to bit-and assign this `ApInt` inplace to `rhs`
+	/// and returns the result.
 	/// 
-	/// This operation operates in-place on `self` and thus does not require dynamic memory allocation.
-	pub fn checked_bitor_assign(&mut self, other: &ApInt) -> Result<()> {
-		match self.zip_model_mut(other)? {
-			ZipModelMut::Inl(mut left, right) => {
-				left.bitor_inplace(&right)
+	/// **Note:** This forwards to
+	/// [`checked_bitor`](struct.ApInt.html#method.checked_bitor).
+	/// 
+	/// # Errors
+	/// 
+	/// If `self` and `rhs` have unmatching bit widths.
+	pub fn into_checked_bitor(self, rhs: &ApInt) -> Result<ApInt> {
+		let mut this = self;
+		this.checked_bitor_assign(rhs)?;
+		Ok(this)
+	}
+
+	/// Bit-or assigns all bits of this `ApInt` with the bits of `rhs`.
+	/// 
+	/// **Note:** This operation is inplace of `self` and won't allocate memory.
+	/// 
+	/// # Errors
+	/// 
+	/// If `self` and `rhs` have unmatching bit widths.
+	pub fn checked_bitor_assign(&mut self, rhs: &ApInt) -> Result<()> {
+		match self.zip_access_data_mut(rhs)? {
+			ZipDataAccessMut::Inl(lhs, rhs) => {
+				*lhs |= rhs
 			}
-			ZipModelMut::Ext(mut left, right) => {
-				left.bitor_inplace(&right)
+			ZipDataAccessMut::Ext(lhs, rhs) => {
+				lhs.into_iter()
+				   .zip(rhs.into_iter())
+				   .for_each(|(l, r)| *l |= *r)
 			}
 		}
+		Ok(())
 	}
 
-	/// Creates a new bitvec that represents the bitwise-xor of both given `ApInt`s.
-	pub fn checked_bitxor(&self, other: &ApInt) -> Result<ApInt> {
-		let mut cloned = self.clone();
-		cloned.checked_bitxor_assign(other)?;
-		Ok(cloned)
-	}
-
-	/// Computes bitwise-xor of self and other and stores the result in self.
+	/// Tries to bit-xor assign this `ApInt` inplace to `rhs`
+	/// and returns the result.
 	/// 
-	/// This operation operates in-place on `self` and thus does not require dynamic memory allocation.
-	pub fn checked_bitxor_assign(&mut self, other: &ApInt) -> Result<()> {
-		match self.zip_model_mut(other)? {
-			ZipModelMut::Inl(mut left, right) => {
-				left.bitxor_inplace(&right)
+	/// **Note:** This forwards to
+	/// [`checked_bitxor`](struct.ApInt.html#method.checked_bitxor).
+	/// 
+	/// # Errors
+	/// 
+	/// If `self` and `rhs` have unmatching bit widths.
+	pub fn into_checked_bitxor(self, rhs: &ApInt) -> Result<ApInt> {
+		let mut this = self;
+		this.checked_bitor_assign(rhs)?;
+		Ok(this)
+	}
+
+	/// Bit-xor assigns all bits of this `ApInt` with the bits of `rhs`.
+	/// 
+	/// **Note:** This operation is inplace of `self` and won't allocate memory.
+	/// 
+	/// # Errors
+	/// 
+	/// If `self` and `rhs` have unmatching bit widths.
+	pub fn checked_bitxor_assign(&mut self, rhs: &ApInt) -> Result<()> {
+		match self.zip_access_data_mut(rhs)? {
+			ZipDataAccessMut::Inl(lhs, rhs) => {
+				*lhs ^= rhs
 			}
-			ZipModelMut::Ext(mut left, right) => {
-				left.bitxor_inplace(&right)
+			ZipDataAccessMut::Ext(lhs, rhs) => {
+				lhs.into_iter()
+				   .zip(rhs.into_iter())
+				   .for_each(|(l, r)| *l ^= *r)
 			}
 		}
+		Ok(())
 	}
 }
 
@@ -100,118 +150,138 @@ impl ApInt {
 ///  Bitwise Access
 /// ===========================================================================
 impl ApInt {
-	pub fn get(&self, n: usize) -> Result<Bit> {
-		match self.model() {
-			Model::Inl(small) => {
-				small.get(n)
-			}
-			Model::Ext(large) => {
-				large.get(n)
-			}
-		}
-	}
-
-	pub fn sign_bit(&self) -> Bit {
-		match self.model() {
-			Model::Inl(small) => {
-				small.sign_bit()
-			}
-			Model::Ext(large) => {
-				large.sign_bit()
-			}
-		}
-	}
-
-	pub fn set(&mut self, n: usize) -> Result<()> {
-		match self.model_mut() {
-			ModelMut::Inl(mut small) => {
-				small.set(n)
-			}
-			ModelMut::Ext(mut large) => {
-				large.set(n)
+	/// Returns the bit at the given bit position `pos`.
+	/// 
+	/// This returns
+	/// 
+	/// - `Bit::Set` if the bit at `pos` is `1`
+	/// - `Bit::Unset` otherwise
+	/// 
+	/// # Errors
+	/// 
+	/// - If `pos` is not a valid bit position for the width of this `ApInt`.
+	pub fn get_bit_at<P>(&self, pos: P) -> Result<Bit>
+		where P: Into<BitPos>
+	{
+		let pos = pos.into();
+		checks::verify_bit_access(self, pos)?;
+		match self.access_data() {
+			DataAccess::Inl(digit) => digit.get(pos),
+			DataAccess::Ext(digits) => {
+				let digit_idx = pos.to_usize() / digit::BITS;
+				digits[digit_idx].get(pos)
 			}
 		}
 	}
 
+	/// Sets the bit at the given bit position `pos` to one (`1`).
+	/// 
+	/// # Errors
+	/// 
+	/// - If `pos` is not a valid bit position for the width of this `ApInt`.
+	pub fn set_bit_at<P>(&mut self, pos: P) -> Result<()>
+		where P: Into<BitPos>
+	{
+		let pos = pos.into();
+		checks::verify_bit_access(self, pos)?;
+		match self.access_data_mut() {
+			DataAccessMut::Inl(digit) => digit.set(pos),
+			DataAccessMut::Ext(digits) => {
+				let digit_idx = pos.to_usize() / digit::BITS;
+				digits[digit_idx].set(pos)
+			}
+		}
+	}
+
+	/// Sets the bit at the given bit position `pos` to zero (`0`).
+	/// 
+	/// # Errors
+	/// 
+	/// - If `pos` is not a valid bit position for the width of this `ApInt`.
+	pub fn unset_bit_at<P>(&mut self, pos: P) -> Result<()>
+		where P: Into<BitPos>
+	{
+		let pos = pos.into();
+		checks::verify_bit_access(self, pos)?;
+		match self.access_data_mut() {
+			DataAccessMut::Inl(digit) => digit.unset(pos),
+			DataAccessMut::Ext(digits) => {
+				let digit_idx = pos.to_usize() / digit::BITS;
+				digits[digit_idx].unset(pos)
+			}
+		}
+	}
+
+	/// Flips the bit at the given bit position `pos`.
+	/// 
+	/// # Errors
+	/// 
+	/// - If `pos` is not a valid bit position for the width of this `ApInt`.
+	pub fn flip_bit_at<P>(&mut self, pos: P) -> Result<()>
+		where P: Into<BitPos>
+	{
+		let pos = pos.into();
+		checks::verify_bit_access(self, pos)?;
+		match self.access_data_mut() {
+			DataAccessMut::Inl(digit) => digit.flip(pos),
+			DataAccessMut::Ext(digits) => {
+				let digit_idx = pos.to_usize() / digit::BITS;
+				digits[digit_idx].flip(pos)
+			}
+		}
+	}
+
+	/// Sets all bits of this `ApInt` to one (`1`).
 	pub fn set_all(&mut self) {
-		match self.model_mut() {
-			ModelMut::Inl(mut small) => {
-				small.set_all()
-			}
-			ModelMut::Ext(mut large) => {
-				large.set_all()
-			}
-		}
-	}
-
-	pub fn unset(&mut self, n: usize) -> Result<()> {
-		match self.model_mut() {
-			ModelMut::Inl(mut small) => {
-				small.unset(n)
-			}
-			ModelMut::Ext(mut large) => {
-				large.unset(n)
+		match self.access_data_mut() {
+			DataAccessMut::Inl(digit) => digit.set_all(),
+			DataAccessMut::Ext(digits) => {
+				digits.into_iter()
+				      .for_each(|digit| digit.set_all())
 			}
 		}
 	}
 
+	/// Sets all bits of this `ApInt` to zero (`0`).
 	pub fn unset_all(&mut self) {
-		match self.model_mut() {
-			ModelMut::Inl(mut small) => {
-				small.unset_all()
-			}
-			ModelMut::Ext(mut large) => {
-				large.unset_all()
-			}
-		}
-	}
-
-	pub fn flip(&mut self, n: usize) -> Result<()> {
-		match self.model_mut() {
-			ModelMut::Inl(mut small) => {
-				small.flip(n)
-			}
-			ModelMut::Ext(mut large) => {
-				large.flip(n)
+		match self.access_data_mut() {
+			DataAccessMut::Inl(digit) => digit.unset_all(),
+			DataAccessMut::Ext(digits) => {
+				digits.into_iter()
+				      .for_each(|digit| digit.unset_all())
 			}
 		}
 	}
 
+	/// Flips all bits of this `ApInt`.
 	pub fn flip_all(&mut self) {
-		match self.model_mut() {
-			ModelMut::Inl(mut small) => {
-				small.flip_all()
-			}
-			ModelMut::Ext(mut large) => {
-				large.flip_all()
+		match self.access_data_mut() {
+			DataAccessMut::Inl(digit) => digit.flip_all(),
+			DataAccessMut::Ext(digits) => {
+				digits.into_iter()
+				      .for_each(|digit| digit.flip_all())
 			}
 		}
 	}
+
+	/// Returns the sign bit of this `ApInt`.
+	/// 
+	/// **Note:** This is equal to the most significant bit of this `ApInt`.
+	pub fn sign_bit(&self) -> Bit {
+		self.most_significant_bit()
+	}
+
 }
 
+//  ===========================================================================
+//  `BitAnd` impls
 //  ===========================================================================
 
 impl<'a> BitAnd<&'a ApInt> for ApInt {
     type Output = ApInt;
 
     fn bitand(self, rhs: &'a ApInt) -> Self::Output {
-        self.checked_bitand(rhs).unwrap()
-    }
-}
-
-impl<'a> BitOr<&'a ApInt> for ApInt {
-    type Output = ApInt;
-
-    fn bitor(self, rhs: &'a ApInt) -> Self::Output {
-        self.checked_bitor(rhs).unwrap()
-    }
-}
-
-impl<'a> BitXor<&'a ApInt> for ApInt {
-    type Output = ApInt;
-
-    fn bitxor(self, rhs: &'a ApInt) -> Self::Output {
-        self.checked_bitxor(rhs).unwrap()
+        self.into_checked_bitand(rhs).unwrap()
     }
 }
 
@@ -219,7 +289,27 @@ impl<'a, 'b> BitAnd<&'a ApInt> for &'b ApInt {
     type Output = ApInt;
 
     fn bitand(self, rhs: &'a ApInt) -> Self::Output {
-        self.clone().checked_bitand(rhs).unwrap()
+        self.clone().into_checked_bitand(rhs).unwrap()
+    }
+}
+
+impl<'a, 'b> BitAnd<&'a ApInt> for &'b mut ApInt {
+    type Output = ApInt;
+
+    fn bitand(self, rhs: &'a ApInt) -> Self::Output {
+        self.clone().into_checked_bitand(rhs).unwrap()
+    }
+}
+
+//  ===========================================================================
+//  `BitOr` impls
+//  ===========================================================================
+
+impl<'a> BitOr<&'a ApInt> for ApInt {
+    type Output = ApInt;
+
+    fn bitor(self, rhs: &'a ApInt) -> Self::Output {
+        self.into_checked_bitor(rhs).unwrap()
     }
 }
 
@@ -227,7 +317,27 @@ impl<'a, 'b> BitOr<&'a ApInt> for &'b ApInt {
     type Output = ApInt;
 
     fn bitor(self, rhs: &'a ApInt) -> Self::Output {
-        self.clone().checked_bitor(rhs).unwrap()
+        self.clone().into_checked_bitor(rhs).unwrap()
+    }
+}
+
+impl<'a, 'b> BitOr<&'a ApInt> for &'b mut ApInt {
+    type Output = ApInt;
+
+    fn bitor(self, rhs: &'a ApInt) -> Self::Output {
+        self.clone().into_checked_bitor(rhs).unwrap()
+    }
+}
+
+//  ===========================================================================
+//  `BitXor` impls
+//  ===========================================================================
+
+impl<'a> BitXor<&'a ApInt> for ApInt {
+    type Output = ApInt;
+
+    fn bitxor(self, rhs: &'a ApInt) -> Self::Output {
+        self.into_checked_bitxor(rhs).unwrap()
     }
 }
 
@@ -235,10 +345,20 @@ impl<'a, 'b> BitXor<&'a ApInt> for &'b ApInt {
     type Output = ApInt;
 
     fn bitxor(self, rhs: &'a ApInt) -> Self::Output {
-        self.clone().checked_bitxor(rhs).unwrap()
+        self.clone().into_checked_bitxor(rhs).unwrap()
     }
 }
 
+impl<'a, 'b> BitXor<&'a ApInt> for &'b mut ApInt {
+    type Output = ApInt;
+
+    fn bitxor(self, rhs: &'a ApInt) -> Self::Output {
+        self.clone().into_checked_bitxor(rhs).unwrap()
+    }
+}
+
+//  ===========================================================================
+//  `BitAndAssign`, `BitOrAssign` and `BitXorAssign` impls
 //  ===========================================================================
 
 impl<'a> BitAndAssign<&'a ApInt> for ApInt {
