@@ -22,8 +22,6 @@ mod bitwidth;
 mod bitpos;
 mod storage;
 mod radix;
-mod small_apint;
-mod large_apint;
 mod apint;
 mod digit_seq;
 mod checks;

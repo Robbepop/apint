@@ -2,12 +2,9 @@
 use storage::{Storage};
 use digit::{Digit, Bit};
 use apint::{ApInt};
-use small_apint::{SmallApInt, SmallApIntMut};
-use large_apint::{LargeApInt, LargeApIntMut};
 use errors::{Error, Result};
 use traits::Width;
 use bitwidth::BitWidth;
-use small_apint::DigitWrapper;
 use digit_seq::{
 	AsDigitSeq,
 	AsDigitSeqMut,
@@ -19,20 +16,10 @@ use std::fmt;
 
 impl fmt::Debug for ApInt {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-		match self.model() {
-			Model::Inl(small) => {
-				f.debug_struct("ApInt")
-					.field("len", &small.width())
-					.field("digit", &small.digit())
-					.finish()
-			},
-			Model::Ext(large) => {
-				f.debug_struct("ApInt")
-					.field("len", &large.width())
-					.field("digits", &large.digits())
-					.finish()
-			}
-		}
+		f.debug_struct("ApInt")
+		 .field("len", &self.width())
+		 .field("digits", &self.as_digit_slice())
+		 .finish()
 	}
 }
 
@@ -42,10 +29,7 @@ impl<'a> AsDigitSeq<'a> for &'a ApInt {
 	type Seq = ContiguousDigitSeq<'a>;
 
 	fn digits(self) -> Self::Seq {
-		match self.model() {
-			Model::Inl(small) => small.digits(),
-			Model::Ext(large) => large.digits()
-		}
+		ContiguousDigitSeq::from(self.as_digit_slice())
 	}
 }
 
@@ -53,37 +37,8 @@ impl<'a> AsDigitSeqMut<'a> for &'a mut ApInt {
 	type SeqMut = ContiguousDigitSeqMut<'a>;
 
 	fn digits_mut(self) -> Self::SeqMut {
-		match self.model_mut() {
-			ModelMut::Inl(small) => small.digits_mut(),
-			ModelMut::Ext(large) => large.digits_mut()
-		}
+		ContiguousDigitSeqMut::from(self.as_digit_slice_mut())
 	}
-}
-
-// ============================================================================
-
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub(crate) enum Model<'a> {
-	Inl(SmallApInt<'a>),
-	Ext(LargeApInt<'a>)
-}
-
-#[derive(Debug, PartialEq, Eq)]
-pub(crate) enum ModelMut<'a> {
-	Inl(SmallApIntMut<'a>),
-	Ext(LargeApIntMut<'a>)
-}
-
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub(crate) enum ZipModel<'a, 'b> {
-	Inl(SmallApInt<'a>, SmallApInt<'b>),
-	Ext(LargeApInt<'a>, LargeApInt<'b>)
-}
-
-#[derive(Debug, PartialEq, Eq)]
-pub(crate) enum ZipModelMut<'a, 'b> {
-	Inl(SmallApIntMut<'a>, SmallApInt<'b>),
-	Ext(LargeApIntMut<'a>, LargeApInt<'b>)
 }
 
 // ============================================================================
@@ -209,60 +164,6 @@ impl ApInt {
 					self.as_digit_slice_mut(),
 					other.as_digit_slice())
 			}
-		})
-	}
-
-	#[inline]
-	pub(in apint) fn model(&self) -> Model {
-		match self.storage() {
-			Storage::Inl => Model::Inl(SmallApInt::new(self.len, unsafe{self.data.inl})),
-			Storage::Ext => Model::Ext(LargeApInt::new(self.len, self.as_digit_slice()))
-		}
-	}
-
-	#[inline]
-	pub(in apint) fn model_mut(&mut self) -> ModelMut {
-		match self.storage() {
-			Storage::Inl => ModelMut::Inl(SmallApIntMut::new(self.len, unsafe{&mut self.data.inl})),
-			Storage::Ext => ModelMut::Ext(LargeApIntMut::new(self.len, self.as_digit_slice_mut()))
-		}
-	}
-
-	/// Zips both given `ApInt` instances to simplify access to their data.
-	/// 
-	/// # Errors
-	/// 
-	/// - If both given `ApInt` instances have non-matching bit widths.
-	pub(in apint) fn zip_model<'a, 'b>(&'a self, other: &'b ApInt) -> Result<ZipModel<'a, 'b>> {
-		if self.len_bits() != other.len_bits() {
-			return Error::unmatching_bitwidths(self.len_bits(), other.len_bits()).into()
-		}
-		Ok(match self.storage() {
-			Storage::Inl => ZipModel::Inl(
-				SmallApInt::new( self.len, unsafe{ self.data.inl}),
-				SmallApInt::new(other.len, unsafe{other.data.inl})),
-			Storage::Ext => ZipModel::Ext(
-				LargeApInt::new( self.len,  self.as_digit_slice()),
-				LargeApInt::new(other.len, other.as_digit_slice()))
-		})
-	}
-
-	/// Mutably zips both given `ApInt` instances to simplify access to their data.
-	/// 
-	/// # Errors
-	/// 
-	/// - If both given `ApInt` instances have non-matching bit widths.
-	pub(in apint) fn zip_model_mut<'a, 'b>(&'a mut self, other: &'b ApInt) -> Result<ZipModelMut<'a, 'b>> {
-		if self.len_bits() != other.len_bits() {
-			return Error::unmatching_bitwidths(self.len_bits(), other.len_bits()).into()
-		}
-		Ok(match self.storage() {
-			Storage::Inl => ZipModelMut::Inl(
-				SmallApIntMut::new( self.len, unsafe{&mut  self.data.inl}),
-				SmallApInt::new(other.len, unsafe{other.data.inl})),
-			Storage::Ext => ZipModelMut::Ext(
-				LargeApIntMut::new( self.len,  self.as_digit_slice_mut()),
-				LargeApInt::new(other.len, other.as_digit_slice()))
 		})
 	}
 
