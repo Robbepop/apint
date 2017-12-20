@@ -1,7 +1,6 @@
-use errors::{Result};
 use digit::{Digit};
 use bitwidth::BitWidth;
-use traits::{Width, ApIntMutImpl};
+use traits::{Width};
 use digit_seq::{
 	AsDigitSeq,
 	AsDigitSeqMut,
@@ -149,43 +148,4 @@ impl<'a> Width for &'a mut LargeApIntMut<'a> {
 	fn width(&self) -> BitWidth {
 		self.len
 	}
-}
-
-// ============================================================================
-
-impl<'a, T> ApIntMutImpl<LargeApInt<'a>> for T
-	where T: Width + DigitMutSliceWrapper
-{
-	fn neg_inplace(&mut self) {
-		unimplemented!()
-	}
-
-	fn add_inplace(&mut self, _other: &LargeApInt) -> Result<()> {
-		unimplemented!()
-	}
-
-	fn sub_inplace(&mut self, _other: &LargeApInt) -> Result<()> {
-		unimplemented!()
-	}
-
-	fn mul_inplace(&mut self, _other: &LargeApInt) -> Result<()> {
-		unimplemented!()
-	}
-
-	fn sdiv_inplace(&mut self, _other: &LargeApInt) -> Result<()> {
-		unimplemented!()
-	}
-
-	fn udiv_inplace(&mut self, _other: &LargeApInt) -> Result<()> {
-		unimplemented!()
-	}
-
-	fn srem_inplace(&mut self, _other: &LargeApInt) -> Result<()> {
-		unimplemented!()
-	}
-
-	fn urem_inplace(&mut self, _other: &LargeApInt) -> Result<()> {
-		unimplemented!()
-	}
-
 }

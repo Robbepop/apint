@@ -1,9 +1,7 @@
 use digit::{Digit};
 use bitwidth::BitWidth;
-use errors::{Result};
 use traits::{
 	Width,
-	ApIntMutImpl,
 };
 use digit_seq::{
 	AsDigitSeq,
@@ -160,44 +158,4 @@ impl<'a> DigitMutWrapper for SmallApIntMut<'a> {
 
 impl<'a> DigitMutWrapper for &'a mut SmallApIntMut<'a> {
 	fn digit_mut(&mut self) -> &mut Digit { self.digit }
-}
-
-// ============================================================================
-
-impl<'a, T> ApIntMutImpl<SmallApInt<'a>> for T
-	where T: Width + DigitMutWrapper
-{
-	fn neg_inplace(&mut self) {
-		// Negating a twos-complement number is accomplished by inverting all bits and adding 1.
-		unimplemented!()
-	}
-
-	fn add_inplace(&mut self, _other: &SmallApInt) -> Result<()> {
-		unimplemented!()
-	}
-
-	fn sub_inplace(&mut self, _other: &SmallApInt) -> Result<()> {
-		unimplemented!()
-	}
-
-	fn mul_inplace(&mut self, _other: &SmallApInt) -> Result<()> {
-		unimplemented!()
-	}
-
-	fn sdiv_inplace(&mut self, _other: &SmallApInt) -> Result<()> {
-		unimplemented!()
-	}
-
-	fn udiv_inplace(&mut self, _other: &SmallApInt) -> Result<()> {
-		unimplemented!()
-	}
-
-	fn srem_inplace(&mut self, _other: &SmallApInt) -> Result<()> {
-		unimplemented!()
-	}
-
-	fn urem_inplace(&mut self, _other: &SmallApInt) -> Result<()> {
-		unimplemented!()
-	}
-
 }
