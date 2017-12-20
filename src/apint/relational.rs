@@ -2,9 +2,13 @@ use apint::{ApInt};
 use apint::utils::{
 	ZipDataAccess
 };
-use errors::{Error, Result};
+use errors::{Result};
 use traits::Width;
 use digit;
+use digit::{Bit};
+
+use std::cmp::Ordering;
+use std::ops::Not;
 
 impl PartialEq for ApInt {
 	fn eq(&self, other: &ApInt) -> bool {
@@ -23,106 +27,133 @@ impl Eq for ApInt {}
 impl ApInt {
 
 	/// Unsigned less-than comparison with the other bitvec.
-	pub fn ult(&self, other: &ApInt) -> Result<bool> {
-		if self.len_bits() != other.len_bits() {
-			return Error::unmatching_bitwidths(self.len_bits(), other.len_bits())
-				.with_annotation(format!("Error occured on unsigned less-than (ult) comparison with {:?} and {:?}.", self, other))
-				.into()
-		}
-		match self.zip_access_data(other)? {
+	pub fn ult(&self, rhs: &ApInt) -> Result<bool> {
+		match self
+			.zip_access_data(rhs)
+			.map_err(|err| err.with_annotation(format!(
+				"Error occured on unsigned less-than (slt) comparison with `lhs < rhs` where \
+				 \n\tlhs = {:?}\
+				 \n\trhs = {:?}",
+				self, rhs)
+			))?
+		{
 			ZipDataAccess::Inl(lhs, rhs) => {
 				Ok(lhs.repr() < rhs.repr())
 			}
-			ZipDataAccess::Ext(_lhs, _rhs) => {
-				unimplemented!() // TODO
+			ZipDataAccess::Ext(lhs, rhs) => {
+				for (l, r) in lhs.into_iter()
+				                 .zip(rhs.into_iter())
+				{
+					match l.cmp(r) {
+						Ordering::Less    => return Ok(true),
+						Ordering::Greater => return Ok(false),
+						Ordering::Equal   => ()
+					}
+				}
+				Ok(false)
 			}
 		}
 	}
 
 	/// Unsigned less-than-or-equals comparison with the other bitvec.
 	#[inline]
-	pub fn ule(&self, other: &ApInt) -> Result<bool> {
-		if self.len_bits() != other.len_bits() {
-			return Error::unmatching_bitwidths(self.len_bits(), other.len_bits())
-				.with_annotation(format!("Error occured on unsigned less-than or equals (ule) comparison with {:?} and {:?}.", self, other))
-				.into()
-		}
-		Ok(!(other.ult(self)?))
+	pub fn ule(&self, rhs: &ApInt) -> Result<bool> {
+		rhs.ult(self).map(Not::not)
+			.map_err(|err| err.with_annotation(format!(
+				"Error occured on unsigned less-than or equals (ule) comparison with `lhs <= rhs` where \
+				 \n\tlhs = {:?}\
+				 \n\trhs = {:?}",
+				self, rhs)
+			))
 	}
 
 	/// Unsigned greater-than comparison with the other bitvec.
 	#[inline]
-	pub fn ugt(&self, other: &ApInt) -> Result<bool> {
-		if self.len_bits() != other.len_bits() {
-			return Error::unmatching_bitwidths(self.len_bits(), other.len_bits())
-				.with_annotation(format!("Error occured on unsigned greater-than (ugt) comparison with {:?} and {:?}.", self, other))
-				.into()
-		}
-		other.ult(self)
+	pub fn ugt(&self, rhs: &ApInt) -> Result<bool> {
+		rhs.ult(self)
+			.map_err(|err| err.with_annotation(format!(
+				"Error occured on unsigned greater-than (ugt) comparison with `lhs > rhs` where \
+				 \n\tlhs = {:?}\
+				 \n\trhs = {:?}",
+				self, rhs)
+			))
 	}
 
 	/// Unsigned greater-than-or-equals comparison with the other bitvec.
 	#[inline]
-	pub fn uge(&self, other: &ApInt) -> Result<bool> {
-		if self.len_bits() != other.len_bits() {
-			return Error::unmatching_bitwidths(self.len_bits(), other.len_bits())
-				.with_annotation(format!("Error occured on unsigned greater-than or equals (uge) comparison with {:?} and {:?}.", self, other))
-				.into()
-		}
-		Ok(!(self.ult(other)?))
+	pub fn uge(&self, rhs: &ApInt) -> Result<bool> {
+		self.ult(rhs).map(Not::not)
+			.map_err(|err| err.with_annotation(format!(
+				"Error occured on unsigned greater-than or equals (ule) comparison with `lhs >= rhs` where \
+				 \n\tlhs = {:?}\
+				 \n\trhs = {:?}",
+				self, rhs)
+			))
 	}
 
 	/// Signed less-than comparison with the other bitvec.
-	pub fn slt(&self, other: &ApInt) -> Result<bool> {
-		if self.len_bits() != other.len_bits() {
-			return Error::unmatching_bitwidths(self.len_bits(), other.len_bits())
-				.with_annotation(format!("Error occured on unsigned less-than (slt) comparison with {:?} and {:?}.", self, other))
-				.into()
-		}
-		match self.zip_access_data(other)? {
-			ZipDataAccess::Inl(lhs, rhs) => {
-				let infate_abs = digit::BITS - self.width().to_usize();
-				let lhs = (lhs.repr() << infate_abs) as i64;
-				let rhs = (rhs.repr() << infate_abs) as i64;
-				Ok(lhs < rhs)
+	pub fn slt(&self, rhs: &ApInt) -> Result<bool> {
+		let lhs = self;
+		lhs.zip_access_data(rhs).and_then(|zipped| {
+			match zipped {
+				ZipDataAccess::Inl(lhs, rhs) => {
+					let infate_abs = digit::BITS - self.width().to_usize();
+					let lhs = (lhs.repr() << infate_abs) as i64;
+					let rhs = (rhs.repr() << infate_abs) as i64;
+					Ok(lhs < rhs)
+				}
+				ZipDataAccess::Ext(_, _) => {
+					match (lhs.sign_bit(), rhs.sign_bit()) {
+						(Bit::Unset, Bit::Unset) => lhs.ult(rhs),
+						(Bit::Unset, Bit::Set  ) => Ok(false),
+						(Bit::Set  , Bit::Unset) => Ok(true),
+						(Bit::Set  , Bit::Set  ) => rhs.ugt(lhs)
+					}
+				}
 			}
-			ZipDataAccess::Ext(_lhs, _rhs) => {
-				unimplemented!() // TODO
-			}
-		}
+		})
+		.map_err(|err| err.with_annotation(format!(
+			"Error occured on signed less-than (slt) comparison with `lhs < rhs` where \
+				\n\tlhs = {:?}\
+				\n\trhs = {:?}",
+			self, rhs)
+		))
 	}
 
 	/// Signed less-than-or-equals comparison with the other bitvec.
 	#[inline]
-	pub fn sle(&self, other: &ApInt) -> Result<bool> {
-		if self.len_bits() != other.len_bits() {
-			return Error::unmatching_bitwidths(self.len_bits(), other.len_bits())
-				.with_annotation(format!("Error occured on unsigned less-than or equals (sle) comparison with {:?} and {:?}.", self, other))
-				.into()
-		}
-		Ok(!(other.slt(self)?))
+	pub fn sle(&self, rhs: &ApInt) -> Result<bool> {
+		rhs.slt(self).map(Not::not)
+			.map_err(|err| err.with_annotation(format!(
+				"Error occured on signed less-than or equals (ule) comparison with `lhs <= rhs` where \
+				 \n\tlhs = {:?}\
+				 \n\trhs = {:?}",
+				self, rhs)
+			))
 	}
 
 	/// Signed greater-than comparison with the other bitvec.
 	#[inline]
-	pub fn sgt(&self, other: &ApInt) -> Result<bool> {
-		if self.len_bits() != other.len_bits() {
-			return Error::unmatching_bitwidths(self.len_bits(), other.len_bits())
-				.with_annotation(format!("Error occured on unsigned greater-than (sgt) comparison with {:?} and {:?}.", self, other))
-				.into()
-		}
-		other.slt(self)
+	pub fn sgt(&self, rhs: &ApInt) -> Result<bool> {
+		rhs.slt(self)
+			.map_err(|err| err.with_annotation(format!(
+				"Error occured on signed greater-than (ugt) comparison with `lhs > rhs` where \
+				 \n\tlhs = {:?}\
+				 \n\trhs = {:?}",
+				self, rhs)
+			))
 	}
 
 	/// Signed greater-than-or-equals comparison with the other bitvec.
 	#[inline]
-	pub fn sge(&self, other: &ApInt) -> Result<bool> {
-		if self.len_bits() != other.len_bits() {
-			return Error::unmatching_bitwidths(self.len_bits(), other.len_bits())
-				.with_annotation(format!("Error occured on unsigned greater-than or equals (sge) comparison with {:?} and {:?}.", self, other))
-				.into()
-		}
-		Ok(!(self.slt(other)?))
+	pub fn sge(&self, rhs: &ApInt) -> Result<bool> {
+		self.slt(rhs).map(Not::not)
+			.map_err(|err| err.with_annotation(format!(
+				"Error occured on signed greater-than or equals (ule) comparison with `lhs >= rhs` where \
+				 \n\tlhs = {:?}\
+				 \n\trhs = {:?}",
+				self, rhs)
+			))
 	}
 
 }
