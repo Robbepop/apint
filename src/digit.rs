@@ -191,15 +191,15 @@ impl Digit {
 	#[inline]
 	pub fn one() -> Digit { ONE	}
 
-	/// Creates a digit where all bits are initialized to `1`.
-	#[inline]
-	pub fn ones() -> Digit { ONES }
-
 	/// Creates a digit that represents the value `0`.
 	/// 
 	/// **Note:** In twos-complement this means that all bits are `0`.
 	#[inline]
 	pub fn zero() -> Digit { ZERO }
+
+	/// Creates a digit where all bits are initialized to `1`.
+	#[inline]
+	pub fn all_set() -> Digit { ONES }
 }
 
 //  ===========================================================================
