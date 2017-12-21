@@ -200,6 +200,12 @@ impl Digit {
 	/// Creates a digit where all bits are initialized to `1`.
 	#[inline]
 	pub fn all_set() -> Digit { ONES }
+
+	/// Creates a digit where all bits are initialized to `1`.
+	/// 
+	/// **Note:** This is equivalent to `Digit::zero`.
+	#[inline]
+	pub fn all_unset() -> Digit { ZERO }
 }
 
 //  ===========================================================================
