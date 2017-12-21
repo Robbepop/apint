@@ -25,7 +25,7 @@ mod radix;
 mod apint;
 mod digit_seq;
 mod checks;
-mod algorithm;
+// mod algorithm;
 
 pub use apint::ApInt;
 pub use errors::{Result, Error, ErrorKind};
