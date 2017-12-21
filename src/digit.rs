@@ -235,16 +235,6 @@ impl Digit {
 impl Digit {
 	// TODO: Remove deprecated method.
 	// 
-	// Replacement has yet to be found.
-	pub fn truncated<W>(mut self, bitwidth: W) -> Result<Digit>
-		where W: Into<BitWidth>
-	{
-		self.truncate(bitwidth)?;
-		Ok(self)
-	}
-
-	// TODO: Remove deprecated method.
-	// 
 	// Deprecated by Digit::retain_last_n() method.
 	pub fn truncate<W>(&mut self, bitwidth: W) -> Result<()>
 		where W: Into<BitWidth>
