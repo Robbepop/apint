@@ -187,15 +187,23 @@ impl Digit {
 		Ok(res)
 	}
 
-	/// Creates a digit that represents the value `1`.
-	#[inline]
-	pub fn one() -> Digit { ONE	}
-
 	/// Creates a digit that represents the value `0`.
 	/// 
 	/// **Note:** In twos-complement this means that all bits are `0`.
 	#[inline]
 	pub fn zero() -> Digit { ZERO }
+
+	/// Creates a digit that represents the value `1`.
+	#[inline]
+	pub fn one() -> Digit { ONE	}
+
+	/// Returns `true` if this `Digit` is zero (`0`).
+	#[inline]
+	pub fn is_zero(self) -> bool { self == ZERO }
+
+	/// Returns `true` if this `Digit` is one (`1`).
+	#[inline]
+	pub fn is_one(self) -> bool { self == ONE }
 
 	/// Creates a digit where all bits are initialized to `1`.
 	#[inline]
