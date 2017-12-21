@@ -17,7 +17,7 @@ pub(crate) fn verify_bit_access<T, P>(a: &T, pos: P) -> Result<()>
 }
 
 #[inline]
-pub(crate) fn assert_bis_access<T, P>(a: &T, pos: P)
+pub(crate) fn assert_bit_access<T, P>(a: &T, pos: P)
 	where T: Width,
 	      P: Into<BitPos>
 {
