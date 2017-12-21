@@ -26,7 +26,16 @@ impl Eq for ApInt {}
 /// =======================================================================
 impl ApInt {
 
-	/// Unsigned less-than comparison with the other bitvec.
+	/// Unsigned less-than (`ult`) comparison between `self` and `rhs`.
+	/// 
+	/// # Note
+	/// 
+	/// - Returns `Ok(true)` if `self < rhs`.
+	/// - Interprets both `ApInt` instances as **unsigned** values.
+	/// 
+	/// # Errors
+	/// 
+	/// - If `self` and `rhs` have unmatching bit widths.
 	pub fn ult(&self, rhs: &ApInt) -> Result<bool> {
 		match self
 			.zip_access_data(rhs)
@@ -55,7 +64,16 @@ impl ApInt {
 		}
 	}
 
-	/// Unsigned less-than-or-equals comparison with the other bitvec.
+	/// Unsigned less-equals (`ule`) comparison between `self` and `rhs`.
+	/// 
+	/// # Note
+	/// 
+	/// - Returns `Ok(true)` if `self <= rhs`.
+	/// - Interprets both `ApInt` instances as **unsigned** values.
+	/// 
+	/// # Errors
+	/// 
+	/// - If `self` and `rhs` have unmatching bit widths.
 	#[inline]
 	pub fn ule(&self, rhs: &ApInt) -> Result<bool> {
 		rhs.ult(self).map(Not::not)
@@ -67,7 +85,16 @@ impl ApInt {
 			))
 	}
 
-	/// Unsigned greater-than comparison with the other bitvec.
+	/// Unsigned greater-than (`ugt`) comparison between `self` and `rhs`.
+	/// 
+	/// # Note
+	/// 
+	/// - Returns `Ok(true)` if `self > rhs`.
+	/// - Interprets both `ApInt` instances as **unsigned** values.
+	/// 
+	/// # Errors
+	/// 
+	/// - If `self` and `rhs` have unmatching bit widths.
 	#[inline]
 	pub fn ugt(&self, rhs: &ApInt) -> Result<bool> {
 		rhs.ult(self)
@@ -79,7 +106,16 @@ impl ApInt {
 			))
 	}
 
-	/// Unsigned greater-than-or-equals comparison with the other bitvec.
+	/// Unsigned greater-equals (`uge`) comparison between `self` and `rhs`.
+	/// 
+	/// # Note
+	/// 
+	/// - Returns `Ok(true)` if `self >= rhs`.
+	/// - Interprets both `ApInt` instances as **unsigned** values.
+	/// 
+	/// # Errors
+	/// 
+	/// - If `self` and `rhs` have unmatching bit widths.
 	#[inline]
 	pub fn uge(&self, rhs: &ApInt) -> Result<bool> {
 		self.ult(rhs).map(Not::not)
@@ -91,7 +127,16 @@ impl ApInt {
 			))
 	}
 
-	/// Signed less-than comparison with the other bitvec.
+	/// Signed less-than (`slt`) comparison between `self` and `rhs`.
+	/// 
+	/// # Note
+	/// 
+	/// - Returns `Ok(true)` if `self < rhs`.
+	/// - Interprets both `ApInt` instances as **signed** values.
+	/// 
+	/// # Errors
+	/// 
+	/// - If `self` and `rhs` have unmatching bit widths.
 	pub fn slt(&self, rhs: &ApInt) -> Result<bool> {
 		let lhs = self;
 		lhs.zip_access_data(rhs).and_then(|zipped| {
@@ -120,7 +165,16 @@ impl ApInt {
 		))
 	}
 
-	/// Signed less-than-or-equals comparison with the other bitvec.
+	/// Signed less-equals (`sle`) comparison between `self` and `rhs`.
+	/// 
+	/// # Note
+	/// 
+	/// - Returns `Ok(true)` if `self <= rhs`.
+	/// - Interprets both `ApInt` instances as **signed** values.
+	/// 
+	/// # Errors
+	/// 
+	/// - If `self` and `rhs` have unmatching bit widths.
 	#[inline]
 	pub fn sle(&self, rhs: &ApInt) -> Result<bool> {
 		rhs.slt(self).map(Not::not)
@@ -132,7 +186,16 @@ impl ApInt {
 			))
 	}
 
-	/// Signed greater-than comparison with the other bitvec.
+	/// Signed greater-than (`sgt`) comparison between `self` and `rhs`.
+	/// 
+	/// # Note
+	/// 
+	/// - Returns `Ok(true)` if `self > rhs`.
+	/// - Interprets both `ApInt` instances as **signed** values.
+	/// 
+	/// # Errors
+	/// 
+	/// - If `self` and `rhs` have unmatching bit widths.
 	#[inline]
 	pub fn sgt(&self, rhs: &ApInt) -> Result<bool> {
 		rhs.slt(self)
@@ -144,7 +207,16 @@ impl ApInt {
 			))
 	}
 
-	/// Signed greater-than-or-equals comparison with the other bitvec.
+	/// Signed greater-equals (`sge`) comparison between `self` and `rhs`.
+	/// 
+	/// # Note
+	/// 
+	/// - Returns `Ok(true)` if `self >= rhs`.
+	/// - Interprets both `ApInt` instances as **signed** values.
+	/// 
+	/// # Errors
+	/// 
+	/// - If `self` and `rhs` have unmatching bit widths.
 	#[inline]
 	pub fn sge(&self, rhs: &ApInt) -> Result<bool> {
 		self.slt(rhs).map(Not::not)
