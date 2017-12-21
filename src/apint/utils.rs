@@ -308,4 +308,15 @@ impl ApInt {
 		}
 	}
 
+	/// Returns `true` if this `ApInt` represents an even number.
+	#[inline]
+	pub fn is_even(&self) -> bool {
+		self.least_significant_bit() == Bit::Unset
+	}
+
+	/// Returns `true` if this `ApInt` represents an odd number.
+	#[inline]
+	pub fn is_odd(&self) -> bool {
+		self.least_significant_bit() == Bit::Set
+	}
 }
