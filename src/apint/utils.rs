@@ -271,4 +271,41 @@ impl ApInt {
 				         bits that can safely forwarded to `Digit::retain_last_n`.");
 		}
 	}
+
+	/// Returns `true` if this `ApInt` represents the value zero (`0`).
+	/// 
+	/// # Note
+	/// 
+	/// - Zero (`0`) is also called the additive neutral element.
+	/// - This operation is more efficient than comparing two instances
+	///   of `ApInt` for the same reason.
+	pub fn is_zero(&self) -> bool {
+		match self.access_data() {
+			DataAccess::Inl(digit) => digit.is_zero(),
+			DataAccess::Ext(digits) => {
+				digits.into_iter().all(|digit| digit.is_zero())
+			}
+		}
+	}
+
+	/// Returns `true` if this `ApInt` represents the value one (`1`).
+	/// 
+	/// # Note
+	/// 
+	/// - One (`1`) is also called the multiplicative neutral element.
+	/// - This operation is more efficient than comparing two instances
+	///   of `ApInt` for the same reason.
+	pub fn is_one(&self) -> bool {
+		match self.access_data() {
+			DataAccess::Inl(digit) => digit == Digit::one(),
+			DataAccess::Ext(digits) => {
+				let (last, rest) = digits.split_last()
+					.expect("An `ApInt` always has at least one digit so calling \
+					         `split_last` on a slice of its digits will never \
+					         return `None`.");
+				last.is_one() && rest.into_iter().all(|digit| digit.is_zero())
+			}
+		}
+	}
+
 }
