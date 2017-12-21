@@ -28,14 +28,14 @@ impl ApInt {
 	pub fn bitnot(&mut self) {
 		match self.access_data_mut() {
 			DataAccessMut::Inl(digit) => {
-				*digit = !(*digit);
+				digit.not_inplace()
 			}
 			DataAccessMut::Ext(digits) => {
 				digits.into_iter()
-				      .for_each(|digit| *digit = !(*digit))
+				      .for_each(|digit| digit.not_inplace())
 			}
 		}
-		// TODO: Clear excess bits (we finally need a utility method for this)
+		self.clear_unused_bits();
 	}
 
 	/// Tries to bit-and assign this `ApInt` inplace to `rhs`
