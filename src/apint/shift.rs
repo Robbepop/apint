@@ -2,6 +2,8 @@ use apint::{ApInt};
 use apint::utils::{DataAccessMut};
 use errors::{Result};
 use checks;
+use digit;
+use digit::{Digit};
 
 /// Represents an amount of bits to shift a value like an `ApInt`.
 /// 
@@ -79,8 +81,22 @@ impl ApInt {
 			DataAccessMut::Inl(digit) => {
 				*digit.repr_mut() <<= shift_amount.to_usize();
 			}
-			DataAccessMut::Ext(_digits) => {
-				unimplemented!()
+			DataAccessMut::Ext(digits) => {
+				let digit_steps = shift_amount.digit_steps();
+				let digits_len  = digits.len();
+				digits.rotate(digits_len - digit_steps);
+				digits.iter_mut().take(digit_steps).for_each(|d| *d = Digit::zero());
+
+				let bit_steps = shift_amount.bit_steps();
+				if bit_steps != 0 {
+					let mut carry = 0;
+					for elem in digits[digit_steps..].iter_mut() {
+						let repr = elem.repr();
+						let new_carry = repr >> (digit::BITS - bit_steps);
+						*elem = Digit((repr << bit_steps) | carry);
+						carry = new_carry;
+					}
+				}
 			}
 		}
 		Ok(())
