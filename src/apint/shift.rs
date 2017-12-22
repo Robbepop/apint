@@ -17,6 +17,37 @@ impl ShiftAmount {
 	pub(crate) fn to_usize(self) -> usize {
 		self.0
 	}
+
+	/// Returns the number of digits this `ShiftAmount` will leap over.
+	/// 
+	/// # Examples
+	/// 
+	/// - `ShiftAmount(50)` leaps over zero digits.
+	/// - `ShiftAmount(64)` leaps exactly over one digit.
+	/// - `ShiftAmount(100)` leaps over 1 digit.
+	/// - `ShiftAmount(150)` leaps over 2 digits.
+	#[inline]
+	pub(in apint) fn digit_steps(self) -> usize {
+		self.to_usize() / digit::BITS
+	}
+
+	/// Returns the number of bits within a single digit this
+	/// `ShiftAmount` will leap over.
+	/// 
+	/// # TODO
+	/// 
+	/// Maybe adding `left_bit_steps` and `right_bit_steps` is better?
+	/// 
+	/// # Examples
+	/// 
+	/// - `ShiftAmount(50)` leaps over `50` bits.
+	/// - `ShiftAmount(64)` leaps exactly over `0` bits.
+	/// - `ShiftAmount(100)` leaps over `28` bits.
+	/// - `ShiftAmount(150)` leaps over `22` bits.
+	#[inline]
+	pub(in apint) fn bit_steps(self) -> usize {
+		self.to_usize() % digit::BITS
+	}
 }
 
 impl From<usize> for ShiftAmount {
