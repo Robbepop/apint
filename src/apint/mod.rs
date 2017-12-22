@@ -35,10 +35,10 @@ union ApIntData {
 	ext: Unique<Digit>
 }
 
-/// `ApInt` as defined is safe to implement `Send` since it does not own
+/// `ApInt` is safe to send between threads since it does not own
 /// aliasing memory and has no reference counting mechanism like `Rc`.
 unsafe impl Send for ApInt {}
 
-/// `ApInt` as defined is safe to implement `Sync` since it does not own
+/// `ApInt` is safe to share between threads since it does not own
 /// aliasing memory and has no mutable internal state like `Cell` or `RefCell`.
 unsafe impl Sync for ApInt {}
