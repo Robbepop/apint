@@ -5,6 +5,8 @@
 
 #![allow(dead_code)]
 
+#![doc(html_root_url = "https://docs.rs/crate/apint/0.0.0")]
+
 extern crate smallvec;
 
 #[cfg(feature = "rand_support")]
