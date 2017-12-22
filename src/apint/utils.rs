@@ -198,7 +198,7 @@ impl ApInt {
 		match self.access_data() {
 			DataAccess::Inl(digit) => digit,
 			DataAccess::Ext(digits) => {
-				digits.last().unwrap().clone()
+				*digits.last().unwrap()
 			}
 		}
 	}
