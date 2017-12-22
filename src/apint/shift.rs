@@ -199,3 +199,26 @@ impl ApInt {
 	}
 
 }
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+
+	#[test]
+	fn checked_shl_assign_ok() {
+		let repr: u128 = 0x0123_4567_89AB_CDEF_0011_2233_4455_6677;
+		let x = ApInt::from_u128(repr);
+		for shamt in 0..128 {
+			let expected = ApInt::from_u128(repr << shamt);
+			let mut result = x.clone();
+			result.checked_shl_assign(shamt).unwrap();
+			assert_eq!(result, expected);
+		}
+	}
+
+	#[test]
+	fn check_shl_assign_fail() {
+		let mut x = ApInt::from_u128(0x0123_4567_89AB_CDEF_0011_2233_4455_6677);
+		assert!(x.checked_shl_assign(128).is_err())
+	}
+}
