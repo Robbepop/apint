@@ -34,3 +34,11 @@ union ApIntData {
 	/// Extern storage (>64 bits) for larger `ApInt`s.
 	ext: Unique<Digit>
 }
+
+/// `ApInt` as defined is safe to implement `Send` since it owns no
+/// aliasing memory and has some reference counting mechanism like `Rc`.
+unsafe impl Send for ApInt {}
+
+/// `ApInt` as defined is safe to implement `Sync` since it owns no
+/// aliasing memory and has no mutable internal state like `Cell` or `RefCell`.
+unsafe impl Sync for ApInt {}
