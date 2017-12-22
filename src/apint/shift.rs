@@ -86,7 +86,9 @@ impl ApInt {
 				if digit_steps != 0 {
 					let digits_len  = digits.len();
 					digits.rotate(digits_len - digit_steps);
-					digits.iter_mut().take(digit_steps).for_each(|d| *d = Digit::zero());
+					digits.iter_mut()
+					      .take(digit_steps)
+						  .for_each(|d| *d = Digit::zero());
 				}
 				let bit_steps = shift_amount.bit_steps();
 				if bit_steps != 0 {
