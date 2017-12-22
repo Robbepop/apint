@@ -205,7 +205,19 @@ mod tests {
 	use super::*;
 
 	#[test]
-	fn checked_shl_assign_ok() {
+	fn checked_shl_assign_small_ok() {
+		let repr: u64 = 0x0123_4567_89AB_CDEF;
+		let x = ApInt::from_u64(repr);
+		for shamt in 0..64 {
+			let expected = ApInt::from_u64(repr << shamt);
+			let mut result = x.clone();
+			result.checked_shl_assign(shamt).unwrap();
+			assert_eq!(result, expected);
+		}
+	}
+
+	#[test]
+	fn checked_shl_assign_large_ok() {
 		let repr: u128 = 0x0123_4567_89AB_CDEF_0011_2233_4455_6677;
 		let x = ApInt::from_u128(repr);
 		for shamt in 0..128 {
@@ -217,7 +229,13 @@ mod tests {
 	}
 
 	#[test]
-	fn check_shl_assign_fail() {
+	fn check_shl_assign_small_fail() {
+		let mut x = ApInt::from_u64(0x0123_4567_89AB_CDEF);
+		assert!(x.checked_shl_assign(64).is_err())
+	}
+
+	#[test]
+	fn check_shl_assign_large_fail() {
 		let mut x = ApInt::from_u128(0x0123_4567_89AB_CDEF_0011_2233_4455_6677);
 		assert!(x.checked_shl_assign(128).is_err())
 	}
