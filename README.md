@@ -34,25 +34,44 @@ The below table lists public and internal differences between `ApInt` and `num::
 |        Topic             |               `num::BigInt`               |               `ApInt`                   |
 |:------------------------:|:------------------------------------------|:----------------------------------------|
 | Abstraction              | High-level unbounded integers.            | Twos-complement machine integers.       |
-| Small Int Optimization   | No                                        | Yes: Up to 64-bits.                     |
+| Behaviour                | Behaves like an immutable type most often. This results in lots of copies and better usability. | API design with a focus on efficient operations and machine emulation. |
+| Small Value Optimization   | No                                        | Yes: Up to 64-bits.                     |
 | Building Blocks          | 32-bit `BigDigit` aka `u32`               | 64-bit `Digit`                          |
 | Compute Unit             | 64-bit `DoubleBigDigit` aka `u64`         | 128-bit `DoubleDigit`                   |
-| Signed                   | Yes, `num::BigUint` is for unsigned.      | No, operations know signedness instead. |
+| Signed                   | Yes: `num::BigUint` is for unsigned.      | No: Operations know signedness instead. |
 | `mem::size_of<..>`       | About 24 bytes + some signedness info.    | Exactly 128 bits (16 bytes).            |
 | Width interoperability   | No restriction to operate between `BigInt` instances with different bit-widths. | Only `ApInt` instances with the same bit-width can interoperate. |
 | Memory footprint         | Determined by current value stored.       | Determined by bit-width.                |
 | Can grow and shrink?     | Yes                                       | No, see above.                          |
-| Unstable features?       | None                                      | [128-bit integers][17]                  |
+| Unstable features?       | None                                      | Yes, e.g. [128-bit integers][17].                  |
 
 ## Current State
 
 Currently only a few parts of the implementation are done - especially the implementation of `ApInt`'s with bit-widths greater than 64 bits is incomplete.
 
+State of the API modules implemented so far:
+
+|        Module       |   State   |
+|:-------------------:|:---------:|
+| `arithmetic`        | implementation required |
+| `constructors`      | **done** - needs testing |
+| `casting`           | **done** - needs testing |
+| `bitwise`           | **done** - needs testing |
+| `shift`             | implementation half-way done |
+| `relational`        | **done** - needs testing |
+| `utils`             | implementation nearly finished |
+| `serialization`     | implementation unfinished |
+| `serde_impl` (opt.) | **done** |
+| `rand_impl` (opt.)  | **done** - needs testing |
+
 ## Planned Features
 
-- Full `ApInt` implementation.
-- `ApsInt` API built on top of `ApInt` to add signedness information as it is done in LLVM.
-- Extensive test suite to provide a decent quality implementation guarantee.
+- Full and efficient `ApInt` implementation and decent test coverage.
+- High-level `SignedApInt` and `UnsignedApInt` types that wrap `ApInt` with static sign information
+  allowing for improved user friendliness but restricted access to the underlying operations.
+- Mid-level `ApsInt` wrapper around `ApInt` that stores a run-time sign information.
+  This is different from `SignedApInt` and `UnsignedApInt` since those types store
+  their sign immutable in their type. This is the same as LLVM's `APSInt` data type.
 
 ## Unstable Features Used
 
