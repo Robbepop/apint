@@ -3,7 +3,7 @@ use apint::utils::{DataAccessMut};
 use errors::{Result};
 use checks;
 use digit;
-use digit::{Digit};
+use digit::{Bit, Digit};
 
 /// Represents an amount of bits to shift a value like an `ApInt`.
 /// 
