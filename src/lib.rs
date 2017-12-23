@@ -30,8 +30,15 @@ mod digit_seq;
 mod checks;
 // mod algorithm;
 
-pub use apint::ApInt;
-pub use errors::{Result, Error, ErrorKind};
+pub use apint::{
+    ApInt,
+    ShiftAmount
+};
+pub use errors::{
+    Result,
+    Error,
+    ErrorKind
+};
 pub use bitwidth::BitWidth;
 pub use digit::{Bit};
 pub use radix::{Radix};

@@ -5,7 +5,7 @@ use checks;
 use digit;
 use digit::{Bit, Digit};
 
-/// Represents an amount of bits to shift a value like an `ApInt`.
+/// Represents an amount of bits to shift an `ApInt`.
 /// 
 /// The purpose of this type is to create a generic abstraction
 /// over input types that may act as a `ShiftAmount` for shift

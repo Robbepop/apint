@@ -16,7 +16,7 @@ mod serde_impl;
 use digit::{Digit};
 use bitwidth::{BitWidth};
 
-pub(crate) use self::shift::{ShiftAmount};
+pub use self::shift::{ShiftAmount};
 
 use std::ptr::Unique;
 
