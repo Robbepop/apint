@@ -180,6 +180,10 @@ impl ApInt {
 	/// 
 	/// This operation is inplace and will **not** allocate memory.
 	/// 
+	/// # Note
+	/// 
+	/// Arithmetic shifting copies the sign bit instead of filling up with zeros.
+	/// 
 	/// # Errors
 	/// 
 	/// - If the given `shift_amount` is invalid for the bit width of this `ApInt`.
@@ -226,6 +230,10 @@ impl ApInt {
 	/// and returns the result.
 	/// 
 	/// This operation is inplace and will **not** allocate memory.
+	/// 
+	/// # Note
+	/// 
+	/// Arithmetic shifting copies the sign bit instead of filling up with zeros.
 	/// 
 	/// # Errors
 	/// 
