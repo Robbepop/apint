@@ -1,11 +1,41 @@
 use bitwidth::BitWidth;
 use bitpos::BitPos;
 use radix::Radix;
-use apint::{ShiftAmount};
+use apint::{ApInt, ShiftAmount};
 
 use std::result;
 use std::error;
 use std::fmt;
+
+/// Represents a primitive data type.
+/// 
+/// Used by the `to_primitive` module for an improved
+/// error reporting.
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+pub enum PrimitiveTy {
+	/// Represents Rust's `bool`.
+	Bool,
+	/// Represents Rust's `i8`.
+	I8,
+	/// Represents Rust's `u8`.
+	U8,
+	/// Represents Rust's `i16`.
+	I16,
+	/// Represents Rust's `u16`.
+	U16,
+	/// Represents Rust's `i32`.
+	I32,
+	/// Represents Rust's `u32`.
+	U32,
+	/// Represents Rust's `i64`.
+	I64,
+	/// Represents Rust's `u64`.
+	U64,
+	/// Represents Rust's `i128`.
+	I128,
+	/// Represents Rust's `u128`.
+	U128
+}
 
 /// Represents the kind of an `Error`.
 /// 
@@ -39,6 +69,13 @@ pub enum ErrorKind {
 		shift_amount: ShiftAmount,
 		/// The bit width for which this shift amount of invalid.
 		width: BitWidth
+	},
+
+	/// Returns on trying to cast an `ApInt` to a primitive type
+	/// that can not represent the value represented by the `ApInt`.
+	ValueUnrepresentable{
+		value: ApInt,
+		destination_ty: PrimitiveTy
 	},
 
 	/// Returned on violation of matching bitwidth constraints of operations.
@@ -233,6 +270,22 @@ impl Error {
 		Error{
 			kind: ErrorKind::ExpectedNonEmptyDigits,
 			message: "Encountered an empty iterator upon construction of an `ApInt` from a digit iterator.".to_owned(),
+			annotation: None
+		}
+	}
+
+	pub(crate) fn encountered_unrepresentable_value(
+		value: ApInt,
+		destination_ty: PrimitiveTy
+	)
+		-> Error
+	{
+		let message = format!(
+			"Encountered a value ({:?}) that is unrepresentable \
+			 by the destination type {:?}.", value, destination_ty);
+		Error{
+			kind: ErrorKind::ValueUnrepresentable{value, destination_ty},
+			message,
 			annotation: None
 		}
 	}
