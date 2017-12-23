@@ -325,5 +325,71 @@ mod tests {
 		}
 	}
 
+	mod lshr {
+		use super::*;
+
+		#[test]
+		fn assign_small_ok() {
+			for repr in test_reprs_w64() {
+				for shamt in 0..64 {
+					let mut result = ApInt::from_u64(repr);
+					result.checked_lshr_assign(shamt).unwrap();
+					let expected = ApInt::from_u64(repr >> shamt);
+					assert_eq!(result, expected);
+				}
+			}
+		}
+
+		#[test]
+		fn assign_large_ok() {
+			for repr in test_reprs_w128() {
+				for shamt in 0..128 {
+					let mut result = ApInt::from_u128(repr);
+					result.checked_lshr_assign(shamt).unwrap();
+					let expected = ApInt::from_u128(repr >> shamt);
+					assert_eq!(result, expected);
+				}
+			}
+		}
+
+		#[test]
+		fn assign_small_fail() {
+			for mut apint in test_apints_w64() {
+				assert!(apint.checked_lshr_assign(64).is_err())
+			}
+		}
+
+		#[test]
+		fn assign_large_fail() {
+			for mut apint in test_apints_w128() {
+				assert!(apint.checked_lshr_assign(128).is_err())
+			}
+		}
+
+		#[test]
+		fn into_equivalent_small() {
+			for apint in test_apints_w64() {
+				for shamt in 0..64 {
+					let mut x = apint.clone();
+					let     y = apint.clone();
+					x.checked_lshr_assign(shamt).unwrap();
+					let y = y.into_checked_lshr(shamt).unwrap();
+					assert_eq!(x, y);
+				}
+			}
+		}
+
+		#[test]
+		fn into_equivalent_large() {
+			for apint in test_apints_w128() {
+				for shamt in 0..128 {
+					let mut x = apint.clone();
+					let     y = apint.clone();
+					x.checked_lshr_assign(shamt).unwrap();
+					let y = y.into_checked_lshr(shamt).unwrap();
+					assert_eq!(x, y);
+				}
+			}
+		}
 	}
 }
