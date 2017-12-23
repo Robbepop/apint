@@ -293,4 +293,41 @@ impl ApInt {
 
 #[cfg(test)]
 mod tests {
+    use super::*;
+
+    mod try {
+        use super::*;
+
+        #[test]
+        fn to_bool_true() {
+            assert_eq!(ApInt::from(true).try_to_bool(), Ok(true));
+            assert_eq!(ApInt::from(1_u8).try_to_bool(), Ok(true));
+            assert_eq!(ApInt::from(1_u16).try_to_bool(), Ok(true));
+            assert_eq!(ApInt::from(1_u32).try_to_bool(), Ok(true));
+            assert_eq!(ApInt::from(1_u64).try_to_bool(), Ok(true));
+            assert_eq!(ApInt::from(1_u128).try_to_bool(), Ok(true));
+        }
+
+        #[test]
+        fn to_bool_false() {
+            assert_eq!(ApInt::from(false).try_to_bool(), Ok(false));
+            assert_eq!(ApInt::from(0_u8).try_to_bool(), Ok(false));
+            assert_eq!(ApInt::from(0_u16).try_to_bool(), Ok(false));
+            assert_eq!(ApInt::from(0_u32).try_to_bool(), Ok(false));
+            assert_eq!(ApInt::from(0_u64).try_to_bool(), Ok(false));
+            assert_eq!(ApInt::from(0_u128).try_to_bool(), Ok(false));
+        }
+
+        #[test]
+        fn to_bool_fail() {
+            assert!(ApInt::from(2_u8).try_to_bool().is_err());
+            assert!(ApInt::from(-1_i16).try_to_bool().is_err());
+            assert!(ApInt::from(42_u32).try_to_bool().is_err());
+            assert!(ApInt::from(1337_u64).try_to_bool().is_err());
+            assert!(ApInt::from(0xFFFF_FFFF_FFFF_FFFF_FFFF_FFFF_FFFF_u128)
+                .try_to_bool()
+                .is_err()
+            );
+        }
+    }
 }
