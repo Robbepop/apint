@@ -51,18 +51,19 @@ Currently only a few parts of the implementation are done - especially the imple
 
 State of the API modules implemented so far:
 
-|        Module       |   State   |
-|:-------------------:|:---------:|
-| `arithmetic`        | implementation required |
-| `constructors`      | **done** - needs testing |
-| `casting`           | **done** - needs testing |
-| `bitwise`           | **done** - needs testing |
-| `shift`             | implementation half-way done |
-| `relational`        | **done** - needs testing |
-| `utils`             | implementation nearly finished |
-| `serialization`     | implementation unfinished |
-| `serde_impl` (opt.) | **done** |
-| `rand_impl` (opt.)  | **done** - needs testing |
+|        Module       | Design | Implementation | Testing | TODO |
+|:-------------------:|:------:|:--------------:|:-------:|:----:|
+| `arithmetic`        | **done** | *not started* | *not started* | |
+| `constructors`      | **done** | **done** | unfinished | |
+| `casting`           | **done** | **done** | *not started* | issue [#4](https://github.com/Robbepop/apint/issues/4) |
+| `bitwise`           | **done** | **done** | *not started* | |
+| `shift`             | **done** | **done** |  **done** | |
+| `relational`        | **done** | **done** | *not started* | |
+| `utils`             | **done** | **done** | *not started* | |
+| `serialization`     | **done** | unfinished | unfinished | depends on `arithmetic` |
+| `to_primitive`      | **done** | *not started* | *not started* | issue [#5](https://github.com/Robbepop/apint/issues/5) |
+| `serde_impl` (opt.) | **done** | **done** | **done** | |
+| `rand_impl` (opt.)  | **done** | **done** | *not started* | |
 
 ## Planned Features
 
