@@ -186,6 +186,9 @@ impl ApInt {
 	pub fn checked_ashr_assign<S>(&mut self, shift_amount: S) -> Result<()>
 		where S: Into<ShiftAmount>
 	{
+		if self.sign_bit() == Bit::Unset {
+			return self.checked_lshr_assign(shift_amount)
+		}
 		let shift_amount = shift_amount.into();
 		checks::verify_shift_amount(self, shift_amount)?;
 		match self.access_data_mut() {
@@ -194,10 +197,28 @@ impl ApInt {
 				let shifted = signed >> shift_amount.to_usize();
 				*digit.repr_mut() = shifted as u64;
 			}
-			DataAccessMut::Ext(_digits) => {
-				unimplemented!()
+			DataAccessMut::Ext(digits) => {
+				let digit_steps = shift_amount.digit_steps();
+				if digit_steps != 0 {
+					digits.rotate(digit_steps);
+					digits.iter_mut()
+					      .rev()
+					      .take(digit_steps)
+						  .for_each(|d| *d = Digit::all_set());
+				}
+				let bit_steps = shift_amount.bit_steps();
+				if bit_steps > 0 {
+					let mut borrow = 0xFFFF_FFFF_FFFF_FFFF << (digit::BITS - bit_steps);
+					for elem in digits.iter_mut().rev().skip(digit_steps) {
+						let repr = elem.repr();
+						let new_borrow = repr << (digit::BITS - bit_steps);
+						*elem = Digit((repr >> bit_steps) | borrow);
+						borrow = new_borrow;
+					}
+				}
 			}
 		}
+		self.clear_unused_bits();
 		Ok(())
 	}
 
