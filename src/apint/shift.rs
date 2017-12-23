@@ -136,8 +136,25 @@ impl ApInt {
 			DataAccessMut::Inl(digit) => {
 				*digit.repr_mut() >>= shift_amount.to_usize();
 			}
-			DataAccessMut::Ext(_digits) => {
-				unimplemented!()
+			DataAccessMut::Ext(digits) => {
+				let digit_steps = shift_amount.digit_steps();
+				if digit_steps != 0 {
+					digits.rotate(digit_steps);
+					digits.iter_mut()
+					      .rev()
+					      .take(digit_steps)
+						  .for_each(|d| *d = Digit::zero());
+				}
+				let bit_steps = shift_amount.bit_steps();
+				if bit_steps > 0 {
+					let mut borrow = 0;
+					for elem in digits.iter_mut().rev() {
+						let repr = elem.repr();
+						let new_borrow = repr << (digit::BITS - bit_steps);
+						*elem = Digit((repr >> bit_steps) | borrow);
+						borrow = new_borrow;
+					}
+				}
 			}
 		}
 		Ok(())
