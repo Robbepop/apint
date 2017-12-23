@@ -6,6 +6,7 @@ mod relational;
 mod arithmetic;
 mod shift;
 mod serialization;
+mod to_primitive;
 
 #[cfg(feature = "rand_support")]
 mod rand_impl;
