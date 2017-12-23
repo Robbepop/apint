@@ -206,39 +206,107 @@ impl ApInt {
 mod tests {
 	use super::*;
 
-	#[test]
-	fn checked_shl_assign_small_ok() {
-		let repr: u64 = 0x0123_4567_89AB_CDEF;
-		let x = ApInt::from_u64(repr);
-		for shamt in 0..64 {
-			let expected = ApInt::from_u64(repr << shamt);
-			let mut result = x.clone();
-			result.checked_shl_assign(shamt).unwrap();
-			assert_eq!(result, expected);
+	fn test_reprs_w64() -> impl Iterator<Item = u64> {
+		vec![
+			0x0123_4567_89AB_CDEF,
+			0xFEDC_BA98_7654_3210,
+			0x0000_0000_0000_0000,
+			0x5555_5555_5555_5555,
+			0xAAAA_AAAA_AAAA_AAAA,
+			0xFFFF_FFFF_FFFF_FFFF,
+		]
+		.into_iter()
+	}
+
+	fn test_apints_w64() -> impl Iterator<Item = ApInt> {
+		test_reprs_w64().map(ApInt::from_u64)
+	}
+
+	fn test_reprs_w128() -> impl Iterator<Item = u128> {
+		vec![
+			0x0123_4567_89AB_CDEF_0011_2233_4455_6677,
+			0xFEDC_BA98_7654_3210_7766_5544_3322_1100,
+			0x0000_0000_0000_0000_0000_0000_0000_0001,
+			0x8000_0000_0000_0000_0000_0000_0000_0000,
+			0x0000_0000_0000_0000_0000_0000_0000_0000,
+			0x5555_5555_5555_5555_5555_5555_5555_5555,
+			0xAAAA_AAAA_AAAA_AAAA_AAAA_AAAA_AAAA_AAAA,
+			0xFFFF_FFFF_FFFF_FFFF_FFFF_FFFF_FFFF_FFFF,
+		]
+		.into_iter()
+	}
+
+	fn test_apints_w128() -> impl Iterator<Item = ApInt> {
+		test_reprs_w128().map(ApInt::from_u128)
+	}
+
+	mod shl {
+		use super::*;
+
+		#[test]
+		fn assign_small_ok() {
+			for repr in test_reprs_w64() {
+				for shamt in 0..64 {
+					let mut result = ApInt::from_u64(repr);
+					result.checked_shl_assign(shamt).unwrap();
+					let expected = ApInt::from_u64(repr << shamt);
+					assert_eq!(result, expected);
+				}
+			}
+		}
+
+		#[test]
+		fn assign_large_ok() {
+			for repr in test_reprs_w128() {
+				for shamt in 0..128 {
+					let mut result = ApInt::from_u128(repr);
+					result.checked_shl_assign(shamt).unwrap();
+					let expected = ApInt::from_u128(repr << shamt);
+					assert_eq!(result, expected);
+				}
+			}
+		}
+
+		#[test]
+		fn assign_small_fail() {
+			for mut apint in test_apints_w64() {
+				assert!(apint.checked_shl_assign(64).is_err())
+			}
+		}
+
+		#[test]
+		fn assign_large_fail() {
+			for mut apint in test_apints_w128() {
+				assert!(apint.checked_shl_assign(128).is_err())
+			}
+		}
+
+		#[test]
+		fn into_equivalent_small() {
+			for apint in test_apints_w64() {
+				for shamt in 0..64 {
+					let mut x = apint.clone();
+					let     y = apint.clone();
+					x.checked_shl_assign(shamt).unwrap();
+					let y = y.into_checked_shl(shamt).unwrap();
+					assert_eq!(x, y);
+				}
+			}
+		}
+
+		#[test]
+		fn into_equivalent_large() {
+			for apint in test_apints_w128() {
+				for shamt in 0..128 {
+					let mut x = apint.clone();
+					let     y = apint.clone();
+					x.checked_shl_assign(shamt).unwrap();
+					let y = y.into_checked_shl(shamt).unwrap();
+					assert_eq!(x, y);
+				}
+			}
 		}
 	}
 
-	#[test]
-	fn checked_shl_assign_large_ok() {
-		let repr: u128 = 0x0123_4567_89AB_CDEF_0011_2233_4455_6677;
-		let x = ApInt::from_u128(repr);
-		for shamt in 0..128 {
-			let expected = ApInt::from_u128(repr << shamt);
-			let mut result = x.clone();
-			result.checked_shl_assign(shamt).unwrap();
-			assert_eq!(result, expected);
-		}
-	}
-
-	#[test]
-	fn check_shl_assign_small_fail() {
-		let mut x = ApInt::from_u64(0x0123_4567_89AB_CDEF);
-		assert!(x.checked_shl_assign(64).is_err())
-	}
-
-	#[test]
-	fn check_shl_assign_large_fail() {
-		let mut x = ApInt::from_u128(0x0123_4567_89AB_CDEF_0011_2233_4455_6677);
-		assert!(x.checked_shl_assign(128).is_err())
 	}
 }
