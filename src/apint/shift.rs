@@ -421,4 +421,73 @@ mod tests {
 			}
 		}
 	}
+
+	mod ashr {
+		use super::*;
+
+		#[test]
+		fn assign_small_ok() {
+			for repr in test_reprs_w64() {
+				for shamt in 0..64 {
+					let mut result = ApInt::from_u64(repr);
+					result.checked_ashr_assign(shamt).unwrap();
+					let expected = ApInt::from_i64((repr as i64) >> shamt);
+					assert_eq!(result, expected);
+				}
+			}
+		}
+
+		#[test]
+		fn assign_large_ok() {
+			for repr in test_reprs_w128() {
+				for shamt in 0..128 {
+					println!("assign_large_ok{{\n\trepr = {:x}\n\tshamt = {:?}\n}}", repr, shamt);
+					let mut result = ApInt::from_u128(repr);
+					result.checked_ashr_assign(shamt).unwrap();
+					let expected = ApInt::from_i128((repr as i128) >> shamt);
+					assert_eq!(result, expected);
+				}
+			}
+		}
+
+		#[test]
+		fn assign_small_fail() {
+			for mut apint in test_apints_w64() {
+				assert!(apint.checked_ashr_assign(64).is_err())
+			}
+		}
+
+		#[test]
+		fn assign_large_fail() {
+			for mut apint in test_apints_w128() {
+				assert!(apint.checked_ashr_assign(128).is_err())
+			}
+		}
+
+		#[test]
+		fn into_equivalent_small() {
+			for apint in test_apints_w64() {
+				for shamt in 0..64 {
+					let mut x = apint.clone();
+					let     y = apint.clone();
+					x.checked_ashr_assign(shamt).unwrap();
+					let y = y.into_checked_ashr(shamt).unwrap();
+					assert_eq!(x, y);
+				}
+			}
+		}
+
+		#[test]
+		fn into_equivalent_large() {
+			for apint in test_apints_w128() {
+				for shamt in 0..128 {
+					let mut x = apint.clone();
+					let     y = apint.clone();
+					x.checked_ashr_assign(shamt).unwrap();
+					let y = y.into_checked_ashr(shamt).unwrap();
+					assert_eq!(x, y);
+				}
+			}
+		}
+	}
 }
