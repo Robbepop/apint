@@ -111,9 +111,9 @@ additional terms or conditions.
 [9]: ./LICENSE-MIT
 [10]: ./LICENSE-APACHE
 [11]: https://docs.rs/apint/badge.svg
-[12]: https://docs.rs/apint/0.0.0-alpha.5
+[12]: https://docs.rs/apint/0.0.0-alpha.6
 [13]: https://img.shields.io/crates/v/apint.svg
-[14]: https://crates.io/crates/apint/0.0.0-alpha.5
+[14]: https://crates.io/crates/apint/0.0.0-alpha.6
 [15]: https://codecov.io/gh/robbepop/apint/branch/master/graph/badge.svg
 [16]: https://codecov.io/gh/Robbepop/apint/branch/master
 
