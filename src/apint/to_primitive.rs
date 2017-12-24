@@ -122,18 +122,12 @@ impl ApInt {
     /// - If the value represented by this `ApInt` can not be
     ///   represented by a `bool`.
     pub fn try_to_bool(&self) -> Result<bool> {
-        // lsd stands for *l*east *s*ignificant *d*igit.
-        let (lsd, rest) =
-            self.as_digit_slice()
-                .split_first()
-                .expect("Splitting the digit slice can never \
-                         fail since valid `ApInt` instances \
-                         always have at least one digit.");
+        let (lsd, rest) = self.split_least_significant_digit();
         if lsd.repr() > 1 || rest.into_iter().any(|d| d.repr() != 0) {
             return Error::encountered_unrepresentable_value(
                 self.clone(), PrimitiveTy::Bool).into()
         }
-        match *lsd {
+        match lsd {
             Digit(0) => Ok(false),
             Digit(1) => Ok(true),
             _ => unreachable!()
