@@ -374,3 +374,32 @@ impl ApInt {
 	}
 
 }
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+
+	#[test]
+	fn most_significant_bit() {
+		assert_eq!(Bit::Unset,
+			ApInt::from_bit(false).most_significant_bit());
+		assert_eq!(Bit::Set,
+			ApInt::from_bit(true).most_significant_bit());
+		assert_eq!(Bit::Unset,
+			ApInt::from_u8(0b0101_0101).most_significant_bit());
+		assert_eq!(Bit::Set,
+			ApInt::from_u8(0b1101_0101).most_significant_bit());
+		assert_eq!(Bit::Unset,
+			ApInt::from_u16(0b0111_1000_1101_0101).most_significant_bit());
+		assert_eq!(Bit::Set,
+			ApInt::from_u16(0b1011_0001_0101_0101).most_significant_bit());
+		assert_eq!(Bit::Unset,
+			ApInt::from_u32(0x7000_0000).most_significant_bit());
+		assert_eq!(Bit::Set,
+			ApInt::from_u32(0x8000_0000).most_significant_bit());
+		assert_eq!(Bit::Unset,
+			ApInt::from_u64(0x70FC_A875_4321_1234).most_significant_bit());
+		assert_eq!(Bit::Set,
+			ApInt::from_u64(0x8765_4321_5555_6666).most_significant_bit());
+	}
+}
