@@ -319,4 +319,63 @@ impl ApInt {
 	pub fn is_odd(&self) -> bool {
 		self.least_significant_bit() == Bit::Set
 	}
+
+	/// Splits the least significant digits from the rest of the digit slice
+	/// and returns it as well as the remaining part of the digit slice.
+	pub(in apint) fn split_least_significant_digit(&self) -> (Digit, &[Digit]) {
+		match self.access_data() {
+			DataAccess::Inl(digit) => (digit, &[]),
+			DataAccess::Ext(digits) => {
+				let (lsd, rest) = digits.split_first()
+					.expect("An `ApInt` always has at least one digit so calling \
+					         `split_first` on a slice of its digits will never \
+					         return `None`.");
+				(*lsd, rest)
+			}
+		}
+	}
+
+	/// Splits the least significant digits from the rest of the digit slice
+	/// and returns it as well as the remaining part of the digit slice.
+	pub(in apint) fn split_least_significant_digit_mut(&mut self) -> (&mut Digit, &mut [Digit]) {
+		match self.access_data_mut() {
+			DataAccessMut::Inl(digit) => (digit, &mut []),
+			DataAccessMut::Ext(digits) => {
+				digits.split_first_mut()
+					.expect("An `ApInt` always has at least one digit so calling \
+					         `split_first_mut` on a slice of its digits will never \
+					         return `None`.")
+			}
+		}
+	}
+
+	/// Splits the most significant digits from the rest of the digit slice
+	/// and returns it as well as the remaining part of the digit slice.
+	pub(in apint) fn split_most_significant_digit(&self) -> (Digit, &[Digit]) {
+		match self.access_data() {
+			DataAccess::Inl(digit) => (digit, &[]),
+			DataAccess::Ext(digits) => {
+				let (lsd, rest) = digits.split_last()
+					.expect("An `ApInt` always has at least one digit so calling \
+					         `split_last` on a slice of its digits will never \
+					         return `None`.");
+				(*lsd, rest)
+			}
+		}
+	}
+
+	/// Splits the most significant digits from the rest of the digit slice
+	/// and returns it as well as the remaining part of the digit slice.
+	pub(in apint) fn split_most_significant_digit_mut(&mut self) -> (&mut Digit, &mut [Digit]) {
+		match self.access_data_mut() {
+			DataAccessMut::Inl(digit) => (digit, &mut []),
+			DataAccessMut::Ext(digits) => {
+				digits.split_last_mut()
+					.expect("An `ApInt` always has at least one digit so calling \
+					         `split_last_mut` on a slice of its digits will never \
+					         return `None`.")
+			}
+		}
+	}
+
 }
