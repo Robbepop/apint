@@ -234,23 +234,18 @@ impl ApInt {
 	/// Returns `Bit::Set` if the most significant bit of this `ApInt` is set
 	/// and `Bit::Unset` otherwise.
 	pub(in apint) fn most_significant_bit(&self) -> Bit {
-		match self.access_data() {
-			DataAccess::Inl(digit) => digit.most_significant_bit(),
-			DataAccess::Ext(_) => {
-				self.most_significant_digit().most_significant_bit()
-			}
-		}
+		let sign_bit_pos = self.width().sign_bit_pos();
+		self.most_significant_digit()
+			.get(sign_bit_pos)
+			.expect("`BitWidth::excess_bits` returns a number that \
+						is always a valid `BitPos` for a `Digit` so this \
+						operation cannot fail.")
 	}
 
 	/// Returns `Bit::Set` if the least significant bit of this `ApInt` is set
 	/// and `Bit::Unset` otherwise.
 	pub(in apint) fn least_significant_bit(&self) -> Bit {
-		match self.access_data() {
-			DataAccess::Inl(digit) => digit.least_significant_bit(),
-			DataAccess::Ext(_) => {
-				self.least_significant_digit().least_significant_bit()
-			}
-		}
+		self.least_significant_digit().least_significant_bit()
 	}
 
 	/// Clears unused bits of this `ApInt`.
