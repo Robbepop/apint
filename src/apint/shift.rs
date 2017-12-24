@@ -85,7 +85,14 @@ impl ApInt {
 				let digit_steps = shift_amount.digit_steps();
 				if digit_steps != 0 {
 					let digits_len  = digits.len();
-					digits.rotate(digits_len - digit_steps);
+					{ // Do this instead of a rotating the slice.
+						use std::ptr;
+						let src_ptr = digits.as_mut_ptr();
+						unsafe {
+							let dst_ptr = src_ptr.offset(digit_steps as isize);
+							ptr::copy(src_ptr, dst_ptr, digits_len - digit_steps)
+						}
+					}
 					digits.iter_mut()
 					      .take(digit_steps)
 						  .for_each(|d| *d = Digit::zero());
