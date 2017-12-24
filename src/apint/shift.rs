@@ -85,7 +85,7 @@ impl ApInt {
 				let digit_steps = shift_amount.digit_steps();
 				if digit_steps != 0 {
 					let digits_len  = digits.len();
-					{ // Do this instead of a rotating the slice.
+					{
 						use std::ptr;
 						let src_ptr = digits.as_mut_ptr();
 						unsafe {
