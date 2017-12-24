@@ -1,5 +1,6 @@
 use apint::{ApInt};
-use digit::{Digit};
+use digit;
+use digit::{Digit, DigitRepr};
 use errors::{Result, Error, PrimitiveTy};
 
 //  =======================================================================
@@ -97,7 +98,7 @@ impl ApInt {
     /// being ignored by this operation to construct the
     /// result.
     pub fn truncate_to_i128(&self) -> i128 {
-        self.truncate_to_u64() as i128
+        self.truncate_to_u128() as i128
     }
 
     /// Truncates this `ApInt` to a `u128` primitive type.
@@ -146,7 +147,10 @@ impl ApInt {
     /// - If the value represented by this `ApInt` can not be
     ///   represented by a `i8`.
     pub fn try_to_i8(&self) -> Result<i8> {
-        self.try_to_u8().map(|v| v as i8)
+        self.try_to_u8()
+            .map(|v| v as i8)
+            .map_err(|_| Error::encountered_unrepresentable_value(
+                self.clone(), PrimitiveTy::I8))
     }
 
     /// Tries to represent the value of this `ApInt` as a `u8`.
@@ -161,7 +165,14 @@ impl ApInt {
     /// - If the value represented by this `ApInt` can not be
     ///   represented by a `u8`.
     pub fn try_to_u8(&self) -> Result<u8> {
-        unimplemented!()
+        let (lsd, rest) = self.split_least_significant_digit();
+        if lsd.repr() > DigitRepr::from(u8::max_value())
+           || rest.into_iter().any(|d| d.repr() != 0)
+        {
+            return Error::encountered_unrepresentable_value(
+                self.clone(), PrimitiveTy::U8).into()
+        }
+        Ok(lsd.repr() as u8)
     }
 
     /// Tries to represent the value of this `ApInt` as a `i16`.
@@ -176,7 +187,10 @@ impl ApInt {
     /// - If the value represented by this `ApInt` can not be
     ///   represented by a `i16`.
     pub fn try_to_i16(&self) -> Result<i16> {
-        self.try_to_u16().map(|v| v as i16)
+        self.try_to_u16()
+            .map(|v| v as i16)
+            .map_err(|_| Error::encountered_unrepresentable_value(
+                self.clone(), PrimitiveTy::I16))
     }
 
     /// Tries to represent the value of this `ApInt` as a `u16`.
@@ -191,7 +205,14 @@ impl ApInt {
     /// - If the value represented by this `ApInt` can not be
     ///   represented by a `u16`.
     pub fn try_to_u16(&self) -> Result<u16> {
-        unimplemented!()
+        let (lsd, rest) = self.split_least_significant_digit();
+        if lsd.repr() > DigitRepr::from(u16::max_value())
+           || rest.into_iter().any(|d| d.repr() != 0)
+        {
+            return Error::encountered_unrepresentable_value(
+                self.clone(), PrimitiveTy::U16).into()
+        }
+        Ok(lsd.repr() as u16)
     }
 
     /// Tries to represent the value of this `ApInt` as a `i32`.
@@ -206,7 +227,10 @@ impl ApInt {
     /// - If the value represented by this `ApInt` can not be
     ///   represented by a `i32`.
     pub fn try_to_i32(&self) -> Result<i32> {
-        self.try_to_u32().map(|v| v as i32)
+        self.try_to_u32()
+            .map(|v| v as i32)
+            .map_err(|_| Error::encountered_unrepresentable_value(
+                self.clone(), PrimitiveTy::I32))
     }
 
     /// Tries to represent the value of this `ApInt` as a `u32`.
@@ -221,7 +245,14 @@ impl ApInt {
     /// - If the value represented by this `ApInt` can not be
     ///   represented by a `u32`.
     pub fn try_to_u32(&self) -> Result<u32> {
-        unimplemented!()
+        let (lsd, rest) = self.split_least_significant_digit();
+        if lsd.repr() > DigitRepr::from(u32::max_value())
+           || rest.into_iter().any(|d| d.repr() != 0)
+        {
+            return Error::encountered_unrepresentable_value(
+                self.clone(), PrimitiveTy::U32).into()
+        }
+        Ok(lsd.repr() as u32)
     }
 
     /// Tries to represent the value of this `ApInt` as a `i64`.
@@ -236,7 +267,10 @@ impl ApInt {
     /// - If the value represented by this `ApInt` can not be
     ///   represented by a `i64`.
     pub fn try_to_i64(&self) -> Result<i64> {
-        self.try_to_u64().map(|v| v as i64)
+        self.try_to_u64()
+            .map(|v| v as i64)
+            .map_err(|_| Error::encountered_unrepresentable_value(
+                self.clone(), PrimitiveTy::I64))
     }
 
     /// Tries to represent the value of this `ApInt` as a `u64`.
@@ -251,7 +285,12 @@ impl ApInt {
     /// - If the value represented by this `ApInt` can not be
     ///   represented by a `u64`.
     pub fn try_to_u64(&self) -> Result<u64> {
-        unimplemented!()
+        let (lsd, rest) = self.split_least_significant_digit();
+        if rest.into_iter().any(|d| d.repr() != 0) {
+            return Error::encountered_unrepresentable_value(
+                self.clone(), PrimitiveTy::U64).into()
+        }
+        Ok(lsd.repr() as u64)
     }
 
     /// Tries to represent the value of this `ApInt` as a `i128`.
@@ -266,7 +305,10 @@ impl ApInt {
     /// - If the value represented by this `ApInt` can not be
     ///   represented by a `i128`.
     pub fn try_to_i128(&self) -> Result<i128> {
-        self.try_to_u128().map(|v| v as i128)
+        self.try_to_u128()
+            .map(|v| v as i128)
+            .map_err(|_| Error::encountered_unrepresentable_value(
+                self.clone(), PrimitiveTy::I128))
     }
 
     /// Tries to represent the value of this `ApInt` as a `u128`.
@@ -281,7 +323,21 @@ impl ApInt {
     /// - If the value represented by this `ApInt` can not be
     ///   represented by a `u128`.
     pub fn try_to_u128(&self) -> Result<u128> {
-        unimplemented!()
+        let (lsd_0, rest) = self.split_least_significant_digit();
+        match rest.split_first() {
+            None => {
+                Ok(lsd_0.repr() as u128)
+            }
+            Some((lsd_1, rest)) => {
+                if rest.into_iter().any(|d| d.repr() != 0) {
+                    return Error::encountered_unrepresentable_value(
+                        self.clone(), PrimitiveTy::U64).into()
+                }
+                let result: u128 =
+                    (u128::from(lsd_1.repr()) << digit::BITS) + u128::from(lsd_0.repr());
+                Ok(result)
+            }
+        }
     }
 }
 
