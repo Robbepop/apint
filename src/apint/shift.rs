@@ -314,6 +314,70 @@ mod tests {
 		}
 
 		#[test]
+		fn assign_xtra_large_ok() {
+			use digit;
+			let d0 = 0xFEDC_BA98_7654_3210;
+			let d1 = 0x5555_5555_4444_4444;
+			let d2 = 0xAAAA_AAAA_CCCC_CCCC;
+			let d3 = 0xFFFF_7777_7777_FFFF;
+			let input: [u64; 4] = [d0, d1, d2, d3];
+			{
+				let shamt = 100;
+				let digit_steps = shamt / 64;
+				let bit_steps = shamt % 64;
+				assert_eq!(digit_steps, 1);
+				assert_eq!(bit_steps, 36);
+				let result = ApInt::from(input)
+					.into_checked_shl(shamt)
+					.unwrap();
+				let expected: [u64; 4] = [
+					(d1 << bit_steps) | (d2 >> (digit::BITS - bit_steps)),
+					(d2 << bit_steps) | (d3 >> (digit::BITS - bit_steps)),
+					(d3 << bit_steps),
+					0
+				];
+				let expected = ApInt::from(expected);
+				assert_eq!(result, expected);
+			}
+			{
+				let shamt = 150;
+				let digit_steps = shamt / 64;
+				let bit_steps = shamt % 64;
+				assert_eq!(digit_steps, 2);
+				assert_eq!(bit_steps, 22);
+				let result = ApInt::from(input)
+					.into_checked_shl(shamt)
+					.unwrap();
+				let expected: [u64; 4] = [
+					(d2 << bit_steps) | (d3 >> (digit::BITS - bit_steps)),
+					(d3 << bit_steps),
+					0,
+					0
+				];
+				let expected = ApInt::from(expected);
+				assert_eq!(result, expected);
+			}
+			{
+				let shamt = 200;
+				let digit_steps = shamt / 64;
+				let bit_steps = shamt % 64;
+				assert_eq!(digit_steps, 3);
+				assert_eq!(bit_steps, 8);
+				let result = ApInt::from(input)
+					.into_checked_shl(shamt)
+					.unwrap();
+				let expected: [u64; 4] = [
+					(d3 << bit_steps),
+					0,
+					0,
+					0
+				];
+				let expected = ApInt::from(expected);
+				assert_eq!(result, expected);
+			}
+		}
+
+		#[test]
 		fn assign_small_fail() {
 			for mut apint in test_apints_w64() {
 				assert!(apint.checked_shl_assign(64).is_err())
