@@ -276,6 +276,33 @@ impl Digit {
 		Ok(())
 	}
 
+	/// Sign extends this `Digit` from a given `BitWidth` to `64` bits.
+	/// 
+	/// # Note
+	/// 
+	/// - This can be truncated again to a real target `BitWidth` afterwards if
+	///   the users wishes to.
+	/// 
+	/// - Implementation inspired by
+	///   [Bit Twiddling Hacks](https://graphics.stanford.edu/~seander/bithacks.html#VariableSignExtend).
+	/// 
+	/// # Errors
+	/// 
+	/// - If the given `BitWidth` is invalid for `Digit` instances.
+	pub(crate) fn sign_extend_from<W>(&mut self, from: W) -> Result<()>
+		where W: Into<BitWidth>,
+	{
+		let from = from.into();
+		self.verify_valid_bitwidth(from)?;
+
+		let b = from.to_usize();    // number of bits representing the number in x
+		let x = self.repr() as i64; // sign extend this b-bit number to r
+		let m: i64 = 1 << (b - 1);       // mask can be pre-computed if b is fixed
+		// x = x & ((1 << b) - 1);  // (Skip this if bits in x above position b are already zero.)
+		                            // We don't need this step since this condition is an invariant of `Digit`.
+		let r: i64 = (x ^ m) - m;   // resulting sign-extended number
+		self.0 = r as u64;
+		Ok(())
 	}
 
 	/// Sets all bits within the given `Range` to `1`.
