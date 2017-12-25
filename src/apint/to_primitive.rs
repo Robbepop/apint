@@ -290,15 +290,10 @@ impl ApInt {
     /// - If the value represented by this `ApInt` can not be
     ///   represented by a `bool`.
     pub fn try_to_bool(&self) -> Result<bool> {
-        let (lsd, rest) = self.split_least_significant_digit();
-        if lsd.repr() > 1 || rest.into_iter().any(|d| d.repr() != 0) {
-            return Error::encountered_unrepresentable_value(
-                self.clone(), PrimitiveTy::Bool).into()
-        }
-        match lsd {
+        match self.try_cast_to_primitive_ty(PrimitiveTy::Bool)? {
             Digit(0) => Ok(false),
             Digit(1) => Ok(true),
-            _ => unreachable!()
+           _ => unreachable!()
         }
     }
 
@@ -306,166 +301,148 @@ impl ApInt {
     /// 
     /// # Note
     /// 
-    /// This conversion is possible as long as the value represented
-    /// by this `ApInt` does not exceed the maximum value of `u8`.
+    /// - This operation will conserve the signedness of the
+    ///   value. This means that for `ApInt` instances with
+    ///   a `BitWidth` less than `8` bits the value is
+    ///   sign extended to the target bit width.
+    /// - This conversion is possible as long as the value represented
+    ///   by this `ApInt` does not exceed the maximum value of `u8`.
     /// 
     /// # Errors
     /// 
     /// - If the value represented by this `ApInt` can not be
     ///   represented by a `i8`.
     pub fn try_to_i8(&self) -> Result<i8> {
-        self.try_to_u8()
-            .map(|v| v as i8)
-            .map_err(|_| Error::encountered_unrepresentable_value(
-                self.clone(), PrimitiveTy::I8))
+        self.try_cast_to_primitive_ty(PrimitiveTy::I8).map(|d| d.repr() as i8)
     }
 
     /// Tries to represent the value of this `ApInt` as a `u8`.
     /// 
     /// # Note
     /// 
-    /// This conversion is possible as long as the value represented
-    /// by this `ApInt` does not exceed the maximum value of `u8`.
+    /// - This conversion is possible as long as the value represented
+    ///   by this `ApInt` does not exceed the maximum value of `u8`.
     /// 
     /// # Errors
     /// 
     /// - If the value represented by this `ApInt` can not be
     ///   represented by a `u8`.
     pub fn try_to_u8(&self) -> Result<u8> {
-        let (lsd, rest) = self.split_least_significant_digit();
-        if lsd.repr() > DigitRepr::from(u8::max_value())
-           || rest.into_iter().any(|d| d.repr() != 0)
-        {
-            return Error::encountered_unrepresentable_value(
-                self.clone(), PrimitiveTy::U8).into()
-        }
-        Ok(lsd.repr() as u8)
+        self.try_cast_to_primitive_ty(PrimitiveTy::U8).map(|d| d.repr() as u8)
     }
 
     /// Tries to represent the value of this `ApInt` as a `i16`.
     /// 
     /// # Note
     /// 
-    /// This conversion is possible as long as the value represented
-    /// by this `ApInt` does not exceed the maximum value of `u16`.
+    /// - This operation will conserve the signedness of the
+    ///   value. This means that for `ApInt` instances with
+    ///   a `BitWidth` less than `16` bits the value is
+    ///   sign extended to the target bit width.
+    /// - This conversion is possible as long as the value represented
+    ///   by this `ApInt` does not exceed the maximum value of `u16`.
     /// 
     /// # Errors
     /// 
     /// - If the value represented by this `ApInt` can not be
     ///   represented by a `i16`.
     pub fn try_to_i16(&self) -> Result<i16> {
-        self.try_to_u16()
-            .map(|v| v as i16)
-            .map_err(|_| Error::encountered_unrepresentable_value(
-                self.clone(), PrimitiveTy::I16))
+        self.try_cast_to_primitive_ty(PrimitiveTy::I16).map(|d| d.repr() as i16)
     }
 
     /// Tries to represent the value of this `ApInt` as a `u16`.
     /// 
     /// # Note
     /// 
-    /// This conversion is possible as long as the value represented
-    /// by this `ApInt` does not exceed the maximum value of `u16`.
+    /// - This conversion is possible as long as the value represented
+    ///   by this `ApInt` does not exceed the maximum value of `u16`.
     /// 
     /// # Errors
     /// 
     /// - If the value represented by this `ApInt` can not be
     ///   represented by a `u16`.
     pub fn try_to_u16(&self) -> Result<u16> {
-        let (lsd, rest) = self.split_least_significant_digit();
-        if lsd.repr() > DigitRepr::from(u16::max_value())
-           || rest.into_iter().any(|d| d.repr() != 0)
-        {
-            return Error::encountered_unrepresentable_value(
-                self.clone(), PrimitiveTy::U16).into()
-        }
-        Ok(lsd.repr() as u16)
+        self.try_cast_to_primitive_ty(PrimitiveTy::U16).map(|d| d.repr() as u16)
     }
 
     /// Tries to represent the value of this `ApInt` as a `i32`.
     /// 
     /// # Note
     /// 
-    /// This conversion is possible as long as the value represented
-    /// by this `ApInt` does not exceed the maximum value of `u32`.
+    /// - This operation will conserve the signedness of the
+    ///   value. This means that for `ApInt` instances with
+    ///   a `BitWidth` less than `32` bits the value is
+    ///   sign extended to the target bit width.
+    /// - This conversion is possible as long as the value represented
+    ///   by this `ApInt` does not exceed the maximum value of `u32`.
     /// 
     /// # Errors
     /// 
     /// - If the value represented by this `ApInt` can not be
     ///   represented by a `i32`.
     pub fn try_to_i32(&self) -> Result<i32> {
-        self.try_to_u32()
-            .map(|v| v as i32)
-            .map_err(|_| Error::encountered_unrepresentable_value(
-                self.clone(), PrimitiveTy::I32))
+        self.try_cast_to_primitive_ty(PrimitiveTy::I32).map(|d| d.repr() as i32)
     }
 
     /// Tries to represent the value of this `ApInt` as a `u32`.
     /// 
     /// # Note
     /// 
-    /// This conversion is possible as long as the value represented
-    /// by this `ApInt` does not exceed the maximum value of `u32`.
+    /// - This conversion is possible as long as the value represented
+    ///   by this `ApInt` does not exceed the maximum value of `u32`.
     /// 
     /// # Errors
     /// 
     /// - If the value represented by this `ApInt` can not be
     ///   represented by a `u32`.
     pub fn try_to_u32(&self) -> Result<u32> {
-        let (lsd, rest) = self.split_least_significant_digit();
-        if lsd.repr() > DigitRepr::from(u32::max_value())
-           || rest.into_iter().any(|d| d.repr() != 0)
-        {
-            return Error::encountered_unrepresentable_value(
-                self.clone(), PrimitiveTy::U32).into()
-        }
-        Ok(lsd.repr() as u32)
+        self.try_cast_to_primitive_ty(PrimitiveTy::U32).map(|d| d.repr() as u32)
     }
 
     /// Tries to represent the value of this `ApInt` as a `i64`.
     /// 
     /// # Note
     /// 
-    /// This conversion is possible as long as the value represented
-    /// by this `ApInt` does not exceed the maximum value of `u64`.
+    /// - This operation will conserve the signedness of the
+    ///   value. This means that for `ApInt` instances with
+    ///   a `BitWidth` less than `64` bits the value is
+    ///   sign extended to the target bit width.
+    /// - This conversion is possible as long as the value represented
+    ///   by this `ApInt` does not exceed the maximum value of `u64`.
     /// 
     /// # Errors
     /// 
     /// - If the value represented by this `ApInt` can not be
     ///   represented by a `i64`.
     pub fn try_to_i64(&self) -> Result<i64> {
-        self.try_to_u64()
-            .map(|v| v as i64)
-            .map_err(|_| Error::encountered_unrepresentable_value(
-                self.clone(), PrimitiveTy::I64))
+        self.try_cast_to_primitive_ty(PrimitiveTy::I64).map(|d| d.repr() as i64)
     }
 
     /// Tries to represent the value of this `ApInt` as a `u64`.
     /// 
     /// # Note
     /// 
-    /// This conversion is possible as long as the value represented
-    /// by this `ApInt` does not exceed the maximum value of `u64`.
+    /// - This conversion is possible as long as the value represented
+    ///   by this `ApInt` does not exceed the maximum value of `u64`.
     /// 
     /// # Errors
     /// 
     /// - If the value represented by this `ApInt` can not be
     ///   represented by a `u64`.
     pub fn try_to_u64(&self) -> Result<u64> {
-        let (lsd, rest) = self.split_least_significant_digit();
-        if rest.into_iter().any(|d| d.repr() != 0) {
-            return Error::encountered_unrepresentable_value(
-                self.clone(), PrimitiveTy::U64).into()
-        }
-        Ok(lsd.repr() as u64)
+        self.try_cast_to_primitive_ty(PrimitiveTy::U64).map(|d| d.repr() as u64)
     }
 
     /// Tries to represent the value of this `ApInt` as a `i128`.
     /// 
     /// # Note
     /// 
-    /// This conversion is possible as long as the value represented
-    /// by this `ApInt` does not exceed the maximum value of `u128`.
+    /// - This operation will conserve the signedness of the
+    ///   value. This means that for `ApInt` instances with
+    ///   a `BitWidth` less than `128` bits the value is
+    ///   sign extended to the target bit width.
+    /// - This conversion is possible as long as the value represented
+    ///   by this `ApInt` does not exceed the maximum value of `u128`.
     /// 
     /// # Errors
     /// 
@@ -482,8 +459,8 @@ impl ApInt {
     /// 
     /// # Note
     /// 
-    /// This conversion is possible as long as the value represented
-    /// by this `ApInt` does not exceed the maximum value of `u128`.
+    /// - This conversion is possible as long as the value represented
+    ///   by this `ApInt` does not exceed the maximum value of `u128`.
     /// 
     /// # Errors
     /// 
