@@ -102,99 +102,139 @@ impl ApInt {
     /// 
     /// # Note
     /// 
-    /// Basically this returns `true` if the least significant
-    /// bit of this `ApInt` is `1` and `false` otherwise.
-    pub fn truncate_to_bool(&self) -> bool {
+    /// - Basically this returns `true` if the least significant
+    ///   bit of this `ApInt` is `1` and `false` otherwise.
+    pub fn resize_to_bool(&self) -> bool {
         unimplemented!()
     }
 
     /// Truncates this `ApInt` to a `i8` primitive type.
     /// 
-    /// All bits but the least significant `8` bits are
-    /// being ignored by this operation to construct the
-    /// result.
-    pub fn truncate_to_i8(&self) -> i8 {
-        self.truncate_to_u8() as i8
+    /// # Note
+    /// 
+    /// - This operation will conserve the signedness of the
+    ///   value. This means that for `ApInt` instances with
+    ///   a `BitWidth` less than `8` bits the value is
+    ///   sign extended to the target bit width.
+    /// - All bits but the least significant `8` bits are
+    ///   being ignored by this operation to construct the
+    ///   result.
+    pub fn resize_to_i8(&self) -> i8 {
+        self.resize_to_u8() as i8
     }
 
     /// Truncates this `ApInt` to a `u8` primitive type.
     /// 
-    /// All bits but the least significant `8` bits are
-    /// being ignored by this operation to construct the
-    /// result.
-    pub fn truncate_to_u8(&self) -> u8 {
+    /// # Note
+    /// 
+    /// - All bits but the least significant `8` bits are
+    ///   being ignored by this operation to construct the
+    ///   result.
+    pub fn resize_to_u8(&self) -> u8 {
         unimplemented!()
     }
 
     /// Truncates this `ApInt` to a `i16` primitive type.
     /// 
-    /// All bits but the least significant `16` bits are
-    /// being ignored by this operation to construct the
-    /// result.
-    pub fn truncate_to_i16(&self) -> i16 {
-        self.truncate_to_u16() as i16
+    /// # Note
+    /// 
+    /// - This operation will conserve the signedness of the
+    ///   value. This means that for `ApInt` instances with
+    ///   a `BitWidth` less than `16` bits the value is
+    ///   sign extended to the target bit width.
+    /// - All bits but the least significant `16` bits are
+    ///   being ignored by this operation to construct the
+    ///   result.
+    pub fn resize_to_i16(&self) -> i16 {
+        self.resize_to_u16() as i16
     }
 
     /// Truncates this `ApInt` to a `u16` primitive type.
     /// 
-    /// All bits but the least significant `16` bits are
-    /// being ignored by this operation to construct the
-    /// result.
-    pub fn truncate_to_u16(&self) -> u16 {
+    /// # Note
+    /// 
+    /// - All bits but the least significant `16` bits are
+    ///   being ignored by this operation to construct the
+    ///   result.
+    pub fn resize_to_u16(&self) -> u16 {
         unimplemented!()
     }
 
     /// Truncates this `ApInt` to a `i32` primitive type.
     /// 
-    /// All bits but the least significant `32` bits are
-    /// being ignored by this operation to construct the
-    /// result.
-    pub fn truncate_to_i32(&self) -> i32 {
-        self.truncate_to_u32() as i32
+    /// # Note
+    /// 
+    /// - This operation will conserve the signedness of the
+    ///   value. This means that for `ApInt` instances with
+    ///   a `BitWidth` less than `32` bits the value is
+    ///   sign extended to the target bit width.
+    /// - All bits but the least significant `32` bits are
+    ///   being ignored by this operation to construct the
+    ///   result.
+    pub fn resize_to_i32(&self) -> i32 {
+        self.resize_to_u32() as i32
     }
 
     /// Truncates this `ApInt` to a `u32` primitive type.
     /// 
-    /// All bits but the least significant `32` bits are
-    /// being ignored by this operation to construct the
-    /// result.
-    pub fn truncate_to_u32(&self) -> u32 {
+    /// # Note
+    /// 
+    /// - All bits but the least significant `32` bits are
+    ///   being ignored by this operation to construct the
+    ///   result.
+    pub fn resize_to_u32(&self) -> u32 {
         unimplemented!()
     }
 
     /// Truncates this `ApInt` to a `i64` primitive type.
     /// 
-    /// All bits but the least significant `64` bits are
-    /// being ignored by this operation to construct the
-    /// result.
-    pub fn truncate_to_i64(&self) -> i64 {
-        self.truncate_to_u64() as i64
+    /// # Note
+    /// 
+    /// - This operation will conserve the signedness of the
+    ///   value. This means that for `ApInt` instances with
+    ///   a `BitWidth` less than `64` bits the value is
+    ///   sign extended to the target bit width.
+    /// - All bits but the least significant `64` bits are
+    ///   being ignored by this operation to construct the
+    ///   result.
+    pub fn resize_to_i64(&self) -> i64 {
+        self.resize_to_u64() as i64
     }
 
     /// Truncates this `ApInt` to a `u64` primitive type.
     /// 
-    /// All bits but the least significant `64` bits are
-    /// being ignored by this operation to construct the
-    /// result.
-    pub fn truncate_to_u64(&self) -> u64 {
+    /// # Note
+    /// 
+    /// - All bits but the least significant `64` bits are
+    ///   being ignored by this operation to construct the
+    ///   result.
+    pub fn resize_to_u64(&self) -> u64 {
         unimplemented!()
     }
 
     /// Truncates this `ApInt` to a `i128` primitive type.
     /// 
-    /// All bits but the least significant `128` bits are
-    /// being ignored by this operation to construct the
-    /// result.
-    pub fn truncate_to_i128(&self) -> i128 {
-        self.truncate_to_u128() as i128
+    /// # Note
+    /// 
+    /// - This operation will conserve the signedness of the
+    ///   value. This means that for `ApInt` instances with
+    ///   a `BitWidth` less than `128` bits the value is
+    ///   sign extended to the target bit width.
+    /// - All bits but the least significant `128` bits are
+    ///   being ignored by this operation to construct the
+    ///   result.
+    pub fn resize_to_i128(&self) -> i128 {
+        self.resize_to_u128() as i128
     }
 
     /// Truncates this `ApInt` to a `u128` primitive type.
     /// 
-    /// All bits but the least significant `128` bits are
-    /// being ignored by this operation to construct the
-    /// result.
-    pub fn truncate_to_u128(&self) -> u128 {
+    /// # Note
+    /// 
+    /// - All bits but the least significant `128` bits are
+    ///   being ignored by this operation to construct the
+    ///   result.
+    pub fn resize_to_u128(&self) -> u128 {
         unimplemented!()
     }
 }
