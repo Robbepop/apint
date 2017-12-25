@@ -18,6 +18,7 @@ use digit::{Digit};
 use bitwidth::{BitWidth};
 
 pub use self::shift::{ShiftAmount};
+pub(crate) use self::to_primitive::{PrimitiveTy};
 
 use std::ptr::Unique;
 
