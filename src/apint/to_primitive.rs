@@ -3,6 +3,7 @@ use digit;
 use digit::{Digit, DigitRepr};
 use bitwidth::{BitWidth};
 use errors::{Result, Error};
+use traits::{Width};
 
 /// Represents a primitive data type.
 /// 
@@ -243,6 +244,38 @@ impl ApInt {
 ///  Operations to lossless cast to primitive number types.
 /// =======================================================================
 impl ApInt {
+    /// Verifies if this `ApInt` can be casted into the given primitive type
+    /// without loss of information and returns the least significant `Digit`
+    /// of this `ApInt` upon success.
+    /// 
+    /// # Note
+    /// 
+    /// If the given `PrimitiveTy` represents a signed integer type the 
+    /// returned `Digit` is also sign extended accordingly. 
+    /// This sign extension behaves equal to how in Rust a negative signed
+    /// `i32` is extended to an `i64` and correctly preserves the negative value.
+    /// 
+    /// # Errors
+    /// 
+    /// If it is not possible to cast this `ApInt` without loss of information.
+    fn try_cast_to_primitive_ty(&self, prim_ty: PrimitiveTy) -> Result<Digit> {
+        let (mut lsd, rest) = self.split_least_significant_digit();
+        if !prim_ty.is_valid_repr(lsd.repr())
+           || rest.into_iter().any(|d| d.repr() != 0)
+        {
+            return Error::encountered_unrepresentable_value(
+                self.clone(), prim_ty).into()
+        }
+        if prim_ty.is_signed() {
+            let actual_width = self.width();
+            let target_width = prim_ty.associated_width();
+            if actual_width < target_width {
+                lsd.sign_extend_from(actual_width)?;
+                lsd.truncate_to(target_width)?;
+            }
+        }
+        Ok(lsd)
+    }
 
     /// Tries to represent the value of this `ApInt` as a `bool`.
     /// 
