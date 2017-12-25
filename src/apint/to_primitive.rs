@@ -1,6 +1,6 @@
 use apint::{ApInt};
 use digit;
-use digit::{Digit, DigitRepr};
+use digit::{Digit};
 use bitwidth::{BitWidth};
 use errors::{Result, Error};
 use traits::{Width};
