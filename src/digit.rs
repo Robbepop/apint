@@ -252,6 +252,28 @@ impl Digit {
 			return Err(Error::invalid_bit_access(bitwidth.to_usize(), BITS))
 		}
 		Ok(self.0 &= REPR_ONES >> ((BITS as DigitRepr) - (bitwidth.to_usize() as DigitRepr)))
+
+	/// Truncates this `Digit` to the given `BitWidth`.
+	/// 
+	/// This operation just zeros out any bits on this `Digit` 
+	/// with bit positions above the given `BitWidth`.
+	/// 
+	/// # Note
+	/// 
+	/// This is equal to calling `Digit::retain_last_n`.
+	/// 
+	/// # Errors
+	/// 
+	/// - If the given `BitWidth` is invalid for `Digit` instances.
+	pub(crate) fn truncate_to<W>(&mut self, to: W) -> Result<()>
+		where W: Into<BitWidth>
+	{
+		let to = to.into();
+		self.verify_valid_bitwidth(to)?;
+		self.0 &= !(REPR_ONES << to.to_usize());
+		Ok(())
+	}
+
 	}
 
 	/// Sets all bits within the given `Range` to `1`.
@@ -480,6 +502,10 @@ impl Digit {
 	}
 
 	/// Unsets all bits but the last `n` ones.
+	/// 
+	/// # Note
+	/// 
+	/// This is equal to calling `Digit::truncate_to`.
 	/// 
 	/// # Errors
 	/// 

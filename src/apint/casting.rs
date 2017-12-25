@@ -192,7 +192,7 @@ impl ApInt {
 				.expect("We already filtered cases where `excess_bits` may return `None` \
 					     by requiring that `self.width() > target_width`.");
 			self.most_significant_digit_mut()
-				.truncate(excess_width)
+				.truncate_to(excess_width)
 				.expect("Excess bits are guaranteed to be within the bounds for valid \
 					     truncation of a single `Digit`.");
 		}
