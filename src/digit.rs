@@ -241,17 +241,19 @@ impl Digit {
 }
 
 impl Digit {
-	// TODO: Remove deprecated method.
-	// 
-	// Deprecated by Digit::retain_last_n() method.
-	pub fn truncate<W>(&mut self, bitwidth: W) -> Result<()>
+	/// Validates the given `BitWidth` for `Digit` instances and returns
+	/// an appropriate error if the given `BitWidth` is invalid.
+	fn verify_valid_bitwidth<W>(self, width: W) -> Result<()>
 		where W: Into<BitWidth>
 	{
-		let bitwidth = bitwidth.into();
-		if bitwidth.to_usize() > BITS {
-			return Err(Error::invalid_bit_access(bitwidth.to_usize(), BITS))
+		let width = width.into();
+		if width.to_usize() > BITS {
+			return Err(Error::invalid_bitwidth(width.to_usize())
+				.with_annotation(format!("Encountered invalid `BitWidth` for operating \
+				                          on a `Digit`.")))
 		}
-		Ok(self.0 &= REPR_ONES >> ((BITS as DigitRepr) - (bitwidth.to_usize() as DigitRepr)))
+		Ok(())
+	}
 
 	/// Truncates this `Digit` to the given `BitWidth`.
 	/// 
