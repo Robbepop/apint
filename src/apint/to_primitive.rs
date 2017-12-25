@@ -92,7 +92,7 @@ impl PrimitiveTy {
 }
 
 //  =======================================================================
-///  Operations to cast to primitive number types.
+///  Operations to lossful cast to primitive number types.
 /// =======================================================================
 impl ApInt {
     /// Truncates this `ApInt` to a `bool` primitive type.
@@ -197,6 +197,12 @@ impl ApInt {
     pub fn truncate_to_u128(&self) -> u128 {
         unimplemented!()
     }
+}
+
+//  =======================================================================
+///  Operations to lossless cast to primitive number types.
+/// =======================================================================
+impl ApInt {
 
     /// Tries to represent the value of this `ApInt` as a `bool`.
     /// 
