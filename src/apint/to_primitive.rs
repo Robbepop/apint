@@ -1,6 +1,7 @@
 use apint::{ApInt};
 use digit;
 use digit::{Digit, DigitRepr};
+use bitwidth::{BitWidth};
 use errors::{Result, Error};
 
 /// Represents a primitive data type.
@@ -33,6 +34,62 @@ pub enum PrimitiveTy {
 	U128
 }
 
+impl PrimitiveTy {
+	/// Returns `true` if the given `value` is a valid representation
+	/// for this `PrimitiveTy`.
+	/// 
+	/// # Example
+	/// 
+	/// If this `PrimitiveTy` was `U8` then `200` is a valid representation
+	/// but `256` is not since it is not representable by `8` bits. Only
+	/// unsigned values are considered in this regard.
+	#[inline]
+	pub(crate) fn is_valid_repr(self, value: u64) -> bool {
+		use self::PrimitiveTy::*;
+		match self {
+			Bool      => (value == 0) || (value == 1),
+			I8  | U8  => value < (0x1 << 8),
+			I16 | U16 => value < (0x1 << 16),
+			I32 | U32 => value < (0x1 << 32),
+			I64 | U64 | I128 | U128 => {
+				true
+			}
+		}
+	}
+
+    /// Returns `true` if this `PrimitiveTy` can represent signedness.
+    #[inline]
+    pub(crate) fn is_signed(self) -> bool {
+		use self::PrimitiveTy::*;
+        match self {
+            I8   |
+            I16  |
+            I32  |
+            I64  |
+            I128 => true,
+            _    => false
+        }
+    }
+
+    /// Returns the associated `BitWidth` to this `PrimitiveTy`.
+    /// 
+    /// # Example
+    /// 
+    /// For `i32` the associated `BitWidth` is `32 bits` and for
+    /// `u64` it is `64 bits`.
+    #[inline]
+    pub(crate) fn associated_width(self) -> BitWidth {
+        use self::PrimitiveTy::*;
+        match self {
+            Bool => BitWidth::w1(),
+            I8 | U8 => BitWidth::w8(),
+            I16 | U16 => BitWidth::w16(),
+            I32 | U32 => BitWidth::w32(),
+            I64 | U64 => BitWidth::w64(),
+            I128 | U128 => BitWidth::w128(),
+        }
+    }
+}
 
 //  =======================================================================
 ///  Operations to cast to primitive number types.
