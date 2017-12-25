@@ -1,7 +1,38 @@
 use apint::{ApInt};
 use digit;
 use digit::{Digit, DigitRepr};
-use errors::{Result, Error, PrimitiveTy};
+use errors::{Result, Error};
+
+/// Represents a primitive data type.
+/// 
+/// Used by the `to_primitive` module for an improved
+/// error reporting.
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+pub enum PrimitiveTy {
+	/// Represents Rust's `bool`.
+	Bool,
+	/// Represents Rust's `i8`.
+	I8,
+	/// Represents Rust's `u8`.
+	U8,
+	/// Represents Rust's `i16`.
+	I16,
+	/// Represents Rust's `u16`.
+	U16,
+	/// Represents Rust's `i32`.
+	I32,
+	/// Represents Rust's `u32`.
+	U32,
+	/// Represents Rust's `i64`.
+	I64,
+	/// Represents Rust's `u64`.
+	U64,
+	/// Represents Rust's `i128`.
+	I128,
+	/// Represents Rust's `u128`.
+	U128
+}
+
 
 //  =======================================================================
 ///  Operations to cast to primitive number types.
