@@ -505,7 +505,6 @@ impl ApInt {
             // starting from the sign bit position.
             let b = actual_width.to_usize(); // Number of bits representing the number in x.
             let m: i128 = 1 << (b - 1);      // Mask can be pre-computed if b is fixed.
-            // x = x & ((1 << b) - 1);       // We skip this since bits in x above position b are already zero.
             result = (result ^ m) - m;  // Resulting sign-extended number.
         }
 
