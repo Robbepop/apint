@@ -259,6 +259,8 @@ impl ApInt {
     /// 
     /// If it is not possible to cast this `ApInt` without loss of information.
     fn try_cast_to_primitive_ty(&self, prim_ty: PrimitiveTy) -> Result<Digit> {
+        debug_assert_ne!(prim_ty, PrimitiveTy::U128);
+        debug_assert_ne!(prim_ty, PrimitiveTy::I128);
         let (mut lsd, rest) = self.split_least_significant_digit();
         if !prim_ty.is_valid_repr(lsd.repr())
            || rest.into_iter().any(|d| d.repr() != 0)
