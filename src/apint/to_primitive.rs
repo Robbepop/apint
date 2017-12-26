@@ -449,10 +449,27 @@ impl ApInt {
     /// - If the value represented by this `ApInt` can not be
     ///   represented by a `i128`.
     pub fn try_to_i128(&self) -> Result<i128> {
-        self.try_to_u128()
-            .map(|v| v as i128)
-            .map_err(|_| Error::encountered_unrepresentable_value(
-                self.clone(), PrimitiveTy::I128))
+        let ( lsd_0, rest) = self.split_least_significant_digit();
+        let (&lsd_1, rest) = rest.split_first().unwrap_or((&Digit(0), &[]));
+        if rest.into_iter().any(|d| d.repr() != 0) {
+            return Error::encountered_unrepresentable_value(
+                self.clone(), PrimitiveTy::I128).into()
+        }
+        let mut result: i128 =
+            (i128::from(lsd_1.repr()) << digit::BITS) + i128::from(lsd_0.repr());
+
+        let actual_width = self.width();
+        let target_width = BitWidth::w128();
+        if actual_width < target_width {
+            // Sign extend the `i128`. Fill up with `1` up to `128` bits 
+            // starting from the sign bit position.
+            let b = actual_width.to_usize(); // Number of bits representing the number in x.
+            let m: i128 = 1 << (b - 1);      // Mask can be pre-computed if b is fixed.
+            // x = x & ((1 << b) - 1);       // We skip this since bits in x above position b are already zero.
+            result = (result ^ m) - m;  // Resulting sign-extended number.
+        }
+
+        Ok(result)
     }
 
     /// Tries to represent the value of this `ApInt` as a `u128`.
