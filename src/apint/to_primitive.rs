@@ -284,7 +284,11 @@ impl ApInt {
     ///   being ignored by this operation to construct the
     ///   result.
     pub fn resize_to_u128(&self) -> u128 {
-        unimplemented!()
+        let ( lsd_0, rest) = self.split_least_significant_digit();
+        let (&lsd_1, _) = rest.split_first().unwrap_or((&Digit(0), &[]));
+        let result: u128 =
+            (u128::from(lsd_1.repr()) << digit::BITS) + u128::from(lsd_0.repr());
+        result
     }
 }
 
