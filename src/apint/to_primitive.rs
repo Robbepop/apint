@@ -258,7 +258,22 @@ impl ApInt {
     ///   being ignored by this operation to construct the
     ///   result.
     pub fn resize_to_i128(&self) -> i128 {
-        self.resize_to_u128() as i128
+        let ( lsd_0, rest) = self.split_least_significant_digit();
+        let (&lsd_1, _) = rest.split_first().unwrap_or((&Digit(0), &[]));
+        let mut result: i128 =
+            (i128::from(lsd_1.repr()) << digit::BITS) + i128::from(lsd_0.repr());
+        let actual_width = self.width();
+        let target_width = BitWidth::w128();
+
+        if actual_width < target_width {
+            // Sign extend the `i128`. Fill up with `1` up to `128` bits 
+            // starting from the sign bit position.
+            let b = actual_width.to_usize(); // Number of bits representing the number in x.
+            let m: i128 = 1 << (b - 1);      // Mask can be pre-computed if b is fixed.
+            result = (result ^ m) - m;       // Resulting sign-extended number.
+        }
+
+        result
     }
 
     /// Truncates this `ApInt` to a `u128` primitive type.
