@@ -462,26 +462,24 @@ impl ApInt {
     /// - This conversion is possible as long as the value represented
     ///   by this `ApInt` does not exceed the maximum value of `u128`.
     /// 
+    /// # Complexity
+    /// 
+    /// - ðª(n) where n is the number of digits of this `ApInt`.
+    /// 
     /// # Errors
     /// 
     /// - If the value represented by this `ApInt` can not be
     ///   represented by a `u128`.
     pub fn try_to_u128(&self) -> Result<u128> {
-        let (lsd_0, rest) = self.split_least_significant_digit();
-        match rest.split_first() {
-            None => {
-                Ok(lsd_0.repr() as u128)
-            }
-            Some((lsd_1, rest)) => {
-                if rest.into_iter().any(|d| d.repr() != 0) {
-                    return Error::encountered_unrepresentable_value(
-                        self.clone(), PrimitiveTy::U64).into()
-                }
-                let result: u128 =
-                    (u128::from(lsd_1.repr()) << digit::BITS) + u128::from(lsd_0.repr());
-                Ok(result)
-            }
+        let ( lsd_0, rest) = self.split_least_significant_digit();
+        let (&lsd_1, rest) = rest.split_first().unwrap_or((&Digit(0), &[]));
+        if rest.into_iter().any(|d| d.repr() != 0) {
+            return Error::encountered_unrepresentable_value(
+                self.clone(), PrimitiveTy::U128).into()
         }
+        let result: u128 =
+            (u128::from(lsd_1.repr()) << digit::BITS) + u128::from(lsd_0.repr());
+        Ok(result)
     }
 }
 
