@@ -481,7 +481,7 @@ impl ApInt {
     /// 
     /// # Complexity
     /// 
-    /// - ðª(n) where n is the number of digits of this `ApInt`.
+    /// - 𝒪(n) where n is the number of digits of this `ApInt`.
     /// 
     /// # Errors
     /// 
