@@ -135,7 +135,11 @@ impl ApInt {
     /// - Basically this returns `true` if the least significant
     ///   bit of this `ApInt` is `1` and `false` otherwise.
     pub fn resize_to_bool(&self) -> bool {
-        unimplemented!()
+        match self.resize_to_primitive_ty(PrimitiveTy::Bool) {
+            Digit(0) => false,
+            Digit(1) => true,
+            _ => unreachable!()
+        }
     }
 
     /// Truncates this `ApInt` to a `i8` primitive type.
@@ -150,7 +154,7 @@ impl ApInt {
     ///   being ignored by this operation to construct the
     ///   result.
     pub fn resize_to_i8(&self) -> i8 {
-        self.resize_to_u8() as i8
+        self.resize_to_primitive_ty(PrimitiveTy::I8).repr() as i8
     }
 
     /// Truncates this `ApInt` to a `u8` primitive type.
@@ -161,7 +165,7 @@ impl ApInt {
     ///   being ignored by this operation to construct the
     ///   result.
     pub fn resize_to_u8(&self) -> u8 {
-        unimplemented!()
+        self.resize_to_primitive_ty(PrimitiveTy::U8).repr() as u8
     }
 
     /// Truncates this `ApInt` to a `i16` primitive type.
@@ -176,7 +180,7 @@ impl ApInt {
     ///   being ignored by this operation to construct the
     ///   result.
     pub fn resize_to_i16(&self) -> i16 {
-        self.resize_to_u16() as i16
+        self.resize_to_primitive_ty(PrimitiveTy::I16).repr() as i16
     }
 
     /// Truncates this `ApInt` to a `u16` primitive type.
@@ -187,7 +191,7 @@ impl ApInt {
     ///   being ignored by this operation to construct the
     ///   result.
     pub fn resize_to_u16(&self) -> u16 {
-        unimplemented!()
+        self.resize_to_primitive_ty(PrimitiveTy::U16).repr() as u16
     }
 
     /// Truncates this `ApInt` to a `i32` primitive type.
@@ -202,7 +206,7 @@ impl ApInt {
     ///   being ignored by this operation to construct the
     ///   result.
     pub fn resize_to_i32(&self) -> i32 {
-        self.resize_to_u32() as i32
+        self.resize_to_primitive_ty(PrimitiveTy::I32).repr() as i32
     }
 
     /// Truncates this `ApInt` to a `u32` primitive type.
@@ -213,7 +217,7 @@ impl ApInt {
     ///   being ignored by this operation to construct the
     ///   result.
     pub fn resize_to_u32(&self) -> u32 {
-        unimplemented!()
+        self.resize_to_primitive_ty(PrimitiveTy::U32).repr() as u32
     }
 
     /// Truncates this `ApInt` to a `i64` primitive type.
@@ -228,7 +232,7 @@ impl ApInt {
     ///   being ignored by this operation to construct the
     ///   result.
     pub fn resize_to_i64(&self) -> i64 {
-        self.resize_to_u64() as i64
+        self.resize_to_primitive_ty(PrimitiveTy::I64).repr() as i64
     }
 
     /// Truncates this `ApInt` to a `u64` primitive type.
@@ -239,7 +243,7 @@ impl ApInt {
     ///   being ignored by this operation to construct the
     ///   result.
     pub fn resize_to_u64(&self) -> u64 {
-        unimplemented!()
+        self.resize_to_primitive_ty(PrimitiveTy::U64).repr() as u64
     }
 
     /// Truncates this `ApInt` to a `i128` primitive type.
