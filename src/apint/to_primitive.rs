@@ -96,6 +96,35 @@ impl PrimitiveTy {
 ///  Operations to lossful cast to primitive number types.
 /// =======================================================================
 impl ApInt {
+
+    /// Resizes the given `ApInt` to the given `PrimitiveTy`.
+    /// 
+    /// This will truncate the bits of the `ApInt` if it has a greater bit
+    /// width than the target bit width or will sign-extend the bits of the
+    /// `ApInt` if its bit width is less than the target bit width.
+    /// 
+    /// This operation cannot fail and is the generic foundation for the
+    /// greater part of the `ApInt::resize_to_*` methods.
+    fn resize_to_primitive_ty(&self, prim_ty: PrimitiveTy) -> Digit {
+        debug_assert_ne!(prim_ty, PrimitiveTy::U128);
+        debug_assert_ne!(prim_ty, PrimitiveTy::I128);
+        let (mut lsd, _) = self.split_least_significant_digit();
+        let target_width = prim_ty.associated_width();
+        if prim_ty.is_signed() {
+            let actual_width = self.width();
+            if actual_width < target_width {
+                lsd.sign_extend_from(actual_width)
+                   .expect("We already asserted that `actual_width` < `target_width` \
+                            and since `target_width` is always less than or equal to \
+                            `64` bits calling `Digit::sign_extend_from` is safe for it.");
+            }
+        }
+        lsd.truncate_to(target_width)
+            .expect("Since `target_width` is always less than or equal to \
+                    `64` bits calling `Digit::sign_extend_from` is safe for it.");
+        lsd
+    }
+
     /// Truncates this `ApInt` to a `bool` primitive type.
     /// 
     /// Bits in this `ApInt` that are not within the bounds
