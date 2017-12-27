@@ -45,7 +45,9 @@ pub enum ErrorKind {
 	/// Returns on trying to cast an `ApInt` to a primitive type
 	/// that can not represent the value represented by the `ApInt`.
 	ValueUnrepresentable{
+		/// The `ApInt` that the user wanted to represent as the given `PrimitiveTy`.
 		value: ApInt,
+		/// The `PrimitiveTy` that the user wanted for representing the given `ApInt`.
 		destination_ty: PrimitiveTy
 	},
 
