@@ -53,7 +53,7 @@ impl Radix {
 	/// Returns `true` if the number represenatation of this `Radix` is a power of two
 	/// and `false` otherwise.
 	#[inline]
-	pub fn is_power_of_two(self) -> bool {
+	pub(crate) fn is_power_of_two(self) -> bool {
 		self.to_u8().is_power_of_two()
 	}
 
@@ -71,7 +71,7 @@ impl Radix {
 	/// Note: This is only valid for `Radix` instances that represent a radix
 	///       that are a power of two.
 	#[inline]
-	pub fn bits_per_digit(self) -> usize {
+	pub(crate) fn bits_per_digit(self) -> usize {
 		assert!(self.is_power_of_two());
 		fn find_last_bit_set(val: u8) -> usize {
 			::std::mem::size_of::<u8>() * 8 - val.leading_zeros() as usize
