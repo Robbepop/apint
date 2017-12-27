@@ -278,12 +278,14 @@ mod tests {
 
     use serde_test::{
         Token,
-        Configure,
         assert_tokens
     };
 
     mod compact {
         use super::*;
+        use serde_test::{
+            Configure,
+        };
 
         #[test]
         fn test_small() {
@@ -318,6 +320,9 @@ mod tests {
 
     mod human_readable {
         use super::*;
+        use serde_test::{
+            Configure,
+        };
 
         #[test]
         fn test_small() {

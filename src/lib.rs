@@ -24,6 +24,7 @@
 #![allow(dead_code)]
 
 #![deny(missing_docs)]
+#![deny(warnings)]
 
 #![doc(html_root_url = "https://docs.rs/crate/apint/0.0.0")]
 
