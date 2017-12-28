@@ -562,6 +562,76 @@ impl ApInt {
 mod tests {
     use super::*;
 
+    /// Returns a bunch of interesting test values for the
+    /// `to_primitive` method tests.
+    fn unsigned_test_values() -> impl Iterator<Item = i64> {
+        vec![
+            0_u64, 1, 2, 3, 5, 7, 10, 11, 13, 42, 63, 64, 65,
+            100, 127, 128, 129, 254, 255, 256, 257,
+            1337, 2047, 2048, 2049, 8001, 9999,
+            0xFEDC_BA98_7654_3210, 0xF0F0_F0F0_F0F0_F0F0,
+            0x8000_0000_0000_0000, 0x1010_1010_1010_1010,
+            0xFFFF_FFFF_0000_0000, 0x0000_FFFF_FFFF_0000,
+            0xFFFF_0000_0000_FFFF, 0xFFFF_0000_FFFF_0000,
+            0x0000_FFFF_0000_FFFF
+        ].into_iter().map(|v| v as i64)
+    }
+
+    /// Returns negated mirror values of `unsigned_test_values` thus doubeling
+    /// the test values count.
+    fn signed_test_values() -> impl Iterator<Item = i64> {
+        unsigned_test_values().map(|v| -v)
+    }
+
+    /// Unifies signed and unsigned test values into a single iterator.
+    fn test_values() -> impl Iterator<Item = i64> {
+        unsigned_test_values().chain(signed_test_values())
+    }
+
+    /// Uses `test_values` to iterate over already constructed `ApInt` instances.
+    fn test_apints() -> impl Iterator<Item = ApInt> {
+        test_values().map(From::from)
+    }
+
+    mod resize {
+        use super::*;
+
+        #[test]
+        fn to_bool_true() {
+            assert_eq!(ApInt::from(true).resize_to_bool(), true);
+            assert_eq!(ApInt::from(1_u8).resize_to_bool(), true);
+            assert_eq!(ApInt::from(1_u16).resize_to_bool(), true);
+            assert_eq!(ApInt::from(1_u32).resize_to_bool(), true);
+            assert_eq!(ApInt::from(1_u64).resize_to_bool(), true);
+            assert_eq!(ApInt::from(1_u128).resize_to_bool(), true);
+        }
+
+        #[test]
+        fn to_bool_odd() {
+            for apint in test_apints() {
+                assert_eq!(apint.resize_to_bool(), apint.is_odd())
+            }
+        }
+
+
+        #[test]
+        fn to_i8() {
+            assert_eq!(ApInt::from(true).resize_to_i8(), -1);
+
+            assert_eq!(ApInt::from(1_u8).resize_to_i8(), 1);
+            assert_eq!(ApInt::from(1_u16).resize_to_i8(), 1);
+            assert_eq!(ApInt::from(1_u32).resize_to_i8(), 1);
+            assert_eq!(ApInt::from(1_u64).resize_to_i8(), 1);
+            assert_eq!(ApInt::from(1_u128).resize_to_i8(), 1);
+
+            assert_eq!(ApInt::from(-1_i8).resize_to_i8(), -1);
+            assert_eq!(ApInt::from(-1_i16).resize_to_i8(), -1);
+            assert_eq!(ApInt::from(-1_i32).resize_to_i8(), -1);
+            assert_eq!(ApInt::from(-1_i64).resize_to_i8(), -1);
+            assert_eq!(ApInt::from(-1_i128).resize_to_i8(), -1);
+        }
+    }
+
     mod try {
         use super::*;
 
