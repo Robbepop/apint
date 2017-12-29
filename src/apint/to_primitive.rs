@@ -580,7 +580,7 @@ mod tests {
     /// Returns negated mirror values of `unsigned_test_values` thus doubeling
     /// the test values count.
     fn signed_test_values() -> impl Iterator<Item = i64> {
-        unsigned_test_values().map(|v| -v)
+        unsigned_test_values().map(|v| v.wrapping_neg())
     }
 
     /// Unifies signed and unsigned test values into a single iterator.
