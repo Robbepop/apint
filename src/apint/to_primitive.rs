@@ -684,7 +684,9 @@ mod tests {
 
         #[test]
         fn to_bool_odd() {
-            for apint in test_apints() {
+            for (val, apint) in test_vals_and_apints() {
+                assert_eq!(val % 2 == 0, apint.is_even());
+                assert_eq!(val % 2 != 0, apint.is_odd());
                 assert_eq!(apint.resize_to_bool(), apint.is_odd())
             }
         }
