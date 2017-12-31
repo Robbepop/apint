@@ -109,9 +109,9 @@ impl ApInt {
         debug_assert_ne!(prim_ty, PrimitiveTy::U128);
         debug_assert_ne!(prim_ty, PrimitiveTy::I128);
         let mut lsd = self.least_significant_digit();
+        let actual_width = self.width();
         let target_width = prim_ty.associated_width();
         if prim_ty.is_signed() {
-            let actual_width = self.width();
             if actual_width < target_width {
                 lsd.sign_extend_from(actual_width)
                    .expect("We already asserted that `actual_width` < `target_width` \
@@ -119,9 +119,11 @@ impl ApInt {
                             `64` bits calling `Digit::sign_extend_from` is safe for it.");
             }
         }
-        lsd.truncate_to(target_width)
-            .expect("Since `target_width` is always less than or equal to \
-                    `64` bits calling `Digit::sign_extend_from` is safe for it.");
+        if target_width < BitWidth::w64() {
+            lsd.truncate_to(target_width)
+                .expect("Since `target_width` is always less than or equal to \
+                        `64` bits calling `Digit::sign_extend_from` is safe for it.");
+        }
         lsd
     }
 
