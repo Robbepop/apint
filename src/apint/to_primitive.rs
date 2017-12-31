@@ -765,6 +765,9 @@ mod tests {
             }
         }
 
+
+        #[test]
+        fn one_to_i8() {
             assert_eq!(ApInt::from(true).resize_to_i8(), -1);
 
             assert_eq!(ApInt::from(1_u8).resize_to_i8(), 1);
