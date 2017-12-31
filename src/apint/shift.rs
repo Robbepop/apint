@@ -512,7 +512,6 @@ mod tests {
 		fn assign_large_ok() {
 			for repr in test_reprs_w128() {
 				for shamt in 0..128 {
-					println!("assign_large_ok{{\n\trepr = {:x}\n\tshamt = {:?}\n}}", repr, shamt);
 					let mut result = ApInt::from_u128(repr);
 					result.checked_ashr_assign(shamt).unwrap();
 					let expected = ApInt::from_i128((repr as i128) >> shamt);
