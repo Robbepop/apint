@@ -562,6 +562,8 @@ impl ApInt {
 mod tests {
     use super::*;
 
+    use itertools::Itertools;
+
     /// Returns a bunch of interesting test values for the
     /// `to_primitive` method tests.
     fn unsigned_test_values() -> impl Iterator<Item = i64> {

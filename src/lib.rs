@@ -39,6 +39,9 @@ extern crate serde;
 #[cfg(all(test, feature = "serde_support"))]
 extern crate serde_test;
 
+#[cfg(test)]
+extern crate itertools;
+
 mod errors;
 mod traits;
 mod digit;
