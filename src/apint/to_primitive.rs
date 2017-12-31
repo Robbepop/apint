@@ -668,6 +668,11 @@ mod tests {
         use super::*;
 
         #[test]
+        fn count_test_apints() {
+            assert_eq!(test_vals_and_apints().count(), 792);
+        }
+
+        #[test]
         fn to_bool_true() {
             assert_eq!(ApInt::from(true).resize_to_bool(), true);
             assert_eq!(ApInt::from(1_u8).resize_to_bool(), true);
