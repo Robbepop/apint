@@ -590,9 +590,78 @@ mod tests {
         unsigned_test_values().chain(signed_test_values())
     }
 
+    /// Which `PrimitiveTy` instances shall be tested. Basically we test all
+    /// if no problems occure.
+    fn test_primitive_tys() -> impl Iterator<Item = PrimitiveTy> + Clone {
+        use self::PrimitiveTy::*;
+        vec![
+            Bool,
+            I8,
+            U8,
+            I16,
+            U16,
+            I32,
+            U32,
+            I64,
+            U64,
+            I128,
+            U128
+        ].into_iter()
+    }
+
     /// Uses `test_values` to iterate over already constructed `ApInt` instances.
-    fn test_apints() -> impl Iterator<Item = ApInt> {
-        test_values().map(From::from)
+    fn test_vals_and_apints() -> impl Iterator<Item = (u64, ApInt)> {
+        test_values()
+            .cartesian_product(test_primitive_tys())
+            .map(|(val, prim_ty)| {
+                use self::PrimitiveTy::*;
+                match prim_ty {
+                    Bool => {
+                        let val = val != 0;
+                        (val as u64, ApInt::from_bit(val))
+                    }
+                    I8 => {
+                        let val = val as i8;
+                        (val as u8 as u64, ApInt::from_i8(val))
+                    }
+                    U8 => {
+                        let val = val as u8;
+                        (val as u64, ApInt::from_u8(val))
+                    }
+                    I16 => {
+                        let val = val as i16;
+                        (val as u16 as u64, ApInt::from_i16(val))
+                    }
+                    U16 => {
+                        let val = val as u16;
+                        (val as u64, ApInt::from_u16(val))
+                    }
+                    I32 => {
+                        let val = val as i32;
+                        (val as u32 as u64, ApInt::from_i32(val))
+                    }
+                    U32 => {
+                        let val = val as u32;
+                        (val as u64, ApInt::from_u32(val))
+                    }
+                    I64 => {
+                        let val = val as i64;
+                        (val as u64, ApInt::from_i64(val))
+                    }
+                    U64 => {
+                        let val = val as u64;
+                        (val as u64, ApInt::from_u64(val))
+                    }
+                    I128 => {
+                        let val = val as i128;
+                        (val as u64, ApInt::from_i128(val))
+                    }
+                    U128 => {
+                        let val = val as u128;
+                        (val as u64, ApInt::from_u128(val))
+                    }
+                }
+            })
     }
 
     mod resize {
