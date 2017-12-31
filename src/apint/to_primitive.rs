@@ -693,9 +693,30 @@ mod tests {
             }
         }
 
-
         #[test]
         fn to_i8() {
+            for (val, apint) in test_vals_and_apints() {
+                let actual_width = apint.width();
+                let target_width = PrimitiveTy::I8.associated_width();
+                if actual_width < target_width {
+                    let mut digit = Digit(val);
+                    digit.sign_extend_from(actual_width).unwrap();
+                    digit.truncate_to(target_width).unwrap();
+                    assert_eq!(apint.resize_to_i8(), digit.repr() as i8);
+                }
+                else {
+                    assert_eq!(apint.resize_to_i8(), val as i8)
+                }
+            }
+        }
+
+        #[test]
+        fn to_u8() {
+            for (val, apint) in test_vals_and_apints() {
+                assert_eq!(apint.resize_to_u8(), val as u8)
+            }
+        }
+
             assert_eq!(ApInt::from(true).resize_to_i8(), -1);
 
             assert_eq!(ApInt::from(1_u8).resize_to_i8(), 1);
