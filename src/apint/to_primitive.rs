@@ -741,6 +741,30 @@ mod tests {
             }
         }
 
+        #[test]
+        fn to_i32() {
+            for (val, apint) in test_vals_and_apints() {
+                let actual_width = apint.width();
+                let target_width = PrimitiveTy::I32.associated_width();
+                if actual_width < target_width {
+                    let mut digit = Digit(val);
+                    digit.sign_extend_from(actual_width).unwrap();
+                    digit.truncate_to(target_width).unwrap();
+                    assert_eq!(apint.resize_to_i32(), digit.repr() as i32);
+                }
+                else {
+                    assert_eq!(apint.resize_to_i32(), val as i32)
+                }
+            }
+        }
+
+        #[test]
+        fn to_u32() {
+            for (val, apint) in test_vals_and_apints() {
+                assert_eq!(apint.resize_to_u32(), val as u32)
+            }
+        }
+
             assert_eq!(ApInt::from(true).resize_to_i8(), -1);
 
             assert_eq!(ApInt::from(1_u8).resize_to_i8(), 1);
