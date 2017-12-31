@@ -765,6 +765,32 @@ mod tests {
             }
         }
 
+        #[test]
+        fn to_i64() {
+            for (val, apint) in test_vals_and_apints() {
+                let actual_width = apint.width();
+                let target_width = PrimitiveTy::I64.associated_width();
+                if actual_width < target_width {
+                    // println!("tests::resize::to_i64::val        = {:?}", val);
+                    // println!("tests::resize::to_i64::val as u64 = {:?}", val as u64);
+                    // println!("tests::resize::to_i64::apint      = {:?}", apint);
+                    // println!("tests::resize::to_i64::-------");
+                    let mut digit = Digit(val);
+                    digit.sign_extend_from(actual_width).unwrap();
+                    assert_eq!(apint.resize_to_i64(), digit.repr() as i64);
+                }
+                else {
+                    assert_eq!(apint.resize_to_i64(), val as i64)
+                }
+            }
+        }
+
+        #[test]
+        fn to_u64() {
+            for (val, apint) in test_vals_and_apints() {
+                assert_eq!(apint.resize_to_u64(), val as u64)
+            }
+        }
 
         #[test]
         fn one_to_i8() {
