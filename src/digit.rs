@@ -300,7 +300,7 @@ impl Digit {
 		let m: i64 = 1 << (b - 1);       // mask can be pre-computed if b is fixed
 		// x = x & ((1 << b) - 1);  // (Skip this if bits in x above position b are already zero.)
 		                            // We don't need this step since this condition is an invariant of `Digit`.
-		let r: i64 = (x ^ m) - m;   // resulting sign-extended number
+		let r: i64 = (x ^ m).wrapping_sub(m);   // resulting sign-extended number
 		self.0 = r as u64;
 		Ok(())
 	}
