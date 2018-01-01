@@ -127,7 +127,7 @@ impl ApInt {
         lsd
     }
 
-    /// Truncates this `ApInt` to a `bool` primitive type.
+    /// Resizes this `ApInt` to a `bool` primitive type.
     /// 
     /// Bits in this `ApInt` that are not within the bounds
     /// of the `bool` are being ignored.
@@ -144,7 +144,7 @@ impl ApInt {
         }
     }
 
-    /// Truncates this `ApInt` to a `i8` primitive type.
+    /// Resizes this `ApInt` to a `i8` primitive type.
     /// 
     /// # Note
     /// 
@@ -159,7 +159,7 @@ impl ApInt {
         self.resize_to_primitive_ty(PrimitiveTy::I8).repr() as i8
     }
 
-    /// Truncates this `ApInt` to a `u8` primitive type.
+    /// Resizes this `ApInt` to a `u8` primitive type.
     /// 
     /// # Note
     /// 
@@ -170,7 +170,7 @@ impl ApInt {
         self.resize_to_primitive_ty(PrimitiveTy::U8).repr() as u8
     }
 
-    /// Truncates this `ApInt` to a `i16` primitive type.
+    /// Resizes this `ApInt` to a `i16` primitive type.
     /// 
     /// # Note
     /// 
@@ -185,7 +185,7 @@ impl ApInt {
         self.resize_to_primitive_ty(PrimitiveTy::I16).repr() as i16
     }
 
-    /// Truncates this `ApInt` to a `u16` primitive type.
+    /// Resizes this `ApInt` to a `u16` primitive type.
     /// 
     /// # Note
     /// 
@@ -196,7 +196,7 @@ impl ApInt {
         self.resize_to_primitive_ty(PrimitiveTy::U16).repr() as u16
     }
 
-    /// Truncates this `ApInt` to a `i32` primitive type.
+    /// Resizes this `ApInt` to a `i32` primitive type.
     /// 
     /// # Note
     /// 
@@ -211,7 +211,7 @@ impl ApInt {
         self.resize_to_primitive_ty(PrimitiveTy::I32).repr() as i32
     }
 
-    /// Truncates this `ApInt` to a `u32` primitive type.
+    /// Resizes this `ApInt` to a `u32` primitive type.
     /// 
     /// # Note
     /// 
@@ -222,7 +222,7 @@ impl ApInt {
         self.resize_to_primitive_ty(PrimitiveTy::U32).repr() as u32
     }
 
-    /// Truncates this `ApInt` to a `i64` primitive type.
+    /// Resizes this `ApInt` to a `i64` primitive type.
     /// 
     /// # Note
     /// 
@@ -237,7 +237,7 @@ impl ApInt {
         self.resize_to_primitive_ty(PrimitiveTy::I64).repr() as i64
     }
 
-    /// Truncates this `ApInt` to a `u64` primitive type.
+    /// Resizes this `ApInt` to a `u64` primitive type.
     /// 
     /// # Note
     /// 
@@ -248,7 +248,7 @@ impl ApInt {
         self.resize_to_primitive_ty(PrimitiveTy::U64).repr() as u64
     }
 
-    /// Truncates this `ApInt` to a `i128` primitive type.
+    /// Resizes this `ApInt` to a `i128` primitive type.
     /// 
     /// # Note
     /// 
@@ -278,7 +278,7 @@ impl ApInt {
         result
     }
 
-    /// Truncates this `ApInt` to a `u128` primitive type.
+    /// Resizes this `ApInt` to a `u128` primitive type.
     /// 
     /// # Note
     /// 
