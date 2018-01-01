@@ -612,7 +612,7 @@ mod tests {
     }
 
     /// Uses `test_values` to iterate over already constructed `ApInt` instances.
-    fn test_vals_and_apints() -> impl Iterator<Item = (u64, ApInt)> {
+    fn test_vals_and_apints() -> impl Iterator<Item = (u128, ApInt)> {
         test_values()
             .cartesian_product(test_primitive_tys())
             .map(|(val, prim_ty)| {
@@ -620,47 +620,47 @@ mod tests {
                 match prim_ty {
                     Bool => {
                         let val = val != 0;
-                        (val as u64, ApInt::from_bit(val))
+                        (val as u128, ApInt::from_bit(val))
                     }
                     I8 => {
                         let val = val as i8;
-                        (val as u8 as u64, ApInt::from_i8(val))
+                        (val as u8 as u128, ApInt::from_i8(val))
                     }
                     U8 => {
                         let val = val as u8;
-                        (val as u64, ApInt::from_u8(val))
+                        (val as u128, ApInt::from_u8(val))
                     }
                     I16 => {
                         let val = val as i16;
-                        (val as u16 as u64, ApInt::from_i16(val))
+                        (val as u16 as u128, ApInt::from_i16(val))
                     }
                     U16 => {
                         let val = val as u16;
-                        (val as u64, ApInt::from_u16(val))
+                        (val as u128, ApInt::from_u16(val))
                     }
                     I32 => {
                         let val = val as i32;
-                        (val as u32 as u64, ApInt::from_i32(val))
+                        (val as u32 as u128, ApInt::from_i32(val))
                     }
                     U32 => {
                         let val = val as u32;
-                        (val as u64, ApInt::from_u32(val))
+                        (val as u128, ApInt::from_u32(val))
                     }
                     I64 => {
                         let val = val as i64;
-                        (val as u64, ApInt::from_i64(val))
+                        (val as u64 as u128, ApInt::from_i64(val))
                     }
                     U64 => {
                         let val = val as u64;
-                        (val as u64, ApInt::from_u64(val))
+                        (val as u128, ApInt::from_u64(val))
                     }
                     I128 => {
                         let val = val as i128;
-                        (val as u64, ApInt::from_i128(val))
+                        (val as u128, ApInt::from_i128(val))
                     }
                     U128 => {
                         let val = val as u128;
-                        (val as u64, ApInt::from_u128(val))
+                        (val, ApInt::from_u128(val))
                     }
                 }
             })
@@ -699,7 +699,7 @@ mod tests {
                 let actual_width = apint.width();
                 let target_width = PrimitiveTy::I8.associated_width();
                 if actual_width < target_width {
-                    let mut digit = Digit(val);
+                    let mut digit = Digit(val as u64);
                     digit.sign_extend_from(actual_width).unwrap();
                     digit.truncate_to(target_width).unwrap();
                     assert_eq!(apint.resize_to_i8(), digit.repr() as i8);
@@ -723,7 +723,7 @@ mod tests {
                 let actual_width = apint.width();
                 let target_width = PrimitiveTy::I16.associated_width();
                 if actual_width < target_width {
-                    let mut digit = Digit(val);
+                    let mut digit = Digit(val as u64);
                     digit.sign_extend_from(actual_width).unwrap();
                     digit.truncate_to(target_width).unwrap();
                     assert_eq!(apint.resize_to_i16(), digit.repr() as i16);
@@ -747,7 +747,7 @@ mod tests {
                 let actual_width = apint.width();
                 let target_width = PrimitiveTy::I32.associated_width();
                 if actual_width < target_width {
-                    let mut digit = Digit(val);
+                    let mut digit = Digit(val as u64);
                     digit.sign_extend_from(actual_width).unwrap();
                     digit.truncate_to(target_width).unwrap();
                     assert_eq!(apint.resize_to_i32(), digit.repr() as i32);
@@ -771,11 +771,7 @@ mod tests {
                 let actual_width = apint.width();
                 let target_width = PrimitiveTy::I64.associated_width();
                 if actual_width < target_width {
-                    // println!("tests::resize::to_i64::val        = {:?}", val);
-                    // println!("tests::resize::to_i64::val as u64 = {:?}", val as u64);
-                    // println!("tests::resize::to_i64::apint      = {:?}", apint);
-                    // println!("tests::resize::to_i64::-------");
-                    let mut digit = Digit(val);
+                    let mut digit = Digit(val as u64);
                     digit.sign_extend_from(actual_width).unwrap();
                     assert_eq!(apint.resize_to_i64(), digit.repr() as i64);
                 }
@@ -789,6 +785,33 @@ mod tests {
         fn to_u64() {
             for (val, apint) in test_vals_and_apints() {
                 assert_eq!(apint.resize_to_u64(), val as u64)
+            }
+        }
+
+        #[test]
+        fn to_i128() {
+            for (val, apint) in test_vals_and_apints() {
+                let actual_width = apint.width();
+                let target_width = PrimitiveTy::I128.associated_width();
+                // println!("tests::resize::to_i128::val         = {:?}", val);
+                // println!("tests::resize::to_i128::val as u128 = {:?}", val as u128);
+                // println!("tests::resize::to_i128::apint       = {:?}", apint);
+                // println!("tests::resize::to_i128::-------");
+                if actual_width < target_width {
+                    let mut digit = Digit(val as u64);
+                    digit.sign_extend_from(actual_width).unwrap();
+                    assert_eq!(apint.resize_to_i128(), digit.repr() as i64 as i128);
+                }
+                else {
+                    assert_eq!(apint.resize_to_i128(), val as i128)
+                }
+            }
+        }
+
+        #[test]
+        fn to_u128() {
+            for (val, apint) in test_vals_and_apints() {
+                assert_eq!(apint.resize_to_u128(), val)
             }
         }
 
