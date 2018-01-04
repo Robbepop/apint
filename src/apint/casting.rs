@@ -195,6 +195,7 @@ impl ApInt {
 				.truncate_to(excess_width)
 				.expect("Excess bits are guaranteed to be within the bounds for valid \
 					     truncation of a single `Digit`.");
+			self.len = target_width;
 		}
 		else {
 			// We need to copy the digits for a correct truncation, here!
