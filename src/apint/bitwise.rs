@@ -568,4 +568,34 @@ mod tests {
 		assert_eq!(ApInt::signed_max_value(BitWidth::w128()).leading_zeros(), 1);
 	}
 
+	#[test]
+	fn trailing_zeros() {
+		assert_eq!(ApInt::zero(BitWidth::w1()).trailing_zeros(), 1);
+		assert_eq!(ApInt::zero(BitWidth::w8()).trailing_zeros(), 8);
+		assert_eq!(ApInt::zero(BitWidth::w16()).trailing_zeros(), 16);
+		assert_eq!(ApInt::zero(BitWidth::w32()).trailing_zeros(), 32);
+		assert_eq!(ApInt::zero(BitWidth::w64()).trailing_zeros(), 64);
+		assert_eq!(ApInt::zero(BitWidth::w128()).trailing_zeros(), 128);
+
+		assert_eq!(ApInt::one(BitWidth::w1()).trailing_zeros(), 0);
+		assert_eq!(ApInt::one(BitWidth::w8()).trailing_zeros(), 0);
+		assert_eq!(ApInt::one(BitWidth::w16()).trailing_zeros(), 0);
+		assert_eq!(ApInt::one(BitWidth::w32()).trailing_zeros(), 0);
+		assert_eq!(ApInt::one(BitWidth::w64()).trailing_zeros(), 0);
+		assert_eq!(ApInt::one(BitWidth::w128()).trailing_zeros(), 0);
+
+		assert_eq!(ApInt::signed_min_value(BitWidth::w1()).trailing_zeros(), 0);
+		assert_eq!(ApInt::signed_min_value(BitWidth::w8()).trailing_zeros(), 8 - 1);
+		assert_eq!(ApInt::signed_min_value(BitWidth::w16()).trailing_zeros(), 16 - 1);
+		assert_eq!(ApInt::signed_min_value(BitWidth::w32()).trailing_zeros(), 32 - 1);
+		assert_eq!(ApInt::signed_min_value(BitWidth::w64()).trailing_zeros(), 64 - 1);
+		assert_eq!(ApInt::signed_min_value(BitWidth::w128()).trailing_zeros(), 128 - 1);
+
+		assert_eq!(ApInt::signed_max_value(BitWidth::w1()).trailing_zeros(), 1);
+		assert_eq!(ApInt::signed_max_value(BitWidth::w8()).trailing_zeros(), 0);
+		assert_eq!(ApInt::signed_max_value(BitWidth::w16()).trailing_zeros(), 0);
+		assert_eq!(ApInt::signed_max_value(BitWidth::w32()).trailing_zeros(), 0);
+		assert_eq!(ApInt::signed_max_value(BitWidth::w64()).trailing_zeros(), 0);
+		assert_eq!(ApInt::signed_max_value(BitWidth::w128()).trailing_zeros(), 0);
+	}
 }
