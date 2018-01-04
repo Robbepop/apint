@@ -601,4 +601,28 @@ mod tests {
 			assert_eq!(explicit_u128, expected);
 		}
 	}
+
+	#[test]
+	fn zero() {
+		assert_eq!(ApInt::zero(BitWidth::w1()), ApInt::from_bit(false));
+		assert_eq!(ApInt::zero(BitWidth::w8()), ApInt::from_u8(0));
+		assert_eq!(ApInt::zero(BitWidth::w16()), ApInt::from_u16(0));
+		assert_eq!(ApInt::zero(BitWidth::w32()), ApInt::from_u32(0));
+		assert_eq!(ApInt::zero(BitWidth::w64()), ApInt::from_u64(0));
+		assert_eq!(ApInt::zero(BitWidth::w128()), ApInt::from_u128(0));
+		assert_eq!(ApInt::zero(BitWidth::new(192).unwrap()), ApInt::from([0_u64; 3]));
+		assert_eq!(ApInt::zero(BitWidth::new(256).unwrap()), ApInt::from([0_u64; 4]));
+	}
+
+	#[test]
+	fn one() {
+		assert_eq!(ApInt::one(BitWidth::w1()), ApInt::from_bit(true));
+		assert_eq!(ApInt::one(BitWidth::w8()), ApInt::from_u8(1));
+		assert_eq!(ApInt::one(BitWidth::w16()), ApInt::from_u16(1));
+		assert_eq!(ApInt::one(BitWidth::w32()), ApInt::from_u32(1));
+		assert_eq!(ApInt::one(BitWidth::w64()), ApInt::from_u64(1));
+		assert_eq!(ApInt::one(BitWidth::w128()), ApInt::from_u128(1));
+		assert_eq!(ApInt::one(BitWidth::new(192).unwrap()), ApInt::from([0_u64, 0, 1]));
+		assert_eq!(ApInt::one(BitWidth::new(256).unwrap()), ApInt::from([0_u64, 0, 0, 1]));
+	}
 }
