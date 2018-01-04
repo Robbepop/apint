@@ -895,5 +895,70 @@ mod tests {
                 .is_err()
             );
         }
+
+        #[test]
+        fn to_u8() {
+            for (val, apint) in test_vals_and_apints() {
+                let result = apint.try_to_u8();
+                if PrimitiveTy::U8.is_valid_dd(val) {
+                    assert_eq!(result, Ok(val as u8))
+                }
+                else {
+                    assert!(result.is_err())
+                }
+            }
+        }
+
+        #[test]
+        fn to_u16() {
+            for (val, apint) in test_vals_and_apints() {
+                let result = apint.try_to_u16();
+                if PrimitiveTy::U16.is_valid_dd(val) {
+                    assert_eq!(result, Ok(val as u16))
+                }
+                else {
+                    assert!(result.is_err())
+                }
+            }
+        }
+
+        #[test]
+        fn to_u32() {
+            for (val, apint) in test_vals_and_apints() {
+                let result = apint.try_to_u32();
+                if PrimitiveTy::U32.is_valid_dd(val) {
+                    assert_eq!(result, Ok(val as u32))
+                }
+                else {
+                    assert!(result.is_err())
+                }
+            }
+        }
+
+        #[test]
+        fn to_u64() {
+            for (val, apint) in test_vals_and_apints() {
+                let result = apint.try_to_u64();
+                if PrimitiveTy::U64.is_valid_dd(val) {
+                    assert_eq!(result, Ok(val as u64))
+                }
+                else {
+                    assert!(result.is_err())
+                }
+            }
+        }
+
+        #[test]
+        fn to_u128() {
+            for (val, apint) in test_vals_and_apints() {
+                let result = apint.try_to_u128();
+                if PrimitiveTy::U128.is_valid_dd(val) {
+                    assert_eq!(result, Ok(val as u128))
+                }
+                else {
+                    assert!(result.is_err())
+                }
+            }
+        }
     }
 }
