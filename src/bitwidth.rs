@@ -146,26 +146,31 @@ impl BitWidth {
 	}
 }
 
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
-pub(crate) struct BitWidthIter {
-	total: usize,
-	cur  : usize
-}
+#[cfg(test)]
+mod tests {
+	use super::*;
 
-impl BitWidthIter {
-	pub fn new(total: usize) -> BitWidthIter {
-		BitWidthIter{total, cur: 0}
-	}
-}
+	mod excess_bits {
+		use super::*;
 
-impl Iterator for BitWidthIter {
-	type Item = BitWidth;
+		#[test]
+		fn powers_of_two() {
+			assert_eq!(BitWidth::w1().excess_bits(), Some(1));
+			assert_eq!(BitWidth::w8().excess_bits(), Some(8));
+			assert_eq!(BitWidth::w16().excess_bits(), Some(16));
+			assert_eq!(BitWidth::w32().excess_bits(), Some(32));
+			assert_eq!(BitWidth::w64().excess_bits(), None);
+			assert_eq!(BitWidth::w128().excess_bits(), None);
+		}
 
-	fn next(&mut self) -> Option<Self::Item> {
-		if self.cur >= self.total { return None; }
-		use std::cmp;
-		let cur = cmp::max(self.total - self.cur, digit::BITS);
-		self.cur += digit::BITS;
-		Some(BitWidth(cur))
+		#[test]
+		fn multiples_of_50() {
+			assert_eq!(BitWidth::new(50).unwrap().excess_bits(), Some(50));
+			assert_eq!(BitWidth::new(100).unwrap().excess_bits(), Some(36));
+			assert_eq!(BitWidth::new(150).unwrap().excess_bits(), Some(22));
+			assert_eq!(BitWidth::new(200).unwrap().excess_bits(), Some(8));
+			assert_eq!(BitWidth::new(250).unwrap().excess_bits(), Some(58));
+			assert_eq!(BitWidth::new(300).unwrap().excess_bits(), Some(44));
+		}
 	}
 }
