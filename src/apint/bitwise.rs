@@ -215,6 +215,11 @@ impl ApInt {
 
 	/// Flips the bit at the given bit position `pos`.
 	/// 
+	/// # Note
+	/// 
+	/// - If the bit at the given position was `0` it will be `1`
+	///   after this operation and vice versa.
+	/// 
 	/// # Errors
 	/// 
 	/// - If `pos` is not a valid bit position for the width of this `ApInt`.
