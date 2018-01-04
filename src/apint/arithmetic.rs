@@ -44,7 +44,18 @@ impl ApInt {
 					              of bits that is compatible for use in a `Digit`.");
 				}
 			}
-			DataAccessMut::Ext(_digits) => {
+			DataAccessMut::Ext(_) => {
+				// Negation of a twos-complement number is accomplished
+				// by inverting all bits and adding one (`1`) to the result.
+				// 
+				// A so-called negation overflow happens for the minimum
+				// number, i.e. `0x1000_0000` for `i32` but this will silently
+				// be computed by this library wihout an error.
+				// 
+				// Future implementation below:
+				// self.bitwise_not_inplace();
+				// self.increment_by(1);
+				// self.clear_unused_bits();
 				unimplemented!()
 			}
 		}
