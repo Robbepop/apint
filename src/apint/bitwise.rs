@@ -8,6 +8,7 @@ use apint::utils::{
 	ZipDataAccessMut
 };
 use bitpos::{BitPos};
+use traits::{Width};
 use checks;
 
 use std::ops::{
@@ -277,6 +278,35 @@ impl ApInt {
 		self.most_significant_bit()
 	}
 
+	/// Sets the sign bit of this `ApInt` to one (`1`).
+	pub fn set_sign_bit(&mut self) {
+		let sign_bit_pos = self.width().sign_bit_pos();
+		self.set_bit_at(sign_bit_pos)
+		    .expect("`BitWidth::sign_bit_pos` always returns a valid `BitPos`
+			         for usage in the associated `ApInt` for operating on bits.")
+	}
+
+	/// Sets the sign bit of this `ApInt` to zero (`0`).
+	pub fn unset_sign_bit(&mut self) {
+		let sign_bit_pos = self.width().sign_bit_pos();
+		self.unset_bit_at(sign_bit_pos)
+		    .expect("`BitWidth::sign_bit_pos` always returns a valid `BitPos`
+			         for usage in the associated `ApInt` for operating on bits.")
+	}
+
+	/// Flips the sign bit of this `ApInt`.
+	/// 
+	/// # Note
+	/// 
+	/// - If the sign bit was `0` it will be `1` after this operation and vice versa.
+	/// - Depending on the interpretation of the `ApInt` this
+	///   operation changes its signedness.
+	pub fn flip_sign_bit(&mut self) {
+		let sign_bit_pos = self.width().sign_bit_pos();
+		self.flip_bit_at(sign_bit_pos)
+		    .expect("`BitWidth::sign_bit_pos` always returns a valid `BitPos`
+			         for usage in the associated `ApInt` for operating on bits.")
+	}
 }
 
 //  ===========================================================================
