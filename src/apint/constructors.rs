@@ -625,4 +625,19 @@ mod tests {
 		assert_eq!(ApInt::one(BitWidth::new(192).unwrap()), ApInt::from([0_u64, 0, 1]));
 		assert_eq!(ApInt::one(BitWidth::new(256).unwrap()), ApInt::from([0_u64, 0, 0, 1]));
 	}
+
+	#[test]
+	fn all_unset_eq_zero() {
+		let test_widths =
+			[
+				1_usize, 2, 4, 8, 10, 16, 32, 50, 64,
+				100, 128, 150, 200, 250, 255, 256
+			]
+			.into_iter()
+			.map(|&w| BitWidth::new(w).unwrap());
+		for width in test_widths {
+			assert_eq!(ApInt::zero(width), ApInt::all_unset(width));
+		}
+	}
+
 }
