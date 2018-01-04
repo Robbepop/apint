@@ -640,4 +640,13 @@ mod tests {
 		}
 	}
 
+	#[test]
+	fn same_signed_unsigned() {
+		assert_eq!(ApInt::from_i8(-1), ApInt::from_u8(0xFF));
+		assert_eq!(ApInt::from_i16(-1), ApInt::from_u16(0xFFFF));
+		assert_eq!(ApInt::from_i32(-1), ApInt::from_u32(0xFFFF_FFFF));
+		assert_eq!(ApInt::from_i64(-1), ApInt::from_u64(0xFFFF_FFFF_FFFF_FFFF));
+		assert_eq!(ApInt::from_i128(-1), ApInt::from_u128(0xFFFF_FFFF_FFFF_FFFF_FFFF_FFFF_FFFF_FFFF));
+	}
+
 }
