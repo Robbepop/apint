@@ -681,4 +681,18 @@ mod tests {
 		}
 	}
 
+	#[test]
+	fn unsiged_max_value_eq_all_set() {
+		let test_widths =
+			[
+				1_usize, 2, 4, 8, 10, 16, 32, 50, 64,
+				100, 128, 150, 200, 250, 255, 256
+			]
+			.into_iter()
+			.map(|&w| BitWidth::new(w).unwrap());
+		for width in test_widths {
+			assert_eq!(ApInt::all_set(width), ApInt::unsigned_max_value(width));
+		}
+	}
+
 }
