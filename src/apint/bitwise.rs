@@ -310,6 +310,57 @@ impl ApInt {
 }
 
 //  ===========================================================================
+///  Bitwise utility methods.
+/// ===========================================================================
+impl ApInt {
+	/// Returns the number of ones in the binary representation of this `ApInt`.
+	pub fn count_ones(&self) -> usize {
+		self.as_digit_slice()
+		    .into_iter()
+		    .map(|d| d.repr().count_ones() as usize)
+		    .sum::<usize>()
+	}
+
+	/// Returns the number of zeros in the binary representation of this `ApInt`.
+	pub fn count_zeros(&self) -> usize {
+		let zeros = self.as_digit_slice()
+			.into_iter()
+		    .map(|d| d.repr().count_ones() as usize)
+			.sum::<usize>();
+		// Since `ApInt` instances with width's that are no powers of two
+		// have unused excess bits that are always zero we need to cut them off
+		// for a correct implementation of this operation.
+		zeros - self.width().excess_bits().unwrap_or(0)
+	}
+
+	/// Returns the number of leading zeros in the binary representation of this `ApInt`.
+	pub fn leading_zeros(&self) -> usize {
+		let mut zeros = 0;
+		for d in self.as_digit_slice().into_iter().rev() {
+			let leading_zeros = d.repr().leading_zeros() as usize;
+			zeros += leading_zeros;
+			if leading_zeros != digit::BITS {
+				break;
+			}
+		}
+		zeros
+	}
+
+	/// Returns the number of trailing zeros in the binary representation of this `ApInt`.
+	pub fn trailing_zeros(&self) -> usize {
+		let mut zeros = 0;
+		for d in self.as_digit_slice() {
+			let trailing_zeros = d.repr().trailing_zeros() as usize;
+			zeros += trailing_zeros;
+			if trailing_zeros != digit::BITS {
+				break;
+			}
+		}
+		zeros
+	}
+}
+
+//  ===========================================================================
 //  `BitAnd` impls
 //  ===========================================================================
 
