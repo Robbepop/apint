@@ -343,7 +343,7 @@ impl ApInt {
 				break;
 			}
 		}
-		zeros
+		zeros - (digit::BITS - self.width().excess_bits().unwrap_or(digit::BITS))
 	}
 
 	/// Returns the number of trailing zeros in the binary representation of this `ApInt`.
