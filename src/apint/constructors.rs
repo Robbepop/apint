@@ -712,4 +712,20 @@ mod tests {
 		}
 	}
 
+	#[test]
+	fn signed_max_value() {
+		assert_eq!(ApInt::signed_max_value(BitWidth::w1()), ApInt::from_bit(false));
+		assert_eq!(ApInt::signed_max_value(BitWidth::w8()), ApInt::from_i8(i8::max_value()));
+		assert_eq!(ApInt::signed_max_value(BitWidth::w16()), ApInt::from_i16(i16::max_value()));
+		assert_eq!(ApInt::signed_max_value(BitWidth::w32()), ApInt::from_i32(i32::max_value()));
+		assert_eq!(ApInt::signed_max_value(BitWidth::w64()), ApInt::from_i64(i64::max_value()));
+		assert_eq!(ApInt::signed_max_value(BitWidth::w128()), ApInt::from_i128(i128::max_value()));
+
+		{
+			let w10 = BitWidth::new(10).unwrap();
+			assert_eq!(
+				ApInt::signed_max_value(w10), ApInt::new_inl(w10, Digit(0x0000_0000_0000_01FF))
+			)
+		}
+	}
 }
