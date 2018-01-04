@@ -188,6 +188,28 @@ impl ApInt {
 		}
 	}
 
+	/// Computes the given operation on all digits of this `ApInt`
+	/// zipped with the digits of `rhs`.
+	/// 
+	/// # Note
+	/// 
+	/// Prefer this utility method for these use cases since this operation
+	/// uses the most efficient way to perform the specified task.
+	pub(in apint) fn modify_zipped_digits<F>(&mut self, rhs: &ApInt, f: F) -> Result<()>
+		where F: Fn(&mut Digit, Digit)
+	{
+		use self::ZipDataAccessMut::*;
+		match self.zip_access_data_mut(rhs)? {
+			Inl(lhs, rhs) => f(lhs, rhs),
+			Ext(lhs, rhs) => {
+				for (l, &r) in lhs.into_iter().zip(rhs) {
+					f(l, r)
+				}
+			}
+		}
+		Ok(())
+	}
+
 	/// Returns a slice over the `Digit`s of this `ApInt` in little-endian order.
 	pub(in apint) fn as_digit_slice(&self) -> &[Digit] {
 		use std::slice;
