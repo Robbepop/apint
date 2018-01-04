@@ -325,7 +325,7 @@ impl ApInt {
 	pub fn count_zeros(&self) -> usize {
 		let zeros = self.as_digit_slice()
 			.into_iter()
-		    .map(|d| d.repr().count_ones() as usize)
+		    .map(|d| d.repr().count_zeros() as usize)
 			.sum::<usize>();
 		// Since `ApInt` instances with width's that are no powers of two
 		// have unused excess bits that are always zero we need to cut them off
