@@ -61,5 +61,22 @@ impl ApInt {
         self.truncate(width)
             .expect("Truncating to its own width will simply restore the
                      invariant that excess bits are set to zero (`0`).");
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn random_with_width_using() {
+        let mut rng = rand::XorShiftRng::new_unseeded();
+        let r = &mut rng;
+        assert_eq!(ApInt::random_with_width_using(BitWidth::w1(), r), ApInt::from_bit(false));
+        assert_eq!(ApInt::random_with_width_using(BitWidth::w8(), r), ApInt::from_u8(140));
+        assert_eq!(ApInt::random_with_width_using(BitWidth::w16(), r), ApInt::from_u16(970));
+        assert_eq!(ApInt::random_with_width_using(BitWidth::w32(), r), ApInt::from_u32(2466290541));
+        assert_eq!(ApInt::random_with_width_using(BitWidth::w64(), r), ApInt::from_u64(16730135874920933484));
+        assert_eq!(ApInt::random_with_width_using(BitWidth::w128(), r), ApInt::from_u128(217725508292902744084870179638383324996));
+    }
+
     }
 }
