@@ -4,8 +4,7 @@ use digit;
 use errors::{Result};
 use apint::utils::{
 	DataAccess,
-	DataAccessMut,
-	ZipDataAccessMut
+	DataAccessMut
 };
 use bitpos::{BitPos};
 use traits::{Width};
@@ -54,17 +53,7 @@ impl ApInt {
 	/// 
 	/// If `self` and `rhs` have unmatching bit widths.
 	pub fn checked_bitand_assign(&mut self, rhs: &ApInt) -> Result<()> {
-		match self.zip_access_data_mut(rhs)? {
-			ZipDataAccessMut::Inl(lhs, rhs) => {
-				*lhs &= rhs
-			}
-			ZipDataAccessMut::Ext(lhs, rhs) => {
-				lhs.into_iter()
-				   .zip(rhs.into_iter())
-				   .for_each(|(l, r)| *l &= *r)
-			}
-		}
-		Ok(())
+		self.modify_zipped_digits(rhs, |l, r| *l &= r)
 	}
 
 	/// Tries to bit-and assign this `ApInt` inplace to `rhs`
@@ -90,17 +79,7 @@ impl ApInt {
 	/// 
 	/// If `self` and `rhs` have unmatching bit widths.
 	pub fn checked_bitor_assign(&mut self, rhs: &ApInt) -> Result<()> {
-		match self.zip_access_data_mut(rhs)? {
-			ZipDataAccessMut::Inl(lhs, rhs) => {
-				*lhs |= rhs
-			}
-			ZipDataAccessMut::Ext(lhs, rhs) => {
-				lhs.into_iter()
-				   .zip(rhs.into_iter())
-				   .for_each(|(l, r)| *l |= *r)
-			}
-		}
-		Ok(())
+		self.modify_zipped_digits(rhs, |l, r| *l |= r)
 	}
 
 	/// Tries to bit-xor assign this `ApInt` inplace to `rhs`
@@ -126,17 +105,7 @@ impl ApInt {
 	/// 
 	/// If `self` and `rhs` have unmatching bit widths.
 	pub fn checked_bitxor_assign(&mut self, rhs: &ApInt) -> Result<()> {
-		match self.zip_access_data_mut(rhs)? {
-			ZipDataAccessMut::Inl(lhs, rhs) => {
-				*lhs ^= rhs
-			}
-			ZipDataAccessMut::Ext(lhs, rhs) => {
-				lhs.into_iter()
-				   .zip(rhs.into_iter())
-				   .for_each(|(l, r)| *l ^= *r)
-			}
-		}
-		Ok(())
+		self.modify_zipped_digits(rhs, |l, r| *l ^= r)
 	}
 }
 
