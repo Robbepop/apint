@@ -330,7 +330,7 @@ impl ApInt {
 		// Since `ApInt` instances with width's that are no powers of two
 		// have unused excess bits that are always zero we need to cut them off
 		// for a correct implementation of this operation.
-		zeros - self.width().excess_bits().unwrap_or(0)
+		zeros - (digit::BITS - self.width().excess_bits().unwrap_or(digit::BITS))
 	}
 
 	/// Returns the number of leading zeros in the binary representation of this `ApInt`.
