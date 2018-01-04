@@ -27,15 +27,7 @@ impl ApInt {
 
 	/// Flip all bits of this `ApInt` inplace.
 	pub fn bitnot(&mut self) {
-		match self.access_data_mut() {
-			DataAccessMut::Inl(digit) => {
-				digit.not_inplace()
-			}
-			DataAccessMut::Ext(digits) => {
-				digits.into_iter()
-				      .for_each(|digit| digit.not_inplace())
-			}
-		}
+		self.modify_digits(|digit| digit.not_inplace());
 		self.clear_unused_bits();
 	}
 
@@ -240,35 +232,17 @@ impl ApInt {
 
 	/// Sets all bits of this `ApInt` to one (`1`).
 	pub fn set_all(&mut self) {
-		match self.access_data_mut() {
-			DataAccessMut::Inl(digit) => digit.set_all(),
-			DataAccessMut::Ext(digits) => {
-				digits.into_iter()
-				      .for_each(|digit| digit.set_all())
-			}
-		}
+		self.modify_digits(|digit| digit.set_all());
 	}
 
 	/// Sets all bits of this `ApInt` to zero (`0`).
 	pub fn unset_all(&mut self) {
-		match self.access_data_mut() {
-			DataAccessMut::Inl(digit) => digit.unset_all(),
-			DataAccessMut::Ext(digits) => {
-				digits.into_iter()
-				      .for_each(|digit| digit.unset_all())
-			}
-		}
+		self.modify_digits(|digit| digit.unset_all());
 	}
 
 	/// Flips all bits of this `ApInt`.
 	pub fn flip_all(&mut self) {
-		match self.access_data_mut() {
-			DataAccessMut::Inl(digit) => digit.flip_all(),
-			DataAccessMut::Ext(digits) => {
-				digits.into_iter()
-				      .for_each(|digit| digit.flip_all())
-			}
-		}
+		self.modify_digits(|digit| digit.flip_all());
 	}
 
 	/// Returns the sign bit of this `ApInt`.
