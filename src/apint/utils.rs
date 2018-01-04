@@ -167,6 +167,27 @@ impl ApInt {
 		})
 	}
 
+	/// Computes the given operation on all digits of this `ApInt`.
+	/// 
+	/// # Note
+	/// 
+	/// Prefer this utility method if you want to perform the same
+	/// operation for all digits within this `ApInt` as this operation
+	/// uses the most efficient way to do so.
+	pub(in apint) fn modify_digits<F>(&mut self, f: F)
+		where F: Fn(&mut Digit)
+	{
+		use self::DataAccessMut::*;
+		match self.access_data_mut() {
+			Inl(digit) => f(digit),
+			Ext(digits) => {
+				for digit in digits {
+					f(digit)
+				}
+			}
+		}
+	}
+
 	/// Returns a slice over the `Digit`s of this `ApInt` in little-endian order.
 	pub(in apint) fn as_digit_slice(&self) -> &[Digit] {
 		use std::slice;
