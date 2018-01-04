@@ -356,6 +356,9 @@ impl ApInt {
 				break;
 			}
 		}
+		if zeros >= self.width().to_usize() {
+			zeros -= digit::BITS - self.width().excess_bits().unwrap_or(digit::BITS);
+		}
 		zeros
 	}
 }
