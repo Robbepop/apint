@@ -695,4 +695,21 @@ mod tests {
 		}
 	}
 
+	#[test]
+	fn signed_min_value() {
+		assert_eq!(ApInt::signed_min_value(BitWidth::w1()), ApInt::from_bit(true));
+		assert_eq!(ApInt::signed_min_value(BitWidth::w8()), ApInt::from_i8(i8::min_value()));
+		assert_eq!(ApInt::signed_min_value(BitWidth::w16()), ApInt::from_i16(i16::min_value()));
+		assert_eq!(ApInt::signed_min_value(BitWidth::w32()), ApInt::from_i32(i32::min_value()));
+		assert_eq!(ApInt::signed_min_value(BitWidth::w64()), ApInt::from_i64(i64::min_value()));
+		assert_eq!(ApInt::signed_min_value(BitWidth::w128()), ApInt::from_i128(i128::min_value()));
+
+		{
+			let w10 = BitWidth::new(10).unwrap();
+			assert_eq!(
+				ApInt::signed_min_value(w10), ApInt::new_inl(w10, Digit(0x0000_0000_0000_0200))
+			)
+		}
+	}
+
 }
