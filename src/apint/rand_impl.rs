@@ -56,11 +56,9 @@ impl ApInt {
         self.digits_mut()
             .zip(rng.gen_iter::<Digit>())
             .for_each(|(d, r)| *d = r);
-        use traits::Width;
-        let width = self.width();
-        self.truncate(width)
-            .expect("Truncating to its own width will simply restore the
-                     invariant that excess bits are set to zero (`0`).");
+        self.clear_unused_bits();
+    }
+}
 
 #[cfg(test)]
 mod tests {
