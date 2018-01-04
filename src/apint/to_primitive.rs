@@ -821,10 +821,6 @@ mod tests {
             for (val, apint) in test_vals_and_apints() {
                 let actual_width = apint.width();
                 let target_width = PrimitiveTy::I128.associated_width();
-                // println!("tests::resize::to_i128::val         = {:?}", val);
-                // println!("tests::resize::to_i128::val as u128 = {:?}", val as u128);
-                // println!("tests::resize::to_i128::apint       = {:?}", apint);
-                // println!("tests::resize::to_i128::-------");
                 if actual_width < target_width {
                     let mut digit = Digit(val as u64);
                     digit.sign_extend_from(actual_width).unwrap();
