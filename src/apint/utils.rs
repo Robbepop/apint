@@ -236,7 +236,7 @@ impl ApInt {
 	pub(in apint) fn most_significant_bit(&self) -> Bit {
 		let sign_bit_pos = self.width().sign_bit_pos();
 		self.most_significant_digit()
-			.get(sign_bit_pos)
+			.get(sign_bit_pos.to_pos_within_digit())
 			.expect("`BitWidth::excess_bits` returns a number that \
 						is always a valid `BitPos` for a `Digit` so this \
 						operation cannot fail.")
