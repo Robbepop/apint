@@ -54,14 +54,14 @@ State of the API modules implemented so far:
 |        Module       | Design | Implementation | Testing | TODO |
 |:-------------------:|:------:|:--------------:|:-------:|:----:|
 | `arithmetic`        | **done** | *not started* | *not started* | |
-| `constructors`      | **done** | **done** | unfinished | |
+| `constructors`      | **done** | **done** | **done** | |
 | `casting`           | **done** | **done** | *not started* | issue [#4](https://github.com/Robbepop/apint/issues/4) |
 | `bitwise`           | **done** | **done** | *not started* | |
 | `shift`             | **done** | **done** |  **done** | |
 | `relational`        | **done** | **done** | *not started* | |
 | `utils`             | **done** | **done** | *not started* | |
 | `serialization`     | **done** | unfinished | unfinished | depends on `arithmetic` |
-| `to_primitive`      | **done** | **done** | **done** | issue [#5](https://github.com/Robbepop/apint/issues/5) |
+| `to_primitive`      | **done** | **done** | **done** | |
 | `serde_impl` (opt.) | **done** | **done** | **done** | |
 | `rand_impl` (opt.)  | **done** | **done** | **done** | |
 
