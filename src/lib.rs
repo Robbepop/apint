@@ -67,3 +67,4 @@ pub use bitwidth::BitWidth;
 pub use digit::{Bit};
 pub use radix::{Radix};
 pub use bitpos::{BitPos};
+pub use traits::{Width};
