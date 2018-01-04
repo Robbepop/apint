@@ -63,7 +63,7 @@ State of the API modules implemented so far:
 | `serialization`     | **done** | unfinished | unfinished | depends on `arithmetic` |
 | `to_primitive`      | **done** | **done** | **done** | issue [#5](https://github.com/Robbepop/apint/issues/5) |
 | `serde_impl` (opt.) | **done** | **done** | **done** | |
-| `rand_impl` (opt.)  | **done** | **done** | *not started* | |
+| `rand_impl` (opt.)  | **done** | **done** | **done** | |
 
 ## Planned Features
 
