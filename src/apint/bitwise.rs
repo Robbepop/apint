@@ -468,3 +468,42 @@ impl<'a> BitXorAssign<&'a ApInt> for ApInt {
         self.checked_bitxor_assign(rhs).unwrap();
     }
 }
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+
+	use bitwidth::{BitWidth};
+
+	#[test]
+	fn count_ones() {
+		assert_eq!(ApInt::zero(BitWidth::w1()).count_ones(), 0);
+		assert_eq!(ApInt::zero(BitWidth::w8()).count_ones(), 0);
+		assert_eq!(ApInt::zero(BitWidth::w16()).count_ones(), 0);
+		assert_eq!(ApInt::zero(BitWidth::w32()).count_ones(), 0);
+		assert_eq!(ApInt::zero(BitWidth::w64()).count_ones(), 0);
+		assert_eq!(ApInt::zero(BitWidth::w128()).count_ones(), 0);
+
+		assert_eq!(ApInt::one(BitWidth::w1()).count_ones(), 1);
+		assert_eq!(ApInt::one(BitWidth::w8()).count_ones(), 1);
+		assert_eq!(ApInt::one(BitWidth::w16()).count_ones(), 1);
+		assert_eq!(ApInt::one(BitWidth::w32()).count_ones(), 1);
+		assert_eq!(ApInt::one(BitWidth::w64()).count_ones(), 1);
+		assert_eq!(ApInt::one(BitWidth::w128()).count_ones(), 1);
+
+		assert_eq!(ApInt::signed_min_value(BitWidth::w1()).count_ones(), 1);
+		assert_eq!(ApInt::signed_min_value(BitWidth::w8()).count_ones(), 1);
+		assert_eq!(ApInt::signed_min_value(BitWidth::w16()).count_ones(), 1);
+		assert_eq!(ApInt::signed_min_value(BitWidth::w32()).count_ones(), 1);
+		assert_eq!(ApInt::signed_min_value(BitWidth::w64()).count_ones(), 1);
+		assert_eq!(ApInt::signed_min_value(BitWidth::w128()).count_ones(), 1);
+
+		assert_eq!(ApInt::signed_max_value(BitWidth::w1()).count_ones(), 0);
+		assert_eq!(ApInt::signed_max_value(BitWidth::w8()).count_ones(), 8 - 1);
+		assert_eq!(ApInt::signed_max_value(BitWidth::w16()).count_ones(), 16 - 1);
+		assert_eq!(ApInt::signed_max_value(BitWidth::w32()).count_ones(), 32 - 1);
+		assert_eq!(ApInt::signed_max_value(BitWidth::w64()).count_ones(), 64 - 1);
+		assert_eq!(ApInt::signed_max_value(BitWidth::w128()).count_ones(), 128 - 1);
+	}
+
+}
