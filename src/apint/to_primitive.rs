@@ -897,6 +897,116 @@ mod tests {
         }
 
         #[test]
+        fn to_i8() {
+            for (val, apint) in test_vals_and_apints() {
+                if PrimitiveTy::I8.is_valid_dd(val) {
+                    let actual_width = apint.width();
+                    let target_width = PrimitiveTy::I8.associated_width();
+                    if actual_width < target_width {
+                        let mut digit = Digit(val as u64);
+                        digit.sign_extend_from(actual_width).unwrap();
+                        digit.truncate_to(target_width).unwrap();
+                        assert_eq!(apint.try_to_i8(), Ok(digit.repr() as i8));
+                    }
+                    else {
+                        assert_eq!(apint.try_to_i8(), Ok(val as i8))
+                    }
+                }
+                else {
+                    assert!(apint.try_to_i8().is_err())
+                }
+            }
+        }
+
+        #[test]
+        fn to_i16() {
+            for (val, apint) in test_vals_and_apints() {
+                if PrimitiveTy::I16.is_valid_dd(val) {
+                    let actual_width = apint.width();
+                    let target_width = PrimitiveTy::I16.associated_width();
+                    if actual_width < target_width {
+                        let mut digit = Digit(val as u64);
+                        digit.sign_extend_from(actual_width).unwrap();
+                        digit.truncate_to(target_width).unwrap();
+                        assert_eq!(apint.try_to_i16(), Ok(digit.repr() as i16));
+                    }
+                    else {
+                        assert_eq!(apint.try_to_i16(), Ok(val as i16))
+                    }
+                }
+                else {
+                    assert!(apint.try_to_i16().is_err())
+                }
+            }
+        }
+
+        #[test]
+        fn to_i32() {
+            for (val, apint) in test_vals_and_apints() {
+                if PrimitiveTy::I32.is_valid_dd(val) {
+                    let actual_width = apint.width();
+                    let target_width = PrimitiveTy::I32.associated_width();
+                    if actual_width < target_width {
+                        let mut digit = Digit(val as u64);
+                        digit.sign_extend_from(actual_width).unwrap();
+                        digit.truncate_to(target_width).unwrap();
+                        assert_eq!(apint.try_to_i32(), Ok(digit.repr() as i32));
+                    }
+                    else {
+                        assert_eq!(apint.try_to_i32(), Ok(val as i32))
+                    }
+                }
+                else {
+                    assert!(apint.try_to_i32().is_err())
+                }
+            }
+        }
+
+        #[test]
+        fn to_i64() {
+            for (val, apint) in test_vals_and_apints() {
+                if PrimitiveTy::I64.is_valid_dd(val) {
+                    let actual_width = apint.width();
+                    let target_width = PrimitiveTy::I64.associated_width();
+                    if actual_width < target_width {
+                        let mut digit = Digit(val as u64);
+                        digit.sign_extend_from(actual_width).unwrap();
+                        assert_eq!(apint.try_to_i64(), Ok(digit.repr() as i64));
+                    }
+                    else {
+                        assert_eq!(apint.try_to_i64(), Ok(val as i64))
+                    }
+                }
+                else {
+                    assert!(apint.try_to_i64().is_err())
+                }
+            }
+        }
+
+        #[test]
+        fn to_i128() {
+            for (val, apint) in test_vals_and_apints() {
+                if PrimitiveTy::I128.is_valid_dd(val) {
+
+                    let actual_width = apint.width();
+                    let target_width = BitWidth::w128();
+                    let mut result: i128 = val as i128;
+                    if actual_width < target_width {
+                        // Sign extend the `i128`. Fill up with `1` up to `128` bits 
+                        // starting from the sign bit position.
+                        let b = actual_width.to_usize();       // Number of bits representing the number in x.
+                        let m: i128 = 1 << (b - 1);            // Mask can be pre-computed if b is fixed.
+                        result = (result ^ m).wrapping_sub(m); // Resulting sign-extended number.
+                    }
+                    assert_eq!(apint.try_to_i128(), Ok(result))
+                }
+                else {
+                    assert!(apint.try_to_i128().is_err())
+                }
+            }
+        }
+
+        #[test]
         fn to_u8() {
             for (val, apint) in test_vals_and_apints() {
                 let result = apint.try_to_u8();
