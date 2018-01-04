@@ -79,7 +79,7 @@ impl BitWidth {
 	/// Returns the `BitPos` for the sign bit of an `ApInt` with this `BitWidth`.
 	#[inline]
 	pub(crate) fn sign_bit_pos(self) -> BitPos {
-		BitPos::from(self.max_bit_pos().to_usize() % digit::BITS)
+		BitPos::from(self.to_usize() - 1)
 	}
 }
 
