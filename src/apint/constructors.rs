@@ -649,4 +649,22 @@ mod tests {
 		assert_eq!(ApInt::from_i128(-1), ApInt::from_u128(0xFFFF_FFFF_FFFF_FFFF_FFFF_FFFF_FFFF_FFFF));
 	}
 
+	#[test]
+	fn all_set() {
+		assert_eq!(ApInt::all_set(BitWidth::w1()), ApInt::from_bit(true));
+		assert_eq!(ApInt::all_set(BitWidth::w8()), ApInt::from_i8(-1));
+		assert_eq!(ApInt::all_set(BitWidth::w16()), ApInt::from_i16(-1));
+		assert_eq!(ApInt::all_set(BitWidth::w32()), ApInt::from_i32(-1));
+		assert_eq!(ApInt::all_set(BitWidth::w64()), ApInt::from_i64(-1));
+		assert_eq!(ApInt::all_set(BitWidth::w128()), ApInt::from_i128(-1));
+		assert_eq!(
+			ApInt::all_set(BitWidth::new(192).unwrap()),
+			ApInt::from([-1_i64 as u64, -1_i64 as u64, -1_i64 as u64])
+		);
+		assert_eq!(
+			ApInt::all_set(BitWidth::new(256).unwrap()),
+			ApInt::from([-1_i64 as u64, -1_i64 as u64, -1_i64 as u64, -1_i64 as u64])
+		);
+	}
+
 }
