@@ -76,12 +76,6 @@ impl BitWidth {
 		BitPos::new(pos)
 	}
 
-	/// Returns the maximum possible `BitPos` for this `BitWidth`.
-	#[inline]
-	pub(crate) fn max_bit_pos(self) -> BitPos {
-		BitPos::from(self.to_usize() - 1)
-	}
-
 	/// Returns the `BitPos` for the sign bit of an `ApInt` with this `BitWidth`.
 	#[inline]
 	pub(crate) fn sign_bit_pos(self) -> BitPos {
