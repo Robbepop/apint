@@ -667,4 +667,18 @@ mod tests {
 		);
 	}
 
+	#[test]
+	fn unsiged_min_value_eq_zero() {
+		let test_widths =
+			[
+				1_usize, 2, 4, 8, 10, 16, 32, 50, 64,
+				100, 128, 150, 200, 250, 255, 256
+			]
+			.into_iter()
+			.map(|&w| BitWidth::new(w).unwrap());
+		for width in test_widths {
+			assert_eq!(ApInt::zero(width), ApInt::unsigned_min_value(width));
+		}
+	}
+
 }
