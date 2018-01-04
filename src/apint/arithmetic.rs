@@ -37,7 +37,7 @@ impl ApInt {
 		let width = self.width();
 		match self.access_data_mut() {
 			DataAccessMut::Inl(digit) => {
-				*digit.repr_mut() = (-(digit.repr() as i64)) as u64;
+				*digit.repr_mut() = (digit.repr() as i64).wrapping_neg() as u64;
 				if let Some(bits) = width.excess_bits() {
 					digit.retain_last_n(bits)
 					     .expect("`width.excess_bits` will always return a number \
