@@ -233,9 +233,32 @@ impl ApInt {
 	}
 
 	/// Creates a new `ApInt` with the given bit width that has all bits set.
-	pub fn all_set(width: BitWidth) -> ApInt
-	{
+	pub fn all_set(width: BitWidth) -> ApInt {
 		ApInt::repeat_digit(width, digit::ONES)
+	}
+
+	/// Returns the smallest unsigned `ApInt` that can be represented by the given `BitWidth`.
+	pub fn unsigned_min_value(width: BitWidth) -> ApInt {
+		ApInt::zero(width)
+	}
+
+	/// Returns the largest unsigned `ApInt` that can be represented by the given `BitWidth`.
+	pub fn unsigned_max_value(width: BitWidth) -> ApInt {
+		ApInt::all_set(width)
+	}
+
+	/// Returns the smallest signed `ApInt` that can be represented by the given `BitWidth`.
+	pub fn signed_min_value(width: BitWidth) -> ApInt {
+		let mut result = ApInt::zero(width);
+		result.set_sign_bit();
+		result
+	}
+
+	/// Returns the largest signed `ApInt` that can be represented by the given `BitWidth`.
+	pub fn signed_max_value(width: BitWidth) -> ApInt {
+		let mut result = ApInt::all_set(width);
+		result.unset_sign_bit();
+		result
 	}
 }
 
