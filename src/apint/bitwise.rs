@@ -170,8 +170,8 @@ impl ApInt {
 		match self.access_data() {
 			DataAccess::Inl(digit) => digit.get(pos),
 			DataAccess::Ext(digits) => {
-				let digit_idx = pos.to_usize() / digit::BITS;
-				digits[digit_idx].get(pos)
+				let (digit_pos, bit_pos) = pos.to_digit_and_bit_pos();
+				digits[digit_pos].get(bit_pos)
 			}
 		}
 	}
@@ -189,8 +189,8 @@ impl ApInt {
 		match self.access_data_mut() {
 			DataAccessMut::Inl(digit) => digit.set(pos),
 			DataAccessMut::Ext(digits) => {
-				let digit_idx = pos.to_usize() / digit::BITS;
-				digits[digit_idx].set(pos)
+				let (digit_pos, bit_pos) = pos.to_digit_and_bit_pos();
+				digits[digit_pos].set(bit_pos)
 			}
 		}
 	}
@@ -208,8 +208,8 @@ impl ApInt {
 		match self.access_data_mut() {
 			DataAccessMut::Inl(digit) => digit.unset(pos),
 			DataAccessMut::Ext(digits) => {
-				let digit_idx = pos.to_usize() / digit::BITS;
-				digits[digit_idx].unset(pos)
+				let (digit_pos, bit_pos) = pos.to_digit_and_bit_pos();
+				digits[digit_pos].unset(bit_pos)
 			}
 		}
 	}
@@ -232,8 +232,8 @@ impl ApInt {
 		match self.access_data_mut() {
 			DataAccessMut::Inl(digit) => digit.flip(pos),
 			DataAccessMut::Ext(digits) => {
-				let digit_idx = pos.to_usize() / digit::BITS;
-				digits[digit_idx].flip(pos)
+				let (digit_pos, bit_pos) = pos.to_digit_and_bit_pos();
+				digits[digit_pos].flip(bit_pos)
 			}
 		}
 	}
