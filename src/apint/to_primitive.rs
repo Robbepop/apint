@@ -58,6 +58,32 @@ impl PrimitiveTy {
 		}
 	}
 
+    /// Returns `true` if the given `value` is a valid double-digit
+    /// representation for this `PrimitiveTy`.
+    /// 
+    /// # Example
+    /// 
+    /// If this `PrimitiveTy` was `U8` then `200` is a valid representation
+    /// but `256` is not since it is not representable by `8` bits. Only
+    /// unsigned values are considered in this regard.
+    /// 
+    /// # Note
+    /// 
+    /// This functionality is currently only used by local unit tests.
+    #[inline]
+    #[cfg(test)]
+    pub(crate) fn is_valid_dd(self, value: u128) -> bool {
+		use self::PrimitiveTy::*;
+		match self {
+			Bool        => (value == 0) || (value == 1),
+			I8  | U8    => value < (0x1 << 8),
+			I16 | U16   => value < (0x1 << 16),
+			I32 | U32   => value < (0x1 << 32),
+			I64 | U64   => value < (0x1 << 64),
+            I128 | U128 => true
+		}
+	}
+
     /// Returns `true` if this `PrimitiveTy` can represent signedness.
     #[inline]
     pub(crate) fn is_signed(self) -> bool {
