@@ -10,7 +10,7 @@ use digit::{Bit, Digit};
 /// The purpose of this type is to create a generic abstraction
 /// over input types that may act as a `ShiftAmount` for shift
 /// operations.
-#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct ShiftAmount(usize);
 
 impl ShiftAmount {

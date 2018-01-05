@@ -9,7 +9,7 @@ use traits::{Width};
 /// 
 /// Used by the `to_primitive` module for an improved
 /// error reporting.
-#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 pub enum PrimitiveTy {
 	/// Represents Rust's `bool`.
 	Bool,

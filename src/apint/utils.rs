@@ -13,6 +13,7 @@ use digit_seq::{
 };
 
 use std::fmt;
+use std::hash::{Hash, Hasher};
 
 impl fmt::Debug for ApInt {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -20,6 +21,13 @@ impl fmt::Debug for ApInt {
 		 .field("len", &self.width())
 		 .field("digits", &self.as_digit_slice())
 		 .finish()
+	}
+}
+
+impl Hash for ApInt {
+	fn hash<H: Hasher>(&self, state: &mut H) {
+		self.len.hash(state);
+		self.as_digit_slice().hash(state);
 	}
 }
 
