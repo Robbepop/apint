@@ -78,7 +78,7 @@ impl ApInt {
 			ZipDataAccessMut::Ext(lhs, rhs) => {
 				let mut carry = Digit::zero();
 				for (l, r) in lhs.into_iter().zip(rhs) {
-					*l = ll::carry_add_inout(*l, *r, &mut carry);
+					*l = ll::carry_add(*l, *r, &mut carry);
 				}
 			}
 		}
