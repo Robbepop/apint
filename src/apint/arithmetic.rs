@@ -434,3 +434,41 @@ impl<'a> MulAssign<&'a ApInt> for ApInt {
 		self.checked_mul_assign(rhs).unwrap();
 	}
 }
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+
+	mod negate {
+		use super::*;
+
+		use bitwidth::{BitWidth};
+
+		fn assert_symmetry(input: ApInt, expected: ApInt) {
+			assert_eq!(input.clone().into_negate(), expected.clone());
+			assert_eq!(expected.into_negate(), input);
+		}
+
+		fn test_vals() -> impl Iterator<Item = i128> {
+			[0_i128, 1, 2, 4, 5, 7, 10, 42, 50, 100, 128, 150,
+			 1337, 123123, 999999, 987432, 77216417].into_iter().map(|v| *v)
+		}
+
+		#[test]
+		fn simple() {
+			assert_symmetry(ApInt::zero(BitWidth::w1()), ApInt::zero(BitWidth::w1()));
+			assert_symmetry(ApInt::one(BitWidth::w1()), ApInt::all_set(BitWidth::w1()));
+		}
+
+		#[test]
+		fn range() {
+			for v in test_vals() {
+				assert_symmetry(ApInt::from_i8(v as i8), ApInt::from_i8(-v as i8));
+				assert_symmetry(ApInt::from_i16(v as i16), ApInt::from_i16(-v as i16));
+				assert_symmetry(ApInt::from_i32(v as i32), ApInt::from_i32(-v as i32));
+				assert_symmetry(ApInt::from_i64(v as i64), ApInt::from_i64(-v as i64));
+				assert_symmetry(ApInt::from_i128(v), ApInt::from_i128(-v));
+			}
+		}
+	}
+}
