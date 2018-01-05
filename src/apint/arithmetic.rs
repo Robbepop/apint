@@ -49,11 +49,11 @@ impl ApInt {
 				// by inverting all bits and adding one (`1`) to the result.
 				// 
 				// A so-called negation overflow happens for the minimum
-				// number, i.e. `0x1000_0000` for `i32` but this will silently
+				// number, i.e. `0x8000_0000` for `i32` but this will silently
 				// be computed by this library wihout an error.
 				// 
 				// Future implementation below:
-				// self.bitwise_not_inplace();
+				// self.bitnot();
 				// self.increment_by(1);
 				// self.clear_unused_bits();
 				unimplemented!()
