@@ -114,13 +114,21 @@ impl ApInt {
 	/// - If `self` and `rhs` have unmatching bit widths.
 	pub fn checked_sub_assign(&mut self, rhs: &ApInt) -> Result<()> {
 		match self.zip_access_data_mut(rhs)? {
-			ZipDataAccessMut::Inl(_lhs, _rhs) => {
-				unimplemented!()
+			ZipDataAccessMut::Inl(lhs, rhs) => {
+				let lval = lhs.repr();
+				let rval = rhs.repr();
+				let result = lval.wrapping_sub(rval);
+				*lhs = Digit(result);
 			}
-			ZipDataAccessMut::Ext(_lhs, _rhs) => {
-				unimplemented!()
+			ZipDataAccessMut::Ext(lhs, rhs) => {
+				let mut borrow = Digit::zero();
+				for (l, r) in lhs.into_iter().zip(rhs) {
+					*l = ll::borrow_sub(*l, *r, &mut borrow);
+				}
 			}
 		}
+		self.clear_unused_bits();
+		Ok(())
 	}
 
 	/// Subtracts `rhs` from `self` and returns the result.
