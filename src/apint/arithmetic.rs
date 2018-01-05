@@ -1,7 +1,4 @@
 use apint::{ApInt};
-use apint::utils::{
-	ZipDataAccessMut
-};
 use apint::utils::ZipDataAccessMut::{Inl, Ext};
 use traits::{Width};
 use errors::{Result};
