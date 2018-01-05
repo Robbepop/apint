@@ -2,6 +2,7 @@ use apint::{ApInt};
 use apint::utils::{
 	ZipDataAccessMut
 };
+use apint::utils::ZipDataAccessMut::{Inl, Ext};
 use traits::{Width};
 use errors::{Result};
 use digit::{Digit};
@@ -69,13 +70,13 @@ impl ApInt {
 	/// - If `self` and `rhs` have unmatching bit widths.
 	pub fn checked_add_assign(&mut self, rhs: &ApInt) -> Result<()> {
 		match self.zip_access_data_mut(rhs)? {
-			ZipDataAccessMut::Inl(lhs, rhs) => {
+			Inl(lhs, rhs) => {
 				let lval = lhs.repr();
 				let rval = rhs.repr();
 				let result = lval.wrapping_add(rval);
 				*lhs = Digit(result);
 			}
-			ZipDataAccessMut::Ext(lhs, rhs) => {
+			Ext(lhs, rhs) => {
 				let mut carry = Digit::zero();
 				for (l, r) in lhs.into_iter().zip(rhs) {
 					*l = ll::carry_add(*l, *r, &mut carry);
@@ -115,13 +116,13 @@ impl ApInt {
 	/// - If `self` and `rhs` have unmatching bit widths.
 	pub fn checked_sub_assign(&mut self, rhs: &ApInt) -> Result<()> {
 		match self.zip_access_data_mut(rhs)? {
-			ZipDataAccessMut::Inl(lhs, rhs) => {
+			Inl(lhs, rhs) => {
 				let lval = lhs.repr();
 				let rval = rhs.repr();
 				let result = lval.wrapping_sub(rval);
 				*lhs = Digit(result);
 			}
-			ZipDataAccessMut::Ext(lhs, rhs) => {
+			Ext(lhs, rhs) => {
 				let mut borrow = Digit::zero();
 				for (l, r) in lhs.into_iter().zip(rhs) {
 					*l = ll::borrow_sub(*l, *r, &mut borrow);
@@ -161,10 +162,10 @@ impl ApInt {
 	/// - If `self` and `rhs` have unmatching bit widths.
 	pub fn checked_mul_assign(&mut self, rhs: &ApInt) -> Result<()> {
 		match self.zip_access_data_mut(rhs)? {
-			ZipDataAccessMut::Inl(_lhs, _rhs) => {
+			Inl(_lhs, _rhs) => {
 				unimplemented!()
 			}
-			ZipDataAccessMut::Ext(_lhs, _rhs) => {
+			Ext(_lhs, _rhs) => {
 				unimplemented!()
 			}
 		}
@@ -201,10 +202,10 @@ impl ApInt {
 	/// - If `self` and `rhs` have unmatching bit widths.
 	pub fn checked_udiv_assign(&mut self, rhs: &ApInt) -> Result<()> {
 		match self.zip_access_data_mut(rhs)? {
-			ZipDataAccessMut::Inl(_lhs, _rhs) => {
+			Inl(_lhs, _rhs) => {
 				unimplemented!()
 			}
-			ZipDataAccessMut::Ext(_lhs, _rhs) => {
+			Ext(_lhs, _rhs) => {
 				unimplemented!()
 			}
 		}
@@ -241,10 +242,10 @@ impl ApInt {
 	/// - If `self` and `rhs` have unmatching bit widths.
 	pub fn checked_sdiv_assign(&mut self, rhs: &ApInt) -> Result<()> {
 		match self.zip_access_data_mut(rhs)? {
-			ZipDataAccessMut::Inl(_lhs, _rhs) => {
+			Inl(_lhs, _rhs) => {
 				unimplemented!()
 			}
-			ZipDataAccessMut::Ext(_lhs, _rhs) => {
+			Ext(_lhs, _rhs) => {
 				unimplemented!()
 			}
 		}
@@ -280,10 +281,10 @@ impl ApInt {
 	/// - If `self` and `rhs` have unmatching bit widths.
 	pub fn checked_urem_assign(&mut self, rhs: &ApInt) -> Result<()> {
 		match self.zip_access_data_mut(rhs)? {
-			ZipDataAccessMut::Inl(_lhs, _rhs) => {
+			Inl(_lhs, _rhs) => {
 				unimplemented!()
 			}
-			ZipDataAccessMut::Ext(_lhs, _rhs) => {
+			Ext(_lhs, _rhs) => {
 				unimplemented!()
 			}
 		}
@@ -319,10 +320,10 @@ impl ApInt {
 	/// - If `self` and `rhs` have unmatching bit widths.
 	pub fn checked_srem_assign(&mut self, rhs: &ApInt) -> Result<()> {
 		match self.zip_access_data_mut(rhs)? {
-			ZipDataAccessMut::Inl(_lhs, _rhs) => {
+			Inl(_lhs, _rhs) => {
 				unimplemented!()
 			}
-			ZipDataAccessMut::Ext(_lhs, _rhs) => {
+			Ext(_lhs, _rhs) => {
 				unimplemented!()
 			}
 		}
