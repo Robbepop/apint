@@ -4,6 +4,8 @@ use apint::utils::{
 };
 use traits::{Width};
 use errors::{Result};
+use digit::{Digit};
+use ll;
 
 use std::ops::{
 	Neg,
@@ -66,20 +68,21 @@ impl ApInt {
 	/// 
 	/// - If `self` and `rhs` have unmatching bit widths.
 	pub fn checked_add_assign(&mut self, rhs: &ApInt) -> Result<()> {
-		let width = self.width();
 		match self.zip_access_data_mut(rhs)? {
 			ZipDataAccessMut::Inl(lhs, rhs) => {
-				*lhs.repr_mut() += rhs.repr();
-				if let Some(bits) = width.excess_bits() {
-					lhs.retain_last_n(bits)
-					     .expect("`width.excess_bits` will always return a number \
-					              of bits that is compatible for use in a `Digit`.");
+				let lval = lhs.repr();
+				let rval = rhs.repr();
+				let result = lval.wrapping_add(rval);
+				*lhs = Digit(result);
+			}
+			ZipDataAccessMut::Ext(lhs, rhs) => {
+				let mut carry = Digit::zero();
+				for (l, r) in lhs.into_iter().zip(rhs) {
+					*l = ll::carry_add_inout(*l, *r, &mut carry);
 				}
 			}
-			ZipDataAccessMut::Ext(_lhs, _rhs) => {
-				unimplemented!()
-			}
 		}
+		self.clear_unused_bits();
 		Ok(())
 	}
 
