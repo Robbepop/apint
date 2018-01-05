@@ -53,7 +53,7 @@ State of the API modules implemented so far:
 
 |        Module       | Design | Implementation | Testing | TODO |
 |:-------------------:|:------:|:--------------:|:-------:|:----:|
-| `arithmetic`        | **done** | *not started* | *not started* | |
+| `arithmetic`        | **done** | unfinished | unfinished | |
 | `constructors`      | **done** | **done** | **done** | |
 | `casting`           | **done** | **done** | *not started* | issue [#4](https://github.com/Robbepop/apint/issues/4) |
 | `bitwise`           | **done** | **done** | *not started* | |
