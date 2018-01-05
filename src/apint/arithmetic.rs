@@ -83,6 +83,7 @@ impl ApInt {
 			}
 		}
 		self.clear_unused_bits();
+		// Maybe we should return a recoverable error upon carry != 0 at this point.
 		Ok(())
 	}
 
@@ -128,6 +129,7 @@ impl ApInt {
 			}
 		}
 		self.clear_unused_bits();
+		// Maybe we should return a recoverable error upon borrow != 0 at this point.
 		Ok(())
 	}
 
