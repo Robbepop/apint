@@ -38,9 +38,9 @@ impl ApInt {
 		let width = self.width();
 		self.bitnot();
 		// self.increment_by(1); // This is not implemented, yet.
-									// Replace `self.checked_add_assign(..)` with this
-									// as soon as possible for avoiding temporary
-									// expensive copies of `self`.
+		                         // Replace `self.checked_add_assign(..)` with this
+		                         // as soon as possible for avoiding temporary
+		                         // expensive copies of `self`.
 		self.checked_add_assign(&ApInt::one(width))
 			.expect("This operation cannot fail since the temporary `ApInt`\
 						and `self` are ensured to always have the same bit width.");
