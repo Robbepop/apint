@@ -1,6 +1,5 @@
 use apint::{ApInt};
 use apint::utils::{
-	DataAccessMut,
 	ZipDataAccessMut
 };
 use traits::{Width};
@@ -35,30 +34,15 @@ impl ApInt {
 	/// **Note:** This will **not** allocate memory.
 	pub fn negate(&mut self) {
 		let width = self.width();
-		match self.access_data_mut() {
-			DataAccessMut::Inl(digit) => {
-				*digit.repr_mut() = (digit.repr() as i64).wrapping_neg() as u64;
-				if let Some(bits) = width.excess_bits() {
-					digit.retain_last_n(bits)
-					     .expect("`width.excess_bits` will always return a number \
-					              of bits that is compatible for use in a `Digit`.");
-				}
-			}
-			DataAccessMut::Ext(_) => {
-				// Negation of a twos-complement number is accomplished
-				// by inverting all bits and adding one (`1`) to the result.
-				// 
-				// A so-called negation overflow happens for the minimum
-				// number, i.e. `0x8000_0000` for `i32` but this will silently
-				// be computed by this library wihout an error.
-				// 
-				// Future implementation below:
-				// self.bitnot();
-				// self.increment_by(1);
-				// self.clear_unused_bits();
-				unimplemented!()
-			}
-		}
+		self.bitnot();
+		// self.increment_by(1); // This is not implemented, yet.
+									// Replace `self.checked_add_assign(..)` with this
+									// as soon as possible for avoiding temporary
+									// expensive copies of `self`.
+		self.checked_add_assign(&ApInt::one(width))
+			.expect("This operation cannot fail since the temporary `ApInt`\
+						and `self` are ensured to always have the same bit width.");
+		self.clear_unused_bits();
 	}
 
 	/// Adds `rhs` to `self` and returns the result.
