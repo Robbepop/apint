@@ -146,7 +146,7 @@ impl ApInt {
 			DataAccessMut::Ext(digits) => {
 				let digit_steps = shift_amount.digit_steps();
 				if digit_steps != 0 {
-					digits.rotate(digit_steps);
+					digits.rotate_left(digit_steps);
 					digits.iter_mut()
 					      .rev()
 					      .take(digit_steps)
@@ -211,7 +211,7 @@ impl ApInt {
 			DataAccessMut::Ext(digits) => {
 				let digit_steps = shift_amount.digit_steps();
 				if digit_steps != 0 {
-					digits.rotate(digit_steps);
+					digits.rotate_left(digit_steps);
 					digits.iter_mut()
 					      .rev()
 					      .take(digit_steps)
