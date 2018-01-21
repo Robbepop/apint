@@ -80,7 +80,7 @@ These features need to be stabilized before this crate can be used on the stable
 
 - [`#![feature(i128_type)]`][17]
 - [`#![feature(conservative_impl_trait)]`][18]
-- [`#![feature(unique)]`][19]
+- [`#![feature(ptr_internals)]`][19]
 - [`#![feature(slice_rotate)`][20]
 
 ## License

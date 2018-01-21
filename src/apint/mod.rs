@@ -20,7 +20,7 @@ use bitwidth::{BitWidth};
 pub use self::shift::{ShiftAmount};
 pub(crate) use self::to_primitive::{PrimitiveTy};
 
-use std::ptr::Unique;
+use std::ptr::NonNull;
 
 /// An arbitrary precision integer with modulo arithmetics similar to machine integers.
 pub struct ApInt {
@@ -34,7 +34,7 @@ union ApIntData {
 	/// Inline storage (up to 64 bits) for small-space optimization.
 	inl: Digit,
 	/// Extern storage (>64 bits) for larger `ApInt`s.
-	ext: Unique<Digit>
+	ext: NonNull<Digit>
 }
 
 /// `ApInt` is safe to send between threads since it does not own

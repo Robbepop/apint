@@ -8,7 +8,7 @@ use digit;
 
 use smallvec::SmallVec;
 
-use std::ptr::Unique;
+use std::ptr::NonNull;
 
 impl ApInt {
 	/// Deallocates memory that may be allocated by this `ApInt`.
@@ -72,7 +72,7 @@ impl ApInt {
 		assert_eq!(width.storage(), Storage::Ext);
 		ApInt{
 			len: width,
-			data: ApIntData{ ext: Unique::new_unchecked(ext_ptr) }
+			data: ApIntData{ ext: NonNull::new_unchecked(ext_ptr) }
 		}
 	}
 

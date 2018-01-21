@@ -18,7 +18,7 @@
 
 #![feature(i128_type)]
 #![feature(conservative_impl_trait)]
-#![feature(unique)]
+#![feature(ptr_internals)]
 #![feature(slice_rotate)]
 
 #![allow(dead_code)]
