@@ -80,8 +80,7 @@ These features need to be stabilized before this crate can be used on the stable
 
 - [`#![feature(i128_type)]`][17]
 - [`#![feature(conservative_impl_trait)]`][18]
-- [`#![feature(ptr_internals)]`][19]
-- [`#![feature(slice_rotate)`][20]
+- [`#![feature(slice_rotate)`][19]
 
 ## License
 
@@ -119,5 +118,4 @@ additional terms or conditions.
 
 [17]: https://github.com/rust-lang/rust/issues/35118
 [18]: https://github.com/rust-lang/rust/issues/34511
-[19]: https://github.com/rust-lang/rust/issues/27730
-[20]: https://github.com/rust-lang/rust/issues/41891
+[19]: https://github.com/rust-lang/rust/issues/41891

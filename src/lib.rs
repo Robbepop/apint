@@ -18,7 +18,6 @@
 
 #![feature(i128_type)]
 #![feature(conservative_impl_trait)]
-#![feature(ptr_internals)]
 #![feature(slice_rotate)]
 
 #![allow(dead_code)]
@@ -54,6 +53,7 @@ mod digit_seq;
 mod checks;
 mod ll;
 // mod algorithm;
+mod uint;
 
 pub use apint::{
     ApInt,
@@ -69,3 +69,4 @@ pub use digit::{Bit};
 pub use radix::{Radix};
 pub use bitpos::{BitPos};
 pub use traits::{Width};
+pub use uint::{UInt};
