@@ -91,7 +91,7 @@ impl ApInt {
 		ApInt::from_u8(val as u8)
 	}
 
-	/// Creates a new `ApInt` from a given `i8` value with a bit-width of 8.
+	/// Creates a new `ApInt` from a given `u8` value with a bit-width of 8.
 	#[inline]
 	pub fn from_u8(val: u8) -> ApInt {
 		ApInt::new_inl(BitWidth::w8(), Digit(u64::from(val)))
@@ -103,7 +103,7 @@ impl ApInt {
 		ApInt::from_u16(val as u16)
 	}
 
-	/// Creates a new `ApInt` from a given `i16` value with a bit-width of 16.
+	/// Creates a new `ApInt` from a given `u16` value with a bit-width of 16.
 	#[inline]
 	pub fn from_u16(val: u16) -> ApInt {
 		ApInt::new_inl(BitWidth::w16(), Digit(u64::from(val)))
@@ -115,7 +115,7 @@ impl ApInt {
 		ApInt::from_u32(val as u32)
 	}
 
-	/// Creates a new `ApInt` from a given `i32` value with a bit-width of 32.
+	/// Creates a new `ApInt` from a given `u32` value with a bit-width of 32.
 	#[inline]
 	pub fn from_u32(val: u32) -> ApInt {
 		ApInt::new_inl(BitWidth::w32(), Digit(u64::from(val)))
@@ -127,19 +127,19 @@ impl ApInt {
 		ApInt::from_u64(val as u64)
 	}
 
-	/// Creates a new `ApInt` from a given `i64` value with a bit-width of 64.
+	/// Creates a new `ApInt` from a given `u64` value with a bit-width of 64.
 	#[inline]
 	pub fn from_u64(val: u64) -> ApInt {
 		ApInt::new_inl(BitWidth::w64(), Digit(val))
 	}
 
-	/// Creates a new `ApInt` from a given `i64` value with a bit-width of 64.
+	/// Creates a new `ApInt` from a given `i128` value with a bit-width of 64.
 	#[inline]
 	pub fn from_i128(val: i128) -> ApInt {
 		ApInt::from_u128(val as u128)
 	}
 
-	/// Creates a new `ApInt` from a given `i64` value with a bit-width of 64.
+	/// Creates a new `ApInt` from a given `u128` value with a bit-width of 64.
 	pub fn from_u128(val: u128) -> ApInt {
 		let hi = (val >> digit::BITS) as u64;
 		let lo = (val & ((1u128 << 64) - 1)) as u64;
