@@ -1025,34 +1025,6 @@ impl UInt {
 	pub fn flip_all(&mut self) {
 		self.value.flip_all()
 	}
-
-	/// Returns the sign bit of this `UInt`.
-	/// 
-	/// **Note:** This is equal to the most significant bit of this `UInt`.
-	pub fn sign_bit(&self) -> Bit {
-		self.value.sign_bit()
-	}
-
-	/// Sets the sign bit of this `UInt` to one (`1`).
-	pub fn set_sign_bit(&mut self) {
-		self.value.set_sign_bit()
-	}
-
-	/// Sets the sign bit of this `UInt` to zero (`0`).
-	pub fn unset_sign_bit(&mut self) {
-		self.value.unset_sign_bit()
-	}
-
-	/// Flips the sign bit of this `UInt`.
-	/// 
-	/// # Note
-	/// 
-	/// - If the sign bit was `0` it will be `1` after this operation and vice versa.
-	/// - Depending on the interpretation of the `UInt` this
-	///   operation changes its signedness.
-	pub fn flip_sign_bit(&mut self) {
-		self.value.flip_sign_bit()
-	}
 }
 
 /// # Bitwise utility methods.
