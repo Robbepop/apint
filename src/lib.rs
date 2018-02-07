@@ -58,6 +58,7 @@ mod checks;
 mod ll;
 // mod algorithm;
 mod uint;
+mod int;
 
 pub use apint::{
     ApInt,
@@ -74,3 +75,4 @@ pub use radix::{Radix};
 pub use bitpos::{BitPos};
 pub use traits::{Width};
 pub use uint::{UInt};
+pub use int::{Int};
