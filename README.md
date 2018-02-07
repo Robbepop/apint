@@ -7,16 +7,23 @@ ApInt - Arbitrary Precision Integer
 
 **Development in progress:** *The implementation has not been finished, is unstable and may not work.*
 
-An **A**rbitrary **p**recision **Int**eger (**ApInt**) represents an integer that has an arbitrary but 
+**A**rbitrary **p**recision **Int**egers (**ApInt**) represent integers that have an arbitrary but 
 fixed runtime bit-width and offers two's complement modulo arithmetic equal to machine integers.
 
-The API is based on the popular LLVM [`APInt`](http://llvm.org/doxygen/classllvm_1_1APInt.html) support library
-that is heavily used within the compiler and compiler based tools.
+The integer types offered by this library are:
+
+- [`ApInt`][30]: A low-level arbitrary-precision integer without static signedness information. (General)
+- [`Int`][31]: A signed arbitrary-precision integer. (Convenience for `iN`.)
+- [`UInt`][32]: An unsigned arbitrary-precision integer. (Convenience for `uN`.)
+
+The API is based on the LLVM [`APInt`](http://llvm.org/doxygen/classllvm_1_1APInt.html) support library.
 
 ## Example Use Cases
 
-- Simulate machine arithmetic on compilation, e.g. for constant evaluation and some optimizations.
+- Emulate machine arithmetic on compilation, e.g. for constant evaluation and some optimizations.
 - SMT solvers may use this as an underlying model for the theory of bitvectors.
+- Operations and backend for cryptographic keys.
+- Also usable as a simple bitset with runtime length information.
 
 ## Internals
 
@@ -35,7 +42,7 @@ The below table lists public and internal differences between `ApInt` and `num::
 |:------------------------:|:------------------------------------------|:----------------------------------------|
 | Abstraction              | High-level unbounded integers.            | Twos-complement machine integers.       |
 | Behaviour                | Behaves like an immutable type most often. This results in lots of copies and better usability. | API design with a focus on efficient operations and machine emulation. |
-| Small Value Optimization   | No                                        | Yes: Up to 64-bits.                     |
+| Small Value Optimization | No                                        | Yes: Up to 64-bits.                     |
 | Building Blocks          | 32-bit `BigDigit` aka `u32`               | 64-bit `Digit`                          |
 | Compute Unit             | 64-bit `DoubleBigDigit` aka `u64`         | 128-bit `DoubleDigit`                   |
 | Signed                   | Yes: `num::BigUint` is for unsigned.      | No: Operations know signedness instead. |
@@ -43,7 +50,7 @@ The below table lists public and internal differences between `ApInt` and `num::
 | Width interoperability   | No restriction to operate between `BigInt` instances with different bit-widths. | Only `ApInt` instances with the same bit-width can interoperate. |
 | Memory footprint         | Determined by current value stored.       | Determined by bit-width.                |
 | Can grow and shrink?     | Yes                                       | No, see above.                          |
-| Unstable features?       | None                                      | Yes, e.g. [128-bit integers][17].                  |
+| Unstable features?       | None                                      | Yes, e.g. [128-bit integers][17].       |
 
 ## Current State
 
@@ -68,10 +75,8 @@ State of the API modules implemented so far:
 ## Planned Features
 
 - Full and efficient `ApInt` implementation and decent test coverage.
-- High-level `SignedApInt` and `UnsignedApInt` types that wrap `ApInt` with static sign information
-  allowing for improved user friendliness but restricted access to the underlying operations.
 - Mid-level `ApsInt` wrapper around `ApInt` that stores a run-time sign information.
-  This is different from `SignedApInt` and `UnsignedApInt` since those types store
+  This is different from `Int` and `UInt` since those types store
   their sign immutable in their type. This is the same as LLVM's `APSInt` data type.
 
 ## Unstable Features Used
@@ -110,12 +115,16 @@ additional terms or conditions.
 [9]: ./LICENSE-MIT
 [10]: ./LICENSE-APACHE
 [11]: https://docs.rs/apint/badge.svg
-[12]: https://docs.rs/apint/0.0.0-alpha.9
+[12]: https://docs.rs/apint/0.0.1
 [13]: https://img.shields.io/crates/v/apint.svg
-[14]: https://crates.io/crates/apint/0.0.0-alpha.9
+[14]: https://crates.io/crates/apint/0.0.1
 [15]: https://codecov.io/gh/robbepop/apint/branch/master/graph/badge.svg
 [16]: https://codecov.io/gh/Robbepop/apint/branch/master
 
 [17]: https://github.com/rust-lang/rust/issues/35118
 [18]: https://github.com/rust-lang/rust/issues/34511
 [19]: https://github.com/rust-lang/rust/issues/41891
+
+[30]: https://docs.rs/apint/0.0.1/apint/struct.APInt.html
+[31]: https://docs.rs/apint/0.0.1/apint/struct.Int.html
+[32]: https://docs.rs/apint/0.0.1/apint/struct.UInt.html
