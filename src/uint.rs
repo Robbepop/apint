@@ -30,7 +30,7 @@ use std::ops::{
     RemAssign
 };
 
-/// Unsigned machine integers with arbitrary bitwidths and modulo arithmetics.
+/// Unsigned machine integer with arbitrary bitwidths and modulo arithmetics.
 /// 
 /// Thin convenience wrapper around `ApInt` for static unsigned interpretation of the value.
 /// 
@@ -119,7 +119,7 @@ impl UInt {
         UInt::from(ApInt::unsigned_min_value(width))
     }
 
-    /// Returns the largest unsigned `UInt` that can be represented by the given `BitWidth`.
+    /// Returns the largest `UInt` that can be represented by the given `BitWidth`.
     pub fn max_value(width: BitWidth) -> UInt {
         UInt::from(ApInt::unsigned_max_value(width))
     }
@@ -286,7 +286,7 @@ impl PartialOrd for UInt {
         if self.value.width() != rhs.value.width() {
             return None;
         }
-        if self.value.checked_ult(&rhs.value).unwrap() {
+        if self.checked_lt(rhs).unwrap() {
             return Some(Ordering::Less);
         }
         if self.value == rhs.value {
