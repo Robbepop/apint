@@ -11,6 +11,7 @@ use traits::{Width};
 use checks;
 
 use std::ops::{
+	Not,
 	BitAnd,
 	BitOr,
 	BitXor,
@@ -303,6 +304,20 @@ impl ApInt {
 			zeros -= digit::BITS - self.width().excess_bits().unwrap_or(digit::BITS);
 		}
 		zeros
+	}
+}
+
+//  ===========================================================================
+//  `Not` (bitwise) impls
+//  ===========================================================================
+
+impl Not for ApInt {
+	type Output = ApInt;
+
+	fn not(self) -> Self::Output {
+		let mut this = self;
+		this.bitnot();
+		this
 	}
 }
 
