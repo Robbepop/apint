@@ -5,6 +5,7 @@ use bitwidth::BitWidth;
 use errors::Result;
 use apint::{ShiftAmount};
 use bitpos::{BitPos};
+use int::Int;
 
 #[cfg(feature = "rand_support")]
 use rand;
@@ -44,6 +45,18 @@ pub struct UInt {
 impl From<ApInt> for UInt {
     fn from(value: ApInt) -> UInt {
         UInt { value }
+    }
+}
+
+impl UInt {
+    /// Transforms this `UInt` into an equivalent `ApInt` instance.
+    pub fn into_apint(self) -> ApInt {
+        self.value
+    }
+
+    /// Transforms this `UInt` into an equivalent `Int` instance.
+    pub fn into_signed(self) -> Int {
+        Int::from(self.value)
     }
 }
 
