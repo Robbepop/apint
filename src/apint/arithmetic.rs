@@ -2,7 +2,7 @@ use apint::{ApInt};
 use apint::utils::ZipDataAccessMut::{Inl, Ext};
 use traits::{Width};
 use errors::{Result};
-use digit::{Digit};
+use digit::{Digit, DigitRepr};
 use ll;
 
 use std::ops::{
@@ -131,7 +131,7 @@ impl ApInt {
 		Ok(())
 	}
 
-	/// Subtracts `rhs` from `self` and returns the result.
+	/// Multiplies `rhs` with `self` and returns the result.
 	/// 
 	/// # Note
 	/// 
@@ -159,13 +159,18 @@ impl ApInt {
 	/// - If `self` and `rhs` have unmatching bit widths.
 	pub fn checked_mul_assign(&mut self, rhs: &ApInt) -> Result<()> {
 		match self.zip_access_data_mut(rhs)? {
-			Inl(_lhs, _rhs) => {
-				unimplemented!()
+			Inl(lhs, rhs) => {
+				let lval = lhs.repr();
+				let rval = rhs.repr();
+				let result = lval.wrapping_mul(rval);
+				*lhs = Digit(result);
 			}
 			Ext(_lhs, _rhs) => {
 				unimplemented!()
 			}
 		}
+		self.clear_unused_bits();
+		Ok(())
 	}
 
 	/// Divides `self` by `rhs` using **unsigned** interpretation and returns the result.
@@ -199,13 +204,17 @@ impl ApInt {
 	/// - If `self` and `rhs` have unmatching bit widths.
 	pub fn checked_udiv_assign(&mut self, rhs: &ApInt) -> Result<()> {
 		match self.zip_access_data_mut(rhs)? {
-			Inl(_lhs, _rhs) => {
-				unimplemented!()
+			Inl(lhs, rhs) => {
+				let lval = lhs.repr();
+				let rval = rhs.repr();
+				let result = lval.wrapping_div(rval);
+				*lhs = Digit(result);
 			}
 			Ext(_lhs, _rhs) => {
 				unimplemented!()
 			}
 		}
+		Ok(())
 	}
 
 	/// Divides `self` by `rhs` using **signed** interpretation and returns the result.
@@ -238,14 +247,24 @@ impl ApInt {
 	/// 
 	/// - If `self` and `rhs` have unmatching bit widths.
 	pub fn checked_sdiv_assign(&mut self, rhs: &ApInt) -> Result<()> {
+		let width = self.width();
 		match self.zip_access_data_mut(rhs)? {
-			Inl(_lhs, _rhs) => {
-				unimplemented!()
+			Inl(lhs, rhs) => {
+				let mut l = lhs.clone();
+				let mut r = rhs.clone();
+				l.sign_extend_from(width).unwrap();
+				r.sign_extend_from(width).unwrap();
+				let lval = l.repr() as i64;
+				let rval = r.repr() as i64;
+				let result = lval.wrapping_div(rval) as DigitRepr;
+				*lhs = Digit(result);
 			}
 			Ext(_lhs, _rhs) => {
 				unimplemented!()
 			}
 		}
+		self.clear_unused_bits();
+		Ok(())
 	}
 
 	/// Calculates the **unsigned** remainder of `self` by `rhs` and returns the result.
@@ -278,13 +297,17 @@ impl ApInt {
 	/// - If `self` and `rhs` have unmatching bit widths.
 	pub fn checked_urem_assign(&mut self, rhs: &ApInt) -> Result<()> {
 		match self.zip_access_data_mut(rhs)? {
-			Inl(_lhs, _rhs) => {
-				unimplemented!()
+			Inl(lhs, rhs) => {
+				let lval = lhs.repr();
+				let rval = rhs.repr();
+				let result = lval.wrapping_rem(rval);
+				*lhs = Digit(result);
 			}
 			Ext(_lhs, _rhs) => {
 				unimplemented!()
 			}
 		}
+		Ok(())
 	}
 
 	/// Calculates the **signed** remainder of `self` by `rhs` and returns the result.
@@ -316,14 +339,23 @@ impl ApInt {
 	/// 
 	/// - If `self` and `rhs` have unmatching bit widths.
 	pub fn checked_srem_assign(&mut self, rhs: &ApInt) -> Result<()> {
+		let width = self.width();
 		match self.zip_access_data_mut(rhs)? {
-			Inl(_lhs, _rhs) => {
-				unimplemented!()
+			Inl(lhs, rhs) => {
+				let mut l = lhs.clone();
+				let mut r = rhs.clone();
+				l.sign_extend_from(width).unwrap();
+				r.sign_extend_from(width).unwrap();
+				let lval = l.repr() as i64;
+				let rval = r.repr() as i64;
+				let result = lval.wrapping_rem(rval) as DigitRepr;
+				*lhs = Digit(result);
 			}
 			Ext(_lhs, _rhs) => {
 				unimplemented!()
 			}
 		}
+		Ok(())
 	}
 
 }
@@ -482,4 +514,81 @@ mod tests {
 			}
 		}
 	}
+
+	mod mul {
+		use super::*;
+
+		#[test]
+		fn simple() {
+			let lhs = ApInt::from(11_u32);
+			let rhs = ApInt::from(5_u32);
+			let result = lhs.into_checked_mul(&rhs).unwrap();
+			assert_eq!(result, ApInt::from(55_u32));
+		}
+	}
+
+	mod udiv {
+		use super::*;
+
+		#[test]
+		fn simple() {
+			let lhs = ApInt::from(56_u32);
+			let rhs = ApInt::from(7_u32);
+			let result = lhs.into_checked_udiv(&rhs).unwrap();
+			assert_eq!(result, ApInt::from(8_u32));
+		}
+	}
+
+	mod sdiv {
+		use super::*;
+
+		#[test]
+		fn simple() {
+			let lhs = ApInt::from(72_i32);
+			let rhs = ApInt::from(12_i32);
+			let result = lhs.into_checked_sdiv(&rhs).unwrap();
+			assert_eq!(result, ApInt::from(6_u32));
+		}
+
+		#[test]
+		fn with_neg() {
+			let lhs = ApInt::from(72_i32);
+			let rhs = ApInt::from(-12_i32);
+			let result = lhs.into_checked_sdiv(&rhs).unwrap();
+			assert_eq!(result, ApInt::from(-6_i32));
+		}
+	}
+
+	mod urem {
+		use super::*;
+
+		#[test]
+		fn simple() {
+			let lhs = ApInt::from(15_u32);
+			let rhs = ApInt::from(4_u32);
+			let result = lhs.into_checked_urem(&rhs).unwrap();
+			assert_eq!(result, ApInt::from(3_u32));
+		}
+	}
+
+	mod srem {
+		use super::*;
+
+		#[test]
+		fn simple() {
+			let lhs = ApInt::from(23_i32);
+			let rhs = ApInt::from(7_i32);
+			let result = lhs.into_checked_srem(&rhs).unwrap();
+			assert_eq!(result, ApInt::from(2_u32));
+		}
+
+		#[test]
+		fn with_neg() {
+			let lhs = ApInt::from(-23_i32);
+			let rhs = ApInt::from(7_i32);
+			let result = lhs.into_checked_srem(&rhs).unwrap();
+			assert_eq!(result, ApInt::from(2_i32)); // Is this the correct behaviour for the `srem` operation?
+		}
+	}
+
 }
