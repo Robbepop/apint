@@ -263,8 +263,30 @@ impl Int {
 		}
 	}
 
+	/// Returns an absolute value representation of this `Int`.
+	/// 
+	/// # Note
+	/// 
+	/// - Consumes `self`.
+	/// - Does nothing for positive `Int` instances.
+	pub fn into_abs(self) -> Int {
+		let mut this = self;
+		self.abs();
+		self
+	}
+
+	/// Converts this `Int` into its absolute value representation.
+	/// 
+	/// - Does nothing for positive `Int` instances.
+	pub fn abs(&mut self) {
+		if self.is_negative() {
+			self.negate()
+		}
+	}
+
 }
 
+/// # Comparisons
 impl Int {
 
 	/// Less-than (`lt`) comparison between `self` and `rhs`.
