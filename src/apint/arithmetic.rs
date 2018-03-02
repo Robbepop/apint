@@ -97,7 +97,7 @@ impl ApInt {
 	/// - If `self` and `rhs` have unmatching bit widths.
 	pub fn into_checked_sub(self, rhs: &ApInt) -> Result<ApInt> {
 		let mut this = self;
-		this.checked_add_assign(rhs)?;
+		this.checked_sub_assign(rhs)?;
 		Ok(this)
 	}
 
