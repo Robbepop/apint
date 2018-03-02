@@ -205,9 +205,25 @@ impl ApInt {
 		self.modify_digits(|digit| digit.set_all());
 	}
 
+	/// Returns``true` if all bits in the `ApInt` are set.
+	pub fn is_all_set(&self) -> bool {
+		let (msb, rest) = self.split_most_significant_digit();
+		if let Some(excess_bits) = self.width().excess_bits() {
+			if msb.repr().count_ones() as usize != excess_bits {
+				return false
+			}
+		}
+		rest.iter().all(|d| d.is_all_set())
+	}
+
 	/// Sets all bits of this `ApInt` to zero (`0`).
 	pub fn unset_all(&mut self) {
 		self.modify_digits(|digit| digit.unset_all());
+	}
+
+	/// Returns `true` if all bits in the `ApInt` are unset.
+	pub fn is_all_unset(&self) -> bool {
+		self.is_zero()
 	}
 
 	/// Flips all bits of this `ApInt`.
@@ -555,5 +571,45 @@ mod tests {
 		assert_eq!(ApInt::signed_max_value(BitWidth::w32()).trailing_zeros(), 0);
 		assert_eq!(ApInt::signed_max_value(BitWidth::w64()).trailing_zeros(), 0);
 		assert_eq!(ApInt::signed_max_value(BitWidth::w128()).trailing_zeros(), 0);
+	}
+
+	mod is_all_set {
+		use super::*;
+
+		#[test]
+		fn simple_false() {
+			let input = ApInt::from(0b0001_1011_0110_0111_u16);
+			assert_eq!(input.width(), BitWidth::w16());
+			assert_eq!(input.count_ones(), 9);
+			assert!(!input.is_all_set());
+		}
+
+		#[test]
+		fn simple_true() {
+			let input = ApInt::all_set(BitWidth::w32());
+			assert_eq!(input.width(), BitWidth::w32());
+			assert_eq!(input.count_ones(), 32);
+			assert!(input.is_all_set());
+		}
+	}
+
+	mod is_all_unset {
+		use super::*;
+
+		#[test]
+		fn simple_false() {
+			let input = ApInt::from(0b0001_1011_0110_0111_u16);
+			assert_eq!(input.width(), BitWidth::w16());
+			assert_eq!(input.count_ones(), 9);
+			assert_eq!(input.is_zero(), input.is_all_unset());
+		}
+
+		#[test]
+		fn simple_true() {
+			let input = ApInt::all_unset(BitWidth::w32());
+			assert_eq!(input.width(), BitWidth::w32());
+			assert_eq!(input.count_ones(), 0);
+			assert_eq!(input.is_zero(), input.is_all_unset());
+		}
 	}
 }

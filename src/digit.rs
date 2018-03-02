@@ -205,6 +205,16 @@ impl Digit {
 	#[inline]
 	pub fn is_one(self) -> bool { self == ONE }
 
+	/// Returns `true` if this `Digit` has all bits set.
+	#[inline]
+	pub fn is_all_set(self) -> bool { self == ONES }
+
+	/// Returns `true` if this `Digit` has all bits unset.
+	/// 
+	/// Note: This is equal to calling `is_zero`.
+	#[inline]
+	pub fn is_all_unset(self) -> bool { self.is_zero() }
+
 	/// Creates a digit where all bits are initialized to `1`.
 	#[inline]
 	pub fn all_set() -> Digit { ONES }
