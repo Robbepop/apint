@@ -323,7 +323,7 @@ impl ApInt {
 	/// - If `self` and `rhs` have unmatching bit widths.
 	pub fn into_checked_srem(self, rhs: &ApInt) -> Result<ApInt> {
 		let mut this = self;
-		this.checked_urem_assign(rhs)?;
+		this.checked_srem_assign(rhs)?;
 		Ok(this)
 	}
 
@@ -355,6 +355,7 @@ impl ApInt {
 				unimplemented!()
 			}
 		}
+		self.clear_unused_bits();
 		Ok(())
 	}
 
@@ -587,7 +588,7 @@ mod tests {
 			let lhs = ApInt::from(-23_i32);
 			let rhs = ApInt::from(7_i32);
 			let result = lhs.into_checked_srem(&rhs).unwrap();
-			assert_eq!(result, ApInt::from(2_i32)); // Is this the correct behaviour for the `srem` operation?
+			assert_eq!(result, ApInt::from(-2_i32));
 		}
 	}
 
