@@ -245,6 +245,24 @@ impl Int {
 	pub fn is_negative(&self) -> bool {
 		!self.is_positive()
 	}
+
+	/// Returns a number representing sign of this `ApInt`.
+	/// 
+	/// - `0` if the number is zero
+	/// - `1` if the number is positive
+	/// - `-1` if the number is negative
+	pub fn signum(&self) -> i8 {
+		if self.is_zero() {
+			return 0
+		}
+		if self.is_positive() {
+			1
+		}
+		else {
+			-1
+		}
+	}
+
 }
 
 impl Int {
