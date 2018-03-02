@@ -1042,9 +1042,19 @@ impl Int {
 		self.value.set_all()
 	}
 
+	/// Returns `true` if all bits in this `Int` are set.
+	pub fn is_all_set(&self) -> bool {
+		self.value.is_all_set()
+	}
+
 	/// Sets all bits of this `Int` to zero (`0`).
 	pub fn unset_all(&mut self) {
 		self.value.unset_all()
+	}
+
+	/// Returns `true` if all bits in this `Int` are unset.
+	pub fn is_all_unset(&self) -> bool {
+		self.value.is_all_unset()
 	}
 
 	/// Flips all bits of this `Int`.
