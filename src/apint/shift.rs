@@ -4,6 +4,7 @@ use errors::{Result};
 use checks;
 use digit;
 use digit::{Bit, Digit};
+use traits::{Width};
 
 /// Represents an amount of bits to shift an `ApInt`.
 /// 
@@ -203,9 +204,12 @@ impl ApInt {
 		}
 		let shift_amount = shift_amount.into();
 		checks::verify_shift_amount(self, shift_amount)?;
+		let width = self.width();
 		match self.access_data_mut() {
 			DataAccessMut::Inl(digit) => {
-				let signed = digit.repr() as i64;
+				let mut signed = digit.clone();
+				signed.sign_extend_from(width).unwrap();
+				let signed = signed.repr() as i64;
 				let shifted = signed >> shift_amount.to_usize();
 				*digit.repr_mut() = shifted as u64;
 			}
@@ -496,6 +500,13 @@ mod tests {
 
 	mod ashr {
 		use super::*;
+
+		#[test]
+		fn regression_stevia_01() {
+			let input = ApInt::from_i32(-8);
+			let expected = ApInt::from_u32(0x_FFFF_FFFE);
+			assert_eq!(input.into_checked_ashr(ShiftAmount::from(2)).unwrap(), expected);
+		}
 
 		#[test]
 		fn assign_small_ok() {
