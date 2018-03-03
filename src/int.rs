@@ -271,8 +271,8 @@ impl Int {
 	/// - Does nothing for positive `Int` instances.
 	pub fn into_abs(self) -> Int {
 		let mut this = self;
-		self.abs();
-		self
+		this.abs();
+		this
 	}
 
 	/// Converts this `Int` into its absolute value representation.
