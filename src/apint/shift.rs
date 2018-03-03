@@ -17,7 +17,7 @@ pub struct ShiftAmount(usize);
 impl ShiftAmount {
 	/// Returns the internal shift amount representation as `usize`.
 	#[inline]
-	pub(crate) fn to_usize(self) -> usize {
+	pub fn to_usize(self) -> usize {
 		self.0
 	}
 
