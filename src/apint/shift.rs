@@ -109,6 +109,7 @@ impl ApInt {
 				}
 			}
 		}
+		self.clear_unused_bits();
 		Ok(())
 	}
 
