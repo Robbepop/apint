@@ -94,7 +94,7 @@ impl ApInt {
 	/// If `self` and `rhs` have unmatching bit widths.
 	pub fn into_checked_bitxor(self, rhs: &ApInt) -> Result<ApInt> {
 		let mut this = self;
-		this.checked_bitor_assign(rhs)?;
+		this.checked_bitxor_assign(rhs)?;
 		Ok(this)
 	}
 
