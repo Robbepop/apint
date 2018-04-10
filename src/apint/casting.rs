@@ -1078,7 +1078,22 @@ mod tests {
 	}
 
 	mod into_sign_extend {
-		// use super::*;
+		use super::*;
+
+		#[test]
+		fn regression_issue15() {
+			use std::{u64, i128};
+			{
+				let input = ApInt::from_i128(i128::MAX).into_sign_extend(BitWidth::new(256).unwrap()).unwrap();
+				let expected = ApInt::from([0, 0, u64::MAX >> 1, u64::MAX]);
+				assert_eq!(input, expected);
+			}
+			{
+				let input = ApInt::from_i128(i128::MIN).into_sign_extend(BitWidth::new(256).unwrap()).unwrap();
+				let expected = ApInt::signed_min_value(BitWidth::new(256).unwrap());
+				assert_eq!(input, expected);
+			}
+		}
 
 		/// Test for sign-extension to the same bit width.
 		#[test]
