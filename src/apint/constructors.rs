@@ -133,13 +133,13 @@ impl ApInt {
 		ApInt::new_inl(BitWidth::w64(), Digit(val))
 	}
 
-	/// Creates a new `ApInt` from a given `i128` value with a bit-width of 64.
+	/// Creates a new `ApInt` from a given `i128` value with a bit-width of 128.
 	#[inline]
 	pub fn from_i128(val: i128) -> ApInt {
 		ApInt::from_u128(val as u128)
 	}
 
-	/// Creates a new `ApInt` from a given `u128` value with a bit-width of 64.
+	/// Creates a new `ApInt` from a given `u128` value with a bit-width of 128.
 	pub fn from_u128(val: u128) -> ApInt {
 		let hi = (val >> digit::BITS) as u64;
 		let lo = (val & ((1u128 << 64) - 1)) as u64;
