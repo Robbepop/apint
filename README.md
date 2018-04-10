@@ -50,7 +50,7 @@ The below table lists public and internal differences between `ApInt` and `num::
 | Width interoperability   | No restriction to operate between `BigInt` instances with different bit-widths. | Only `ApInt` instances with the same bit-width can interoperate. |
 | Memory footprint         | Determined by current value stored.       | Determined by bit-width.                |
 | Can grow and shrink?     | Yes                                       | No, see above.                          |
-| Unstable features?       | None                                      | Yes, e.g. [128-bit integers][17].       |
+| Unstable features?       | None                                      | Stable as of Rust 1.26.                 |
 
 ## Current State
 
@@ -83,9 +83,11 @@ State of the API modules implemented so far:
 
 These features need to be stabilized before this crate can be used on the stable channel.
 
-- [`#![feature(i128_type)]`][17]
-- [`#![feature(conservative_impl_trait)]`][18]
-- [`#![feature(slice_rotate)`][19]
+- ~~[`#![feature(i128_type)]`][17]~~
+- ~~[`#![feature(conservative_impl_trait)]`][18]~~
+- ~~[`#![feature(slice_rotate)`][19]~~
+
+All these features will be stabilized as of Rust version 1.26.
 
 ## License
 
