@@ -673,26 +673,6 @@ impl UInt {
 		Ok(this)
 	}
 
-	/// Tries to strictly truncate this `UInt` inplace to the given `target_width`
-	/// and returns the result.
-	/// 
-	/// # Note
-	/// 
-	/// - This is useful for method chaining.
-	/// - For more details look into
-	///   [`strict_truncate`](struct.UInt.html#method.strict_truncate).
-	/// 
-	/// # Errors
-	/// 
-	/// - If `target_width` is equal to or greater than the bitwidth of the given `UInt`.
-	pub fn into_strict_truncate<W>(self, target_width: W) -> Result<UInt>
-		where W: Into<BitWidth>
-	{
-		let mut this = self;
-		this.strict_truncate(target_width)?;
-		Ok(this)
-	}
-
 	/// Tries to truncate this `UInt` inplace to the given `target_width`.
 	/// 
 	/// # Note
@@ -708,24 +688,6 @@ impl UInt {
 		where W: Into<BitWidth>
 	{
 		self.value.truncate(target_width)
-	}
-
-	/// Tries to strictly truncate this `UInt` inplace to the given `target_width`.
-	/// 
-	/// # Note
-	/// 
-	/// - Strict truncation means that the resulting `UInt` is ensured to have
-	///   a smaller `BitWidth` than before this operation.
-	/// - For more details look into
-	///   [`truncate`](struct.UInt.html#method.truncate).
-	/// 
-	/// # Errors
-	/// 
-	/// - If `target_width` is equal to or greater than the bitwidth of the given `UInt`.
-	pub fn strict_truncate<W>(&mut self, target_width: W) -> Result<()>
-		where W: Into<BitWidth>
-	{
-		self.value.strict_truncate(target_width)
 	}
 
 	// ========================================================================
@@ -750,26 +712,6 @@ impl UInt {
 		Ok(this)
 	}
 
-	/// Tries to strictly extend this `UInt` inplace to the given `target_width`
-	/// and returns the result.
-	/// 
-	/// # Note
-	/// 
-	/// - This is useful for method chaining.
-	/// - For more details look into
-	///   [`strict_extend`](struct.UInt.html#method.strict_extend).
-	/// 
-	/// # Errors
-	/// 
-	/// - If `target_width` is equal to or greater than the bitwidth of the given `UInt`.
-	pub fn into_strict_extend<W>(self, target_width: W) -> Result<UInt>
-		where W: Into<BitWidth>
-	{
-		let mut this = self;
-		this.strict_extend(target_width)?;
-		Ok(this)
-	}
-
 	/// Tries to extend this `UInt` inplace to the given `target_width`.
 	/// 
 	/// # Note
@@ -785,24 +727,6 @@ impl UInt {
 		where W: Into<BitWidth>
 	{
 		self.value.zero_extend(target_width)
-	}
-
-	/// Tries to strictly extends this `UInt` inplace to the given `target_width`.
-	/// 
-	/// # Note
-	/// 
-	/// - Strict extension means that the resulting `UInt` is ensured to have
-	///   a larger `BitWidth` than before this operation.
-	/// - For more details look into
-	///   [`extend`](struct.UInt.html#method.extend).
-	/// 
-	/// # Errors
-	/// 
-	/// - If `target_width` is equal to or greater than the bitwidth of the given `UInt`.
-	pub fn strict_extend<W>(&mut self, target_width: W) -> Result<()>
-		where W: Into<BitWidth>
-	{
-		self.value.strict_zero_extend(target_width)
 	}
 
 	// ========================================================================
@@ -823,26 +747,6 @@ impl UInt {
 		this
 	}
 
-	/// Tries to strictly resize this `UInt` to the given `target_width`
-	/// and returns the result.
-	/// 
-	/// # Note
-	/// 
-	/// - This is useful for method chaining.
-	/// - For more details look into
-	///   [`strict_resize`](struct.UInt.html#method.strict_resize).
-	/// 
-	/// # Errors
-	/// 
-	/// - If `target_width` is equal to the bitwidth of the given `UInt`.
-	pub fn into_strict_resize<W>(self, target_width: W) -> Result<UInt>
-		where W: Into<BitWidth>
-	{
-		let mut this = self;
-		this.strict_resize(target_width)?;
-		Ok(this)
-	}
-
 	/// Resizes the given `UInt` inplace.
 	/// 
 	/// # Note
@@ -858,27 +762,6 @@ impl UInt {
 		where W: Into<BitWidth>
 	{
 		self.value.zero_resize(target_width)
-	}
-
-	/// Strictly resizes the given `UInt` inplace.
-	/// 
-	/// # Note
-	/// 
-	/// This operation will forward to
-	/// 
-	/// - [`strict_truncate`](struct.UInt.html#method.strict_truncate)
-	///   if `target_width` is less than or equal to the width of
-	///   the given `UInt`
-	/// - [`strict_extend`](struct.UInt.html#method.strict_extend)
-	///   otherwise
-	/// 
-	/// # Errors
-	/// 
-	/// - If `target_width` is equal to the bitwidth of the given `UInt`.
-	pub fn strict_resize<W>(&mut self, target_width: W) -> Result<()>
-		where W: Into<BitWidth>
-	{
-		self.value.strict_zero_resize(target_width)
 	}
 }
 
