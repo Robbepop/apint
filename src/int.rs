@@ -6,6 +6,7 @@ use errors::Result;
 use apint::{ShiftAmount};
 use bitpos::{BitPos};
 use uint::UInt;
+use utils::{try_forward_bin_mut_impl, forward_mut_impl, forward_bin_mut_impl};
 
 #[cfg(feature = "rand_support")]
 use rand;
@@ -270,9 +271,7 @@ impl Int {
 	/// - Consumes `self`.
 	/// - Does nothing for positive `Int` instances.
 	pub fn into_abs(self) -> Int {
-		let mut this = self;
-		this.abs();
-		this
+		forward_mut_impl(self, Int::abs)
 	}
 
 	/// Converts this `Int` into its absolute value representation.
@@ -721,9 +720,7 @@ impl Int {
 	pub fn into_truncate<W>(self, target_width: W) -> Result<Int>
 		where W: Into<BitWidth>
 	{
-		let mut this = self;
-		this.truncate(target_width)?;
-		Ok(this)
+		try_forward_bin_mut_impl(self, target_width, Int::truncate)
 	}
 
 	/// Tries to truncate this `Int` inplace to the given `target_width`.
@@ -760,9 +757,7 @@ impl Int {
 	pub fn into_extend<W>(self, target_width: W) -> Result<Int>
 		where W: Into<BitWidth>
 	{
-		let mut this = self;
-		this.extend(target_width)?;
-		Ok(this)
+		try_forward_bin_mut_impl(self, target_width, Int::extend)
 	}
 
 	/// Tries to extend this `Int` inplace to the given `target_width`.
@@ -795,9 +790,7 @@ impl Int {
 	pub fn into_resize<W>(self, target_width: W) -> Int
 		where W: Into<BitWidth>
 	{
-		let mut this = self;
-		this.resize(target_width);
-		this
+		forward_bin_mut_impl(self, target_width, Int::resize)
 	}
 
 	/// Resizes the given `Int` inplace.
@@ -835,9 +828,7 @@ impl Int {
 	/// 
 	/// If `self` and `rhs` have unmatching bit widths.
 	pub fn into_checked_bitand(self, rhs: &Int) -> Result<Int> {
-		let mut this = self;
-		this.checked_bitand_assign(rhs)?;
-		Ok(this)
+		try_forward_bin_mut_impl(self, rhs, Int::checked_bitand_assign)
 	}
 
 	/// Bit-and assigns all bits of this `Int` with the bits of `rhs`.
@@ -861,9 +852,7 @@ impl Int {
 	/// 
 	/// If `self` and `rhs` have unmatching bit widths.
 	pub fn into_checked_bitor(self, rhs: &Int) -> Result<Int> {
-		let mut this = self;
-		this.checked_bitor_assign(rhs)?;
-		Ok(this)
+		try_forward_bin_mut_impl(self, rhs, Int::checked_bitor_assign)
 	}
 
 	/// Bit-or assigns all bits of this `Int` with the bits of `rhs`.
@@ -887,9 +876,7 @@ impl Int {
 	/// 
 	/// If `self` and `rhs` have unmatching bit widths.
 	pub fn into_checked_bitxor(self, rhs: &Int) -> Result<Int> {
-		let mut this = self;
-		this.checked_bitor_assign(rhs)?;
-		Ok(this)
+		try_forward_bin_mut_impl(self, rhs, Int::checked_bitxor_assign)
 	}
 
 	/// Bit-xor assigns all bits of this `Int` with the bits of `rhs`.
@@ -1045,9 +1032,7 @@ impl Not for Int {
 	type Output = Int;
 
 	fn not(self) -> Self::Output {
-		let mut this = self;
-		this.bitnot();
-		this
+		forward_mut_impl(self, Int::bitnot)
 	}
 }
 
@@ -1163,9 +1148,7 @@ impl Int {
 	/// 
 	/// **Note:** This will **not** allocate memory.
 	pub fn into_negate(self) -> Int {
-		let mut this = self;
-		this.negate();
-		this
+		forward_mut_impl(self, Int::negate)
 	}
 
 	/// Negates this `Int` inplace.
@@ -1183,9 +1166,7 @@ impl Int {
 	/// 
 	/// - If `self` and `rhs` have unmatching bit widths.
 	pub fn into_checked_add(self, rhs: &Int) -> Result<Int> {
-		let mut this = self;
-		this.checked_add_assign(rhs)?;
-		Ok(this)
+		try_forward_bin_mut_impl(self, rhs, Int::checked_add_assign)
 	}
 
 	/// Add-assigns `rhs` to `self` inplace.
@@ -1210,9 +1191,7 @@ impl Int {
 	/// 
 	/// - If `self` and `rhs` have unmatching bit widths.
 	pub fn into_checked_sub(self, rhs: &Int) -> Result<Int> {
-		let mut this = self;
-		this.checked_add_assign(rhs)?;
-		Ok(this)
+		try_forward_bin_mut_impl(self, rhs, Int::checked_sub_assign)
 	}
 
 	/// Subtract-assigns `rhs` from `self` inplace.
@@ -1240,9 +1219,7 @@ impl Int {
 	/// 
 	/// - If `self` and `rhs` have unmatching bit widths.
 	pub fn into_checked_mul(self, rhs: &Int) -> Result<Int> {
-		let mut this = self;
-		this.checked_mul_assign(rhs)?;
-		Ok(this)
+		try_forward_bin_mut_impl(self, rhs, Int::checked_mul_assign)
 	}
 
 	/// Multiply-assigns `rhs` to `self` inplace.
@@ -1271,9 +1248,7 @@ impl Int {
 	/// 
 	/// - If `self` and `rhs` have unmatching bit widths.
 	pub fn into_checked_div(self, rhs: &Int) -> Result<Int> {
-		let mut this = self;
-		this.checked_div_assign(rhs)?;
-		Ok(this)
+		try_forward_bin_mut_impl(self, rhs, Int::checked_div_assign)
 	}
 
 	/// Assignes `self` to the division of `self` by `rhs`.
@@ -1303,9 +1278,7 @@ impl Int {
 	/// 
 	/// - If `self` and `rhs` have unmatching bit widths.
 	pub fn into_checked_rem(self, rhs: &Int) -> Result<Int> {
-		let mut this = self;
-		this.checked_rem_assign(rhs)?;
-		Ok(this)
+		try_forward_bin_mut_impl(self, rhs, Int::checked_rem_assign)
 	}
 
 	/// Assignes `self` to the **unsigned** remainder of `self` by `rhs`.
