@@ -6,8 +6,6 @@ use errors::{Error, Result};
 use traits::Width;
 use bitwidth::BitWidth;
 use digit_seq::{
-	AsDigitSeq,
-	AsDigitSeqMut,
 	ContiguousDigitSeq,
 	ContiguousDigitSeqMut
 };
@@ -33,21 +31,31 @@ impl Hash for ApInt {
 
 // ============================================================================
 
-impl<'a> AsDigitSeq<'a> for &'a ApInt {
-	type Seq = ContiguousDigitSeq<'a>;
-
-	fn digits(self) -> Self::Seq {
+impl ApInt {
+	pub(in apint) fn digits(&self) -> ContiguousDigitSeq {
 		ContiguousDigitSeq::from(self.as_digit_slice())
 	}
-}
 
-impl<'a> AsDigitSeqMut<'a> for &'a mut ApInt {
-	type SeqMut = ContiguousDigitSeqMut<'a>;
-
-	fn digits_mut(self) -> Self::SeqMut {
+	pub(in apint) fn digits_mut(&mut self) -> ContiguousDigitSeqMut {
 		ContiguousDigitSeqMut::from(self.as_digit_slice_mut())
 	}
 }
+
+// impl<'a> AsDigitSeq<'a> for &'a ApInt {
+// 	type Seq = ContiguousDigitSeq<'a>;
+
+// 	fn digits(self) -> Self::Seq {
+// 		ContiguousDigitSeq::from(self.as_digit_slice())
+// 	}
+// }
+
+// impl<'a> AsDigitSeqMut<'a> for &'a mut ApInt {
+// 	type SeqMut = ContiguousDigitSeqMut<'a>;
+
+// 	fn digits_mut(self) -> Self::SeqMut {
+// 		ContiguousDigitSeqMut::from(self.as_digit_slice_mut())
+// 	}
+// }
 
 // ============================================================================
 

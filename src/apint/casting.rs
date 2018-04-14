@@ -6,7 +6,6 @@ use bitwidth::{BitWidth};
 use storage::{Storage};
 use digit::{Bit};
 use traits::Width;
-use digit_seq::AsDigitSeq;
 use utils::{try_forward_bin_mut_impl, forward_bin_mut_impl};
 
 impl Clone for ApInt {

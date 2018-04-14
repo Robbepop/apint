@@ -50,7 +50,6 @@ impl ApInt {
     pub fn randomize_using<R>(&mut self, rng: &mut R)
         where R: rand::Rng
     {
-        use digit_seq::AsDigitSeqMut;
         self.digits_mut()
             .zip(rng.gen_iter::<Digit>())
             .for_each(|(d, r)| *d = r);
