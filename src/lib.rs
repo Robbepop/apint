@@ -16,12 +16,7 @@
 //! The crate was designed for correctness of emulation and performance in mind and the interface
 //! of `ApInt` is very comprehensive.
 
-#![feature(i128_type)]
-#![feature(conservative_impl_trait)]
-#![feature(slice_rotate)]
-
 #![allow(dead_code)]
-
 // #![deny(missing_docs)]
 // #![deny(warnings)]
 
