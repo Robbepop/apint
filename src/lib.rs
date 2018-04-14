@@ -72,6 +72,7 @@ pub use traits::{Width};
 pub use uint::{UInt};
 pub use int::{Int};
 
+/// Re-exports some commonly used items of this crate.
 pub mod prelude {
     #[doc(no_inline)]
     pub use super::{
