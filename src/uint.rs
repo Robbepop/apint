@@ -6,6 +6,7 @@ use errors::Result;
 use apint::{ShiftAmount};
 use bitpos::{BitPos};
 use int::Int;
+use utils::{try_forward_bin_mut_impl, forward_mut_impl, forward_bin_mut_impl};
 
 #[cfg(feature = "rand_support")]
 use rand;
@@ -668,9 +669,7 @@ impl UInt {
 	pub fn into_truncate<W>(self, target_width: W) -> Result<UInt>
 		where W: Into<BitWidth>
 	{
-		let mut this = self;
-		this.truncate(target_width)?;
-		Ok(this)
+		try_forward_bin_mut_impl(self, target_width, UInt::truncate)
 	}
 
 	/// Tries to truncate this `UInt` inplace to the given `target_width`.
@@ -707,9 +706,7 @@ impl UInt {
 	pub fn into_extend<W>(self, target_width: W) -> Result<UInt>
 		where W: Into<BitWidth>
 	{
-		let mut this = self;
-		this.extend(target_width)?;
-		Ok(this)
+		try_forward_bin_mut_impl(self, target_width, UInt::extend)
 	}
 
 	/// Tries to extend this `UInt` inplace to the given `target_width`.
@@ -742,9 +739,7 @@ impl UInt {
 	pub fn into_resize<W>(self, target_width: W) -> UInt
 		where W: Into<BitWidth>
 	{
-		let mut this = self;
-		this.resize(target_width);
-		this
+		forward_bin_mut_impl(self, target_width, UInt::resize)
 	}
 
 	/// Resizes the given `UInt` inplace.
@@ -782,9 +777,7 @@ impl UInt {
 	/// 
 	/// If `self` and `rhs` have unmatching bit widths.
 	pub fn into_checked_bitand(self, rhs: &UInt) -> Result<UInt> {
-		let mut this = self;
-		this.checked_bitand_assign(rhs)?;
-		Ok(this)
+		try_forward_bin_mut_impl(self, rhs, UInt::checked_bitand_assign)
 	}
 
 	/// Bit-and assigns all bits of this `UInt` with the bits of `rhs`.
@@ -808,9 +801,7 @@ impl UInt {
 	/// 
 	/// If `self` and `rhs` have unmatching bit widths.
 	pub fn into_checked_bitor(self, rhs: &UInt) -> Result<UInt> {
-		let mut this = self;
-		this.checked_bitor_assign(rhs)?;
-		Ok(this)
+		try_forward_bin_mut_impl(self, rhs, UInt::checked_bitor_assign)
 	}
 
 	/// Bit-or assigns all bits of this `UInt` with the bits of `rhs`.
@@ -834,9 +825,7 @@ impl UInt {
 	/// 
 	/// If `self` and `rhs` have unmatching bit widths.
 	pub fn into_checked_bitxor(self, rhs: &UInt) -> Result<UInt> {
-		let mut this = self;
-		this.checked_bitor_assign(rhs)?;
-		Ok(this)
+		try_forward_bin_mut_impl(self, rhs, UInt::checked_bitxor_assign)
 	}
 
 	/// Bit-xor assigns all bits of this `UInt` with the bits of `rhs`.
@@ -964,9 +953,7 @@ impl Not for UInt {
 	type Output = UInt;
 
 	fn not(self) -> Self::Output {
-		let mut this = self;
-		this.bitnot();
-		this
+		forward_mut_impl(self, UInt::bitnot)
 	}
 }
 
@@ -1086,9 +1073,7 @@ impl UInt {
 	/// 
 	/// - If `self` and `rhs` have unmatching bit widths.
 	pub fn into_checked_add(self, rhs: &UInt) -> Result<UInt> {
-		let mut this = self;
-		this.checked_add_assign(rhs)?;
-		Ok(this)
+		try_forward_bin_mut_impl(self, rhs, UInt::checked_add_assign)
 	}
 
 	/// Add-assigns `rhs` to `self` inplace.
@@ -1113,9 +1098,7 @@ impl UInt {
 	/// 
 	/// - If `self` and `rhs` have unmatching bit widths.
 	pub fn into_checked_sub(self, rhs: &UInt) -> Result<UInt> {
-		let mut this = self;
-		this.checked_add_assign(rhs)?;
-		Ok(this)
+		try_forward_bin_mut_impl(self, rhs, UInt::checked_sub_assign)
 	}
 
 	/// Subtract-assigns `rhs` from `self` inplace.
@@ -1143,9 +1126,7 @@ impl UInt {
 	/// 
 	/// - If `self` and `rhs` have unmatching bit widths.
 	pub fn into_checked_mul(self, rhs: &UInt) -> Result<UInt> {
-		let mut this = self;
-		this.checked_mul_assign(rhs)?;
-		Ok(this)
+		try_forward_bin_mut_impl(self, rhs, UInt::checked_mul_assign)
 	}
 
 	/// Multiply-assigns `rhs` to `self` inplace.
@@ -1174,9 +1155,7 @@ impl UInt {
 	/// 
 	/// - If `self` and `rhs` have unmatching bit widths.
 	pub fn into_checked_div(self, rhs: &UInt) -> Result<UInt> {
-		let mut this = self;
-		this.checked_div_assign(rhs)?;
-		Ok(this)
+		try_forward_bin_mut_impl(self, rhs, UInt::checked_div_assign)
 	}
 
 	/// Assignes `self` to the division of `self` by `rhs`.
@@ -1206,9 +1185,7 @@ impl UInt {
 	/// 
 	/// - If `self` and `rhs` have unmatching bit widths.
 	pub fn into_checked_rem(self, rhs: &UInt) -> Result<UInt> {
-		let mut this = self;
-		this.checked_rem_assign(rhs)?;
-		Ok(this)
+		try_forward_bin_mut_impl(self, rhs, UInt::checked_rem_assign)
 	}
 
 	/// Assignes `self` to the **unsigned** remainder of `self` by `rhs`.
