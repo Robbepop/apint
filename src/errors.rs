@@ -73,8 +73,29 @@ pub enum ErrorKind {
 		current: BitWidth
 	},
 
+	/// Returned on division by zero.
+	DivisionByZero {
+		/// The exact division operation.
+		op: DivOp,
+		/// The left-hand side of the division.
+		lhs: ApInt
+	},
+
 	/// Returned on constructing an `ApInt` from an empty iterator of `Digit`s.
 	ExpectedNonEmptyDigits,
+}
+
+/// All division operations that may be affected by division-by-zero errors.
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
+pub enum DivOp {
+	/// The signed division operation.
+	SignedDiv,
+	/// The signed remainder operation.
+	SignedRem,
+	/// The unsigned division operation.
+	UnsignedDiv,
+	/// The unsigned remainder operation.
+	UnsignedRem
 }
 
 /// Represents an error that may occure upon using the `ApInt` library.
@@ -82,7 +103,7 @@ pub enum ErrorKind {
 /// All errors have a unique kind which also stores extra information for error reporting.
 /// Besides that an `Error` also stores a message and an optional additional annotation.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct Error{
+pub struct Error {
 	kind      : ErrorKind,
 	message   : String,
 	annotation: Option<String>
@@ -258,6 +279,18 @@ impl Error {
 			 by the destination type {:?}.", value, destination_ty);
 		Error{
 			kind: ErrorKind::ValueUnrepresentable{value, destination_ty},
+			message,
+			annotation: None
+		}
+	}
+
+	pub(crate) fn division_by_zero(op: DivOp, lhs: ApInt) -> Error {
+		let message = format!(
+			"Encountered a division-by-zero for operation (= {:?}) with the left hand-side value: (= {:?})",
+			op, lhs
+		);
+		Error{
+			kind: ErrorKind::DivisionByZero{op, lhs},
 			message,
 			annotation: None
 		}
