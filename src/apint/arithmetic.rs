@@ -1,7 +1,7 @@
 use apint::{ApInt};
 use apint::utils::ZipDataAccessMut::{Inl, Ext};
 use traits::{Width};
-use errors::{Result};
+use errors::{DivOp, Error, Result};
 use digit::{Digit, DigitRepr};
 use ll;
 use utils::{try_forward_bin_mut_impl, forward_mut_impl};
@@ -192,6 +192,9 @@ impl ApInt {
 	/// 
 	/// - If `self` and `rhs` have unmatching bit widths.
 	pub fn checked_udiv_assign(&mut self, rhs: &ApInt) -> Result<()> {
+		if rhs.is_zero() {
+			return Err(Error::division_by_zero(DivOp::UnsignedDiv, self.clone()))
+		}
 		match self.zip_access_data_mut(rhs)? {
 			Inl(lhs, rhs) => {
 				let lval = lhs.repr();
@@ -234,6 +237,9 @@ impl ApInt {
 	/// 
 	/// - If `self` and `rhs` have unmatching bit widths.
 	pub fn checked_sdiv_assign(&mut self, rhs: &ApInt) -> Result<()> {
+		if rhs.is_zero() {
+			return Err(Error::division_by_zero(DivOp::SignedDiv, self.clone()))
+		}
 		let width = self.width();
 		match self.zip_access_data_mut(rhs)? {
 			Inl(lhs, rhs) => {
@@ -281,6 +287,9 @@ impl ApInt {
 	/// 
 	/// - If `self` and `rhs` have unmatching bit widths.
 	pub fn checked_urem_assign(&mut self, rhs: &ApInt) -> Result<()> {
+		if rhs.is_zero() {
+			return Err(Error::division_by_zero(DivOp::UnsignedRem, self.clone()))
+		}
 		match self.zip_access_data_mut(rhs)? {
 			Inl(lhs, rhs) => {
 				let lval = lhs.repr();
@@ -322,6 +331,9 @@ impl ApInt {
 	/// 
 	/// - If `self` and `rhs` have unmatching bit widths.
 	pub fn checked_srem_assign(&mut self, rhs: &ApInt) -> Result<()> {
+		if rhs.is_zero() {
+			return Err(Error::division_by_zero(DivOp::SignedRem, self.clone()))
+		}
 		let width = self.width();
 		match self.zip_access_data_mut(rhs)? {
 			Inl(lhs, rhs) => {
