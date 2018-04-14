@@ -172,9 +172,7 @@ impl DoubleDigit {
 	}
 }
 
-//  =======================================================================
-///  Constructors
-/// =======================================================================
+/// # Constructors
 impl Digit {
 	/// Creates a digit that only has the nth bit set to '1'.
 	#[inline]
@@ -226,9 +224,7 @@ impl Digit {
 	pub fn all_unset() -> Digit { ZERO }
 }
 
-//  ===========================================================================
-///  Utility & helper methods.
-/// ===========================================================================
+/// # Utility & helper methods.
 impl Digit {
 	/// Returns the `Digit`'s value as internal representation.
 	#[inline]
@@ -422,9 +418,7 @@ impl Width for DoubleDigit {
 	}
 }
 
-//  ===========================================================================
-///  Bitwise access
-/// ===========================================================================
+/// # Bitwise access
 impl Digit {
 	/// Returns the most significant `Bit` of this `Digit`.
 	/// 
@@ -556,9 +550,7 @@ impl Digit {
 	}
 }
 
-//  ===========================================================================
-///  Bitwise operations
-/// ===========================================================================
+/// # Bitwise operations
 impl Not for Digit {
 	type Output = Self;
 
@@ -597,9 +589,7 @@ impl BitXor for Digit {
 	}
 }
 
-// ============================================================================
-// Bitwise assign operations
-// ============================================================================
+// # Bitwise assign operations
 impl BitAndAssign for Digit {
 	fn bitand_assign(&mut self, rhs: Self) {
 		self.0 &= rhs.repr()
