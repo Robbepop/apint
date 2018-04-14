@@ -762,6 +762,11 @@ impl UInt {
 
 /// # Bitwise Operations
 impl UInt {
+	/// Flips all bits of `self` and returns the result.
+	pub fn into_bitnot(self) -> Self {
+		forward_mut_impl(self, UInt::bitnot)
+	}
+
 	/// Flip all bits of this `UInt` inplace.
 	pub fn bitnot(&mut self) {
 		self.value.bitnot()

@@ -813,6 +813,11 @@ impl Int {
 
 /// # Bitwise Operations
 impl Int {
+	/// Flips all bits of `self` and returns the result.
+	pub fn into_bitnot(self) -> Self {
+		forward_mut_impl(self, Int::bitnot)
+	}
+
 	/// Flip all bits of this `Int` inplace.
 	pub fn bitnot(&mut self) {
 		self.value.bitnot()

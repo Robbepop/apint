@@ -23,6 +23,10 @@ use std::ops::{
 
 /// # Bitwise Operations
 impl ApInt {
+	/// Flips all bits of `self` and returns the result.
+	pub fn into_bitnot(self) -> Self {
+		forward_mut_impl(self, ApInt::bitnot)
+	}
 
 	/// Flip all bits of this `ApInt` inplace.
 	pub fn bitnot(&mut self) {
