@@ -53,6 +53,7 @@ mod checks;
 mod ll;
 mod uint;
 mod int;
+mod utils;
 
 pub use apint::{
     ApInt,
