@@ -4,6 +4,7 @@ use traits::{Width};
 use errors::{Result};
 use digit::{Digit, DigitRepr};
 use ll;
+use utils::{try_forward_bin_mut_impl, forward_mut_impl};
 
 use std::ops::{
 	Neg,
@@ -24,9 +25,7 @@ impl ApInt {
 	/// 
 	/// **Note:** This will **not** allocate memory.
 	pub fn into_negate(self) -> ApInt {
-		let mut this = self;
-		this.negate();
-		this
+		forward_mut_impl(self, ApInt::negate)
 	}
 
 	/// Negates this `ApInt` inplace.
@@ -53,9 +52,7 @@ impl ApInt {
 	/// 
 	/// - If `self` and `rhs` have unmatching bit widths.
 	pub fn into_checked_add(self, rhs: &ApInt) -> Result<ApInt> {
-		let mut this = self;
-		this.checked_add_assign(rhs)?;
-		Ok(this)
+		try_forward_bin_mut_impl(self, rhs, ApInt::checked_add_assign)
 	}
 
 	/// Add-assigns `rhs` to `self` inplace.
@@ -96,9 +93,7 @@ impl ApInt {
 	/// 
 	/// - If `self` and `rhs` have unmatching bit widths.
 	pub fn into_checked_sub(self, rhs: &ApInt) -> Result<ApInt> {
-		let mut this = self;
-		this.checked_sub_assign(rhs)?;
-		Ok(this)
+		try_forward_bin_mut_impl(self, rhs, ApInt::checked_sub_assign)
 	}
 
 	/// Subtract-assigns `rhs` from `self` inplace.
@@ -142,9 +137,7 @@ impl ApInt {
 	/// 
 	/// - If `self` and `rhs` have unmatching bit widths.
 	pub fn into_checked_mul(self, rhs: &ApInt) -> Result<ApInt> {
-		let mut this = self;
-		this.checked_mul_assign(rhs)?;
-		Ok(this)
+		try_forward_bin_mut_impl(self, rhs, ApInt::checked_mul_assign)
 	}
 
 	/// Multiply-assigns `rhs` to `self` inplace.
@@ -185,9 +178,7 @@ impl ApInt {
 	/// 
 	/// - If `self` and `rhs` have unmatching bit widths.
 	pub fn into_checked_udiv(self, rhs: &ApInt) -> Result<ApInt> {
-		let mut this = self;
-		this.checked_udiv_assign(rhs)?;
-		Ok(this)
+		try_forward_bin_mut_impl(self, rhs, ApInt::checked_udiv_assign)
 	}
 
 	/// Assignes `self` to the division of `self` by `rhs` using **unsigned**
@@ -229,9 +220,7 @@ impl ApInt {
 	/// 
 	/// - If `self` and `rhs` have unmatching bit widths.
 	pub fn into_checked_sdiv(self, rhs: &ApInt) -> Result<ApInt> {
-		let mut this = self;
-		this.checked_sdiv_assign(rhs)?;
-		Ok(this)
+		try_forward_bin_mut_impl(self, rhs, ApInt::checked_sdiv_assign)
 	}
 
 	/// Assignes `self` to the division of `self` by `rhs` using **signed**
@@ -279,9 +268,7 @@ impl ApInt {
 	/// 
 	/// - If `self` and `rhs` have unmatching bit widths.
 	pub fn into_checked_urem(self, rhs: &ApInt) -> Result<ApInt> {
-		let mut this = self;
-		this.checked_urem_assign(rhs)?;
-		Ok(this)
+		try_forward_bin_mut_impl(self, rhs, ApInt::checked_urem_assign)
 	}
 
 	/// Assignes `self` to the **unsigned** remainder of `self` by `rhs`.
@@ -322,9 +309,7 @@ impl ApInt {
 	/// 
 	/// - If `self` and `rhs` have unmatching bit widths.
 	pub fn into_checked_srem(self, rhs: &ApInt) -> Result<ApInt> {
-		let mut this = self;
-		this.checked_srem_assign(rhs)?;
-		Ok(this)
+		try_forward_bin_mut_impl(self, rhs, ApInt::checked_srem_assign)
 	}
 
 	/// Assignes `self` to the **signed** remainder of `self` by `rhs`.

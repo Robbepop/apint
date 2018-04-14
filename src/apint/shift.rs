@@ -5,6 +5,7 @@ use checks;
 use digit;
 use digit::{Bit, Digit};
 use traits::{Width};
+use utils::{try_forward_bin_mut_impl};
 
 /// Represents an amount of bits to shift an `ApInt`.
 /// 
@@ -124,9 +125,7 @@ impl ApInt {
 	pub fn into_checked_shl<S>(self, shift_amount: S) -> Result<ApInt>
 		where S: Into<ShiftAmount>
 	{
-		let mut this = self;
-		this.checked_shl_assign(shift_amount)?;
-		Ok(this)
+		try_forward_bin_mut_impl(self, shift_amount, ApInt::checked_shl_assign)
 	}
 
 	/// Logically right-shifts this `ApInt` by the given `shift_amount` bits.
@@ -180,9 +179,7 @@ impl ApInt {
 	pub fn into_checked_lshr<S>(self, shift_amount: S) -> Result<ApInt>
 		where S: Into<ShiftAmount>
 	{
-		let mut this = self;
-		this.checked_lshr_assign(shift_amount)?;
-		Ok(this)
+		try_forward_bin_mut_impl(self, shift_amount, ApInt::checked_lshr_assign)
 	}
 
 	/// Arithmetically right-shifts this `ApInt` by the given `shift_amount` bits.
@@ -253,11 +250,8 @@ impl ApInt {
 	pub fn into_checked_ashr<S>(self, shift_amount: S) -> Result<ApInt>
 		where S: Into<ShiftAmount>
 	{
-		let mut this = self;
-		this.checked_ashr_assign(shift_amount)?;
-		Ok(this)
+		try_forward_bin_mut_impl(self, shift_amount, ApInt::checked_ashr_assign)
 	}
-
 }
 
 #[cfg(test)]

@@ -7,6 +7,7 @@ use storage::{Storage};
 use digit::{Bit};
 use traits::Width;
 use digit_seq::AsDigitSeq;
+use utils::{try_forward_bin_mut_impl, forward_bin_mut_impl};
 
 impl Clone for ApInt {
 	fn clone(&self) -> Self {
@@ -118,9 +119,7 @@ impl ApInt {
 	pub fn into_truncate<W>(self, target_width: W) -> Result<ApInt>
 		where W: Into<BitWidth>
 	{
-		let mut this = self;
-		this.truncate(target_width)?;
-		Ok(this)
+		try_forward_bin_mut_impl(self, target_width, ApInt::truncate)
 	}
 
 	/// Tries to strictly truncate this `ApInt` inplace to the given `target_width`
@@ -138,9 +137,7 @@ impl ApInt {
 	pub fn into_strict_truncate<W>(self, target_width: W) -> Result<ApInt>
 		where W: Into<BitWidth>
 	{
-		let mut this = self;
-		this.strict_truncate(target_width)?;
-		Ok(this)
+		try_forward_bin_mut_impl(self, target_width, ApInt::strict_truncate)
 	}
 
 	/// Tries to truncate this `ApInt` inplace to the given `target_width`.
@@ -269,9 +266,7 @@ impl ApInt {
 	pub fn into_zero_extend<W>(self, target_width: W) -> Result<ApInt>
 		where W: Into<BitWidth>
 	{
-		let mut this = self;
-		this.zero_extend(target_width)?;
-		Ok(this)
+		try_forward_bin_mut_impl(self, target_width, ApInt::zero_extend)
 	}
 
 	/// Tries to strictly zero-extend this `ApInt` inplace to the given `target_width`
@@ -289,9 +284,7 @@ impl ApInt {
 	pub fn into_strict_zero_extend<W>(self, target_width: W) -> Result<ApInt>
 		where W: Into<BitWidth>
 	{
-		let mut this = self;
-		this.strict_zero_extend(target_width)?;
-		Ok(this)
+		try_forward_bin_mut_impl(self, target_width, ApInt::strict_zero_extend)
 	}
 
 	/// Tries to zero-extend this `ApInt` inplace to the given `target_width`.
@@ -405,9 +398,7 @@ impl ApInt {
 	pub fn into_sign_extend<W>(self, target_width: W) -> Result<ApInt>
 		where W: Into<BitWidth>
 	{
-		let mut this = self;
-		this.sign_extend(target_width)?;
-		Ok(this)
+		try_forward_bin_mut_impl(self, target_width, ApInt::sign_extend)
 	}
 
 	/// Tries to strictly sign-extend this `ApInt` inplace to the given `target_width`
@@ -425,9 +416,7 @@ impl ApInt {
 	pub fn into_strict_sign_extend<W>(self, target_width: W) -> Result<ApInt>
 		where W: Into<BitWidth>
 	{
-		let mut this = self;
-		this.strict_sign_extend(target_width)?;
-		Ok(this)
+		try_forward_bin_mut_impl(self, target_width, ApInt::strict_sign_extend)
 	}
 
 	/// Tries to sign-extend this `ApInt` inplace to the given `target_width`.
@@ -559,9 +548,7 @@ impl ApInt {
 	pub fn into_zero_resize<W>(self, target_width: W) -> ApInt
 		where W: Into<BitWidth>
 	{
-		let mut this = self;
-		this.zero_resize(target_width);
-		this
+		forward_bin_mut_impl(self, target_width, ApInt::zero_resize)
 	}
 
 	/// Tries to strictly zero-resize this `ApInt` to the given `target_width`
@@ -579,9 +566,7 @@ impl ApInt {
 	pub fn into_strict_zero_resize<W>(self, target_width: W) -> Result<ApInt>
 		where W: Into<BitWidth>
 	{
-		let mut this = self;
-		this.strict_zero_resize(target_width)?;
-		Ok(this)
+		try_forward_bin_mut_impl(self, target_width, ApInt::strict_zero_resize)
 	}
 
 	/// Sign-resizes this `ApInt` to the given `target_width`
@@ -595,9 +580,7 @@ impl ApInt {
 	pub fn into_sign_resize<W>(self, target_width: W) -> ApInt
 		where W: Into<BitWidth>
 	{
-		let mut this = self;
-		this.sign_resize(target_width);
-		this
+		forward_bin_mut_impl(self, target_width, ApInt::sign_resize)
 	}
 
 	/// Tries to strictly sign-resize this `ApInt` to the given `target_width`
@@ -615,9 +598,7 @@ impl ApInt {
 	pub fn into_strict_sign_resize<W>(self, target_width: W) -> Result<ApInt>
 		where W: Into<BitWidth>
 	{
-		let mut this = self;
-		this.strict_sign_resize(target_width)?;
-		Ok(this)
+		try_forward_bin_mut_impl(self, target_width, ApInt::strict_sign_resize)
 	}
 
 	/// Zero-resizes the given `ApInt` inplace.

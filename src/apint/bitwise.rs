@@ -9,6 +9,7 @@ use apint::utils::{
 use bitpos::{BitPos};
 use traits::{Width};
 use checks;
+use utils::{try_forward_bin_mut_impl, forward_mut_impl};
 
 use std::ops::{
 	Not,
@@ -20,9 +21,7 @@ use std::ops::{
 	BitXorAssign
 };
 
-//  ===========================================================================
-///  Bitwise Operations
-/// ===========================================================================
+/// # Bitwise Operations
 impl ApInt {
 
 	/// Flip all bits of this `ApInt` inplace.
@@ -41,9 +40,7 @@ impl ApInt {
 	/// 
 	/// If `self` and `rhs` have unmatching bit widths.
 	pub fn into_checked_bitand(self, rhs: &ApInt) -> Result<ApInt> {
-		let mut this = self;
-		this.checked_bitand_assign(rhs)?;
-		Ok(this)
+		try_forward_bin_mut_impl(self, rhs, ApInt::checked_bitand_assign)
 	}
 
 	/// Bit-and assigns all bits of this `ApInt` with the bits of `rhs`.
@@ -67,9 +64,7 @@ impl ApInt {
 	/// 
 	/// If `self` and `rhs` have unmatching bit widths.
 	pub fn into_checked_bitor(self, rhs: &ApInt) -> Result<ApInt> {
-		let mut this = self;
-		this.checked_bitor_assign(rhs)?;
-		Ok(this)
+		try_forward_bin_mut_impl(self, rhs, ApInt::checked_bitor_assign)
 	}
 
 	/// Bit-or assigns all bits of this `ApInt` with the bits of `rhs`.
@@ -93,9 +88,7 @@ impl ApInt {
 	/// 
 	/// If `self` and `rhs` have unmatching bit widths.
 	pub fn into_checked_bitxor(self, rhs: &ApInt) -> Result<ApInt> {
-		let mut this = self;
-		this.checked_bitxor_assign(rhs)?;
-		Ok(this)
+		try_forward_bin_mut_impl(self, rhs, ApInt::checked_bitxor_assign)
 	}
 
 	/// Bit-xor assigns all bits of this `ApInt` with the bits of `rhs`.
@@ -110,9 +103,7 @@ impl ApInt {
 	}
 }
 
-//  ===========================================================================
-///  Bitwise Access
-/// ===========================================================================
+/// # Bitwise Access
 impl ApInt {
 	/// Returns the bit at the given bit position `pos`.
 	/// 
@@ -203,6 +194,7 @@ impl ApInt {
 	/// Sets all bits of this `ApInt` to one (`1`).
 	pub fn set_all(&mut self) {
 		self.modify_digits(|digit| digit.set_all());
+		self.clear_unused_bits();
 	}
 
 	/// Returns``true` if all bits in the `ApInt` are set.
@@ -228,7 +220,9 @@ impl ApInt {
 
 	/// Flips all bits of this `ApInt`.
 	pub fn flip_all(&mut self) {
+		// TODO: remove since equal to ApInt::checked_bitnot_assign
 		self.modify_digits(|digit| digit.flip_all());
+		self.clear_unused_bits();
 	}
 
 	/// Returns the sign bit of this `ApInt`.
@@ -269,9 +263,7 @@ impl ApInt {
 	}
 }
 
-//  ===========================================================================
-///  Bitwise utility methods.
-/// ===========================================================================
+/// # Bitwise utility methods.
 impl ApInt {
 	/// Returns the number of ones in the binary representation of this `ApInt`.
 	pub fn count_ones(&self) -> usize {
@@ -331,9 +323,7 @@ impl Not for ApInt {
 	type Output = ApInt;
 
 	fn not(self) -> Self::Output {
-		let mut this = self;
-		this.bitnot();
-		this
+		forward_mut_impl(self, ApInt::bitnot)
 	}
 }
 
