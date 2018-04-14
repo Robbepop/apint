@@ -1081,6 +1081,7 @@ mod tests {
 		use super::*;
 
 		#[test]
+		#[ignore]
 		fn regression_issue15() {
 			use std::{u64, i128};
 			{
