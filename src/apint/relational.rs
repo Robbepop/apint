@@ -21,9 +21,7 @@ impl PartialEq for ApInt {
 
 impl Eq for ApInt {}
 
-//  =======================================================================
-///  Relational Operations
-/// =======================================================================
+/// # Comparison Operations
 impl ApInt {
 
 	/// Unsigned less-than (`ult`) comparison between `self` and `rhs`.

@@ -30,6 +30,7 @@ impl Clone for ApInt {
 	}
 }
 
+/// # Assignment Operations
 impl ApInt {
 	/// Assigns `rhs` to this `ApInt`.
 	///
@@ -100,9 +101,7 @@ impl ApInt {
 	}
 }
 
-//  =======================================================================
-///  Casting: Truncation & Extension
-/// =======================================================================
+/// # Casting: Truncation & Extension
 impl ApInt {
 	/// Tries to truncate this `ApInt` inplace to the given `target_width`
 	/// and returns the result.

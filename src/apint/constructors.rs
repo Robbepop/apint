@@ -37,9 +37,7 @@ impl Drop for ApInt {
 	}
 }
 
-//  =======================================================================
-///  Constructors
-/// =======================================================================
+/// # Constructors
 impl ApInt {
 
 	/// Creates a new small `ApInt` from the given `BitWidth` and `Digit`.

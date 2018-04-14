@@ -16,9 +16,7 @@ use std::ops::{
 	MulAssign
 };
 
-//  =======================================================================
-///  Arithmetic Operations
-/// =======================================================================
+/// # Arithmetic Operations
 impl ApInt {
 
 	/// Negates this `ApInt` inplace and returns the result.

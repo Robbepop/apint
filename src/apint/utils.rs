@@ -85,9 +85,7 @@ impl Width for ApInt {
 	}
 }
 
-//  ===========================================================================
-///  Utility & Helper Methods
-/// ===========================================================================
+/// # Utility & Helper Methods
 impl ApInt {
 	/// Returns the number of bits of the bit width of this `ApInt`.
 	#[inline]

@@ -118,9 +118,7 @@ impl PrimitiveTy {
     }
 }
 
-//  =======================================================================
-///  Operations to lossful cast to primitive number types.
-/// =======================================================================
+/// # Operations to lossful cast to primitive number types.
 impl ApInt {
 
     /// Resizes the given `ApInt` to the given `PrimitiveTy`.
@@ -320,9 +318,7 @@ impl ApInt {
     }
 }
 
-//  =======================================================================
-///  Operations to lossless cast to primitive number types.
-/// =======================================================================
+/// # Operations to lossless cast to primitive number types.
 impl ApInt {
     /// Verifies if this `ApInt` can be casted into the given primitive type
     /// without loss of information and returns the least significant `Digit`

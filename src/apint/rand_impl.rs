@@ -11,9 +11,7 @@ impl rand::Rand for Digit {
 	}
 }
 
-//  =======================================================================
-///  Random Utilities using `rand` crate.
-/// =======================================================================
+/// # Random Utilities using `rand` crate.
 impl ApInt {
 	/// Creates a new `ApInt` with the given `BitWidth` and random `Digit`s.
 	pub fn random_with_width(width: BitWidth) -> ApInt {

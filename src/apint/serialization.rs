@@ -3,9 +3,7 @@ use apint::{ApInt};
 use errors::{Error, Result};
 use digit;
 
-//  =======================================================================
-///  Deserialization
-/// =======================================================================
+/// # Deserialization
 impl ApInt {
 	/// Parses the given `input` `String` with the given `Radix` and returns an `ApInt`
 	/// with the given `target_width` `BitWidth`.

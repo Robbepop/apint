@@ -62,9 +62,7 @@ impl From<usize> for ShiftAmount {
 	}
 }
 
-//  =======================================================================
-///  Shift Operations
-/// =======================================================================
+/// # Shift Operations
 impl ApInt {
 
 	/// Shift this `ApInt` left by the given `shift_amount` bits.
