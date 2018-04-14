@@ -71,3 +71,14 @@ pub use bitpos::{BitPos};
 pub use traits::{Width};
 pub use uint::{UInt};
 pub use int::{Int};
+
+pub mod prelude {
+    #[doc(no_inline)]
+    pub use super::{
+        ApInt,
+        Int,
+        UInt,
+        BitWidth,
+        Width
+    };
+}
