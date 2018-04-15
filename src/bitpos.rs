@@ -53,3 +53,48 @@ impl From<usize> for BitPos {
 		BitPos(pos)
 	}
 }
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+
+	mod to_digit_and_bit_pos {
+		use super::*;
+
+		#[test]
+		fn powers_of_two() {
+			assert_eq!(
+				BitPos::new(64).unwrap().to_digit_and_bit_pos(),
+				(1, BitPos::new(0).unwrap())
+			);
+			assert_eq!(
+				BitPos::new(256).unwrap().to_digit_and_bit_pos(),
+				(4, BitPos::new(0).unwrap())
+			)
+		}
+
+		#[test]
+		fn zero() {
+			assert_eq!(
+				BitPos::new(0).unwrap().to_digit_and_bit_pos(),
+				(0, BitPos::new(0).unwrap())
+			)
+		}
+
+		#[test]
+		fn odds() {
+			assert_eq!(
+				BitPos::new(1).unwrap().to_digit_and_bit_pos(),
+				(0, BitPos::new(1).unwrap())
+			);
+			assert_eq!(
+				BitPos::new(63).unwrap().to_digit_and_bit_pos(),
+				(0, BitPos::new(63).unwrap())
+			);
+			assert_eq!(
+				BitPos::new(255).unwrap().to_digit_and_bit_pos(),
+				(3, BitPos::new(63).unwrap())
+			)
+		}
+	}
+}
