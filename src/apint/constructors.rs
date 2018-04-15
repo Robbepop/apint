@@ -708,6 +708,19 @@ mod tests {
 				ApInt::signed_min_value(w10), ApInt::new_inl(w10, Digit(0x0000_0000_0000_0200))
 			)
 		}
+		{
+			use std::i128;
+			assert_eq!(
+				ApInt::signed_min_value(BitWidth::w128()), ApInt::from(i128::MIN)
+			);
+			assert_eq!(
+				ApInt::signed_min_value(BitWidth::w128()), ApInt::from([0x8000_0000_0000_0000_u64, 0_u64])
+			);
+			let w256 = BitWidth::new(256).unwrap();
+			assert_eq!(
+				ApInt::signed_min_value(w256), ApInt::from([0x8000_0000_0000_0000_u64, 0_u64, 0_u64, 0_u64])
+			)
+		}
 	}
 
 	#[test]
