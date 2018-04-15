@@ -117,9 +117,9 @@ additional terms or conditions.
 [9]: ./LICENSE-MIT
 [10]: ./LICENSE-APACHE
 [11]: https://docs.rs/apint/badge.svg
-[12]: https://docs.rs/apint/0.0.5
+[12]: https://docs.rs/apint/
 [13]: https://img.shields.io/crates/v/apint.svg
-[14]: https://crates.io/crates/apint/0.0.5
+[14]: https://crates.io/crates/apint/
 [15]: https://codecov.io/gh/robbepop/apint/branch/master/graph/badge.svg
 [16]: https://codecov.io/gh/Robbepop/apint/branch/master
 
@@ -127,6 +127,19 @@ additional terms or conditions.
 [18]: https://github.com/rust-lang/rust/issues/34511
 [19]: https://github.com/rust-lang/rust/issues/41891
 
-[30]: https://docs.rs/apint/0.0.5/apint/struct.APInt.html
-[31]: https://docs.rs/apint/0.0.5/apint/struct.Int.html
-[32]: https://docs.rs/apint/0.0.5/apint/struct.UInt.html
+[30]: https://docs.rs/apint/0.1.0/apint/struct.APInt.html
+[31]: https://docs.rs/apint/0.1.0/apint/struct.Int.html
+[32]: https://docs.rs/apint/0.1.0/apint/struct.UInt.html
+
+## Release Notes
+
+### Version 0.1.0 - 2018-04-15
+
+- Removed strict casting methods in `ApInt`, `Int` and `UInt`.
+- Add `into_bitnot` to `ApInt`, `Int` and `UInt`.
+- Add division-by-zero error and managing around it for respective operations.
+- Add a crate prelude module for simple usage of commonly used types.
+- Fixed bug in `ApInt::sign_extend` and `Int::extend` (issue [#15](https://github.com/Robbepop/apint/issues/15)). Thanks [AaronKutch](https://github.com/AaronKutch) for reporting!
+- Fixed markdown headers of many public impl blocks.
+- Fixed several documentation comments of public APIs, like `ApInt::from_{i128, u128}`.
+- Fixed several minor bugs due to forwarding to wrong implementation methods.
