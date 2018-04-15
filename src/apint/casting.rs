@@ -336,8 +336,7 @@ impl ApInt {
 		}
 
 		if self.most_significant_bit() == Bit::Unset {
-			self.zero_extend(target_width)?;
-			return Ok(())
+			return self.zero_extend(target_width)
 		}
 
 		let actual_req_digits = actual_width.required_digits();
@@ -358,10 +357,10 @@ impl ApInt {
 
 			// Fill most-significant-digit of `self` with `1` starting from its
 			// most-significant bit up to the `target_width`.
-			use digit;
-			let start = digit::BITS - (self.most_significant_digit().repr().leading_zeros() as usize);
-			let end   = target_width.excess_bits().unwrap_or(digit::BITS);
-			self.most_significant_digit_mut().set_all_within(start..end)?;
+			if let Some(excess_width) = actual_width.excess_width() {
+				self.most_significant_digit_mut().sign_extend_from(excess_width)?;
+			}
+			self.clear_unused_bits();
 		}
 		else {
 			// In this case we cannot reuse the consumed `ApInt`'s heap memory but
@@ -374,13 +373,16 @@ impl ApInt {
 			let additional_digits = target_req_digits - actual_req_digits;
 
 			// Fill most-significant-digit of `self` with `1` starting from its most-significant bit.
-			let start = digit::BITS - (self.most_significant_digit().repr().leading_zeros() as usize);
-			self.most_significant_digit_mut().set_all_within(start..digit::BITS)?;
+			if let Some(excess_width) = actual_width.excess_width() {
+				self.most_significant_digit_mut().sign_extend_from(excess_width)?;
+			}
 
 			let extended_copy = ApInt::from_iter(
 				self.digits()
 				    .chain(iter::repeat(digit::ONES).take(additional_digits)))
 				.and_then(|apint| apint.into_truncate(target_width))?;
+
+			self.clear_unused_bits();
 			*self = extended_copy;
 		}
 
