@@ -20,8 +20,6 @@ use std::ops::{
 	Rem
 };
 
-use std::ops::Range;
-
 /// The type for the internal `Digit` representation.
 /// 
 /// Must be exactly half the size of `DoubleDigitRepr`.
@@ -308,98 +306,6 @@ impl Digit {
 		                            // We don't need this step since this condition is an invariant of `Digit`.
 		let r: i64 = (x ^ m).wrapping_sub(m);   // resulting sign-extended number
 		self.0 = r as u64;
-		Ok(())
-	}
-
-	/// Sets all bits within the given `Range` to `1`.
-	/// 
-	/// Bit positions are from right to left, so `0` represents the least-significant
-	/// bit and `63` represents the most-significant bit within the `64`-bit `Digit`.
-	/// 
-	/// # Example
-	/// 
-	/// Given an example `Digit` `d` with value `0x0000_1000_1011`
-	/// and a call `d.set_all_within(4, 9)` the resulting `Digit` `r`
-	/// will have a value equal to `0x0001_1111_1011`.
-	/// 
-	/// # Errors
-	/// 
-	/// - If `range.start < range.end`
-	/// - If **not** `range.end < digit::BITS`
-	pub fn set_all_within<P>(&mut self, range: Range<P>) -> Result<()>
-		where P: Into<BitPos>
-	{
-		let start = range.start.into();
-		let end   = range.end.into();
-
-		if start > end {
-			return Error::invalid_bit_access(start, end.to_usize()) // TODO: Create and return better matching `Error`.
-				.with_annotation("ApInt::set_all_within: `range.start` must be less than `range.end`")
-				.into()
-		}
-		if !self.width().is_valid_pos(end) {
-			return Error::invalid_bit_access(end, BITS)
-				.with_annotation("ApInt::set_all_within: `range.end` must be less than the number of \
-				                  bits within a `Digit`.")
-				.into()
-		}
-
-		let start_idx = start.to_usize();
-		let end_idx   = end.to_usize();
-		let count     = end_idx - start_idx;
-
-		// Example: Let's assume `i = 5` then `(1 << i)` is `0x0100000`.
-		//          If we subtract one from it we get `0x0011111`.
-		//          Now we only need to shift the `1` block to the correct
-		//          position.
-		self.0 |= ((1 << count) - 1) << start_idx;
-
-		Ok(())
-	}
-
-	/// Sets all bits within the given `Range` to `0`.
-	/// 
-	/// Bit positions are from right to left, so `0` represents the least-significant
-	/// bit and `63` represents the most-significant bit within the `64`-bit `Digit`.
-	/// 
-	/// # Example
-	/// 
-	/// Given an example `Digit` `d` with value `0x1011_1000_1011`
-	/// and a call `d.unset_all_within(4, 9)` the resulting `Digit` `r`
-	/// will have a value equal to `0x1010_0000_1011`.
-	/// 
-	/// # Errors
-	/// 
-	/// - If `range.start < range.end`
-	/// - If **not** `range.end < digit::BITS`
-	pub fn unset_all_within<P>(&mut self, range: Range<P>) -> Result<()>
-		where P: Into<BitPos>
-	{
-		let start = range.start.into();
-		let end   = range.end.into();
-
-		if start > end {
-			return Error::invalid_bit_access(start, end.to_usize()) // TODO: Create and return better matching `Error`.
-				.with_annotation("ApInt::unset_all_within: `range.start` must be less than `range.end`")
-				.into()
-		}
-		if !self.width().is_valid_pos(end) {
-			return Error::invalid_bit_access(end, BITS)
-				.with_annotation("ApInt::unset_all_within: `range.end` must be less than the number of \
-				                  bits within a `Digit`.")
-				.into()
-		}
-
-		let start_idx = start.to_usize();
-		let end_idx   = end.to_usize();
-		let count     = end_idx - start_idx;
-
-		// Example: Let's assume `i = 4` then `(1 << i)` is `0x0001_0000`.
-		//          If we subtract one from it we get `0x0000_1111`.
-		//          Now we only need to shift the `1` block to the correct
-		//          position and big-negate the result.
-		self.0 &= !(((1 << count) - 1) << start_idx);
-
 		Ok(())
 	}
 }
