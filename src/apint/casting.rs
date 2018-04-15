@@ -752,17 +752,16 @@ mod tests {
 		use super::*;
 
 		#[test]
-		#[ignore]
 		fn regression_issue15() {
-			use std::{u64, i128};
+			use std::{i64, i128};
 			{
-				let input = ApInt::from_i128(i128::MAX).into_sign_extend(BitWidth::new(256).unwrap()).unwrap();
-				let expected = ApInt::from([0, 0, u64::MAX >> 1, u64::MAX]);
+				let input = ApInt::from_i64(i64::MIN).into_sign_extend(BitWidth::new(128).unwrap()).unwrap();
+				let expected = ApInt::from([-1_i64, i64::MIN]);
 				assert_eq!(input, expected);
 			}
 			{
 				let input = ApInt::from_i128(i128::MIN).into_sign_extend(BitWidth::new(256).unwrap()).unwrap();
-				let expected = ApInt::signed_min_value(BitWidth::new(256).unwrap());
+				let expected = ApInt::from([-1_i64, -1_i64, i64::MIN, 0_i64]);
 				assert_eq!(input, expected);
 			}
 		}
