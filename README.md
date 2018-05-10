@@ -5,7 +5,7 @@ ApInt - Arbitrary Precision Integer
 |:-------------------:|:-------------------:|:--------------------:|:--------------------:|:----------------:|:--------------------:|
 | [![travisCI][1]][2] | [![appveyor][3]][4] | [![codecov][15]][16] | [![coveralls][5]][6] | [![docs][11]][12] | [![crates][13]][14] |
 
-**Development in progress:** *The implementation has not been finished, is unstable and may not work.*
+**Development in progress:** *The implementation has not been finished and may not work.*
 
 **A**rbitrary **p**recision **Int**egers (**ApInt**) represent integers that have an arbitrary but 
 fixed runtime bit-width and offers two's complement modulo arithmetic equal to machine integers.
@@ -78,16 +78,6 @@ State of the API modules implemented so far:
 - Mid-level `ApsInt` wrapper around `ApInt` that stores a run-time sign information.
   This is different from `Int` and `UInt` since those types store
   their sign immutable in their type. This is the same as LLVM's `APSInt` data type.
-
-## Unstable Features Used
-
-These features need to be stabilized before this crate can be used on the stable channel.
-
-- ~~[`#![feature(i128_type)]`][17]~~
-- ~~[`#![feature(conservative_impl_trait)]`][18]~~
-- ~~[`#![feature(slice_rotate)`][19]~~
-
-All these features will be stabilized as of Rust version 1.26.
 
 ## License
 
