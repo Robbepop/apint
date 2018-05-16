@@ -256,12 +256,10 @@ impl Int {
 		if self.is_zero() {
 			return 0
 		}
-		if self.is_positive() {
-			1
+		if self.is_negative() {
+			return -1
 		}
-		else {
-			-1
-		}
+		1
 	}
 
 	/// Returns an absolute value representation of this `Int`.
