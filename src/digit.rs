@@ -89,6 +89,32 @@ impl From<Bit> for bool {
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub(crate) struct Digit(pub DigitRepr);
 
+use std::fmt;
+
+impl fmt::Binary for Digit {
+	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+		self.repr().fmt(f)
+	}
+}
+
+impl fmt::Octal for Digit {
+	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+		self.repr().fmt(f)
+	}
+}
+
+impl fmt::LowerHex for Digit {
+	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+		self.repr().fmt(f)
+	}
+}
+
+impl fmt::UpperHex for Digit {
+	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+		self.repr().fmt(f)
+	}
+}
+
 /// A doubled digit.
 /// 
 /// This is used as a compute unit for `Digit`'s since many `Digit` arithmetic operations
