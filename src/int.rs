@@ -1458,3 +1458,33 @@ impl<'a> RemAssign<&'a Int> for Int {
 		self.checked_rem_assign(rhs).unwrap();
 	}
 }
+
+// ============================================================================
+//  Binary, Oct, LowerHex and UpperHex implementations
+// ============================================================================
+
+use std::fmt;
+
+impl fmt::Binary for Int {
+	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+		self.value.fmt(f)
+	}
+}
+
+impl fmt::Octal for Int {
+	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+		self.value.fmt(f)
+	}
+}
+
+impl fmt::LowerHex for Int {
+	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+		self.value.fmt(f)
+	}
+}
+
+impl fmt::UpperHex for Int {
+	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+		self.value.fmt(f)
+	}
+}

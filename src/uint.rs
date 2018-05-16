@@ -1338,3 +1338,33 @@ impl<'a> RemAssign<&'a UInt> for UInt {
 		self.checked_rem_assign(rhs).unwrap();
 	}
 }
+
+// ============================================================================
+//  Binary, Oct, LowerHex and UpperHex implementations
+// ============================================================================
+
+use std::fmt;
+
+impl fmt::Binary for UInt {
+	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+		self.value.fmt(f)
+	}
+}
+
+impl fmt::Octal for UInt {
+	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+		self.value.fmt(f)
+	}
+}
+
+impl fmt::LowerHex for UInt {
+	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+		self.value.fmt(f)
+	}
+}
+
+impl fmt::UpperHex for UInt {
+	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+		self.value.fmt(f)
+	}
+}
