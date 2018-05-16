@@ -3,6 +3,78 @@ use apint::{ApInt};
 use errors::{Error, Result};
 use digit;
 
+use std::fmt;
+
+impl fmt::Binary for ApInt {
+	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+		if self.is_zero() {
+			return write!(f, "0")
+		}
+		let mut ds = self.as_digit_slice().into_iter().rev();
+		while let Some(digit) = ds.next() {
+			if digit.is_zero() {
+				continue;
+			}
+			write!(f, "{:b}", digit)?;
+			break
+		}
+		for digit in ds {
+			write!(f, "{:064b}", digit)?
+		}
+		Ok(())
+	}
+}
+
+impl fmt::Octal for ApInt {
+	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+		if self.is_zero() {
+			return write!(f, "0")
+		}
+		unimplemented!()
+		// Ok(())
+	}
+}
+
+impl fmt::LowerHex for ApInt {
+	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+		if self.is_zero() {
+			return write!(f, "0")
+		}
+		let mut ds = self.as_digit_slice().into_iter().rev();
+		while let Some(digit) = ds.next() {
+			if digit.is_zero() {
+				continue;
+			}
+			write!(f, "{:x}", digit)?;
+			break
+		}
+		for digit in ds {
+			write!(f, "{:016x}", digit)?
+		}
+		Ok(())
+	}
+}
+
+impl fmt::UpperHex for ApInt {
+	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+		if self.is_zero() {
+			return write!(f, "0")
+		}
+		let mut ds = self.as_digit_slice().into_iter().rev();
+		while let Some(digit) = ds.next() {
+			if digit.is_zero() {
+				continue;
+			}
+			write!(f, "{:X}", digit)?;
+			break
+		}
+		for digit in ds {
+			write!(f, "{:016X}", digit)?
+		}
+		Ok(())
+	}
+}
+
 /// # Deserialization
 impl ApInt {
 	/// Parses the given `input` `String` with the given `Radix` and returns an `ApInt`
@@ -232,6 +304,171 @@ mod tests {
 	use super::*;
 
 	use bitwidth::{BitWidth};
+
+	mod binary {
+		use super::*;
+
+		fn assert_binary(val: ApInt, expected: &str) {
+			assert_eq!(
+				format!("{:b}", val),
+				expected
+			)
+		}
+
+		#[test]
+		fn small() {
+			assert_binary(
+				ApInt::zero(BitWidth::w32()),
+				"0"
+			);
+			assert_binary(
+				ApInt::one(BitWidth::w32()),
+				"1"
+			);
+			assert_binary(
+				ApInt::from(0b_1010_0110_0110_1001_u32),
+				"1010011001101001"
+			);
+			assert_binary(
+				ApInt::all_set(BitWidth::w32()),
+				"11111111111111111111111111111111" // 32 ones
+			);
+			assert_binary(
+				ApInt::signed_min_value(BitWidth::w32()),
+				"10000000000000000000000000000000" // 31 zeros
+			);
+			assert_binary(
+				ApInt::signed_max_value(BitWidth::w32()),
+				"1111111111111111111111111111111"  // 31 ones
+			);
+		}
+
+		#[test]
+		fn large() {
+			assert_binary(
+				ApInt::zero(BitWidth::w128()),
+				"0"
+			);
+			assert_binary(
+				ApInt::one(BitWidth::w128()),
+				"1"
+			);
+			assert_binary(
+				ApInt::from(0b_1010_0110_0110_1001_u128),
+				"1010011001101001"
+			);
+			assert_binary(
+				ApInt::all_set(BitWidth::w128()),
+				"11111111111111111111111111111111\
+				 11111111111111111111111111111111\
+				 11111111111111111111111111111111\
+				 11111111111111111111111111111111"
+			);
+			assert_binary(
+				ApInt::signed_min_value(BitWidth::w128()),
+				"10000000000000000000000000000000\
+				 00000000000000000000000000000000\
+				 00000000000000000000000000000000\
+				 00000000000000000000000000000000"
+			);
+			assert_binary(
+				ApInt::signed_max_value(BitWidth::w128()),
+				"1111111111111111111111111111111\
+				 11111111111111111111111111111111\
+				 11111111111111111111111111111111\
+				 11111111111111111111111111111111"
+			);
+		}
+	}
+
+	mod hex {
+		use super::*;
+
+		fn assert_hex(val: ApInt, expected: &str) {
+			assert_eq!(
+				format!("{:x}", val),
+				expected.to_lowercase()
+			);
+			assert_eq!(
+				format!("{:X}", val),
+				expected.to_uppercase()
+			)
+		}
+
+		#[test]
+		fn small() {
+			assert_hex(
+				ApInt::zero(BitWidth::w32()),
+				"0"
+			);
+			assert_hex(
+				ApInt::one(BitWidth::w32()),
+				"1"
+			);
+			assert_hex(
+				ApInt::from(0xFEDC_BA98_u32),
+				"FEDC\
+				 BA98"
+			);
+			assert_hex(
+				ApInt::all_set(BitWidth::w32()),
+				"FFFF\
+				 FFFF"
+			);
+			assert_hex(
+				ApInt::signed_min_value(BitWidth::w32()),
+				"8000\
+				 0000"
+			);
+			assert_hex(
+				ApInt::signed_max_value(BitWidth::w32()),
+				"7FFF\
+				 FFFF"
+			);
+		}
+
+		#[test]
+		fn large() {
+			assert_hex(
+				ApInt::zero(BitWidth::w128()),
+				"0"
+			);
+			assert_hex(
+				ApInt::one(BitWidth::w128()),
+				"1"
+			);
+			assert_hex(
+				ApInt::from(0xFEDC_BA98_0A1B_7654_ABCD_0123_u128),
+				"FEDC\
+				 BA98\
+				 0A1B\
+				 7654\
+				 ABCD\
+				 0123"
+			);
+			assert_hex(
+				ApInt::all_set(BitWidth::w128()),
+				"FFFFFFFF\
+				 FFFFFFFF\
+				 FFFFFFFF\
+				 FFFFFFFF"
+			);
+			assert_hex(
+				ApInt::signed_min_value(BitWidth::w128()),
+				"80000000\
+				 00000000\
+				 00000000\
+				 00000000"
+			);
+			assert_hex(
+				ApInt::signed_max_value(BitWidth::w128()),
+				"7FFFFFFF\
+				 FFFFFFFF\
+				 FFFFFFFF\
+				 FFFFFFFF"
+			);
+		}
+	}
 
 	mod from_str_radix {
 
