@@ -21,12 +21,12 @@ use std::ops::{
 };
 
 /// The type for the internal `Digit` representation.
-/// 
+///
 /// Must be exactly half the size of `DoubleDigitRepr`.
 pub(crate) type DigitRepr = u64;
 
 /// The type for the internal `DoubleDigit` representation.
-/// 
+///
 /// Must be exactly double the size of `DigitRepr`.
 pub(crate) type DoubleDigitRepr = u128;
 
@@ -57,7 +57,7 @@ pub enum Bit {
 
 impl Bit {
 	/// Converts this `Bit` into a `bool`.
-	/// 
+	///
 	/// - `Unset` to `false`
 	/// - `Set` to `true`
 	#[inline]
@@ -84,7 +84,7 @@ impl From<Bit> for bool {
 }
 
 /// A (big) digit within an `ApInt` or similar representations.
-/// 
+///
 /// It uses the `DoubleDigit` as computation unit.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub(crate) struct Digit(pub DigitRepr);
@@ -116,10 +116,10 @@ impl fmt::UpperHex for Digit {
 }
 
 /// A doubled digit.
-/// 
+///
 /// This is used as a compute unit for `Digit`'s since many `Digit` arithmetic operations
 /// may overflow or have carries this is required in order to not lose those overflow- and underflow values.
-/// 
+///
 /// Has wrapping arithmetics for better machine emulation and improved performance.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub(crate) struct DoubleDigit(pub DoubleDigitRepr);
@@ -194,12 +194,22 @@ impl DoubleDigit {
 	pub(crate) fn from_hi_lo(hi: Digit, lo: Digit) -> DoubleDigit {
 		DoubleDigit((DoubleDigitRepr::from(hi.repr()) << BITS) | DoubleDigitRepr::from(lo.repr()))
 	}
+
+    #[inline]
+    pub(crate) fn wrapping_add(self, other: DoubleDigit) -> Self {
+        DoubleDigit(self.repr().wrapping_add(other.repr()))
+    }
+
+    #[inline]
+    pub(crate) fn wrapping_mul(self, other: DoubleDigit) -> Self {
+        DoubleDigit(self.repr().wrapping_mul(other.repr()))
+    }
 }
 
 /// # Constructors
 impl Digit {
 	/// Creates a digit that represents the value `0`.
-	/// 
+	///
 	/// **Note:** In twos-complement this means that all bits are `0`.
 	#[inline]
 	pub fn zero() -> Digit { ZERO }
@@ -245,6 +255,47 @@ impl Digit {
 	pub(crate) fn dd(self) -> DoubleDigit {
 		DoubleDigit(DoubleDigitRepr::from(self.repr()))
 	}
+
+    #[inline]
+    pub(crate) fn wrapping_add(self, other: Digit) -> Self {
+        Digit(self.repr().wrapping_add(other.repr()))
+    }
+
+    #[inline]
+    pub(crate) fn wrapping_mul(self, other: Digit) -> Self {
+        Digit(self.repr().wrapping_mul(other.repr()))
+    }
+
+    #[inline]
+    pub(crate) fn wrapping_mul_add(self, mul: Digit, add: Digit) -> Digit {
+        Digit(
+            self.repr()
+                .wrapping_mul(mul.repr())
+                .wrapping_add(add.repr()),
+        )
+    }
+
+    #[inline]
+    pub(crate) fn carrying_add(self, other: Digit) -> (Digit, Digit) {
+        //just to make sure that the assembly compiles to `adc`
+        match self.repr().overflowing_add(other.repr()) {
+            (x,false) => (Digit(x),Digit::zero()),
+            (x,true) => (Digit(x),Digit::one()),
+        }
+    }
+
+    //TODO if and when `carrying_mul` (rust-lang rfc #2417) is stabilized, this function and more should use `carrying_mul` as the operation
+    #[inline]
+    pub(crate) fn carrying_mul(self, other: Digit) -> (Digit, Digit) {
+        let temp = self.dd().wrapping_mul(other.dd());
+        (temp.lo(), temp.hi())
+    }
+
+    #[inline]
+    pub(crate) fn carrying_mul_add(self, mul: Digit, add: Digit) -> (Digit, Digit) {
+        let temp = self.dd().wrapping_mul(mul.dd()).wrapping_add(add.dd());
+        (temp.lo(), temp.hi())
+    }
 }
 
 impl Digit {
@@ -263,16 +314,16 @@ impl Digit {
 	}
 
 	/// Truncates this `Digit` to the given `BitWidth`.
-	/// 
-	/// This operation just zeros out any bits on this `Digit` 
+	///
+	/// This operation just zeros out any bits on this `Digit`
 	/// with bit positions above the given `BitWidth`.
-	/// 
+	///
 	/// # Note
-	/// 
+	///
 	/// This is equal to calling `Digit::retain_last_n`.
-	/// 
+	///
 	/// # Errors
-	/// 
+	///
 	/// - If the given `BitWidth` is invalid for `Digit` instances.
 	pub(crate) fn truncate_to<W>(&mut self, to: W) -> Result<()>
 		where W: Into<BitWidth>
@@ -284,17 +335,17 @@ impl Digit {
 	}
 
 	/// Sign extends this `Digit` from a given `BitWidth` to `64` bits.
-	/// 
+	///
 	/// # Note
-	/// 
+	///
 	/// - This can be truncated again to a real target `BitWidth` afterwards if
 	///   the users wishes to.
-	/// 
+	///
 	/// - Implementation inspired by
 	///   [Bit Twiddling Hacks](https://graphics.stanford.edu/~seander/bithacks.html#VariableSignExtend).
-	/// 
+	///
 	/// # Errors
-	/// 
+	///
 	/// - If the given `BitWidth` is invalid for `Digit` instances.
 	pub(crate) fn sign_extend_from<W>(&mut self, from: W) -> Result<()>
 		where W: Into<BitWidth>,
@@ -330,7 +381,7 @@ impl Width for DoubleDigit {
 /// # Bitwise access
 impl Digit {
 	/// Returns the least significant `Bit` of this `Digit`.
-	/// 
+	///
 	/// Note: This may be useful to determine if a `Digit`
 	///       represents an even or an uneven number for example.
 	#[inline]
@@ -339,9 +390,9 @@ impl Digit {
 	}
 
 	/// Returns `true` if the `n`th bit is set to `1`, else returns `false`.
-	/// 
+	///
 	/// # Errors
-	/// 
+	///
 	/// If the given `n` is greater than the digit size.
 	#[inline]
 	pub fn get<P>(self, pos: P) -> Result<Bit>
@@ -353,9 +404,9 @@ impl Digit {
 	}
 
 	/// Sets the bit at position `pos` to `1`.
-	/// 
+	///
 	/// # Errors
-	/// 
+	///
 	/// If the given `n` is greater than the digit size.
 	#[inline]
 	pub fn set<P>(&mut self, pos: P) -> Result<()>
@@ -367,9 +418,9 @@ impl Digit {
 	}
 
 	/// Sets the bit at position `pos` to `0`.
-	/// 
+	///
 	/// # Errors
-	/// 
+	///
 	/// If the given `n` is greater than the digit size.
 	#[inline]
 	pub fn unset<P>(&mut self, pos: P) -> Result<()>
@@ -381,9 +432,9 @@ impl Digit {
 	}
 
 	/// Flips the bit at position `pos`.
-	/// 
+	///
 	/// # Errors
-	/// 
+	///
 	/// If the given `n` is greater than the digit size.
 	#[inline]
 	pub fn flip<P>(&mut self, pos: P) -> Result<()>
@@ -413,13 +464,13 @@ impl Digit {
 	}
 
 	/// Unsets all bits but the last `n` ones.
-	/// 
+	///
 	/// # Note
-	/// 
+	///
 	/// This is equal to calling `Digit::truncate_to`.
-	/// 
+	///
 	/// # Errors
-	/// 
+	///
 	/// If the given `n` is greater than the digit size.
 	#[inline]
 	pub fn retain_last_n(&mut self, n: usize) -> Result<()> {
@@ -719,14 +770,14 @@ mod tests {
 		];
 
 		/// Returns a digit that has every even bit set, starting at index 0.
-		/// 
+		///
 		/// E.g.: `0x....010101`
 		fn even_digit() -> Digit {
 			Digit(0x5555_5555_5555_5555)
 		}
 
 		/// Returns a digit that has every odd bit set, starting at index 0.
-		/// 
+		///
 		/// E.g.: `0x....101010`
 		fn odd_digit() -> Digit {
 			Digit(0xAAAA_AAAA_AAAA_AAAA)
