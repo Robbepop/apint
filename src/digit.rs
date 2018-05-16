@@ -198,17 +198,6 @@ impl DoubleDigit {
 
 /// # Constructors
 impl Digit {
-	/// Creates a digit that only has the nth bit set to '1'.
-	#[inline]
-	pub fn one_at<P>(pos: P) -> Result<Digit>
-		where P: Into<BitPos>
-	{
-		let pos = pos.into();
-		let res = Digit(REPR_ONE << pos.to_usize());
-		checks::verify_bit_access(&res, pos)?;
-		Ok(res)
-	}
-
 	/// Creates a digit that represents the value `0`.
 	/// 
 	/// **Note:** In twos-complement this means that all bits are `0`.
@@ -231,21 +220,9 @@ impl Digit {
 	#[inline]
 	pub fn is_all_set(self) -> bool { self == ONES }
 
-	/// Returns `true` if this `Digit` has all bits unset.
-	/// 
-	/// Note: This is equal to calling `is_zero`.
-	#[inline]
-	pub fn is_all_unset(self) -> bool { self.is_zero() }
-
 	/// Creates a digit where all bits are initialized to `1`.
 	#[inline]
 	pub fn all_set() -> Digit { ONES }
-
-	/// Creates a digit where all bits are initialized to `1`.
-	/// 
-	/// **Note:** This is equivalent to `Digit::zero`.
-	#[inline]
-	pub fn all_unset() -> Digit { ZERO }
 }
 
 /// # Utility & helper methods.
@@ -352,15 +329,6 @@ impl Width for DoubleDigit {
 
 /// # Bitwise access
 impl Digit {
-	/// Returns the most significant `Bit` of this `Digit`.
-	/// 
-	/// Note: The most significant `Bit` is also the sign bit 
-	///       for signed integers.
-	#[inline]
-	pub fn most_significant_bit(self) -> Bit {
-		Bit::from((self.repr() >> (BITS - 1)) != 0)
-	}
-
 	/// Returns the least significant `Bit` of this `Digit`.
 	/// 
 	/// Note: This may be useful to determine if a `Digit`
@@ -442,28 +410,6 @@ impl Digit {
 	#[inline]
 	pub fn flip_all(&mut self) {
 		self.0 ^= REPR_ONES
-	}
-
-	/// Sets the first `n` bits in the digit to `1`.
-	/// 
-	/// # Errors
-	/// 
-	/// If the given `n` is greater than the digit size.
-	#[inline]
-	pub fn set_first_n(&mut self, n: usize) -> Result<()> {
-		checks::verify_bit_access(self, n)?;
-		Ok(self.0 |= !(REPR_ONES >> n))
-	}
-
-	/// Sets the first `n` bits in the digit to `0`.
-	/// 
-	/// # Errors
-	/// 
-	/// If the given `n` is greater than the digit size.
-	#[inline]
-	pub fn unset_first_n(&mut self, n: usize) -> Result<()> {
-		checks::verify_bit_access(self, n)?;
-		Ok(self.0 &= REPR_ONES >> (self::BITS - n))
 	}
 
 	/// Unsets all bits but the last `n` ones.

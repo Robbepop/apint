@@ -67,15 +67,6 @@ impl BitWidth {
 		shift_amount.into().to_usize() < self.0
 	}
 
-	/// Returns a `BitPos` at the given position if the position is valid for this `BitWidth`;
-	/// returns a corresponding error otherwise.
-	fn pos_at(self, pos: usize) -> Result<BitPos> {
-		if !(pos < self.0) {
-			return Err(Error::invalid_bit_access(pos, self.0))
-		}
-		BitPos::new(pos)
-	}
-
 	/// Returns the `BitPos` for the sign bit of an `ApInt` with this `BitWidth`.
 	#[inline]
 	pub(crate) fn sign_bit_pos(self) -> BitPos {

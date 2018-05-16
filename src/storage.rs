@@ -28,13 +28,4 @@ impl Storage {
 	fn is_inline(width: BitWidth) -> bool {
 		width.to_usize() <= digit::BITS
 	}
-
-	/// Returns `true` if the given `BitWidth` is large enough to require it to be stored externally.
-	/// 
-	/// Note: External storage in the context of `ApInt` means that it is **not** space-optimized
-	///       and thus stored on the heap with indirect access via pointer-to-data.
-	#[inline]
-	fn is_extern(width: BitWidth) -> bool {
-		!Storage::is_inline(width)
-	}
 }

@@ -16,7 +16,7 @@
 //! The crate was designed for correctness of emulation and performance in mind and the interface
 //! of `ApInt` is very comprehensive.
 
-#![allow(dead_code)]
+// #![allow(dead_code)]
 // #![deny(missing_docs)]
 // #![deny(warnings)]
 

@@ -41,22 +41,6 @@ impl ApInt {
 	}
 }
 
-// impl<'a> AsDigitSeq<'a> for &'a ApInt {
-// 	type Seq = ContiguousDigitSeq<'a>;
-
-// 	fn digits(self) -> Self::Seq {
-// 		ContiguousDigitSeq::from(self.as_digit_slice())
-// 	}
-// }
-
-// impl<'a> AsDigitSeqMut<'a> for &'a mut ApInt {
-// 	type SeqMut = ContiguousDigitSeqMut<'a>;
-
-// 	fn digits_mut(self) -> Self::SeqMut {
-// 		ContiguousDigitSeqMut::from(self.as_digit_slice_mut())
-// 	}
-// }
-
 // ============================================================================
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
@@ -278,16 +262,6 @@ impl ApInt {
 		}
 	}
 
-	/// Returns a mutable reference to the least significant `Digit` of this `ApInt`.
-	pub(in apint) fn least_significant_digit_mut(&mut self) -> &mut Digit {
-		match self.access_data_mut() {
-			DataAccessMut::Inl(digit) => digit,
-			DataAccessMut::Ext(digits) => {
-				digits.first_mut().unwrap()
-			}
-		}
-	}
-
 	/// Returns `Bit::Set` if the most significant bit of this `ApInt` is set
 	/// and `Bit::Unset` otherwise.
 	pub(in apint) fn most_significant_bit(&self) -> Bit {
@@ -295,8 +269,8 @@ impl ApInt {
 		self.most_significant_digit()
 			.get(sign_bit_pos.to_pos_within_digit())
 			.expect("`BitWidth::excess_bits` returns a number that \
-						is always a valid `BitPos` for a `Digit` so this \
-						operation cannot fail.")
+			         is always a valid `BitPos` for a `Digit` so this \
+			         operation cannot fail.")
 	}
 
 	/// Returns `Bit::Set` if the least significant bit of this `ApInt` is set
@@ -387,20 +361,6 @@ impl ApInt {
 		}
 	}
 
-	/// Splits the least significant digits from the rest of the digit slice
-	/// and returns it as well as the remaining part of the digit slice.
-	pub(in apint) fn split_least_significant_digit_mut(&mut self) -> (&mut Digit, &mut [Digit]) {
-		match self.access_data_mut() {
-			DataAccessMut::Inl(digit) => (digit, &mut []),
-			DataAccessMut::Ext(digits) => {
-				digits.split_first_mut()
-					.expect("An `ApInt` always has at least one digit so calling \
-					         `split_first_mut` on a slice of its digits will never \
-					         return `None`.")
-			}
-		}
-	}
-
 	/// Splits the most significant digits from the rest of the digit slice
 	/// and returns it as well as the remaining part of the digit slice.
 	pub(in apint) fn split_most_significant_digit(&self) -> (Digit, &[Digit]) {
@@ -415,21 +375,6 @@ impl ApInt {
 			}
 		}
 	}
-
-	/// Splits the most significant digits from the rest of the digit slice
-	/// and returns it as well as the remaining part of the digit slice.
-	pub(in apint) fn split_most_significant_digit_mut(&mut self) -> (&mut Digit, &mut [Digit]) {
-		match self.access_data_mut() {
-			DataAccessMut::Inl(digit) => (digit, &mut []),
-			DataAccessMut::Ext(digits) => {
-				digits.split_last_mut()
-					.expect("An `ApInt` always has at least one digit so calling \
-					         `split_last_mut` on a slice of its digits will never \
-					         return `None`.")
-			}
-		}
-	}
-
 }
 
 #[cfg(test)]

@@ -478,10 +478,6 @@ mod tests {
 			[2, 4, 8, 16, 32, 7, 10, 36].into_iter().map(|&r| Radix::new(r).unwrap())
 		}
 
-		fn test_pow2_radices() -> impl Iterator<Item=Radix> {
-			[2, 4, 8, 16, 32].into_iter().map(|&r| Radix::new(r).unwrap())
-		}
-
 		#[test]
 		fn empty() {
 			for radix in test_radices() {

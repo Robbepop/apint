@@ -482,12 +482,6 @@ impl ApInt {
 mod tests {
 	use super::*;
 
-	fn test_inl_widths() -> impl Iterator<Item=BitWidth> {
-		[ 1,  2,  4,  8, 16, 32, 64,
-		 10, 20, 30, 40, 50, 60, 63].into_iter()
-		                            .map(|&n| BitWidth::new(n).unwrap())
-	}
-
 	fn test_apints() -> impl Iterator<Item=ApInt> {
 		vec![
 			ApInt::from_u8(0),
@@ -563,14 +557,6 @@ mod tests {
 			// ApInt::repeat_digit(width_512, 0x0000_0000_FFFF_FFFF),
 			// ApInt::all_set(width_512),
 		].into_iter()
-	}
-
-	fn test_inl_apints() -> impl Iterator<Item=ApInt> {
-		test_apints().filter(|apint| apint.storage() == Storage::Inl)
-	}
-
-	fn test_ext_apints() -> impl Iterator<Item=ApInt> {
-		test_apints().filter(|apint| apint.storage() == Storage::Ext)
 	}
 
 	mod clone {
