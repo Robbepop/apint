@@ -38,7 +38,7 @@ impl ApInt {
 		                         // expensive copies of `self`.
 		self.checked_add_assign(&ApInt::one(width))
 			.expect("This operation cannot fail since the temporary `ApInt`\
-						and `self` are ensured to always have the same bit width.");
+			         and `self` are ensured to always have the same bit width.");
 		self.clear_unused_bits();
 	}
 
