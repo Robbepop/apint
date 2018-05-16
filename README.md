@@ -123,6 +123,11 @@ additional terms or conditions.
 
 ## Release Notes
 
+### Version 0.2.0 - 2018-05-16
+
+- Add `Binary`, `LowerHex` and `UpperHex` impls to `Int`, `UInt` and `ApInt`.  
+  Note that implementations for `Octal` are still missing.
+
 ### Version 0.1.0 - 2018-04-15
 
 - Removed strict casting methods in `ApInt`, `Int` and `UInt`.
