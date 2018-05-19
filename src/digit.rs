@@ -194,6 +194,16 @@ impl DoubleDigit {
 	pub(crate) fn from_hi_lo(hi: Digit, lo: Digit) -> DoubleDigit {
 		DoubleDigit((DoubleDigitRepr::from(hi.repr()) << BITS) | DoubleDigitRepr::from(lo.repr()))
 	}
+
+    #[inline]
+    pub(crate) fn wrapping_add(self, other: DoubleDigit) -> Self {
+        DoubleDigit(self.repr().wrapping_add(other.repr()))
+    }
+
+    #[inline]
+    pub(crate) fn wrapping_mul(self, other: DoubleDigit) -> Self {
+        DoubleDigit(self.repr().wrapping_mul(other.repr()))
+    }
 }
 
 /// # Constructors
@@ -245,6 +255,47 @@ impl Digit {
 	pub(crate) fn dd(self) -> DoubleDigit {
 		DoubleDigit(DoubleDigitRepr::from(self.repr()))
 	}
+
+    #[inline]
+    pub(crate) fn wrapping_add(self, other: Digit) -> Self {
+        Digit(self.repr().wrapping_add(other.repr()))
+    }
+
+    #[inline]
+    pub(crate) fn wrapping_mul(self, other: Digit) -> Self {
+        Digit(self.repr().wrapping_mul(other.repr()))
+    }
+
+    #[inline]
+    pub(crate) fn wrapping_mul_add(self, mul: Digit, add: Digit) -> Digit {
+        Digit(
+            self.repr()
+                .wrapping_mul(mul.repr())
+                .wrapping_add(add.repr()),
+        )
+    }
+
+    #[inline]
+    pub(crate) fn carrying_add(self, other: Digit) -> (Digit, Digit) {
+        //this is to make sure that the assembly compiles down to the `adc` function
+        match self.repr().overflowing_add(other.repr()) {
+            (x,false) => (Digit(x),Digit::zero()),
+            (x,true) => (Digit(x),Digit::one()),
+        }
+    }
+
+    //TODO if and when `carrying_mul` (rust-lang rfc #2417) is stabilized, this function and others in this crate should use `carrying_mul` as the operation
+    #[inline]
+    pub(crate) fn carrying_mul(self, other: Digit) -> (Digit, Digit) {
+        let temp = self.dd().wrapping_mul(other.dd());
+        (temp.lo(), temp.hi())
+    }
+
+    #[inline]
+    pub(crate) fn carrying_mul_add(self, mul: Digit, add: Digit) -> (Digit, Digit) {
+        let temp = self.dd().wrapping_mul(mul.dd()).wrapping_add(add.dd());
+        (temp.lo(), temp.hi())
+    }
 }
 
 impl Digit {
