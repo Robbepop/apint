@@ -10,6 +10,7 @@ use digit::{Bit};
 use std::cmp::Ordering;
 use std::ops::Not;
 
+/// If `self` and `other` have unmatching bit widths, `false` will be returned.
 impl PartialEq for ApInt {
 	fn eq(&self, other: &ApInt) -> bool {
 		if self.len_bits() != other.len_bits() {
@@ -28,6 +29,7 @@ impl ApInt {
 	/// 
 	/// # Note
 	/// 
+	/// - `checked_` for this function means that it checks the bit widths
 	/// - Returns `Ok(true)` if `self < rhs`.
 	/// - Interprets both `ApInt` instances as **unsigned** values.
 	/// 
@@ -66,6 +68,7 @@ impl ApInt {
 	/// 
 	/// # Note
 	/// 
+	/// - `checked_` for this function means that it checks the bit widths
 	/// - Returns `Ok(true)` if `self <= rhs`.
 	/// - Interprets both `ApInt` instances as **unsigned** values.
 	/// 
@@ -87,6 +90,7 @@ impl ApInt {
 	/// 
 	/// # Note
 	/// 
+	/// - `checked_` for this function means that it checks the bit widths
 	/// - Returns `Ok(true)` if `self > rhs`.
 	/// - Interprets both `ApInt` instances as **unsigned** values.
 	/// 
@@ -108,6 +112,7 @@ impl ApInt {
 	/// 
 	/// # Note
 	/// 
+	/// - `checked_` for this function means that it checks the bit widths
 	/// - Returns `Ok(true)` if `self >= rhs`.
 	/// - Interprets both `ApInt` instances as **unsigned** values.
 	/// 
@@ -129,6 +134,7 @@ impl ApInt {
 	/// 
 	/// # Note
 	/// 
+	/// - `checked_` for this function means that it checks the bit widths
 	/// - Returns `Ok(true)` if `self < rhs`.
 	/// - Interprets both `ApInt` instances as **signed** values.
 	/// 
@@ -167,6 +173,7 @@ impl ApInt {
 	/// 
 	/// # Note
 	/// 
+	/// - `checked_` for this function means that it checks the bit widths
 	/// - Returns `Ok(true)` if `self <= rhs`.
 	/// - Interprets both `ApInt` instances as **signed** values.
 	/// 
@@ -188,6 +195,7 @@ impl ApInt {
 	/// 
 	/// # Note
 	/// 
+	/// - `checked_` for this function means that it checks the bit widths
 	/// - Returns `Ok(true)` if `self > rhs`.
 	/// - Interprets both `ApInt` instances as **signed** values.
 	/// 
@@ -209,6 +217,7 @@ impl ApInt {
 	/// 
 	/// # Note
 	/// 
+	/// - `checked_` for this function means that it checks the bit widths
 	/// - Returns `Ok(true)` if `self >= rhs`.
 	/// - Interprets both `ApInt` instances as **signed** values.
 	/// 
