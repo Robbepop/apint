@@ -24,13 +24,13 @@ use std::ops::{
 	Add,
 	Sub,
 	Mul,
-    Div,
-    Rem,
+	Div,
+	Rem,
 	AddAssign,
 	SubAssign,
 	MulAssign,
-    DivAssign,
-    RemAssign,
+	DivAssign,
+	RemAssign,
 	Shl,
 	ShlAssign,
 	Shr,
@@ -45,103 +45,103 @@ use std::ops::{
 /// `UInt` offers a more elegant and higher-level abstraction interface to the lower-level `ApInt`.
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct Int {
-    value: ApInt,
+	value: ApInt,
 }
 
 impl From<ApInt> for Int {
-    fn from(value: ApInt) -> Int {
-        Int { value }
-    }
+	fn from(value: ApInt) -> Int {
+		Int { value }
+	}
 }
 
 impl Int {
-    /// Transforms this `Int` into an equivalent `ApInt` instance.
-    pub fn into_apint(self) -> ApInt {
-        self.value
-    }
+	/// Transforms this `Int` into an equivalent `ApInt` instance.
+	pub fn into_apint(self) -> ApInt {
+		self.value
+	}
 
-    /// Transforms this `Int` into an equivalent `UInt` instance.
-    pub fn into_unsigned(self) -> UInt {
-        UInt::from(self.value)
-    }
+	/// Transforms this `Int` into an equivalent `UInt` instance.
+	pub fn into_unsigned(self) -> UInt {
+		UInt::from(self.value)
+	}
 }
 
 /// # Constructors
 impl Int {
-    /// Creates a new `Int` from the given `Bit` value with a bit width of `1`.
-    ///
-    /// This function is generic over types that are convertible to `Bit` such as `bool`.
-    pub fn from_bit<B>(bit: B) -> Int
-    where
-        B: Into<Bit>,
-    {
-        Int::from(ApInt::from_bit(bit))
-    }
+	/// Creates a new `Int` from the given `Bit` value with a bit width of `1`.
+	///
+	/// This function is generic over types that are convertible to `Bit` such as `bool`.
+	pub fn from_bit<B>(bit: B) -> Int
+	where
+		B: Into<Bit>,
+	{
+		Int::from(ApInt::from_bit(bit))
+	}
 
-    /// Creates a new `Int` from a given `i8` value with a bit-width of 8.
-    #[inline]
-    pub fn from_i8(val: i8) -> Int {
-        Int::from(ApInt::from_i8(val))
-    }
+	/// Creates a new `Int` from a given `i8` value with a bit-width of 8.
+	#[inline]
+	pub fn from_i8(val: i8) -> Int {
+		Int::from(ApInt::from_i8(val))
+	}
 
-    /// Creates a new `Int` from a given `i16` value with a bit-width of 16.
-    #[inline]
-    pub fn from_i16(val: i16) -> Int {
-        Int::from(ApInt::from_i16(val))
-    }
+	/// Creates a new `Int` from a given `i16` value with a bit-width of 16.
+	#[inline]
+	pub fn from_i16(val: i16) -> Int {
+		Int::from(ApInt::from_i16(val))
+	}
 
-    /// Creates a new `Int` from a given `i32` value with a bit-width of 32.
-    #[inline]
-    pub fn from_i32(val: i32) -> Int {
-        Int::from(ApInt::from_i32(val))
-    }
+	/// Creates a new `Int` from a given `i32` value with a bit-width of 32.
+	#[inline]
+	pub fn from_i32(val: i32) -> Int {
+		Int::from(ApInt::from_i32(val))
+	}
 
-    /// Creates a new `Int` from a given `i64` value with a bit-width of 64.
-    #[inline]
-    pub fn from_i64(val: i64) -> Int {
-        Int::from(ApInt::from_i64(val))
-    }
+	/// Creates a new `Int` from a given `i64` value with a bit-width of 64.
+	#[inline]
+	pub fn from_i64(val: i64) -> Int {
+		Int::from(ApInt::from_i64(val))
+	}
 
-    /// Creates a new `Int` from a given `i64` value with a bit-width of 64.
-    pub fn from_i128(val: i128) -> Int {
-        Int::from(ApInt::from_i128(val))
-    }
+	/// Creates a new `Int` from a given `i64` value with a bit-width of 64.
+	pub fn from_i128(val: i128) -> Int {
+		Int::from(ApInt::from_i128(val))
+	}
 
-    /// Creates a new `Int` with the given bit width that represents zero.
-    pub fn zero(width: BitWidth) -> Int {
-        Int::from(ApInt::zero(width))
-    }
+	/// Creates a new `Int` with the given bit width that represents zero.
+	pub fn zero(width: BitWidth) -> Int {
+		Int::from(ApInt::zero(width))
+	}
 
-    /// Creates a new `Int` with the given bit width that represents one.
-    pub fn one(width: BitWidth) -> Int {
-        Int::from(ApInt::one(width))
-    }
+	/// Creates a new `Int` with the given bit width that represents one.
+	pub fn one(width: BitWidth) -> Int {
+		Int::from(ApInt::one(width))
+	}
 
-    /// Creates a new `Int` with the given bit width that has all bits unset.
-    ///
-    /// **Note:** This is equal to calling `Int::zero` with the given `width`.
-    pub fn all_unset(width: BitWidth) -> Int {
-        Int::zero(width)
-    }
+	/// Creates a new `Int` with the given bit width that has all bits unset.
+	///
+	/// **Note:** This is equal to calling `Int::zero` with the given `width`.
+	pub fn all_unset(width: BitWidth) -> Int {
+		Int::zero(width)
+	}
 
-    /// Creates a new `Int` with the given bit width that has all bits set.
-    ///
-    /// # Note
-    ///
-    /// - This is equal to minus one on any twos-complement machine.
-    pub fn all_set(width: BitWidth) -> Int {
-        Int::from(ApInt::all_set(width))
-    }
+	/// Creates a new `Int` with the given bit width that has all bits set.
+	///
+	/// # Note
+	///
+	/// - This is equal to minus one on any twos-complement machine.
+	pub fn all_set(width: BitWidth) -> Int {
+		Int::from(ApInt::all_set(width))
+	}
 
-    /// Returns the smallest `Int` that can be represented by the given `BitWidth`.
-    pub fn min_value(width: BitWidth) -> Int {
-        Int::from(ApInt::signed_min_value(width))
-    }
+	/// Returns the smallest `Int` that can be represented by the given `BitWidth`.
+	pub fn min_value(width: BitWidth) -> Int {
+		Int::from(ApInt::signed_min_value(width))
+	}
 
-    /// Returns the largest `Int` that can be represented by the given `BitWidth`.
-    pub fn max_value(width: BitWidth) -> Int {
-        Int::from(ApInt::signed_max_value(width))
-    }
+	/// Returns the largest `Int` that can be represented by the given `BitWidth`.
+	pub fn max_value(width: BitWidth) -> Int {
+		Int::from(ApInt::signed_max_value(width))
+	}
 }
 
 impl<B> From<B> for Int
@@ -149,38 +149,38 @@ impl<B> From<B> for Int
 {
 	#[inline]
 	fn from(bit: B) -> Int {
-        Int::from_bit(bit)
+		Int::from_bit(bit)
 	}
 }
 
 impl From<i8> for Int {
-    fn from(val: i8) -> Int {
-        Int::from_i8(val)
-    }
+	fn from(val: i8) -> Int {
+		Int::from_i8(val)
+	}
 }
 
 impl From<i16> for Int {
-    fn from(val: i16) -> Int {
-        Int::from_i16(val)
-    }
+	fn from(val: i16) -> Int {
+		Int::from_i16(val)
+	}
 }
 
 impl From<i32> for Int {
-    fn from(val: i32) -> Int {
-        Int::from_i32(val)
-    }
+	fn from(val: i32) -> Int {
+		Int::from_i32(val)
+	}
 }
 
 impl From<i64> for Int {
-    fn from(val: i64) -> Int {
-        Int::from_i64(val)
-    }
+	fn from(val: i64) -> Int {
+		Int::from_i64(val)
+	}
 }
 
 impl From<i128> for Int {
-    fn from(val: i128) -> Int {
-        Int::from_i128(val)
-    }
+	fn from(val: i128) -> Int {
+		Int::from_i128(val)
+	}
 }
 
 macro_rules! impl_from_array_for_Int {
@@ -205,37 +205,37 @@ impl_from_array_for_Int!(32); // 2048 bits
 
 /// # Utilities
 impl Int {
-    /// Returns `true` if this `Int` represents the value zero (`0`).
-    ///
-    /// # Note
-    ///
-    /// - Zero (`0`) is also called the additive neutral element.
-    /// - This operation is more efficient than comparing two instances
-    ///   of `Int` for the same reason.
-    pub fn is_zero(&self) -> bool {
-        self.value.is_zero()
-    }
-
-    /// Returns `true` if this `Int` represents the value one (`1`).
-    ///
-    /// # Note
-    ///
-    /// - One (`1`) is also called the multiplicative neutral element.
-    /// - This operation is more efficient than comparing two instances
-    ///   of `Int` for the same reason.
-    pub fn is_one(&self) -> bool {
-        self.value.is_one()
+	/// Returns `true` if this `Int` represents the value zero (`0`).
+	///
+	/// # Note
+	///
+	/// - Zero (`0`) is also called the additive neutral element.
+	/// - This operation is more efficient than comparing two instances
+	///   of `Int` for the same reason.
+	pub fn is_zero(&self) -> bool {
+		self.value.is_zero()
 	}
 
-    /// Returns `true` if this `Int` represents an even number.
-    pub fn is_even(&self) -> bool {
-        self.value.is_even()
-    }
+	/// Returns `true` if this `Int` represents the value one (`1`).
+	///
+	/// # Note
+	///
+	/// - One (`1`) is also called the multiplicative neutral element.
+	/// - This operation is more efficient than comparing two instances
+	///   of `Int` for the same reason.
+	pub fn is_one(&self) -> bool {
+		self.value.is_one()
+	}
 
-    /// Returns `true` if this `Int` represents an odd number.
-    pub fn is_odd(&self) -> bool {
-        self.value.is_odd()
-    }
+	/// Returns `true` if this `Int` represents an even number.
+	pub fn is_even(&self) -> bool {
+		self.value.is_even()
+	}
+
+	/// Returns `true` if this `Int` represents an odd number.
+	pub fn is_odd(&self) -> bool {
+		self.value.is_odd()
+	}
 
 	/// Returns `true` if the value of this `Int` is positive.
 	pub fn is_positive(&self) -> bool {
@@ -353,203 +353,203 @@ impl Int {
 /// If `self` and `rhs` have unmatching bit widths, `None` will be returned for `partial_cmp`
 /// and `false` will be returned for the rest of the `PartialOrd` methods.
 impl PartialOrd for Int {
-    fn partial_cmp(&self, rhs: &Int) -> Option<Ordering> {
-        if self.value.width() != rhs.value.width() {
-            return None;
-        }
-        if self.checked_lt(rhs).unwrap() {
-            return Some(Ordering::Less);
-        }
-        if self.value == rhs.value {
-            return Some(Ordering::Equal);
-        }
-        Some(Ordering::Greater)
-    }
+	fn partial_cmp(&self, rhs: &Int) -> Option<Ordering> {
+		if self.value.width() != rhs.value.width() {
+			return None;
+		}
+		if self.checked_lt(rhs).unwrap() {
+			return Some(Ordering::Less);
+		}
+		if self.value == rhs.value {
+			return Some(Ordering::Equal);
+		}
+		Some(Ordering::Greater)
+	}
 
-    fn lt(&self, rhs: &Int) -> bool {
-        self.checked_lt(rhs).unwrap_or(false)
-    }
+	fn lt(&self, rhs: &Int) -> bool {
+		self.checked_lt(rhs).unwrap_or(false)
+	}
 
-    fn le(&self, rhs: &Int) -> bool {
-        self.checked_le(rhs).unwrap_or(false)
-    }
+	fn le(&self, rhs: &Int) -> bool {
+		self.checked_le(rhs).unwrap_or(false)
+	}
 
-    fn gt(&self, rhs: &Int) -> bool {
-        self.checked_gt(rhs).unwrap_or(false)
-    }
+	fn gt(&self, rhs: &Int) -> bool {
+		self.checked_gt(rhs).unwrap_or(false)
+	}
 
-    fn ge(&self, rhs: &Int) -> bool {
-        self.checked_ge(rhs).unwrap_or(false)
-    }
+	fn ge(&self, rhs: &Int) -> bool {
+		self.checked_ge(rhs).unwrap_or(false)
+	}
 }
 
 /// # To Primitive (Resize)
 impl Int {
-    /// Resizes this `Int` to a `bool` primitive type.
-    ///
-    /// Bits in this `Int` that are not within the bounds
-    /// of the `bool` are being ignored.
-    ///
-    /// # Note
-    ///
-    /// - Basically this returns `true` if the least significant
-    ///   bit of this `Int` is `1` and `false` otherwise.
-    pub fn resize_to_bool(&self) -> bool {
-        self.value.resize_to_bool()
-    }
+	/// Resizes this `Int` to a `bool` primitive type.
+	///
+	/// Bits in this `Int` that are not within the bounds
+	/// of the `bool` are being ignored.
+	///
+	/// # Note
+	///
+	/// - Basically this returns `true` if the least significant
+	///   bit of this `Int` is `1` and `false` otherwise.
+	pub fn resize_to_bool(&self) -> bool {
+		self.value.resize_to_bool()
+	}
 
-    /// Resizes this `Int` to a `i8` primitive type.
-    ///
-    /// # Note
-    ///
-    /// - All bits but the least significant `8` bits are
-    ///   being ignored by this operation to construct the
-    ///   result.
-    pub fn resize_to_i8(&self) -> i8 {
-        self.value.resize_to_i8()
-    }
+	/// Resizes this `Int` to a `i8` primitive type.
+	///
+	/// # Note
+	///
+	/// - All bits but the least significant `8` bits are
+	///   being ignored by this operation to construct the
+	///   result.
+	pub fn resize_to_i8(&self) -> i8 {
+		self.value.resize_to_i8()
+	}
 
-    /// Resizes this `Int` to a `i16` primitive type.
-    ///
-    /// # Note
-    ///
-    /// - All bits but the least significant `16` bits are
-    ///   being ignored by this operation to construct the
-    ///   result.
-    pub fn resize_to_i16(&self) -> i16 {
-        self.value.resize_to_i16()
-    }
+	/// Resizes this `Int` to a `i16` primitive type.
+	///
+	/// # Note
+	///
+	/// - All bits but the least significant `16` bits are
+	///   being ignored by this operation to construct the
+	///   result.
+	pub fn resize_to_i16(&self) -> i16 {
+		self.value.resize_to_i16()
+	}
 
-    /// Resizes this `Int` to a `i32` primitive type.
-    ///
-    /// # Note
-    ///
-    /// - All bits but the least significant `32` bits are
-    ///   being ignored by this operation to construct the
-    ///   result.
-    pub fn resize_to_i32(&self) -> i32 {
-        self.value.resize_to_i32()
-    }
+	/// Resizes this `Int` to a `i32` primitive type.
+	///
+	/// # Note
+	///
+	/// - All bits but the least significant `32` bits are
+	///   being ignored by this operation to construct the
+	///   result.
+	pub fn resize_to_i32(&self) -> i32 {
+		self.value.resize_to_i32()
+	}
 
-    /// Resizes this `Int` to a `i64` primitive type.
-    ///
-    /// # Note
-    ///
-    /// - All bits but the least significant `64` bits are
-    ///   being ignored by this operation to construct the
-    ///   result.
-    pub fn resize_to_i64(&self) -> i64 {
-        self.value.resize_to_i64()
-    }
+	/// Resizes this `Int` to a `i64` primitive type.
+	///
+	/// # Note
+	///
+	/// - All bits but the least significant `64` bits are
+	///   being ignored by this operation to construct the
+	///   result.
+	pub fn resize_to_i64(&self) -> i64 {
+		self.value.resize_to_i64()
+	}
 
-    /// Resizes this `Int` to a `i128` primitive type.
-    ///
-    /// # Note
-    ///
-    /// - All bits but the least significant `128` bits are
-    ///   being ignored by this operation to construct the
-    ///   result.
-    pub fn resize_to_i128(&self) -> i128 {
-        self.value.resize_to_i128()
-    }
+	/// Resizes this `Int` to a `i128` primitive type.
+	///
+	/// # Note
+	///
+	/// - All bits but the least significant `128` bits are
+	///   being ignored by this operation to construct the
+	///   result.
+	pub fn resize_to_i128(&self) -> i128 {
+		self.value.resize_to_i128()
+	}
 }
 
 /// # To Primitive (Try-Cast)
 impl Int {
-    /// Tries to represent the value of this `Int` as a `bool`.
-    ///
-    /// # Note
-    ///
-    /// This returns `true` if the value represented by this `Int`
-    /// is `1`, returns `false` if the value represented by this
-    /// `Int` is `0` and returns an error otherwise.
-    ///
-    /// # Errors
-    ///
-    /// - If the value represented by this `Int` can not be
-    ///   represented by a `bool`.
-    pub fn try_to_bool(&self) -> Result<bool> {
-        self.value.try_to_bool()
-    }
+	/// Tries to represent the value of this `Int` as a `bool`.
+	///
+	/// # Note
+	///
+	/// This returns `true` if the value represented by this `Int`
+	/// is `1`, returns `false` if the value represented by this
+	/// `Int` is `0` and returns an error otherwise.
+	///
+	/// # Errors
+	///
+	/// - If the value represented by this `Int` can not be
+	///   represented by a `bool`.
+	pub fn try_to_bool(&self) -> Result<bool> {
+		self.value.try_to_bool()
+	}
 
-    /// Tries to represent the value of this `Int` as a `i8`.
-    ///
-    /// # Note
-    ///
-    /// - This conversion is possible as long as the value represented
-    ///   by this `Int` does not exceed the maximum value of `i8`.
-    ///
-    /// # Errors
-    ///
-    /// - If the value represented by this `Int` can not be
-    ///   represented by a `u8`.
-    pub fn try_to_i8(&self) -> Result<i8> {
-        self.value.try_to_i8()
-    }
+	/// Tries to represent the value of this `Int` as a `i8`.
+	///
+	/// # Note
+	///
+	/// - This conversion is possible as long as the value represented
+	///   by this `Int` does not exceed the maximum value of `i8`.
+	///
+	/// # Errors
+	///
+	/// - If the value represented by this `Int` can not be
+	///   represented by a `u8`.
+	pub fn try_to_i8(&self) -> Result<i8> {
+		self.value.try_to_i8()
+	}
 
-    /// Tries to represent the value of this `Int` as a `i16`.
-    ///
-    /// # Note
-    ///
-    /// - This conversion is possible as long as the value represented
-    ///   by this `Int` does not exceed the maximum value of `i16`.
-    ///
-    /// # Errors
-    ///
-    /// - If the value represented by this `Int` can not be
-    ///   represented by a `i16`.
-    pub fn try_to_i16(&self) -> Result<i16> {
-        self.value.try_to_i16()
-    }
+	/// Tries to represent the value of this `Int` as a `i16`.
+	///
+	/// # Note
+	///
+	/// - This conversion is possible as long as the value represented
+	///   by this `Int` does not exceed the maximum value of `i16`.
+	///
+	/// # Errors
+	///
+	/// - If the value represented by this `Int` can not be
+	///   represented by a `i16`.
+	pub fn try_to_i16(&self) -> Result<i16> {
+		self.value.try_to_i16()
+	}
 
-    /// Tries to represent the value of this `Int` as a `i32`.
-    ///
-    /// # Note
-    ///
-    /// - This conversion is possible as long as the value represented
-    ///   by this `Int` does not exceed the maximum value of `i32`.
-    ///
-    /// # Errors
-    ///
-    /// - If the value represented by this `Int` can not be
-    ///   represented by a `i32`.
-    pub fn try_to_i32(&self) -> Result<i32> {
-        self.value.try_to_i32()
-    }
+	/// Tries to represent the value of this `Int` as a `i32`.
+	///
+	/// # Note
+	///
+	/// - This conversion is possible as long as the value represented
+	///   by this `Int` does not exceed the maximum value of `i32`.
+	///
+	/// # Errors
+	///
+	/// - If the value represented by this `Int` can not be
+	///   represented by a `i32`.
+	pub fn try_to_i32(&self) -> Result<i32> {
+		self.value.try_to_i32()
+	}
 
-    /// Tries to represent the value of this `Int` as a `i64`.
-    ///
-    /// # Note
-    ///
-    /// - This conversion is possible as long as the value represented
-    ///   by this `Int` does not exceed the maximum value of `i64`.
-    ///
-    /// # Errors
-    ///
-    /// - If the value represented by this `Int` can not be
-    ///   represented by a `i64`.
-    pub fn try_to_i64(&self) -> Result<i64> {
-        self.value.try_to_i64()
-    }
+	/// Tries to represent the value of this `Int` as a `i64`.
+	///
+	/// # Note
+	///
+	/// - This conversion is possible as long as the value represented
+	///   by this `Int` does not exceed the maximum value of `i64`.
+	///
+	/// # Errors
+	///
+	/// - If the value represented by this `Int` can not be
+	///   represented by a `i64`.
+	pub fn try_to_i64(&self) -> Result<i64> {
+		self.value.try_to_i64()
+	}
 
-    /// Tries to represent the value of this `Int` as a `i128`.
-    ///
-    /// # Note
-    ///
-    /// - This conversion is possible as long as the value represented
-    ///   by this `Int` does not exceed the maximum value of `i128`.
-    ///
-    /// # Complexity
-    ///
-    /// - 𝒪(n) where n is the number of digits of this `Int`.
-    ///
-    /// # Errors
-    ///
-    /// - If the value represented by this `Int` can not be
-    ///   represented by a `i128`.
-    pub fn try_to_i128(&self) -> Result<i128> {
-        self.value.try_to_i128()
-    }
+	/// Tries to represent the value of this `Int` as a `i128`.
+	///
+	/// # Note
+	///
+	/// - This conversion is possible as long as the value represented
+	///   by this `Int` does not exceed the maximum value of `i128`.
+	///
+	/// # Complexity
+	///
+	/// - 𝒪(n) where n is the number of digits of this `Int`.
+	///
+	/// # Errors
+	///
+	/// - If the value represented by this `Int` can not be
+	///   represented by a `i128`.
+	pub fn try_to_i128(&self) -> Result<i128> {
+		self.value.try_to_i128()
+	}
 }
 
 /// # Shifts
@@ -609,39 +609,39 @@ impl Int {
 }
 
 impl<S> Shl<S> for Int
-    where S: Into<ShiftAmount>
+	where S: Into<ShiftAmount>
 {
-    type Output = Int;
+	type Output = Int;
 
-    fn shl(self, shift_amount: S) -> Self::Output {
-        self.into_wrapping_shl(shift_amount).unwrap()
-    }
+	fn shl(self, shift_amount: S) -> Self::Output {
+		self.into_wrapping_shl(shift_amount).unwrap()
+	}
 }
 
 impl<S> Shr<S> for Int
-    where S: Into<ShiftAmount>
+	where S: Into<ShiftAmount>
 {
-    type Output = Int;
+	type Output = Int;
 
-    fn shr(self, shift_amount: S) -> Self::Output {
-        self.into_wrapping_shr(shift_amount).unwrap()
-    }
+	fn shr(self, shift_amount: S) -> Self::Output {
+		self.into_wrapping_shr(shift_amount).unwrap()
+	}
 }
 
 impl<S> ShlAssign<S> for Int
-    where S: Into<ShiftAmount>
+	where S: Into<ShiftAmount>
 {
-    fn shl_assign(&mut self, shift_amount: S) {
-        self.wrapping_shl_assign(shift_amount).unwrap()
-    }
+	fn shl_assign(&mut self, shift_amount: S) {
+		self.wrapping_shl_assign(shift_amount).unwrap()
+	}
 }
 
 impl<S> ShrAssign<S> for Int
-    where S: Into<ShiftAmount>
+	where S: Into<ShiftAmount>
 {
-    fn shr_assign(&mut self, shift_amount: S) {
-        self.wrapping_shr_assign(shift_amount).unwrap()
-    }
+	fn shr_assign(&mut self, shift_amount: S) {
+		self.wrapping_shr_assign(shift_amount).unwrap()
+	}
 }
 
 /// # Random Utilities using `rand` crate.
@@ -653,31 +653,31 @@ impl Int {
 	}
 
 	/// Creates a new `Int` with the given `BitWidth` and random `Digit`s
-    /// using the given random number generator.
-    /// 
-    /// **Note:** This is useful for cryptographic or testing purposes.
-    pub fn random_with_width_using<R>(width: BitWidth, rng: &mut R) -> Int
-        where R: rand::Rng
-    {
-        Int::from(ApInt::random_with_width_using(width, rng))
-    }
+	/// using the given random number generator.
+	/// 
+	/// **Note:** This is useful for cryptographic or testing purposes.
+	pub fn random_with_width_using<R>(width: BitWidth, rng: &mut R) -> Int
+		where R: rand::Rng
+	{
+		Int::from(ApInt::random_with_width_using(width, rng))
+	}
 
-    /// Randomizes the digits of this `Int` inplace.
-    /// 
-    /// This won't change its `BitWidth`.
-    pub fn randomize(&mut self) {
-        self.value.randomize()
-    }
+	/// Randomizes the digits of this `Int` inplace.
+	/// 
+	/// This won't change its `BitWidth`.
+	pub fn randomize(&mut self) {
+		self.value.randomize()
+	}
 
-    /// Randomizes the digits of this `Int` inplace using the given
-    /// random number generator.
-    /// 
-    /// This won't change its `BitWidth`.
-    pub fn randomize_using<R>(&mut self, rng: &mut R)
-        where R: rand::Rng
-    {
-        self.value.randomize_using(rng)
-    }
+	/// Randomizes the digits of this `Int` inplace using the given
+	/// random number generator.
+	/// 
+	/// This won't change its `BitWidth`.
+	pub fn randomize_using<R>(&mut self, rng: &mut R)
+		where R: rand::Rng
+	{
+		self.value.randomize_using(rng)
+	}
 }
 
 impl Int {
@@ -1041,27 +1041,27 @@ impl Not for Int {
 //  ===========================================================================
 
 impl<'a> BitAnd<&'a Int> for Int {
-    type Output = Int;
+	type Output = Int;
 
-    fn bitand(self, rhs: &'a Int) -> Self::Output {
-        self.into_bitand(rhs).unwrap()
-    }
+	fn bitand(self, rhs: &'a Int) -> Self::Output {
+		self.into_bitand(rhs).unwrap()
+	}
 }
 
 impl<'a, 'b> BitAnd<&'a Int> for &'b Int {
-    type Output = Int;
+	type Output = Int;
 
-    fn bitand(self, rhs: &'a Int) -> Self::Output {
-        self.clone().into_bitand(rhs).unwrap()
-    }
+	fn bitand(self, rhs: &'a Int) -> Self::Output {
+		self.clone().into_bitand(rhs).unwrap()
+	}
 }
 
 impl<'a, 'b> BitAnd<&'a Int> for &'b mut Int {
-    type Output = Int;
+	type Output = Int;
 
-    fn bitand(self, rhs: &'a Int) -> Self::Output {
-        self.clone().into_bitand(rhs).unwrap()
-    }
+	fn bitand(self, rhs: &'a Int) -> Self::Output {
+		self.clone().into_bitand(rhs).unwrap()
+	}
 }
 
 //  ===========================================================================
@@ -1069,27 +1069,27 @@ impl<'a, 'b> BitAnd<&'a Int> for &'b mut Int {
 //  ===========================================================================
 
 impl<'a> BitOr<&'a Int> for Int {
-    type Output = Int;
+	type Output = Int;
 
-    fn bitor(self, rhs: &'a Int) -> Self::Output {
-        self.into_bitor(rhs).unwrap()
-    }
+	fn bitor(self, rhs: &'a Int) -> Self::Output {
+		self.into_bitor(rhs).unwrap()
+	}
 }
 
 impl<'a, 'b> BitOr<&'a Int> for &'b Int {
-    type Output = Int;
+	type Output = Int;
 
-    fn bitor(self, rhs: &'a Int) -> Self::Output {
-        self.clone().into_bitor(rhs).unwrap()
-    }
+	fn bitor(self, rhs: &'a Int) -> Self::Output {
+		self.clone().into_bitor(rhs).unwrap()
+	}
 }
 
 impl<'a, 'b> BitOr<&'a Int> for &'b mut Int {
-    type Output = Int;
+	type Output = Int;
 
-    fn bitor(self, rhs: &'a Int) -> Self::Output {
-        self.clone().into_bitor(rhs).unwrap()
-    }
+	fn bitor(self, rhs: &'a Int) -> Self::Output {
+		self.clone().into_bitor(rhs).unwrap()
+	}
 }
 
 //  ===========================================================================
@@ -1097,27 +1097,27 @@ impl<'a, 'b> BitOr<&'a Int> for &'b mut Int {
 //  ===========================================================================
 
 impl<'a> BitXor<&'a Int> for Int {
-    type Output = Int;
+	type Output = Int;
 
-    fn bitxor(self, rhs: &'a Int) -> Self::Output {
-        self.into_bitxor(rhs).unwrap()
-    }
+	fn bitxor(self, rhs: &'a Int) -> Self::Output {
+		self.into_bitxor(rhs).unwrap()
+	}
 }
 
 impl<'a, 'b> BitXor<&'a Int> for &'b Int {
-    type Output = Int;
+	type Output = Int;
 
-    fn bitxor(self, rhs: &'a Int) -> Self::Output {
-        self.clone().into_bitxor(rhs).unwrap()
-    }
+	fn bitxor(self, rhs: &'a Int) -> Self::Output {
+		self.clone().into_bitxor(rhs).unwrap()
+	}
 }
 
 impl<'a, 'b> BitXor<&'a Int> for &'b mut Int {
-    type Output = Int;
+	type Output = Int;
 
-    fn bitxor(self, rhs: &'a Int) -> Self::Output {
-        self.clone().into_bitxor(rhs).unwrap()
-    }
+	fn bitxor(self, rhs: &'a Int) -> Self::Output {
+		self.clone().into_bitxor(rhs).unwrap()
+	}
 }
 
 //  ===========================================================================
@@ -1125,21 +1125,21 @@ impl<'a, 'b> BitXor<&'a Int> for &'b mut Int {
 //  ===========================================================================
 
 impl<'a> BitAndAssign<&'a Int> for Int {
-    fn bitand_assign(&mut self, rhs: &'a Int) {
-        self.bitand_assign(rhs).unwrap();
-    }
+	fn bitand_assign(&mut self, rhs: &'a Int) {
+		self.bitand_assign(rhs).unwrap();
+	}
 }
 
 impl<'a> BitOrAssign<&'a Int> for Int {
-    fn bitor_assign(&mut self, rhs: &'a Int) {
-        self.bitor_assign(rhs).unwrap();
-    }
+	fn bitor_assign(&mut self, rhs: &'a Int) {
+		self.bitor_assign(rhs).unwrap();
+	}
 }
 
 impl<'a> BitXorAssign<&'a Int> for Int {
-    fn bitxor_assign(&mut self, rhs: &'a Int) {
-        self.bitxor_assign(rhs).unwrap();
-    }
+	fn bitxor_assign(&mut self, rhs: &'a Int) {
+		self.bitxor_assign(rhs).unwrap();
+	}
 }
 
 /// # Arithmetic Operations
