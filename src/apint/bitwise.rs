@@ -37,14 +37,11 @@ impl ApInt {
 	/// Tries to bit-and assign this `ApInt` inplace to `rhs`
 	/// and returns the result.
 	/// 
-	/// **Note:** This forwards to
-	/// [`checked_bitand`](struct.ApInt.html#method.checked_bitand).
-	/// 
 	/// # Errors
 	/// 
 	/// If `self` and `rhs` have unmatching bit widths.
-	pub fn into_checked_bitand(self, rhs: &ApInt) -> Result<ApInt> {
-		try_forward_bin_mut_impl(self, rhs, ApInt::checked_bitand_assign)
+	pub fn into_bitand(self, rhs: &ApInt) -> Result<ApInt> {
+		try_forward_bin_mut_impl(self, rhs, ApInt::bitand_assign)
 	}
 
 	/// Bit-and assigns all bits of this `ApInt` with the bits of `rhs`.
@@ -54,21 +51,18 @@ impl ApInt {
 	/// # Errors
 	/// 
 	/// If `self` and `rhs` have unmatching bit widths.
-	pub fn checked_bitand_assign(&mut self, rhs: &ApInt) -> Result<()> {
+	pub fn bitand_assign(&mut self, rhs: &ApInt) -> Result<()> {
 		self.modify_zipped_digits(rhs, |l, r| *l &= r)
 	}
 
 	/// Tries to bit-and assign this `ApInt` inplace to `rhs`
 	/// and returns the result.
 	/// 
-	/// **Note:** This forwards to
-	/// [`checked_bitor`](struct.ApInt.html#method.checked_bitor).
-	/// 
 	/// # Errors
 	/// 
 	/// If `self` and `rhs` have unmatching bit widths.
-	pub fn into_checked_bitor(self, rhs: &ApInt) -> Result<ApInt> {
-		try_forward_bin_mut_impl(self, rhs, ApInt::checked_bitor_assign)
+	pub fn into_bitor(self, rhs: &ApInt) -> Result<ApInt> {
+		try_forward_bin_mut_impl(self, rhs, ApInt::bitor_assign)
 	}
 
 	/// Bit-or assigns all bits of this `ApInt` with the bits of `rhs`.
@@ -78,21 +72,18 @@ impl ApInt {
 	/// # Errors
 	/// 
 	/// If `self` and `rhs` have unmatching bit widths.
-	pub fn checked_bitor_assign(&mut self, rhs: &ApInt) -> Result<()> {
+	pub fn bitor_assign(&mut self, rhs: &ApInt) -> Result<()> {
 		self.modify_zipped_digits(rhs, |l, r| *l |= r)
 	}
 
 	/// Tries to bit-xor assign this `ApInt` inplace to `rhs`
 	/// and returns the result.
 	/// 
-	/// **Note:** This forwards to
-	/// [`checked_bitxor`](struct.ApInt.html#method.checked_bitxor).
-	/// 
 	/// # Errors
 	/// 
 	/// If `self` and `rhs` have unmatching bit widths.
-	pub fn into_checked_bitxor(self, rhs: &ApInt) -> Result<ApInt> {
-		try_forward_bin_mut_impl(self, rhs, ApInt::checked_bitxor_assign)
+	pub fn into_bitxor(self, rhs: &ApInt) -> Result<ApInt> {
+		try_forward_bin_mut_impl(self, rhs, ApInt::bitxor_assign)
 	}
 
 	/// Bit-xor assigns all bits of this `ApInt` with the bits of `rhs`.
@@ -102,7 +93,7 @@ impl ApInt {
 	/// # Errors
 	/// 
 	/// If `self` and `rhs` have unmatching bit widths.
-	pub fn checked_bitxor_assign(&mut self, rhs: &ApInt) -> Result<()> {
+	pub fn bitxor_assign(&mut self, rhs: &ApInt) -> Result<()> {
 		self.modify_zipped_digits(rhs, |l, r| *l ^= r)
 	}
 }
@@ -224,7 +215,7 @@ impl ApInt {
 
 	/// Flips all bits of this `ApInt`.
 	pub fn flip_all(&mut self) {
-		// TODO: remove since equal to ApInt::checked_bitnot_assign
+		// TODO: remove since equal to ApInt::bitnot_assign
 		self.modify_digits(|digit| digit.flip_all());
 		self.clear_unused_bits();
 	}
@@ -339,7 +330,7 @@ impl<'a> BitAnd<&'a ApInt> for ApInt {
     type Output = ApInt;
 
     fn bitand(self, rhs: &'a ApInt) -> Self::Output {
-        self.into_checked_bitand(rhs).unwrap()
+        self.into_bitand(rhs).unwrap()
     }
 }
 
@@ -347,7 +338,7 @@ impl<'a, 'b> BitAnd<&'a ApInt> for &'b ApInt {
     type Output = ApInt;
 
     fn bitand(self, rhs: &'a ApInt) -> Self::Output {
-        self.clone().into_checked_bitand(rhs).unwrap()
+        self.clone().into_bitand(rhs).unwrap()
     }
 }
 
@@ -355,7 +346,7 @@ impl<'a, 'b> BitAnd<&'a ApInt> for &'b mut ApInt {
     type Output = ApInt;
 
     fn bitand(self, rhs: &'a ApInt) -> Self::Output {
-        self.clone().into_checked_bitand(rhs).unwrap()
+        self.clone().into_bitand(rhs).unwrap()
     }
 }
 
@@ -367,7 +358,7 @@ impl<'a> BitOr<&'a ApInt> for ApInt {
     type Output = ApInt;
 
     fn bitor(self, rhs: &'a ApInt) -> Self::Output {
-        self.into_checked_bitor(rhs).unwrap()
+        self.into_bitor(rhs).unwrap()
     }
 }
 
@@ -375,7 +366,7 @@ impl<'a, 'b> BitOr<&'a ApInt> for &'b ApInt {
     type Output = ApInt;
 
     fn bitor(self, rhs: &'a ApInt) -> Self::Output {
-        self.clone().into_checked_bitor(rhs).unwrap()
+        self.clone().into_bitor(rhs).unwrap()
     }
 }
 
@@ -383,7 +374,7 @@ impl<'a, 'b> BitOr<&'a ApInt> for &'b mut ApInt {
     type Output = ApInt;
 
     fn bitor(self, rhs: &'a ApInt) -> Self::Output {
-        self.clone().into_checked_bitor(rhs).unwrap()
+        self.clone().into_bitor(rhs).unwrap()
     }
 }
 
@@ -395,7 +386,7 @@ impl<'a> BitXor<&'a ApInt> for ApInt {
     type Output = ApInt;
 
     fn bitxor(self, rhs: &'a ApInt) -> Self::Output {
-        self.into_checked_bitxor(rhs).unwrap()
+        self.into_bitxor(rhs).unwrap()
     }
 }
 
@@ -403,7 +394,7 @@ impl<'a, 'b> BitXor<&'a ApInt> for &'b ApInt {
     type Output = ApInt;
 
     fn bitxor(self, rhs: &'a ApInt) -> Self::Output {
-        self.clone().into_checked_bitxor(rhs).unwrap()
+        self.clone().into_bitxor(rhs).unwrap()
     }
 }
 
@@ -411,7 +402,7 @@ impl<'a, 'b> BitXor<&'a ApInt> for &'b mut ApInt {
     type Output = ApInt;
 
     fn bitxor(self, rhs: &'a ApInt) -> Self::Output {
-        self.clone().into_checked_bitxor(rhs).unwrap()
+        self.clone().into_bitxor(rhs).unwrap()
     }
 }
 
@@ -421,19 +412,19 @@ impl<'a, 'b> BitXor<&'a ApInt> for &'b mut ApInt {
 
 impl<'a> BitAndAssign<&'a ApInt> for ApInt {
     fn bitand_assign(&mut self, rhs: &'a ApInt) {
-        self.checked_bitand_assign(rhs).unwrap();
+        self.bitand_assign(rhs).unwrap();
     }
 }
 
 impl<'a> BitOrAssign<&'a ApInt> for ApInt {
     fn bitor_assign(&mut self, rhs: &'a ApInt) {
-        self.checked_bitor_assign(rhs).unwrap();
+        self.bitor_assign(rhs).unwrap();
     }
 }
 
 impl<'a> BitXorAssign<&'a ApInt> for ApInt {
     fn bitxor_assign(&mut self, rhs: &'a ApInt) {
-        self.checked_bitxor_assign(rhs).unwrap();
+        self.bitxor_assign(rhs).unwrap();
     }
 }
 

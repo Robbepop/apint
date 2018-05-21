@@ -56,14 +56,14 @@ impl ApInt {
 	/// Negates this `ApInt` inplace and returns the result.
 	/// 
 	/// **Note:** This will **not** allocate memory.
-	pub fn into_negate(self) -> ApInt {
-		forward_mut_impl(self, ApInt::negate)
+	pub fn into_wrapping_neg(self) -> ApInt {
+		forward_mut_impl(self, ApInt::wrapping_neg)
 	}
 
 	/// Negates this `ApInt` inplace.
 	/// 
 	/// **Note:** This will **not** allocate memory.
-	pub fn negate(&mut self) {
+	pub fn wrapping_neg(&mut self) {
 		self.bitnot();
 		self.wrapping_inc();
 		//`wrapping_inc` handles clearing the unused bits
@@ -76,8 +76,8 @@ impl ApInt {
 	/// # Errors
 	/// 
 	/// - If `self` and `rhs` have unmatching bit widths.
-	pub fn into_checked_add(self, rhs: &ApInt) -> Result<ApInt> {
-		try_forward_bin_mut_impl(self, rhs, ApInt::checked_add_assign)
+	pub fn into_wrapping_add(self, rhs: &ApInt) -> Result<ApInt> {
+		try_forward_bin_mut_impl(self, rhs, ApInt::wrapping_add_assign)
 	}
 
 	/// Add-assigns `rhs` to `self` inplace.
@@ -87,7 +87,7 @@ impl ApInt {
 	/// # Errors
 	/// 
 	/// - If `self` and `rhs` have unmatching bit widths.
-	pub fn checked_add_assign(&mut self, rhs: &ApInt) -> Result<()> {
+	pub fn wrapping_add_assign(&mut self, rhs: &ApInt) -> Result<()> {
 		match self.zip_access_data_mut(rhs)? {
 			Inl(lhs, rhs) => {
 				let lval = lhs.repr();
@@ -117,8 +117,8 @@ impl ApInt {
 	/// # Errors
 	/// 
 	/// - If `self` and `rhs` have unmatching bit widths.
-	pub fn into_checked_sub(self, rhs: &ApInt) -> Result<ApInt> {
-		try_forward_bin_mut_impl(self, rhs, ApInt::checked_sub_assign)
+	pub fn into_wrapping_sub(self, rhs: &ApInt) -> Result<ApInt> {
+		try_forward_bin_mut_impl(self, rhs, ApInt::wrapping_sub_assign)
 	}
 
 	/// Subtract-assigns `rhs` from `self` inplace.
@@ -131,7 +131,7 @@ impl ApInt {
 	/// # Errors
 	/// 
 	/// - If `self` and `rhs` have unmatching bit widths.
-	pub fn checked_sub_assign(&mut self, rhs: &ApInt) -> Result<()> {
+	pub fn wrapping_sub_assign(&mut self, rhs: &ApInt) -> Result<()> {
 		match self.zip_access_data_mut(rhs)? {
 			Inl(lhs, rhs) => {
 				let lval = lhs.repr();
@@ -161,8 +161,8 @@ impl ApInt {
 	/// # Errors
 	/// 
 	/// - If `self` and `rhs` have unmatching bit widths.
-	pub fn into_checked_mul(self, rhs: &ApInt) -> Result<ApInt> {
-		try_forward_bin_mut_impl(self, rhs, ApInt::checked_mul_assign)
+	pub fn into_wrapping_mul(self, rhs: &ApInt) -> Result<ApInt> {
+		try_forward_bin_mut_impl(self, rhs, ApInt::wrapping_mul_assign)
 	}
 
 	/// Multiply-assigns `rhs` to `self` inplace.
@@ -190,7 +190,7 @@ impl ApInt {
 	/// 	  (or large integers multiplied by small integers) (no allocation)
 	/// Currently, Karatsuba multiplication is not implemented, so large integer multiplication 
 	/// may be very slow compared to other algorithms.
-	pub fn checked_mul_assign(&mut self, rhs: &ApInt) -> Result<()> {
+	pub fn wrapping_mul_assign(&mut self, rhs: &ApInt) -> Result<()> {
 		match self.zip_access_data_mut(rhs)? {
 			Inl(lhs, rhs) => {
 				*lhs = lhs.wrapping_mul(rhs);
@@ -418,8 +418,8 @@ impl ApInt {
 	/// # Errors
 	/// 
 	/// - If `self` and `rhs` have unmatching bit widths.
-	pub fn into_checked_udiv(self, rhs: &ApInt) -> Result<ApInt> {
-		try_forward_bin_mut_impl(self, rhs, ApInt::checked_udiv_assign)
+	pub fn into_wrapping_udiv(self, rhs: &ApInt) -> Result<ApInt> {
+		try_forward_bin_mut_impl(self, rhs, ApInt::wrapping_udiv_assign)
 	}
 
 	/// Assignes `self` to the division of `self` by `rhs` using **unsigned**
@@ -434,7 +434,7 @@ impl ApInt {
 	/// # Errors
 	/// 
 	/// - If `self` and `rhs` have unmatching bit widths.
-	pub fn checked_udiv_assign(&mut self, rhs: &ApInt) -> Result<()> {
+	pub fn wrapping_udiv_assign(&mut self, rhs: &ApInt) -> Result<()> {
 		if rhs.is_zero() {
 			return Err(Error::division_by_zero(DivOp::UnsignedDiv, self.clone()))
 		}
@@ -463,8 +463,8 @@ impl ApInt {
 	/// # Errors
 	/// 
 	/// - If `self` and `rhs` have unmatching bit widths.
-	pub fn into_checked_sdiv(self, rhs: &ApInt) -> Result<ApInt> {
-		try_forward_bin_mut_impl(self, rhs, ApInt::checked_sdiv_assign)
+	pub fn into_wrapping_sdiv(self, rhs: &ApInt) -> Result<ApInt> {
+		try_forward_bin_mut_impl(self, rhs, ApInt::wrapping_sdiv_assign)
 	}
 
 	/// Assignes `self` to the division of `self` by `rhs` using **signed**
@@ -479,7 +479,7 @@ impl ApInt {
 	/// # Errors
 	/// 
 	/// - If `self` and `rhs` have unmatching bit widths.
-	pub fn checked_sdiv_assign(&mut self, rhs: &ApInt) -> Result<()> {
+	pub fn wrapping_sdiv_assign(&mut self, rhs: &ApInt) -> Result<()> {
 		if rhs.is_zero() {
 			return Err(Error::division_by_zero(DivOp::SignedDiv, self.clone()))
 		}
@@ -514,8 +514,8 @@ impl ApInt {
 	/// # Errors
 	/// 
 	/// - If `self` and `rhs` have unmatching bit widths.
-	pub fn into_checked_urem(self, rhs: &ApInt) -> Result<ApInt> {
-		try_forward_bin_mut_impl(self, rhs, ApInt::checked_urem_assign)
+	pub fn into_wrapping_urem(self, rhs: &ApInt) -> Result<ApInt> {
+		try_forward_bin_mut_impl(self, rhs, ApInt::wrapping_urem_assign)
 	}
 
 	/// Assignes `self` to the **unsigned** remainder of `self` by `rhs`.
@@ -529,7 +529,7 @@ impl ApInt {
 	/// # Errors
 	/// 
 	/// - If `self` and `rhs` have unmatching bit widths.
-	pub fn checked_urem_assign(&mut self, rhs: &ApInt) -> Result<()> {
+	pub fn wrapping_urem_assign(&mut self, rhs: &ApInt) -> Result<()> {
 		if rhs.is_zero() {
 			return Err(Error::division_by_zero(DivOp::UnsignedRem, self.clone()))
 		}
@@ -558,8 +558,8 @@ impl ApInt {
 	/// # Errors
 	/// 
 	/// - If `self` and `rhs` have unmatching bit widths.
-	pub fn into_checked_srem(self, rhs: &ApInt) -> Result<ApInt> {
-		try_forward_bin_mut_impl(self, rhs, ApInt::checked_srem_assign)
+	pub fn into_wrapping_srem(self, rhs: &ApInt) -> Result<ApInt> {
+		try_forward_bin_mut_impl(self, rhs, ApInt::wrapping_srem_assign)
 	}
 
 	/// Assignes `self` to the **signed** remainder of `self` by `rhs`.
@@ -573,7 +573,7 @@ impl ApInt {
 	/// # Errors
 	/// 
 	/// - If `self` and `rhs` have unmatching bit widths.
-	pub fn checked_srem_assign(&mut self, rhs: &ApInt) -> Result<()> {
+	pub fn wrapping_srem_assign(&mut self, rhs: &ApInt) -> Result<()> {
 		if rhs.is_zero() {
 			return Err(Error::division_by_zero(DivOp::SignedRem, self.clone()))
 		}
@@ -618,7 +618,7 @@ impl Neg for ApInt {
 	type Output = ApInt;
 
 	fn neg(self) -> Self::Output {
-		self.into_negate()
+		self.into_wrapping_neg()
 	}
 }
 
@@ -626,7 +626,7 @@ impl<'a> Neg for &'a ApInt {
 	type Output = ApInt;
 
 	fn neg(self) -> Self::Output {
-		self.clone().into_negate()
+		self.clone().into_wrapping_neg()
 	}
 }
 
@@ -634,7 +634,7 @@ impl<'a> Neg for &'a mut ApInt {
 	type Output = &'a mut ApInt;
 
 	fn neg(self) -> Self::Output {
-		self.negate();
+		self.wrapping_neg();
 		self
 	}
 }
@@ -647,7 +647,7 @@ impl<'a> Add<&'a ApInt> for ApInt {
 	type Output = ApInt;
 
 	fn add(self, rhs: &'a ApInt) -> Self::Output {
-		self.into_checked_add(rhs).unwrap()
+		self.into_wrapping_add(rhs).unwrap()
 	}
 }
 
@@ -655,13 +655,13 @@ impl<'a, 'b> Add<&'a ApInt> for &'b ApInt {
 	type Output = ApInt;
 
 	fn add(self, rhs: &'a ApInt) -> Self::Output {
-		self.clone().into_checked_add(rhs).unwrap()
+		self.clone().into_wrapping_add(rhs).unwrap()
 	}
 }
 
 impl<'a> AddAssign<&'a ApInt> for ApInt {
 	fn add_assign(&mut self, rhs: &'a ApInt) {
-		self.checked_add_assign(rhs).unwrap()
+		self.wrapping_add_assign(rhs).unwrap()
 	}
 }
 
@@ -673,7 +673,7 @@ impl<'a> Sub<&'a ApInt> for ApInt {
 	type Output = ApInt;
 
 	fn sub(self, rhs: &'a ApInt) -> Self::Output {
-		self.into_checked_sub(rhs).unwrap()
+		self.into_wrapping_sub(rhs).unwrap()
 	}
 }
 
@@ -681,13 +681,13 @@ impl<'a, 'b> Sub<&'a ApInt> for &'b ApInt {
 	type Output = ApInt;
 
 	fn sub(self, rhs: &'a ApInt) -> Self::Output {
-		self.clone().into_checked_sub(rhs).unwrap()
+		self.clone().into_wrapping_sub(rhs).unwrap()
 	}
 }
 
 impl<'a> SubAssign<&'a ApInt> for ApInt {
 	fn sub_assign(&mut self, rhs: &'a ApInt) {
-		self.checked_sub_assign(rhs).unwrap()
+		self.wrapping_sub_assign(rhs).unwrap()
 	}
 }
 
@@ -699,7 +699,7 @@ impl<'a> Mul<&'a ApInt> for ApInt {
 	type Output = ApInt;
 
 	fn mul(self, rhs: &'a ApInt) -> Self::Output {
-		self.into_checked_mul(rhs).unwrap()
+		self.into_wrapping_mul(rhs).unwrap()
 	}
 }
 
@@ -707,13 +707,13 @@ impl<'a, 'b> Mul<&'a ApInt> for &'b ApInt {
 	type Output = ApInt;
 
 	fn mul(self, rhs: &'a ApInt) -> Self::Output {
-		self.clone().into_checked_mul(rhs).unwrap()
+		self.clone().into_wrapping_mul(rhs).unwrap()
 	}
 }
 
 impl<'a> MulAssign<&'a ApInt> for ApInt {
 	fn mul_assign(&mut self, rhs: &'a ApInt) {
-		self.checked_mul_assign(rhs).unwrap();
+		self.wrapping_mul_assign(rhs).unwrap();
 	}
 }
 
@@ -739,13 +739,13 @@ mod tests {
 		}
 	}
 
-	mod negate {
+	mod wrapping_neg {
 		use super::*;
 		use bitwidth::{BitWidth};
 
 		fn assert_symmetry(input: ApInt, expected: ApInt) {
-			assert_eq!(input.clone().into_negate(), expected.clone());
-			assert_eq!(expected.into_negate(), input);
+			assert_eq!(input.clone().into_wrapping_neg(), expected.clone());
+			assert_eq!(expected.into_wrapping_neg(), input);
 		}
 
 		fn test_vals() -> impl Iterator<Item = i128> {
@@ -788,11 +788,11 @@ mod tests {
 				let nine =
 					ApInt::from(u8::MAX).into_zero_resize(BitWidth::new(num_u8 * 8).unwrap());
 				for rhs_nine in 1..=num_u8 {
-					rhs.checked_shl_assign(8).unwrap();
+					rhs.wrapping_shl_assign(8).unwrap();
 					rhs |= &nine;
 					lhs = ApInt::from(0u8).into_zero_resize(BitWidth::new(num_u8 * 8).unwrap());
 					'outer: for lhs_nine in 1..=num_u8 {
-						lhs.checked_shl_assign(8).unwrap();
+						lhs.wrapping_shl_assign(8).unwrap();
 						lhs |= &nine;
 						//imagine multiplying a string of base 10 nines together.
 						//It will produce things like 998001, 8991, 98901, 9989001.
@@ -812,13 +812,13 @@ mod tests {
 						} else {
 							rhs_nine - 1
 						};
-						let mut result = lhs.clone().into_checked_mul(&rhs).unwrap();
+						let mut result = lhs.clone().into_wrapping_mul(&rhs).unwrap();
 						assert_eq!(result.clone().resize_to_u8(), 1u8);
 						for i in 0..zeros_after_one {
 							if i >= num_u8 - 1 {
 								continue 'outer;
 							}
-							result.checked_lshr_assign(8).unwrap();
+							result.wrapping_lshr_assign(8).unwrap();
 							let temp = result.clone().resize_to_u8();
 							if temp != 0 {
 								panic!(
@@ -831,13 +831,13 @@ mod tests {
 							if zeros_after_one + i >= num_u8 - 1 {
 								continue 'outer;
 							}
-							result.checked_lshr_assign(8).unwrap();
+							result.wrapping_lshr_assign(8).unwrap();
 							assert_eq!(result.clone().resize_to_u8(), u8::MAX);
 						}
 						if zeros_after_one + nines_before_eight >= num_u8 - 1 {
 							continue 'outer;
 						}
-						result.checked_lshr_assign(8).unwrap();
+						result.wrapping_lshr_assign(8).unwrap();
 						let temp = result.clone().resize_to_u8();
 						if temp != u8::MAX - 1 {
 							panic!(
@@ -849,7 +849,7 @@ mod tests {
 							if 1 + zeros_after_one + nines_before_eight + i >= num_u8 - 1 {
 								continue 'outer;
 							}
-							result.checked_lshr_assign(8).unwrap();
+							result.wrapping_lshr_assign(8).unwrap();
 							if result.clone().resize_to_u8() != u8::MAX {
 								panic!(
 									"\nlhs_nine:{}\nrhs_nine:{}\nresult:{:?}\nzeros_after_one:{}\nnines_before_eight:{}\nnines_after_eight:{}\n",
@@ -863,7 +863,7 @@ mod tests {
 			//test inl apints
 			assert_eq!(
 				ApInt::from(u8::MAX)
-					.into_checked_mul(&ApInt::from(u8::MAX))
+					.into_wrapping_mul(&ApInt::from(u8::MAX))
 					.unwrap(),
 				ApInt::from(1u8)
 			);
@@ -894,27 +894,27 @@ mod tests {
 			for (i, _) in resize.iter().enumerate() {
 				let mut lhs = ApInt::from(5u8)
 					.into_zero_resize(BitWidth::new(resize[i]).unwrap())
-					.into_checked_shl(lhs_shl[i])
+					.into_wrapping_shl(lhs_shl[i])
 					.unwrap();
 				let mut rhs = ApInt::from(11u8)
 					.into_zero_resize(BitWidth::new(resize[i]).unwrap())
-					.into_checked_shl(rhs_shl[i])
+					.into_wrapping_shl(rhs_shl[i])
 					.unwrap();
 				let mut zero = ApInt::from(0u8).into_zero_resize(BitWidth::new(resize[i]).unwrap());
 				let mut one = ApInt::from(1u8).into_zero_resize(BitWidth::new(resize[i]).unwrap());
 				let mut expected = ApInt::from(55u8)
 					.into_zero_resize(BitWidth::new(resize[i]).unwrap())
-					.into_checked_shl(rhs_shl[i] + lhs_shl[i])
+					.into_wrapping_shl(rhs_shl[i] + lhs_shl[i])
 					.unwrap();
-				assert_eq!(lhs.clone().into_checked_mul(&zero).unwrap(), zero);
-				assert_eq!(zero.clone().into_checked_mul(&rhs).unwrap(), zero);
-				assert_eq!(lhs.clone().into_checked_mul(&one).unwrap(), lhs);
-				assert_eq!(one.clone().into_checked_mul(&rhs).unwrap(), rhs);
-				assert_eq!(lhs.clone().into_checked_mul(&rhs).unwrap(), expected);
+				assert_eq!(lhs.clone().into_wrapping_mul(&zero).unwrap(), zero);
+				assert_eq!(zero.clone().into_wrapping_mul(&rhs).unwrap(), zero);
+				assert_eq!(lhs.clone().into_wrapping_mul(&one).unwrap(), lhs);
+				assert_eq!(one.clone().into_wrapping_mul(&rhs).unwrap(), rhs);
+				assert_eq!(lhs.clone().into_wrapping_mul(&rhs).unwrap(), expected);
 			}
 			assert_eq!(
 				ApInt::from([0,0,0,0,u64::MAX,0,u64::MAX,u64::MAX])
-				.into_checked_mul(&ApInt::from([0,0,0,0,u64::MAX,u64::MAX,0,u64::MAX])).unwrap()
+				.into_wrapping_mul(&ApInt::from([0,0,0,0,u64::MAX,u64::MAX,0,u64::MAX])).unwrap()
 				,ApInt::from([u64::MAX,0,1,u64::MAX - 3,1,u64::MAX,u64::MAX,1]));
 		}
 	}
@@ -926,7 +926,7 @@ mod tests {
 		fn simple() {
 			let lhs = ApInt::from(56_u32);
 			let rhs = ApInt::from(7_u32);
-			let result = lhs.into_checked_udiv(&rhs).unwrap();
+			let result = lhs.into_wrapping_udiv(&rhs).unwrap();
 			assert_eq!(result, ApInt::from(8_u32));
 		}
 	}
@@ -938,7 +938,7 @@ mod tests {
 		fn simple() {
 			let lhs = ApInt::from(72_i32);
 			let rhs = ApInt::from(12_i32);
-			let result = lhs.into_checked_sdiv(&rhs).unwrap();
+			let result = lhs.into_wrapping_sdiv(&rhs).unwrap();
 			assert_eq!(result, ApInt::from(6_u32));
 		}
 
@@ -946,7 +946,7 @@ mod tests {
 		fn with_neg() {
 			let lhs = ApInt::from(72_i32);
 			let rhs = ApInt::from(-12_i32);
-			let result = lhs.into_checked_sdiv(&rhs).unwrap();
+			let result = lhs.into_wrapping_sdiv(&rhs).unwrap();
 			assert_eq!(result, ApInt::from(-6_i32));
 		}
 	}
@@ -958,7 +958,7 @@ mod tests {
 		fn simple() {
 			let lhs = ApInt::from(15_u32);
 			let rhs = ApInt::from(4_u32);
-			let result = lhs.into_checked_urem(&rhs).unwrap();
+			let result = lhs.into_wrapping_urem(&rhs).unwrap();
 			assert_eq!(result, ApInt::from(3_u32));
 		}
 	}
@@ -970,7 +970,7 @@ mod tests {
 		fn simple() {
 			let lhs = ApInt::from(23_i32);
 			let rhs = ApInt::from(7_i32);
-			let result = lhs.into_checked_srem(&rhs).unwrap();
+			let result = lhs.into_wrapping_srem(&rhs).unwrap();
 			assert_eq!(result, ApInt::from(2_u32));
 		}
 
@@ -978,7 +978,7 @@ mod tests {
 		fn with_neg() {
 			let lhs = ApInt::from(-23_i32);
 			let rhs = ApInt::from(7_i32);
-			let result = lhs.into_checked_srem(&rhs).unwrap();
+			let result = lhs.into_wrapping_srem(&rhs).unwrap();
 			assert_eq!(result, ApInt::from(-2_i32));
 		}
 	}

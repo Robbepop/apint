@@ -269,15 +269,15 @@ impl Int {
 	/// - Consumes `self`.
 	/// - Does nothing for positive `Int` instances.
 	pub fn into_abs(self) -> Int {
-		forward_mut_impl(self, Int::abs)
+		forward_mut_impl(self, Int::wrapping_abs)
 	}
 
 	/// Converts this `Int` into its absolute value representation.
 	/// 
 	/// - Does nothing for positive `Int` instances.
-	pub fn abs(&mut self) {
+	pub fn wrapping_abs(&mut self) {
 		if self.is_negative() {
-			self.negate()
+			self.wrapping_neg()
 		}
 	}
 
@@ -290,6 +290,7 @@ impl Int {
 	/// 
 	/// # Note
 	/// 
+	/// - `checked_` for this function means that it checks the bit widths
 	/// - Returns `Ok(true)` if `self < rhs`.
 	/// - Interprets both `Int` instances as **unsigned** values.
 	/// 
@@ -304,6 +305,7 @@ impl Int {
 	/// 
 	/// # Note
 	/// 
+	/// - `checked_` for this function means that it checks the bit widths
 	/// - Returns `Ok(true)` if `self <= rhs`.
 	/// - Interprets both `Int` instances as **unsigned** values.
 	/// 
@@ -319,6 +321,7 @@ impl Int {
 	/// 
 	/// # Note
 	/// 
+	/// - `checked_` for this function means that it checks the bit widths
 	/// - Returns `Ok(true)` if `self > rhs`.
 	/// - Interprets both `Int` instances as **unsigned** values.
 	/// 
@@ -334,6 +337,7 @@ impl Int {
 	/// 
 	/// # Note
 	/// 
+	/// - `checked_` for this function means that it checks the bit widths
 	/// - Returns `Ok(true)` if `self >= rhs`.
 	/// - Interprets both `Int` instances as **unsigned** values.
 	/// 
@@ -346,6 +350,8 @@ impl Int {
 	}
 }
 
+/// If `self` and `rhs` have unmatching bit widths, `None` will be returned for `partial_cmp`
+/// and `false` will be returned for the rest of the `PartialOrd` methods.
 impl PartialOrd for Int {
     fn partial_cmp(&self, rhs: &Int) -> Option<Ordering> {
         if self.value.width() != rhs.value.width() {
@@ -555,10 +561,10 @@ impl Int {
 	/// # Errors
 	/// 
 	/// - If the given `shift_amount` is invalid for the bit width of this `Int`.
-	pub fn checked_shl_assign<S>(&mut self, shift_amount: S) -> Result<()>
+	pub fn wrapping_shl_assign<S>(&mut self, shift_amount: S) -> Result<()>
 		where S: Into<ShiftAmount>
 	{
-		self.value.checked_shl_assign(shift_amount)
+		self.value.wrapping_shl_assign(shift_amount)
 	}
 
 	/// Shift this `Int` left by the given `shift_amount` bits and returns the result.
@@ -568,10 +574,10 @@ impl Int {
 	/// # Errors
 	/// 
 	/// - If the given `shift_amount` is invalid for the bit width of this `Int`.
-	pub fn into_checked_shl<S>(self, shift_amount: S) -> Result<Int>
+	pub fn into_wrapping_shl<S>(self, shift_amount: S) -> Result<Int>
 		where S: Into<ShiftAmount>
 	{
-		self.value.into_checked_shl(shift_amount).map(Int::from)
+		self.value.into_wrapping_shl(shift_amount).map(Int::from)
 	}
 
 	/// Right-shifts this `Int` by the given `shift_amount` bits.
@@ -581,10 +587,10 @@ impl Int {
 	/// # Errors
 	/// 
 	/// - If the given `shift_amount` is invalid for the bit width of this `Int`.
-	pub fn checked_shr_assign<S>(&mut self, shift_amount: S) -> Result<()>
+	pub fn wrapping_shr_assign<S>(&mut self, shift_amount: S) -> Result<()>
 		where S: Into<ShiftAmount>
 	{
-		self.value.checked_ashr_assign(shift_amount)
+		self.value.wrapping_ashr_assign(shift_amount)
 	}
 
 	/// Right-shifts this `Int` by the given `shift_amount` bits
@@ -595,10 +601,10 @@ impl Int {
 	/// # Errors
 	/// 
 	/// - If the given `shift_amount` is invalid for the bit width of this `Int`.
-	pub fn into_checked_shr<S>(self, shift_amount: S) -> Result<Int>
+	pub fn into_wrapping_shr<S>(self, shift_amount: S) -> Result<Int>
 		where S: Into<ShiftAmount>
 	{
-		self.value.into_checked_ashr(shift_amount).map(Int::from)
+		self.value.into_wrapping_ashr(shift_amount).map(Int::from)
 	}
 }
 
@@ -608,7 +614,7 @@ impl<S> Shl<S> for Int
     type Output = Int;
 
     fn shl(self, shift_amount: S) -> Self::Output {
-        self.into_checked_shl(shift_amount).unwrap()
+        self.into_wrapping_shl(shift_amount).unwrap()
     }
 }
 
@@ -618,7 +624,7 @@ impl<S> Shr<S> for Int
     type Output = Int;
 
     fn shr(self, shift_amount: S) -> Self::Output {
-        self.into_checked_shr(shift_amount).unwrap()
+        self.into_wrapping_shr(shift_amount).unwrap()
     }
 }
 
@@ -626,7 +632,7 @@ impl<S> ShlAssign<S> for Int
     where S: Into<ShiftAmount>
 {
     fn shl_assign(&mut self, shift_amount: S) {
-        self.checked_shl_assign(shift_amount).unwrap()
+        self.wrapping_shl_assign(shift_amount).unwrap()
     }
 }
 
@@ -634,7 +640,7 @@ impl<S> ShrAssign<S> for Int
     where S: Into<ShiftAmount>
 {
     fn shr_assign(&mut self, shift_amount: S) {
-        self.checked_shr_assign(shift_amount).unwrap()
+        self.wrapping_shr_assign(shift_amount).unwrap()
     }
 }
 
@@ -824,14 +830,11 @@ impl Int {
 	/// Tries to bit-and assign this `Int` inplace to `rhs`
 	/// and returns the result.
 	/// 
-	/// **Note:** This forwards to
-	/// [`checked_bitand`](struct.Int.html#method.checked_bitand).
-	/// 
 	/// # Errors
 	/// 
 	/// If `self` and `rhs` have unmatching bit widths.
-	pub fn into_checked_bitand(self, rhs: &Int) -> Result<Int> {
-		try_forward_bin_mut_impl(self, rhs, Int::checked_bitand_assign)
+	pub fn into_bitand(self, rhs: &Int) -> Result<Int> {
+		try_forward_bin_mut_impl(self, rhs, Int::bitand_assign)
 	}
 
 	/// Bit-and assigns all bits of this `Int` with the bits of `rhs`.
@@ -841,21 +844,18 @@ impl Int {
 	/// # Errors
 	/// 
 	/// If `self` and `rhs` have unmatching bit widths.
-	pub fn checked_bitand_assign(&mut self, rhs: &Int) -> Result<()> {
-		self.value.checked_bitand_assign(&rhs.value)
+	pub fn bitand_assign(&mut self, rhs: &Int) -> Result<()> {
+		self.value.bitand_assign(&rhs.value)
 	}
 
 	/// Tries to bit-and assign this `Int` inplace to `rhs`
 	/// and returns the result.
 	/// 
-	/// **Note:** This forwards to
-	/// [`checked_bitor`](struct.Int.html#method.checked_bitor).
-	/// 
 	/// # Errors
 	/// 
 	/// If `self` and `rhs` have unmatching bit widths.
-	pub fn into_checked_bitor(self, rhs: &Int) -> Result<Int> {
-		try_forward_bin_mut_impl(self, rhs, Int::checked_bitor_assign)
+	pub fn into_bitor(self, rhs: &Int) -> Result<Int> {
+		try_forward_bin_mut_impl(self, rhs, Int::bitor_assign)
 	}
 
 	/// Bit-or assigns all bits of this `Int` with the bits of `rhs`.
@@ -865,21 +865,18 @@ impl Int {
 	/// # Errors
 	/// 
 	/// If `self` and `rhs` have unmatching bit widths.
-	pub fn checked_bitor_assign(&mut self, rhs: &Int) -> Result<()> {
-		self.value.checked_bitor_assign(&rhs.value)
+	pub fn bitor_assign(&mut self, rhs: &Int) -> Result<()> {
+		self.value.bitor_assign(&rhs.value)
 	}
 
 	/// Tries to bit-xor assign this `Int` inplace to `rhs`
 	/// and returns the result.
 	/// 
-	/// **Note:** This forwards to
-	/// [`checked_bitxor`](struct.Int.html#method.checked_bitxor).
-	/// 
 	/// # Errors
 	/// 
 	/// If `self` and `rhs` have unmatching bit widths.
-	pub fn into_checked_bitxor(self, rhs: &Int) -> Result<Int> {
-		try_forward_bin_mut_impl(self, rhs, Int::checked_bitxor_assign)
+	pub fn into_bitxor(self, rhs: &Int) -> Result<Int> {
+		try_forward_bin_mut_impl(self, rhs, Int::bitxor_assign)
 	}
 
 	/// Bit-xor assigns all bits of this `Int` with the bits of `rhs`.
@@ -889,8 +886,8 @@ impl Int {
 	/// # Errors
 	/// 
 	/// If `self` and `rhs` have unmatching bit widths.
-	pub fn checked_bitxor_assign(&mut self, rhs: &Int) -> Result<()> {
-		self.value.checked_bitxor_assign(&rhs.value)
+	pub fn bitxor_assign(&mut self, rhs: &Int) -> Result<()> {
+		self.value.bitxor_assign(&rhs.value)
 	}
 }
 
@@ -1047,7 +1044,7 @@ impl<'a> BitAnd<&'a Int> for Int {
     type Output = Int;
 
     fn bitand(self, rhs: &'a Int) -> Self::Output {
-        self.into_checked_bitand(rhs).unwrap()
+        self.into_bitand(rhs).unwrap()
     }
 }
 
@@ -1055,7 +1052,7 @@ impl<'a, 'b> BitAnd<&'a Int> for &'b Int {
     type Output = Int;
 
     fn bitand(self, rhs: &'a Int) -> Self::Output {
-        self.clone().into_checked_bitand(rhs).unwrap()
+        self.clone().into_bitand(rhs).unwrap()
     }
 }
 
@@ -1063,7 +1060,7 @@ impl<'a, 'b> BitAnd<&'a Int> for &'b mut Int {
     type Output = Int;
 
     fn bitand(self, rhs: &'a Int) -> Self::Output {
-        self.clone().into_checked_bitand(rhs).unwrap()
+        self.clone().into_bitand(rhs).unwrap()
     }
 }
 
@@ -1075,7 +1072,7 @@ impl<'a> BitOr<&'a Int> for Int {
     type Output = Int;
 
     fn bitor(self, rhs: &'a Int) -> Self::Output {
-        self.into_checked_bitor(rhs).unwrap()
+        self.into_bitor(rhs).unwrap()
     }
 }
 
@@ -1083,7 +1080,7 @@ impl<'a, 'b> BitOr<&'a Int> for &'b Int {
     type Output = Int;
 
     fn bitor(self, rhs: &'a Int) -> Self::Output {
-        self.clone().into_checked_bitor(rhs).unwrap()
+        self.clone().into_bitor(rhs).unwrap()
     }
 }
 
@@ -1091,7 +1088,7 @@ impl<'a, 'b> BitOr<&'a Int> for &'b mut Int {
     type Output = Int;
 
     fn bitor(self, rhs: &'a Int) -> Self::Output {
-        self.clone().into_checked_bitor(rhs).unwrap()
+        self.clone().into_bitor(rhs).unwrap()
     }
 }
 
@@ -1103,7 +1100,7 @@ impl<'a> BitXor<&'a Int> for Int {
     type Output = Int;
 
     fn bitxor(self, rhs: &'a Int) -> Self::Output {
-        self.into_checked_bitxor(rhs).unwrap()
+        self.into_bitxor(rhs).unwrap()
     }
 }
 
@@ -1111,7 +1108,7 @@ impl<'a, 'b> BitXor<&'a Int> for &'b Int {
     type Output = Int;
 
     fn bitxor(self, rhs: &'a Int) -> Self::Output {
-        self.clone().into_checked_bitxor(rhs).unwrap()
+        self.clone().into_bitxor(rhs).unwrap()
     }
 }
 
@@ -1119,7 +1116,7 @@ impl<'a, 'b> BitXor<&'a Int> for &'b mut Int {
     type Output = Int;
 
     fn bitxor(self, rhs: &'a Int) -> Self::Output {
-        self.clone().into_checked_bitxor(rhs).unwrap()
+        self.clone().into_bitxor(rhs).unwrap()
     }
 }
 
@@ -1129,19 +1126,19 @@ impl<'a, 'b> BitXor<&'a Int> for &'b mut Int {
 
 impl<'a> BitAndAssign<&'a Int> for Int {
     fn bitand_assign(&mut self, rhs: &'a Int) {
-        self.checked_bitand_assign(rhs).unwrap();
+        self.bitand_assign(rhs).unwrap();
     }
 }
 
 impl<'a> BitOrAssign<&'a Int> for Int {
     fn bitor_assign(&mut self, rhs: &'a Int) {
-        self.checked_bitor_assign(rhs).unwrap();
+        self.bitor_assign(rhs).unwrap();
     }
 }
 
 impl<'a> BitXorAssign<&'a Int> for Int {
     fn bitxor_assign(&mut self, rhs: &'a Int) {
-        self.checked_bitxor_assign(rhs).unwrap();
+        self.bitxor_assign(rhs).unwrap();
     }
 }
 
@@ -1150,15 +1147,15 @@ impl Int {
 	/// Negates this `Int` inplace and returns the result.
 	/// 
 	/// **Note:** This will **not** allocate memory.
-	pub fn into_negate(self) -> Int {
-		forward_mut_impl(self, Int::negate)
+	pub fn into_wrapping_neg(self) -> Int {
+		forward_mut_impl(self, Int::wrapping_neg)
 	}
 
 	/// Negates this `Int` inplace.
 	/// 
 	/// **Note:** This will **not** allocate memory.
-	pub fn negate(&mut self) {
-		self.value.negate()
+	pub fn wrapping_neg(&mut self) {
+		self.value.wrapping_neg()
 	}
 
 	/// Adds `rhs` to `self` and returns the result.
@@ -1168,8 +1165,8 @@ impl Int {
 	/// # Errors
 	/// 
 	/// - If `self` and `rhs` have unmatching bit widths.
-	pub fn into_checked_add(self, rhs: &Int) -> Result<Int> {
-		try_forward_bin_mut_impl(self, rhs, Int::checked_add_assign)
+	pub fn into_wrapping_add(self, rhs: &Int) -> Result<Int> {
+		try_forward_bin_mut_impl(self, rhs, Int::wrapping_add_assign)
 	}
 
 	/// Add-assigns `rhs` to `self` inplace.
@@ -1179,8 +1176,8 @@ impl Int {
 	/// # Errors
 	/// 
 	/// - If `self` and `rhs` have unmatching bit widths.
-	pub fn checked_add_assign(&mut self, rhs: &Int) -> Result<()> {
-		self.value.checked_add_assign(&rhs.value)
+	pub fn wrapping_add_assign(&mut self, rhs: &Int) -> Result<()> {
+		self.value.wrapping_add_assign(&rhs.value)
 	}
 
 	/// Subtracts `rhs` from `self` and returns the result.
@@ -1193,8 +1190,8 @@ impl Int {
 	/// # Errors
 	/// 
 	/// - If `self` and `rhs` have unmatching bit widths.
-	pub fn into_checked_sub(self, rhs: &Int) -> Result<Int> {
-		try_forward_bin_mut_impl(self, rhs, Int::checked_sub_assign)
+	pub fn into_wrapping_sub(self, rhs: &Int) -> Result<Int> {
+		try_forward_bin_mut_impl(self, rhs, Int::wrapping_sub_assign)
 	}
 
 	/// Subtract-assigns `rhs` from `self` inplace.
@@ -1207,8 +1204,8 @@ impl Int {
 	/// # Errors
 	/// 
 	/// - If `self` and `rhs` have unmatching bit widths.
-	pub fn checked_sub_assign(&mut self, rhs: &Int) -> Result<()> {
-		self.value.checked_sub_assign(&rhs.value)
+	pub fn wrapping_sub_assign(&mut self, rhs: &Int) -> Result<()> {
+		self.value.wrapping_sub_assign(&rhs.value)
 	}
 
 	/// Subtracts `rhs` from `self` and returns the result.
@@ -1221,8 +1218,8 @@ impl Int {
 	/// # Errors
 	/// 
 	/// - If `self` and `rhs` have unmatching bit widths.
-	pub fn into_checked_mul(self, rhs: &Int) -> Result<Int> {
-		try_forward_bin_mut_impl(self, rhs, Int::checked_mul_assign)
+	pub fn into_wrapping_mul(self, rhs: &Int) -> Result<Int> {
+		try_forward_bin_mut_impl(self, rhs, Int::wrapping_mul_assign)
 	}
 
 	/// Multiply-assigns `rhs` to `self` inplace.
@@ -1235,8 +1232,8 @@ impl Int {
 	/// # Errors
 	/// 
 	/// - If `self` and `rhs` have unmatching bit widths.
-	pub fn checked_mul_assign(&mut self, rhs: &Int) -> Result<()> {
-		self.value.checked_mul_assign(&rhs.value)
+	pub fn wrapping_mul_assign(&mut self, rhs: &Int) -> Result<()> {
+		self.value.wrapping_mul_assign(&rhs.value)
 	}
 
 	/// Divides `self` by `rhs` and returns the result.
@@ -1250,8 +1247,8 @@ impl Int {
 	/// # Errors
 	/// 
 	/// - If `self` and `rhs` have unmatching bit widths.
-	pub fn into_checked_div(self, rhs: &Int) -> Result<Int> {
-		try_forward_bin_mut_impl(self, rhs, Int::checked_div_assign)
+	pub fn into_wrapping_div(self, rhs: &Int) -> Result<Int> {
+		try_forward_bin_mut_impl(self, rhs, Int::wrapping_div_assign)
 	}
 
 	/// Assignes `self` to the division of `self` by `rhs`.
@@ -1265,8 +1262,8 @@ impl Int {
 	/// # Errors
 	/// 
 	/// - If `self` and `rhs` have unmatching bit widths.
-	pub fn checked_div_assign(&mut self, rhs: &Int) -> Result<()> {
-		self.value.checked_sdiv_assign(&rhs.value)
+	pub fn wrapping_div_assign(&mut self, rhs: &Int) -> Result<()> {
+		self.value.wrapping_sdiv_assign(&rhs.value)
 	}
 
 	/// Calculates the **unsigned** remainder of `self` by `rhs` and returns the result.
@@ -1280,8 +1277,8 @@ impl Int {
 	/// # Errors
 	/// 
 	/// - If `self` and `rhs` have unmatching bit widths.
-	pub fn into_checked_rem(self, rhs: &Int) -> Result<Int> {
-		try_forward_bin_mut_impl(self, rhs, Int::checked_rem_assign)
+	pub fn into_wrapping_rem(self, rhs: &Int) -> Result<Int> {
+		try_forward_bin_mut_impl(self, rhs, Int::wrapping_rem_assign)
 	}
 
 	/// Assignes `self` to the **unsigned** remainder of `self` by `rhs`.
@@ -1295,8 +1292,8 @@ impl Int {
 	/// # Errors
 	/// 
 	/// - If `self` and `rhs` have unmatching bit widths.
-	pub fn checked_rem_assign(&mut self, rhs: &Int) -> Result<()> {
-		self.value.checked_srem_assign(&rhs.value)
+	pub fn wrapping_rem_assign(&mut self, rhs: &Int) -> Result<()> {
+		self.value.wrapping_srem_assign(&rhs.value)
 	}
 }
 
@@ -1308,7 +1305,7 @@ impl Neg for Int {
 	type Output = Int;
 
 	fn neg(self) -> Self::Output {
-		self.into_negate()
+		self.into_wrapping_neg()
 	}
 }
 
@@ -1316,7 +1313,7 @@ impl<'a> Neg for &'a Int {
 	type Output = Int;
 
 	fn neg(self) -> Self::Output {
-		self.clone().into_negate()
+		self.clone().into_wrapping_neg()
 	}
 }
 
@@ -1324,7 +1321,7 @@ impl<'a> Neg for &'a mut Int {
 	type Output = &'a mut Int;
 
 	fn neg(self) -> Self::Output {
-		self.negate();
+		self.wrapping_neg();
 		self
 	}
 }
@@ -1337,7 +1334,7 @@ impl<'a> Add<&'a Int> for Int {
 	type Output = Int;
 
 	fn add(self, rhs: &'a Int) -> Self::Output {
-		self.into_checked_add(rhs).unwrap()
+		self.into_wrapping_add(rhs).unwrap()
 	}
 }
 
@@ -1345,13 +1342,13 @@ impl<'a, 'b> Add<&'a Int> for &'b Int {
 	type Output = Int;
 
 	fn add(self, rhs: &'a Int) -> Self::Output {
-		self.clone().into_checked_add(rhs).unwrap()
+		self.clone().into_wrapping_add(rhs).unwrap()
 	}
 }
 
 impl<'a> AddAssign<&'a Int> for Int {
 	fn add_assign(&mut self, rhs: &'a Int) {
-		self.checked_add_assign(rhs).unwrap()
+		self.wrapping_add_assign(rhs).unwrap()
 	}
 }
 
@@ -1363,7 +1360,7 @@ impl<'a> Sub<&'a Int> for Int {
 	type Output = Int;
 
 	fn sub(self, rhs: &'a Int) -> Self::Output {
-		self.into_checked_sub(rhs).unwrap()
+		self.into_wrapping_sub(rhs).unwrap()
 	}
 }
 
@@ -1371,13 +1368,13 @@ impl<'a, 'b> Sub<&'a Int> for &'b Int {
 	type Output = Int;
 
 	fn sub(self, rhs: &'a Int) -> Self::Output {
-		self.clone().into_checked_sub(rhs).unwrap()
+		self.clone().into_wrapping_sub(rhs).unwrap()
 	}
 }
 
 impl<'a> SubAssign<&'a Int> for Int {
 	fn sub_assign(&mut self, rhs: &'a Int) {
-		self.checked_sub_assign(rhs).unwrap()
+		self.wrapping_sub_assign(rhs).unwrap()
 	}
 }
 
@@ -1389,7 +1386,7 @@ impl<'a> Mul<&'a Int> for Int {
 	type Output = Int;
 
 	fn mul(self, rhs: &'a Int) -> Self::Output {
-		self.into_checked_mul(rhs).unwrap()
+		self.into_wrapping_mul(rhs).unwrap()
 	}
 }
 
@@ -1397,13 +1394,13 @@ impl<'a, 'b> Mul<&'a Int> for &'b Int {
 	type Output = Int;
 
 	fn mul(self, rhs: &'a Int) -> Self::Output {
-		self.clone().into_checked_mul(rhs).unwrap()
+		self.clone().into_wrapping_mul(rhs).unwrap()
 	}
 }
 
 impl<'a> MulAssign<&'a Int> for Int {
 	fn mul_assign(&mut self, rhs: &'a Int) {
-		self.checked_mul_assign(rhs).unwrap();
+		self.wrapping_mul_assign(rhs).unwrap();
 	}
 }
 
@@ -1415,7 +1412,7 @@ impl<'a> Div<&'a Int> for Int {
 	type Output = Int;
 
 	fn div(self, rhs: &'a Int) -> Self::Output {
-		self.into_checked_div(rhs).unwrap()
+		self.into_wrapping_div(rhs).unwrap()
 	}
 }
 
@@ -1423,13 +1420,13 @@ impl<'a, 'b> Div<&'a Int> for &'b Int {
 	type Output = Int;
 
 	fn div(self, rhs: &'a Int) -> Self::Output {
-		self.clone().into_checked_div(rhs).unwrap()
+		self.clone().into_wrapping_div(rhs).unwrap()
 	}
 }
 
 impl<'a> DivAssign<&'a Int> for Int {
 	fn div_assign(&mut self, rhs: &'a Int) {
-		self.checked_div_assign(rhs).unwrap();
+		self.wrapping_div_assign(rhs).unwrap();
 	}
 }
 
@@ -1441,7 +1438,7 @@ impl<'a> Rem<&'a Int> for Int {
 	type Output = Int;
 
 	fn rem(self, rhs: &'a Int) -> Self::Output {
-		self.into_checked_rem(rhs).unwrap()
+		self.into_wrapping_rem(rhs).unwrap()
 	}
 }
 
@@ -1449,13 +1446,13 @@ impl<'a, 'b> Rem<&'a Int> for &'b Int {
 	type Output = Int;
 
 	fn rem(self, rhs: &'a Int) -> Self::Output {
-		self.clone().into_checked_rem(rhs).unwrap()
+		self.clone().into_wrapping_rem(rhs).unwrap()
 	}
 }
 
 impl<'a> RemAssign<&'a Int> for Int {
 	fn rem_assign(&mut self, rhs: &'a Int) {
-		self.checked_rem_assign(rhs).unwrap();
+		self.wrapping_rem_assign(rhs).unwrap();
 	}
 }
 

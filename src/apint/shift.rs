@@ -72,7 +72,7 @@ impl ApInt {
 	/// # Errors
 	/// 
 	/// - If the given `shift_amount` is invalid for the bit width of this `ApInt`.
-	pub fn checked_shl_assign<S>(&mut self, shift_amount: S) -> Result<()>
+	pub fn wrapping_shl_assign<S>(&mut self, shift_amount: S) -> Result<()>
 		where S: Into<ShiftAmount>
 	{
 		let shift_amount = shift_amount.into();
@@ -120,10 +120,10 @@ impl ApInt {
 	/// # Errors
 	/// 
 	/// - If the given `shift_amount` is invalid for the bit width of this `ApInt`.
-	pub fn into_checked_shl<S>(self, shift_amount: S) -> Result<ApInt>
+	pub fn into_wrapping_shl<S>(self, shift_amount: S) -> Result<ApInt>
 		where S: Into<ShiftAmount>
 	{
-		try_forward_bin_mut_impl(self, shift_amount, ApInt::checked_shl_assign)
+		try_forward_bin_mut_impl(self, shift_amount, ApInt::wrapping_shl_assign)
 	}
 
 	/// Logically right-shifts this `ApInt` by the given `shift_amount` bits.
@@ -133,7 +133,7 @@ impl ApInt {
 	/// # Errors
 	/// 
 	/// - If the given `shift_amount` is invalid for the bit width of this `ApInt`.
-	pub fn checked_lshr_assign<S>(&mut self, shift_amount: S) -> Result<()>
+	pub fn wrapping_lshr_assign<S>(&mut self, shift_amount: S) -> Result<()>
 		where S: Into<ShiftAmount>
 	{
 		let shift_amount = shift_amount.into();
@@ -174,10 +174,10 @@ impl ApInt {
 	/// # Errors
 	/// 
 	/// - If the given `shift_amount` is invalid for the bit width of this `ApInt`.
-	pub fn into_checked_lshr<S>(self, shift_amount: S) -> Result<ApInt>
+	pub fn into_wrapping_lshr<S>(self, shift_amount: S) -> Result<ApInt>
 		where S: Into<ShiftAmount>
 	{
-		try_forward_bin_mut_impl(self, shift_amount, ApInt::checked_lshr_assign)
+		try_forward_bin_mut_impl(self, shift_amount, ApInt::wrapping_lshr_assign)
 	}
 
 	/// Arithmetically right-shifts this `ApInt` by the given `shift_amount` bits.
@@ -191,11 +191,11 @@ impl ApInt {
 	/// # Errors
 	/// 
 	/// - If the given `shift_amount` is invalid for the bit width of this `ApInt`.
-	pub fn checked_ashr_assign<S>(&mut self, shift_amount: S) -> Result<()>
+	pub fn wrapping_ashr_assign<S>(&mut self, shift_amount: S) -> Result<()>
 		where S: Into<ShiftAmount>
 	{
 		if self.sign_bit() == Bit::Unset {
-			return self.checked_lshr_assign(shift_amount)
+			return self.wrapping_lshr_assign(shift_amount)
 		}
 		let shift_amount = shift_amount.into();
 		checks::verify_shift_amount(self, shift_amount)?;
@@ -245,10 +245,10 @@ impl ApInt {
 	/// # Errors
 	/// 
 	/// - If the given `shift_amount` is invalid for the bit width of this `ApInt`.
-	pub fn into_checked_ashr<S>(self, shift_amount: S) -> Result<ApInt>
+	pub fn into_wrapping_ashr<S>(self, shift_amount: S) -> Result<ApInt>
 		where S: Into<ShiftAmount>
 	{
-		try_forward_bin_mut_impl(self, shift_amount, ApInt::checked_ashr_assign)
+		try_forward_bin_mut_impl(self, shift_amount, ApInt::wrapping_ashr_assign)
 	}
 }
 
@@ -298,7 +298,7 @@ mod tests {
 			for repr in test_reprs_w64() {
 				for shamt in 0..64 {
 					let mut result = ApInt::from_u64(repr);
-					result.checked_shl_assign(shamt).unwrap();
+					result.wrapping_shl_assign(shamt).unwrap();
 					let expected = ApInt::from_u64(repr << shamt);
 					assert_eq!(result, expected);
 				}
@@ -310,7 +310,7 @@ mod tests {
 			for repr in test_reprs_w128() {
 				for shamt in 0..128 {
 					let mut result = ApInt::from_u128(repr);
-					result.checked_shl_assign(shamt).unwrap();
+					result.wrapping_shl_assign(shamt).unwrap();
 					let expected = ApInt::from_u128(repr << shamt);
 					assert_eq!(result, expected);
 				}
@@ -332,7 +332,7 @@ mod tests {
 				assert_eq!(digit_steps, 1);
 				assert_eq!(bit_steps, 36);
 				let result = ApInt::from(input)
-					.into_checked_shl(shamt)
+					.into_wrapping_shl(shamt)
 					.unwrap();
 				let expected: [u64; 4] = [
 					(d1 << bit_steps) | (d2 >> (digit::BITS - bit_steps)),
@@ -350,7 +350,7 @@ mod tests {
 				assert_eq!(digit_steps, 2);
 				assert_eq!(bit_steps, 22);
 				let result = ApInt::from(input)
-					.into_checked_shl(shamt)
+					.into_wrapping_shl(shamt)
 					.unwrap();
 				let expected: [u64; 4] = [
 					(d2 << bit_steps) | (d3 >> (digit::BITS - bit_steps)),
@@ -368,7 +368,7 @@ mod tests {
 				assert_eq!(digit_steps, 3);
 				assert_eq!(bit_steps, 8);
 				let result = ApInt::from(input)
-					.into_checked_shl(shamt)
+					.into_wrapping_shl(shamt)
 					.unwrap();
 				let expected: [u64; 4] = [
 					(d3 << bit_steps),
@@ -384,14 +384,14 @@ mod tests {
 		#[test]
 		fn assign_small_fail() {
 			for mut apint in test_apints_w64() {
-				assert!(apint.checked_shl_assign(64).is_err())
+				assert!(apint.wrapping_shl_assign(64).is_err())
 			}
 		}
 
 		#[test]
 		fn assign_large_fail() {
 			for mut apint in test_apints_w128() {
-				assert!(apint.checked_shl_assign(128).is_err())
+				assert!(apint.wrapping_shl_assign(128).is_err())
 			}
 		}
 
@@ -401,8 +401,8 @@ mod tests {
 				for shamt in 0..64 {
 					let mut x = apint.clone();
 					let     y = apint.clone();
-					x.checked_shl_assign(shamt).unwrap();
-					let y = y.into_checked_shl(shamt).unwrap();
+					x.wrapping_shl_assign(shamt).unwrap();
+					let y = y.into_wrapping_shl(shamt).unwrap();
 					assert_eq!(x, y);
 				}
 			}
@@ -414,8 +414,8 @@ mod tests {
 				for shamt in 0..128 {
 					let mut x = apint.clone();
 					let     y = apint.clone();
-					x.checked_shl_assign(shamt).unwrap();
-					let y = y.into_checked_shl(shamt).unwrap();
+					x.wrapping_shl_assign(shamt).unwrap();
+					let y = y.into_wrapping_shl(shamt).unwrap();
 					assert_eq!(x, y);
 				}
 			}
@@ -430,7 +430,7 @@ mod tests {
 			for repr in test_reprs_w64() {
 				for shamt in 0..64 {
 					let mut result = ApInt::from_u64(repr);
-					result.checked_lshr_assign(shamt).unwrap();
+					result.wrapping_lshr_assign(shamt).unwrap();
 					let expected = ApInt::from_u64(repr >> shamt);
 					assert_eq!(result, expected);
 				}
@@ -442,7 +442,7 @@ mod tests {
 			for repr in test_reprs_w128() {
 				for shamt in 0..128 {
 					let mut result = ApInt::from_u128(repr);
-					result.checked_lshr_assign(shamt).unwrap();
+					result.wrapping_lshr_assign(shamt).unwrap();
 					let expected = ApInt::from_u128(repr >> shamt);
 					assert_eq!(result, expected);
 				}
@@ -452,14 +452,14 @@ mod tests {
 		#[test]
 		fn assign_small_fail() {
 			for mut apint in test_apints_w64() {
-				assert!(apint.checked_lshr_assign(64).is_err())
+				assert!(apint.wrapping_lshr_assign(64).is_err())
 			}
 		}
 
 		#[test]
 		fn assign_large_fail() {
 			for mut apint in test_apints_w128() {
-				assert!(apint.checked_lshr_assign(128).is_err())
+				assert!(apint.wrapping_lshr_assign(128).is_err())
 			}
 		}
 
@@ -469,8 +469,8 @@ mod tests {
 				for shamt in 0..64 {
 					let mut x = apint.clone();
 					let     y = apint.clone();
-					x.checked_lshr_assign(shamt).unwrap();
-					let y = y.into_checked_lshr(shamt).unwrap();
+					x.wrapping_lshr_assign(shamt).unwrap();
+					let y = y.into_wrapping_lshr(shamt).unwrap();
 					assert_eq!(x, y);
 				}
 			}
@@ -482,8 +482,8 @@ mod tests {
 				for shamt in 0..128 {
 					let mut x = apint.clone();
 					let     y = apint.clone();
-					x.checked_lshr_assign(shamt).unwrap();
-					let y = y.into_checked_lshr(shamt).unwrap();
+					x.wrapping_lshr_assign(shamt).unwrap();
+					let y = y.into_wrapping_lshr(shamt).unwrap();
 					assert_eq!(x, y);
 				}
 			}
@@ -497,7 +497,7 @@ mod tests {
 		fn regression_stevia_01() {
 			let input = ApInt::from_i32(-8);
 			let expected = ApInt::from_u32(0x_FFFF_FFFE);
-			assert_eq!(input.into_checked_ashr(ShiftAmount::from(2)).unwrap(), expected);
+			assert_eq!(input.into_wrapping_ashr(ShiftAmount::from(2)).unwrap(), expected);
 		}
 
 		#[test]
@@ -505,7 +505,7 @@ mod tests {
 			for repr in test_reprs_w64() {
 				for shamt in 0..64 {
 					let mut result = ApInt::from_u64(repr);
-					result.checked_ashr_assign(shamt).unwrap();
+					result.wrapping_ashr_assign(shamt).unwrap();
 					let expected = ApInt::from_i64((repr as i64) >> shamt);
 					assert_eq!(result, expected);
 				}
@@ -517,7 +517,7 @@ mod tests {
 			for repr in test_reprs_w128() {
 				for shamt in 0..128 {
 					let mut result = ApInt::from_u128(repr);
-					result.checked_ashr_assign(shamt).unwrap();
+					result.wrapping_ashr_assign(shamt).unwrap();
 					let expected = ApInt::from_i128((repr as i128) >> shamt);
 					assert_eq!(result, expected);
 				}
@@ -527,14 +527,14 @@ mod tests {
 		#[test]
 		fn assign_small_fail() {
 			for mut apint in test_apints_w64() {
-				assert!(apint.checked_ashr_assign(64).is_err())
+				assert!(apint.wrapping_ashr_assign(64).is_err())
 			}
 		}
 
 		#[test]
 		fn assign_large_fail() {
 			for mut apint in test_apints_w128() {
-				assert!(apint.checked_ashr_assign(128).is_err())
+				assert!(apint.wrapping_ashr_assign(128).is_err())
 			}
 		}
 
@@ -544,8 +544,8 @@ mod tests {
 				for shamt in 0..64 {
 					let mut x = apint.clone();
 					let     y = apint.clone();
-					x.checked_ashr_assign(shamt).unwrap();
-					let y = y.into_checked_ashr(shamt).unwrap();
+					x.wrapping_ashr_assign(shamt).unwrap();
+					let y = y.into_wrapping_ashr(shamt).unwrap();
 					assert_eq!(x, y);
 				}
 			}
@@ -557,8 +557,8 @@ mod tests {
 				for shamt in 0..128 {
 					let mut x = apint.clone();
 					let     y = apint.clone();
-					x.checked_ashr_assign(shamt).unwrap();
-					let y = y.into_checked_ashr(shamt).unwrap();
+					x.wrapping_ashr_assign(shamt).unwrap();
+					let y = y.into_wrapping_ashr(shamt).unwrap();
 					assert_eq!(x, y);
 				}
 			}

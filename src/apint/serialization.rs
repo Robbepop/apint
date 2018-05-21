@@ -290,7 +290,7 @@ impl ApInt {
 /// =======================================================================
 impl ApInt {
 	/// Returns a `String` representation of the binary encoded `ApInt` for the given `Radix`.
-	pub fn as_string_with_radix<R>(&self, radix: R) -> String
+	pub fn to_string_radix<R>(&self, radix: R) -> String
 		where R: Into<Radix>
 	{
 		let _radix = radix.into();
