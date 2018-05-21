@@ -195,15 +195,15 @@ impl DoubleDigit {
 		DoubleDigit((DoubleDigitRepr::from(hi.repr()) << BITS) | DoubleDigitRepr::from(lo.repr()))
 	}
 
-    #[inline]
-    pub(crate) fn wrapping_add(self, other: DoubleDigit) -> Self {
-        DoubleDigit(self.repr().wrapping_add(other.repr()))
-    }
+	#[inline]
+	pub(crate) fn wrapping_add(self, other: DoubleDigit) -> Self {
+		DoubleDigit(self.repr().wrapping_add(other.repr()))
+	}
 
-    #[inline]
-    pub(crate) fn wrapping_mul(self, other: DoubleDigit) -> Self {
-        DoubleDigit(self.repr().wrapping_mul(other.repr()))
-    }
+	#[inline]
+	pub(crate) fn wrapping_mul(self, other: DoubleDigit) -> Self {
+		DoubleDigit(self.repr().wrapping_mul(other.repr()))
+	}
 }
 
 /// # Constructors
@@ -256,46 +256,46 @@ impl Digit {
 		DoubleDigit(DoubleDigitRepr::from(self.repr()))
 	}
 
-    #[inline]
-    pub(crate) fn wrapping_add(self, other: Digit) -> Self {
-        Digit(self.repr().wrapping_add(other.repr()))
-    }
+	#[inline]
+	pub(crate) fn wrapping_add(self, other: Digit) -> Self {
+		Digit(self.repr().wrapping_add(other.repr()))
+	}
 
-    #[inline]
-    pub(crate) fn wrapping_mul(self, other: Digit) -> Self {
-        Digit(self.repr().wrapping_mul(other.repr()))
-    }
+	#[inline]
+	pub(crate) fn wrapping_mul(self, other: Digit) -> Self {
+		Digit(self.repr().wrapping_mul(other.repr()))
+	}
 
-    #[inline]
-    pub(crate) fn wrapping_mul_add(self, mul: Digit, add: Digit) -> Digit {
-        Digit(
-            self.repr()
-                .wrapping_mul(mul.repr())
-                .wrapping_add(add.repr()),
-        )
-    }
+	#[inline]
+	pub(crate) fn wrapping_mul_add(self, mul: Digit, add: Digit) -> Digit {
+		Digit(
+			self.repr()
+				.wrapping_mul(mul.repr())
+				.wrapping_add(add.repr()),
+		)
+	}
 
-    #[inline]
-    pub(crate) fn carrying_add(self, other: Digit) -> (Digit, Digit) {
-        //this is to make sure that the assembly compiles down to the `adc` function
-        match self.repr().overflowing_add(other.repr()) {
-            (x,false) => (Digit(x),Digit::zero()),
-            (x,true) => (Digit(x),Digit::one()),
-        }
-    }
+	#[inline]
+	pub(crate) fn carrying_add(self, other: Digit) -> (Digit, Digit) {
+		//this is to make sure that the assembly compiles down to the `adc` function
+		match self.repr().overflowing_add(other.repr()) {
+			(x,false) => (Digit(x),Digit::zero()),
+			(x,true) => (Digit(x),Digit::one()),
+		}
+	}
 
-    //TODO if and when `carrying_mul` (rust-lang rfc #2417) is stabilized, this function and others in this crate should use `carrying_mul` as the operation
-    #[inline]
-    pub(crate) fn carrying_mul(self, other: Digit) -> (Digit, Digit) {
-        let temp = self.dd().wrapping_mul(other.dd());
-        (temp.lo(), temp.hi())
-    }
+	//TODO if and when `carrying_mul` (rust-lang rfc #2417) is stabilized, this function and others in this crate should use `carrying_mul` as the operation
+	#[inline]
+	pub(crate) fn carrying_mul(self, other: Digit) -> (Digit, Digit) {
+		let temp = self.dd().wrapping_mul(other.dd());
+		(temp.lo(), temp.hi())
+	}
 
-    #[inline]
-    pub(crate) fn carrying_mul_add(self, mul: Digit, add: Digit) -> (Digit, Digit) {
-        let temp = self.dd().wrapping_mul(mul.dd()).wrapping_add(add.dd());
-        (temp.lo(), temp.hi())
-    }
+	#[inline]
+	pub(crate) fn carrying_mul_add(self, mul: Digit, add: Digit) -> (Digit, Digit) {
+		let temp = self.dd().wrapping_mul(mul.dd()).wrapping_add(add.dd());
+		(temp.lo(), temp.hi())
+	}
 }
 
 impl Digit {
@@ -308,7 +308,7 @@ impl Digit {
 		if width.to_usize() > BITS {
 			return Err(Error::invalid_bitwidth(width.to_usize())
 				.with_annotation(format!("Encountered invalid `BitWidth` for operating \
-				                          on a `Digit`.")))
+										  on a `Digit`.")))
 		}
 		Ok(())
 	}
@@ -357,7 +357,7 @@ impl Digit {
 		let x = self.repr() as i64; // sign extend this b-bit number to r
 		let m: i64 = 1 << (b - 1);       // mask can be pre-computed if b is fixed
 		// x = x & ((1 << b) - 1);  // (Skip this if bits in x above position b are already zero.)
-		                            // We don't need this step since this condition is an invariant of `Digit`.
+									// We don't need this step since this condition is an invariant of `Digit`.
 		let r: i64 = (x ^ m).wrapping_sub(m);   // resulting sign-extended number
 		self.0 = r as u64;
 		Ok(())
