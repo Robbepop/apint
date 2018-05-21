@@ -231,16 +231,16 @@ impl ApInt {
 	pub fn set_sign_bit(&mut self) {
 		let sign_bit_pos = self.width().sign_bit_pos();
 		self.set_bit_at(sign_bit_pos)
-		    .expect("`BitWidth::sign_bit_pos` always returns a valid `BitPos`
-			         for usage in the associated `ApInt` for operating on bits.")
+			.expect("`BitWidth::sign_bit_pos` always returns a valid `BitPos`
+					 for usage in the associated `ApInt` for operating on bits.")
 	}
 
 	/// Sets the sign bit of this `ApInt` to zero (`0`).
 	pub fn unset_sign_bit(&mut self) {
 		let sign_bit_pos = self.width().sign_bit_pos();
 		self.unset_bit_at(sign_bit_pos)
-		    .expect("`BitWidth::sign_bit_pos` always returns a valid `BitPos`
-			         for usage in the associated `ApInt` for operating on bits.")
+			.expect("`BitWidth::sign_bit_pos` always returns a valid `BitPos`
+					 for usage in the associated `ApInt` for operating on bits.")
 	}
 
 	/// Flips the sign bit of this `ApInt`.
@@ -253,8 +253,8 @@ impl ApInt {
 	pub fn flip_sign_bit(&mut self) {
 		let sign_bit_pos = self.width().sign_bit_pos();
 		self.flip_bit_at(sign_bit_pos)
-		    .expect("`BitWidth::sign_bit_pos` always returns a valid `BitPos`
-			         for usage in the associated `ApInt` for operating on bits.")
+			.expect("`BitWidth::sign_bit_pos` always returns a valid `BitPos`
+					 for usage in the associated `ApInt` for operating on bits.")
 	}
 }
 
@@ -263,16 +263,16 @@ impl ApInt {
 	/// Returns the number of ones in the binary representation of this `ApInt`.
 	pub fn count_ones(&self) -> usize {
 		self.as_digit_slice()
-		    .into_iter()
-		    .map(|d| d.repr().count_ones() as usize)
-		    .sum::<usize>()
+			.into_iter()
+			.map(|d| d.repr().count_ones() as usize)
+			.sum::<usize>()
 	}
 
 	/// Returns the number of zeros in the binary representation of this `ApInt`.
 	pub fn count_zeros(&self) -> usize {
 		let zeros = self.as_digit_slice()
 			.into_iter()
-		    .map(|d| d.repr().count_zeros() as usize)
+			.map(|d| d.repr().count_zeros() as usize)
 			.sum::<usize>();
 		// Since `ApInt` instances with width's that are no powers of two
 		// have unused excess bits that are always zero we need to cut them off
@@ -327,27 +327,27 @@ impl Not for ApInt {
 //  ===========================================================================
 
 impl<'a> BitAnd<&'a ApInt> for ApInt {
-    type Output = ApInt;
+	type Output = ApInt;
 
-    fn bitand(self, rhs: &'a ApInt) -> Self::Output {
-        self.into_bitand(rhs).unwrap()
-    }
+	fn bitand(self, rhs: &'a ApInt) -> Self::Output {
+		self.into_bitand(rhs).unwrap()
+	}
 }
 
 impl<'a, 'b> BitAnd<&'a ApInt> for &'b ApInt {
-    type Output = ApInt;
+	type Output = ApInt;
 
-    fn bitand(self, rhs: &'a ApInt) -> Self::Output {
-        self.clone().into_bitand(rhs).unwrap()
-    }
+	fn bitand(self, rhs: &'a ApInt) -> Self::Output {
+		self.clone().into_bitand(rhs).unwrap()
+	}
 }
 
 impl<'a, 'b> BitAnd<&'a ApInt> for &'b mut ApInt {
-    type Output = ApInt;
+	type Output = ApInt;
 
-    fn bitand(self, rhs: &'a ApInt) -> Self::Output {
-        self.clone().into_bitand(rhs).unwrap()
-    }
+	fn bitand(self, rhs: &'a ApInt) -> Self::Output {
+		self.clone().into_bitand(rhs).unwrap()
+	}
 }
 
 //  ===========================================================================
@@ -355,27 +355,27 @@ impl<'a, 'b> BitAnd<&'a ApInt> for &'b mut ApInt {
 //  ===========================================================================
 
 impl<'a> BitOr<&'a ApInt> for ApInt {
-    type Output = ApInt;
+	type Output = ApInt;
 
-    fn bitor(self, rhs: &'a ApInt) -> Self::Output {
-        self.into_bitor(rhs).unwrap()
-    }
+	fn bitor(self, rhs: &'a ApInt) -> Self::Output {
+		self.into_bitor(rhs).unwrap()
+	}
 }
 
 impl<'a, 'b> BitOr<&'a ApInt> for &'b ApInt {
-    type Output = ApInt;
+	type Output = ApInt;
 
-    fn bitor(self, rhs: &'a ApInt) -> Self::Output {
-        self.clone().into_bitor(rhs).unwrap()
-    }
+	fn bitor(self, rhs: &'a ApInt) -> Self::Output {
+		self.clone().into_bitor(rhs).unwrap()
+	}
 }
 
 impl<'a, 'b> BitOr<&'a ApInt> for &'b mut ApInt {
-    type Output = ApInt;
+	type Output = ApInt;
 
-    fn bitor(self, rhs: &'a ApInt) -> Self::Output {
-        self.clone().into_bitor(rhs).unwrap()
-    }
+	fn bitor(self, rhs: &'a ApInt) -> Self::Output {
+		self.clone().into_bitor(rhs).unwrap()
+	}
 }
 
 //  ===========================================================================
@@ -383,27 +383,27 @@ impl<'a, 'b> BitOr<&'a ApInt> for &'b mut ApInt {
 //  ===========================================================================
 
 impl<'a> BitXor<&'a ApInt> for ApInt {
-    type Output = ApInt;
+	type Output = ApInt;
 
-    fn bitxor(self, rhs: &'a ApInt) -> Self::Output {
-        self.into_bitxor(rhs).unwrap()
-    }
+	fn bitxor(self, rhs: &'a ApInt) -> Self::Output {
+		self.into_bitxor(rhs).unwrap()
+	}
 }
 
 impl<'a, 'b> BitXor<&'a ApInt> for &'b ApInt {
-    type Output = ApInt;
+	type Output = ApInt;
 
-    fn bitxor(self, rhs: &'a ApInt) -> Self::Output {
-        self.clone().into_bitxor(rhs).unwrap()
-    }
+	fn bitxor(self, rhs: &'a ApInt) -> Self::Output {
+		self.clone().into_bitxor(rhs).unwrap()
+	}
 }
 
 impl<'a, 'b> BitXor<&'a ApInt> for &'b mut ApInt {
-    type Output = ApInt;
+	type Output = ApInt;
 
-    fn bitxor(self, rhs: &'a ApInt) -> Self::Output {
-        self.clone().into_bitxor(rhs).unwrap()
-    }
+	fn bitxor(self, rhs: &'a ApInt) -> Self::Output {
+		self.clone().into_bitxor(rhs).unwrap()
+	}
 }
 
 //  ===========================================================================
@@ -411,21 +411,21 @@ impl<'a, 'b> BitXor<&'a ApInt> for &'b mut ApInt {
 //  ===========================================================================
 
 impl<'a> BitAndAssign<&'a ApInt> for ApInt {
-    fn bitand_assign(&mut self, rhs: &'a ApInt) {
-        self.bitand_assign(rhs).unwrap();
-    }
+	fn bitand_assign(&mut self, rhs: &'a ApInt) {
+		self.bitand_assign(rhs).unwrap();
+	}
 }
 
 impl<'a> BitOrAssign<&'a ApInt> for ApInt {
-    fn bitor_assign(&mut self, rhs: &'a ApInt) {
-        self.bitor_assign(rhs).unwrap();
-    }
+	fn bitor_assign(&mut self, rhs: &'a ApInt) {
+		self.bitor_assign(rhs).unwrap();
+	}
 }
 
 impl<'a> BitXorAssign<&'a ApInt> for ApInt {
-    fn bitxor_assign(&mut self, rhs: &'a ApInt) {
-        self.bitxor_assign(rhs).unwrap();
-    }
+	fn bitxor_assign(&mut self, rhs: &'a ApInt) {
+		self.bitxor_assign(rhs).unwrap();
+	}
 }
 
 #[cfg(test)]

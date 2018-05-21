@@ -94,7 +94,7 @@ impl ApInt {
 						}
 					}
 					digits.iter_mut()
-					      .take(digit_steps)
+						  .take(digit_steps)
 						  .for_each(|d| *d = Digit::zero());
 				}
 				let bit_steps = shift_amount.bit_steps();
@@ -147,8 +147,8 @@ impl ApInt {
 				if digit_steps != 0 {
 					digits.rotate_left(digit_steps);
 					digits.iter_mut()
-					      .rev()
-					      .take(digit_steps)
+						  .rev()
+						  .take(digit_steps)
 						  .for_each(|d| *d = Digit::zero());
 				}
 				let bit_steps = shift_amount.bit_steps();
@@ -213,8 +213,8 @@ impl ApInt {
 				if digit_steps != 0 {
 					digits.rotate_left(digit_steps);
 					digits.iter_mut()
-					      .rev()
-					      .take(digit_steps)
+						  .rev()
+						  .take(digit_steps)
 						  .for_each(|d| *d = Digit::all_set());
 				}
 				let bit_steps = shift_amount.bit_steps();
