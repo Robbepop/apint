@@ -14,9 +14,9 @@ use digit;
 ///   carry of this addition after the carry-add computation.
 #[inline]
 pub(crate) fn carry_add(a: Digit, b: Digit, carry: &mut Digit) -> Digit {
-	let (hi, lo) = (a.dd() + b.dd() + carry.dd()).hi_lo();
-	*carry = hi;
-	lo
+    let (hi, lo) = (a.dd() + b.dd() + carry.dd()).hi_lo();
+    *carry = hi;
+    lo
 }
 
 /// Returns the result of a borrow-sub between `a` and `b` with
@@ -33,7 +33,7 @@ pub(crate) fn carry_add(a: Digit, b: Digit, carry: &mut Digit) -> Digit {
 ///   after the borrow-sub computation.
 #[inline]
 pub(crate) fn borrow_sub(a: Digit, b: Digit, borrow: &mut Digit) -> Digit {
-	let (hi, lo) = (digit::BASE + a.dd() - b.dd() - borrow.dd()).hi_lo();
+    let (hi, lo) = (digit::BASE + a.dd() - b.dd() - borrow.dd()).hi_lo();
 
     // This is the actual computation:
     //
@@ -41,8 +41,8 @@ pub(crate) fn borrow_sub(a: Digit, b: Digit, borrow: &mut Digit) -> Digit {
     // The hi part then is the borrow for the next pair of Digits
     // whereas the lo part is the actual wrapped result.
     // 
-	//     hi * (base) + lo        ==    1 * (base) + ai - bi - borrow
-	// =>  a_i - b_i - borrow < 0   <==>   hi == 0
+    //     hi * (base) + lo        ==    1 * (base) + ai - bi - borrow
+    // =>  a_i - b_i - borrow < 0   <==>   hi == 0
 
     *borrow = if hi == Digit::zero() { Digit::one() } else { Digit::zero() };
     lo
