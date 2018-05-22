@@ -132,9 +132,9 @@ impl ApInt {
         let mut v = Vec::with_capacity(input.len());
         for (i, b) in input.bytes().enumerate() {
             let d = match b {
-                b'0'...b'9' => b - b'0',
-                b'a'...b'z' => b - b'a' + 10,
-                b'A'...b'Z' => b - b'A' + 10,
+                b'0'..=b'9' => b - b'0',
+                b'a'..=b'z' => b - b'a' + 10,
+                b'A'..=b'Z' => b - b'A' + 10,
                 b'_' => continue,
                 _ => ::std::u8::MAX
             };
