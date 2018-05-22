@@ -6,19 +6,19 @@ use rand;
 
 impl rand::Rand for Digit {
     /// Creates a random `Digit` using the given random number generator.
-	fn rand<R: rand::Rng>(rng: &mut R) -> Digit {
-		Digit(rng.next_u64())
-	}
+    fn rand<R: rand::Rng>(rng: &mut R) -> Digit {
+        Digit(rng.next_u64())
+    }
 }
 
 /// # Random Utilities using `rand` crate.
 impl ApInt {
-	/// Creates a new `ApInt` with the given `BitWidth` and random `Digit`s.
-	pub fn random_with_width(width: BitWidth) -> ApInt {
-		ApInt::random_with_width_using(width, &mut rand::weak_rng())
-	}
+    /// Creates a new `ApInt` with the given `BitWidth` and random `Digit`s.
+    pub fn random_with_width(width: BitWidth) -> ApInt {
+        ApInt::random_with_width_using(width, &mut rand::weak_rng())
+    }
 
-	/// Creates a new `ApInt` with the given `BitWidth` and random `Digit`s
+    /// Creates a new `ApInt` with the given `BitWidth` and random `Digit`s
     /// using the given random number generator.
     /// 
     /// **Note:** This is useful for cryptographic or testing purposes.
