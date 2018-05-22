@@ -13,8 +13,8 @@ use errors::{Error, Result};
 /// # Examples
 /// 
 /// - The binary 2-radix supports only `0` and `1` as input.
-/// - The decimal 10-radix supports `0`,`1`,...`9` as input characters.
-/// - The hex-dec 16-radix supports inputs characters within `0`,..,`9` and `a`,..,`f`.
+/// - The decimal 10-radix supports `0`..=`9` as input characters.
+/// - The hex-dec 16-radix supports inputs characters within `0`..=`9` and `a`..=`f`.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 pub struct Radix(u8);
 
@@ -65,7 +65,7 @@ impl Radix {
     /// 
     /// For binary `Radix` (`= 2`) there are only digits `0` and `1` which can be
     /// stored in `1` bit each.
-    /// For a hexdec `Radix` (`= 16`) digits are `0`...`9`,`A`...`F` and a digit 
+    /// For a hexdec `Radix` (`= 16`) digits are `0`..=`9`,`A`..=`F` and a digit 
     /// requires `4` bits to be stored.
     /// 
     /// Note: This is only valid for `Radix` instances that represent a radix
@@ -86,7 +86,7 @@ impl Radix {
     /// 
     /// For binary `Radix` (`= 2`) there are only digits `0` and `1` which can be
     /// stored in `1` bit each.
-    /// For a hexdec `Radix` (`= 16`) digits are `0`...`9`,`A`...`F` and a digit 
+    /// For a hexdec `Radix` (`= 16`) digits are `0`..=`9`,`A`..=`F` and a digit 
     /// requires `4` bits to be stored.
     /// For a decimal `Radix` (`= 10`) digits `None` is returned.
     /// 
