@@ -3,20 +3,24 @@ use bitwidth::{BitWidth};
 use digit::{Digit};
 
 use rand;
+use rand::{FromEntropy};
 
-impl rand::Rand for Digit {
+impl rand::distributions::Distribution<Digit> for rand::distributions::Standard {
     /// Creates a random `Digit` using the given random number generator.
-    fn rand<R: rand::Rng>(rng: &mut R) -> Digit {
-        Digit(rng.next_u64())
-    }
+	fn sample<R>(&self, rng: &mut R) -> Digit
+    where
+        R: rand::Rng + ?Sized
+    {
+		Digit(rng.next_u64())
+	}
 }
 
 /// # Random Utilities using `rand` crate.
 impl ApInt {
-    /// Creates a new `ApInt` with the given `BitWidth` and random `Digit`s.
-    pub fn random_with_width(width: BitWidth) -> ApInt {
-        ApInt::random_with_width_using(width, &mut rand::weak_rng())
-    }
+	/// Creates a new `ApInt` with the given `BitWidth` and random `Digit`s.
+	pub fn random_with_width(width: BitWidth) -> ApInt {
+		ApInt::random_with_width_using(width, &mut rand::rngs::SmallRng::from_entropy())
+	}
 
     /// Creates a new `ApInt` with the given `BitWidth` and random `Digit`s
     /// using the given random number generator.
@@ -25,9 +29,10 @@ impl ApInt {
     pub fn random_with_width_using<R>(width: BitWidth, rng: &mut R) -> ApInt
         where R: rand::Rng
     {
+        use rand::distributions::Standard;
         let required_digits = width.required_digits();
         assert!(required_digits >= 1);
-        let random_digits = rng.gen_iter::<Digit>().take(required_digits);
+        let random_digits = rng.sample_iter::<Digit, Standard>(&Standard).take(required_digits);
         ApInt::from_iter(random_digits)
             .expect("We asserted that `required_digits` is at least `1` or greater
                      so it is safe to assume that `ApInt::from_iter` won't fail.")
@@ -40,7 +45,7 @@ impl ApInt {
     /// 
     /// This won't change its `BitWidth`.
     pub fn randomize(&mut self) {
-        self.randomize_using(&mut rand::weak_rng())
+        self.randomize_using(&mut rand::rngs::SmallRng::from_entropy())
     }
 
     /// Randomizes the digits of this `ApInt` inplace using the given
@@ -50,8 +55,9 @@ impl ApInt {
     pub fn randomize_using<R>(&mut self, rng: &mut R)
         where R: rand::Rng
     {
+        use rand::distributions::Standard;
         self.digits_mut()
-            .zip(rng.gen_iter::<Digit>())
+            .zip(rng.sample_iter::<Digit, Standard>(&Standard))
             .for_each(|(d, r)| *d = r);
         self.clear_unused_bits();
     }
@@ -60,23 +66,26 @@ impl ApInt {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use rand::{SeedableRng};
 
     #[test]
     fn random_with_width_using() {
-        let mut rng = rand::XorShiftRng::new_unseeded();
+        let default_seed = <rand::XorShiftRng as rand::SeedableRng>::Seed::default();
+        let mut rng = rand::XorShiftRng::from_seed(default_seed);
         let r = &mut rng;
-        assert_eq!(ApInt::random_with_width_using(BitWidth::w1(), r), ApInt::from_bit(false));
-        assert_eq!(ApInt::random_with_width_using(BitWidth::w8(), r), ApInt::from_u8(140));
-        assert_eq!(ApInt::random_with_width_using(BitWidth::w16(), r), ApInt::from_u16(970));
-        assert_eq!(ApInt::random_with_width_using(BitWidth::w32(), r), ApInt::from_u32(2466290541));
-        assert_eq!(ApInt::random_with_width_using(BitWidth::w64(), r), ApInt::from_u64(16730135874920933484));
-        assert_eq!(ApInt::random_with_width_using(BitWidth::w128(), r), ApInt::from_u128(217725508292902744084870179638383324996));
+        assert_eq!(ApInt::random_with_width_using(BitWidth::w1(), r), ApInt::from_bit(true));
+        assert_eq!(ApInt::random_with_width_using(BitWidth::w8(), r), ApInt::from_u8(100));
+        assert_eq!(ApInt::random_with_width_using(BitWidth::w16(), r), ApInt::from_u16(30960));
+        assert_eq!(ApInt::random_with_width_using(BitWidth::w32(), r), ApInt::from_u32(1788231528));
+        assert_eq!(ApInt::random_with_width_using(BitWidth::w64(), r), ApInt::from_u64(13499822775494449820));
+        assert_eq!(ApInt::random_with_width_using(BitWidth::w128(), r), ApInt::from([16330942765510900160_u64, 131735358788273206]));
     }
 
     #[test]
     fn randomize_using() {
-        let mut rng1 = rand::XorShiftRng::new_unseeded();
-        let mut rng2 = rand::XorShiftRng::new_unseeded();
+        let default_seed = <rand::XorShiftRng as rand::SeedableRng>::Seed::default();
+        let mut rng1 = rand::XorShiftRng::from_seed(default_seed);
+        let mut rng2 = rand::XorShiftRng::from_seed(default_seed);
         let r1 = &mut rng1;
         let r2 = &mut rng2;
 
