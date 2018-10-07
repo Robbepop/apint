@@ -62,9 +62,15 @@ pub(crate) enum ZipDataAccess<'a, 'b> {
 }
 
 #[derive(Debug, PartialEq, Eq)]
-pub(crate) enum ZipDataAccessMut<'a, 'b> {
+pub(crate) enum ZipDataAccessMutSelf<'a, 'b> {
     Inl(&'a mut Digit, Digit),
     Ext(&'a mut [Digit], &'b [Digit])
+}
+
+#[derive(Debug, PartialEq, Eq)]
+pub(crate) enum ZipDataAccessMutBoth<'a, 'b> {
+    Inl(&'a mut Digit, &'b mut Digit),
+    Ext(&'a mut [Digit], &'b mut [Digit])
 }
 
 // ============================================================================
@@ -124,6 +130,7 @@ impl ApInt {
     /// # Errors
     /// 
     /// - If both given `ApInt` instances have non-matching bit widths.
+    #[inline]
     pub(in apint) fn zip_access_data<'a, 'b>(&'a self, other: &'b ApInt) -> Result<ZipDataAccess<'a, 'b>> {
         if self.width() != other.width() {
             return Error::unmatching_bitwidths(self.width(), other.width()).into()
@@ -142,25 +149,52 @@ impl ApInt {
         })
     }
 
-    /// Zips both given `ApInt` instances and tries to mutably access their data in a safe way.
+    /// Zips both given `ApInt` instances and tries to mutably access `self` data and immutably
+    /// access `other` data in a safe way.
     /// 
     /// # Errors
     /// 
     /// - If both given `ApInt` instances have non-matching bit widths.
-    pub(in apint) fn zip_access_data_mut<'a, 'b>(&'a mut self, other: &'b ApInt) -> Result<ZipDataAccessMut<'a, 'b>> {
+    #[inline]    
+    pub(in apint) fn zip_access_data_mut_self<'a, 'b>(&'a mut self, other: &'b ApInt) -> Result<ZipDataAccessMutSelf<'a, 'b>> {
         if self.width() != other.width() {
             return Error::unmatching_bitwidths(self.width(), other.width()).into()
         }
         Ok(match self.storage() {
             Storage::Inl => {
-                ZipDataAccessMut::Inl(
+                ZipDataAccessMutSelf::Inl(
                     unsafe{&mut self.data.inl},
                     unsafe{other.data.inl})
             },
             Storage::Ext => {
-                ZipDataAccessMut::Ext(
+                ZipDataAccessMutSelf::Ext(
                     self.as_digit_slice_mut(),
                     other.as_digit_slice())
+            }
+        })
+    }
+
+    /// Zips both given `ApInt` instances and tries to mutably access `lhs` and `rhs` data
+    /// in a safe way.
+    /// 
+    /// # Errors
+    /// 
+    /// - If both given `ApInt` instances have non-matching bit widths.
+    #[inline]    
+    pub(in apint) fn zip_access_data_mut_both<'a, 'b>(lhs: &'a mut ApInt, rhs: &'b mut ApInt) -> Result<ZipDataAccessMutBoth<'a, 'b>> {
+        if lhs.width() != rhs.width() {
+            return Error::unmatching_bitwidths(lhs.width(), rhs.width()).into()
+        }
+        Ok(match lhs.storage() {
+            Storage::Inl => {
+                ZipDataAccessMutBoth::Inl(
+                    unsafe{&mut lhs.data.inl},
+                    unsafe{&mut rhs.data.inl})
+            },
+            Storage::Ext => {
+                ZipDataAccessMutBoth::Ext(
+                    lhs.as_digit_slice_mut(),
+                    rhs.as_digit_slice_mut())
             }
         })
     }
@@ -172,6 +206,7 @@ impl ApInt {
     /// Prefer this utility method if you want to perform the same
     /// operation for all digits within this `ApInt` as this operation
     /// uses the most efficient way to do so.
+    #[inline]    
     pub(in apint) fn modify_digits<F>(&mut self, f: F)
         where F: Fn(&mut Digit)
     {
@@ -193,11 +228,12 @@ impl ApInt {
     /// 
     /// Prefer this utility method for these use cases since this operation
     /// uses the most efficient way to perform the specified task.
+    #[inline]    
     pub(in apint) fn modify_zipped_digits<F>(&mut self, rhs: &ApInt, f: F) -> Result<()>
         where F: Fn(&mut Digit, Digit)
     {
-        use self::ZipDataAccessMut::*;
-        match self.zip_access_data_mut(rhs)? {
+        use self::ZipDataAccessMutSelf::*;
+        match self.zip_access_data_mut_self(rhs)? {
             Inl(lhs, rhs) => f(lhs, rhs),
             Ext(lhs, rhs) => {
                 for (l, &r) in lhs.into_iter().zip(rhs) {
@@ -209,6 +245,7 @@ impl ApInt {
     }
 
     /// Returns a slice over the `Digit`s of this `ApInt` in little-endian order.
+    #[inline]    
     pub(in apint) fn as_digit_slice(&self) -> &[Digit] {
         use std::slice;
         match self.len.storage() {
@@ -222,6 +259,7 @@ impl ApInt {
     }
 
     /// Returns a mutable slice over the `Digit`s of this `ApInt` in little-endian order.
+    #[inline]    
     pub(in apint) fn as_digit_slice_mut(&mut self) -> &mut [Digit] {
         use std::slice;
         match self.len.storage() {
@@ -235,6 +273,7 @@ impl ApInt {
     }
 
     /// Returns the most significant `Digit` of this `ApInt`.
+    #[inline]    
     pub(in apint) fn most_significant_digit(&self) -> Digit {
         match self.access_data() {
             DataAccess::Inl(digit) => digit,
@@ -245,6 +284,7 @@ impl ApInt {
     }
 
     /// Returns a mutable reference to the most significant `Digit` of this `ApInt`.
+    #[inline]    
     pub(in apint) fn most_significant_digit_mut(&mut self) -> &mut Digit {
         match self.access_data_mut() {
             DataAccessMut::Inl(digit) => digit,
@@ -255,6 +295,7 @@ impl ApInt {
     }
 
     /// Returns the least significant `Digit` of this `ApInt`.
+    #[inline]    
     pub(in apint) fn least_significant_digit(&self) -> Digit {
         match self.access_data() {
             DataAccess::Inl(digit) => digit,
@@ -264,6 +305,7 @@ impl ApInt {
 
     /// Returns `Bit::Set` if the most significant bit of this `ApInt` is set
     /// and `Bit::Unset` otherwise.
+    #[inline]    
     pub(in apint) fn most_significant_bit(&self) -> Bit {
         let sign_bit_pos = self.width().sign_bit_pos();
         self.most_significant_digit()
@@ -275,6 +317,7 @@ impl ApInt {
 
     /// Returns `Bit::Set` if the least significant bit of this `ApInt` is set
     /// and `Bit::Unset` otherwise.
+    #[inline]    
     pub(in apint) fn least_significant_bit(&self) -> Bit {
         self.least_significant_digit().least_significant_bit()
     }
@@ -289,6 +332,7 @@ impl ApInt {
     /// `ApInt` instance.
     /// So upon a call to `ApInt::clear_unused_bits` the upper
     /// `128-100 = 28` bits are cleared (set to zero (`0`)).
+    #[inline]    
     pub(in apint) fn clear_unused_bits(&mut self) {
         if let Some(bits) = self.width().excess_bits() {
             self.most_significant_digit_mut()
@@ -305,6 +349,7 @@ impl ApInt {
     /// - Zero (`0`) is also called the additive neutral element.
     /// - This operation is more efficient than comparing two instances
     ///   of `ApInt` for the same reason.
+    #[inline]    
     pub fn is_zero(&self) -> bool {
         match self.access_data() {
             DataAccess::Inl(digit) => digit.is_zero(),
@@ -321,33 +366,48 @@ impl ApInt {
     /// - One (`1`) is also called the multiplicative neutral element.
     /// - This operation is more efficient than comparing two instances
     ///   of `ApInt` for the same reason.
+    #[inline]    
     pub fn is_one(&self) -> bool {
         match self.access_data() {
             DataAccess::Inl(digit) => digit == Digit::one(),
             DataAccess::Ext(digits) => {
-                let (last, rest) = digits.split_last()
-                    .expect("An `ApInt` always has at least one digit so calling \
-                             `split_last` on a slice of its digits will never \
-                             return `None`.");
+                let (last, rest) = digits.split_last().unwrap_or_else(|| unreachable!());
                 last.is_one() && rest.into_iter().all(|digit| digit.is_zero())
             }
         }
     }
 
     /// Returns `true` if this `ApInt` represents an even number.
+    /// Equivalent to testing if the least significant bit is zero.
     #[inline]
     pub fn is_even(&self) -> bool {
         self.least_significant_bit() == Bit::Unset
     }
 
     /// Returns `true` if this `ApInt` represents an odd number.
+    /// Equivalent to testing if the least significant bit is one.
     #[inline]
     pub fn is_odd(&self) -> bool {
         self.least_significant_bit() == Bit::Set
     }
 
+    /// Returns `true` if the **signed** representation of this `ApInt` is positive.
+    /// Equivalent to testing if the most significant bit is zero.
+    #[inline]
+    pub fn is_positive(&self) -> bool {
+        self.most_significant_bit() == Bit::Unset
+    }
+
+    /// Returns `true` if the **signed** representation of this `ApInt` is negative.
+    /// Equivalent to testing if the most significant bit is one.
+    #[inline]
+    pub fn is_negative(&self) -> bool {
+        self.most_significant_bit() == Bit::Set
+    }
+
     /// Splits the least significant digits from the rest of the digit slice
     /// and returns it as well as the remaining part of the digit slice.
+    #[inline]    
     pub(in apint) fn split_least_significant_digit(&self) -> (Digit, &[Digit]) {
         match self.access_data() {
             DataAccess::Inl(digit) => (digit, &[]),
@@ -363,6 +423,7 @@ impl ApInt {
 
     /// Splits the most significant digits from the rest of the digit slice
     /// and returns it as well as the remaining part of the digit slice.
+    #[inline]    
     pub(in apint) fn split_most_significant_digit(&self) -> (Digit, &[Digit]) {
         match self.access_data() {
             DataAccess::Inl(digit) => (digit, &[]),

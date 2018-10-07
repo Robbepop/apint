@@ -50,9 +50,10 @@ impl ApInt {
     #[inline]
     pub(in apint) fn new_inl(width: BitWidth, digit: Digit) -> ApInt {
         assert_eq!(width.storage(), Storage::Inl);
-        ApInt{
+        ApInt {
             len: width,
-            data: ApIntData{ inl: digit }}
+            data: ApIntData { inl: digit }
+        }
     }
 
     /// Creates a new large `ApInt` from the given `BitWidth` and `Digit`.
@@ -186,6 +187,19 @@ impl ApInt {
                 mem::forget(buffer);
                 Ok(unsafe{ ApInt::new_ext(bitwidth, ptr_buffer) })
             }
+        }
+    }
+
+    // TODO: convert this to take from a slice or IntoIterator<u64>
+    pub(crate) fn from_vec_u64(val: Vec<u64>) -> Option<ApInt> {
+        if val.len() == 0 {
+            None
+        } else {
+            let buffer = val.into_iter()
+                            .rev()
+                            .map(Digit)
+                            .collect::<Vec<Digit>>();
+            Some(ApInt::from_iter(buffer).unwrap())
         }
     }
 

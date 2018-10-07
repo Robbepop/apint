@@ -5,7 +5,6 @@ use traits::{Width};
 use checks;
 
 use std::ops::{
-    Not,
     BitAnd,
     BitOr,
     BitXor,
@@ -13,11 +12,14 @@ use std::ops::{
     BitOrAssign,
     BitXorAssign,
 
+    Shl,
+    Shr,
+    Not,
     Add,
     Sub,
     Mul,
     Div,
-    Rem
+    Rem,
 };
 
 /// The type for the internal `Digit` representation.
@@ -32,11 +34,6 @@ pub(crate) type DoubleDigitRepr = u128;
 
 /// The amount of bits within a single `Digit`.
 pub(crate) const BITS: usize = 64;
-
-/// The `DoubleDigit` base offset.
-const BASE_REPR: DoubleDigitRepr = 1 << BITS;
-
-pub(crate) const BASE: DoubleDigit = DoubleDigit(BASE_REPR);
 
 const REPR_ONE : DigitRepr = 0x1;
 const REPR_ZERO: DigitRepr = 0x0;
@@ -124,6 +121,48 @@ impl fmt::UpperHex for Digit {
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub(crate) struct DoubleDigit(pub DoubleDigitRepr);
 
+impl BitOr for DoubleDigit {
+    type Output = Self;
+
+    fn bitor(self, rhs: Self) -> Self {
+        DoubleDigit(self.repr() | rhs.repr())
+    }
+}
+
+impl BitAnd for DoubleDigit {
+    type Output = Self;
+
+    fn bitand(self, rhs: Self) -> Self {
+        DoubleDigit(self.repr() & rhs.repr())
+    }
+}
+
+impl Shl<usize> for DoubleDigit {
+    type Output = DoubleDigit;
+
+    fn shl(self, rhs: usize) -> Self::Output {
+        assert!(rhs < (BITS * 2));
+        DoubleDigit(self.repr().wrapping_shl(rhs as u32))
+    }
+}
+
+impl Shr<usize> for DoubleDigit {
+    type Output = DoubleDigit;
+
+    fn shr(self, rhs: usize) -> Self::Output {
+        assert!(rhs < (BITS * 2));
+        DoubleDigit(self.repr().wrapping_shr(rhs as u32))
+    }
+}
+
+impl Not for DoubleDigit {
+    type Output = Self;
+
+    fn not(self) -> Self::Output {
+        DoubleDigit(!self.repr())
+    }
+}
+
 impl Add for DoubleDigit {
     type Output = DoubleDigit;
 
@@ -166,43 +205,54 @@ impl Rem for DoubleDigit {
 
 impl DoubleDigit {
     /// Returns the value as its internal representation.
-    #[inline]
     pub(crate) fn repr(self) -> DoubleDigitRepr {
         self.0
     }
 
     /// Returns the hi part of this `DoubleDigit` as `Digit`.
-    #[inline]
     pub(crate) fn hi(self) -> Digit {
         Digit((self.0 >> BITS) as DigitRepr)
     }
 
     /// Returns the hi part of this `DoubleDigit` as `Digit`.
-    #[inline]
     pub(crate) fn lo(self) -> Digit {
         Digit(self.0 as DigitRepr)
     }
 
-    /// Returns the hi and lo parts of this `DoubleDigit` as `Digit` each.
-    #[inline]
-    pub(crate) fn hi_lo(self) -> (Digit, Digit) {
-        (self.hi(), self.lo())
+    /// Returns the lo and hi parts of this `DoubleDigit` as `Digit` each.
+    pub(crate) fn lo_hi(self) -> (Digit, Digit) {
+        (self.lo(), self.hi())
     }
 
-    /// Returns a `DoubleDigit` from the given hi and lo raw `Digit` parts.
-    #[inline]
-    pub(crate) fn from_hi_lo(hi: Digit, lo: Digit) -> DoubleDigit {
-        DoubleDigit((DoubleDigitRepr::from(hi.repr()) << BITS) | DoubleDigitRepr::from(lo.repr()))
+    /// Returns a `DoubleDigit` from the given lo and hi raw `Digit` parts.
+    pub(crate) fn from_lo_hi(lo: Digit, hi: Digit) -> DoubleDigit {
+        DoubleDigit(DoubleDigitRepr::from(lo.repr()) | (DoubleDigitRepr::from(hi.repr()) << BITS))
     }
 
-    #[inline]
     pub(crate) fn wrapping_add(self, other: DoubleDigit) -> Self {
         DoubleDigit(self.repr().wrapping_add(other.repr()))
     }
 
-    #[inline]
     pub(crate) fn wrapping_mul(self, other: DoubleDigit) -> Self {
         DoubleDigit(self.repr().wrapping_mul(other.repr()))
+    }
+
+    pub(crate) fn wrapping_div(self, other: DoubleDigit) -> Self {
+        self.wrapping_divrem(other).0
+    }
+
+    #[cfg(not(feature = "specialized_div_rem"))]
+    pub(crate) fn wrapping_divrem(self,other: DoubleDigit) -> (DoubleDigit,DoubleDigit) {
+        (
+            DoubleDigit(self.repr().wrapping_div(other.repr())),
+            DoubleDigit(self.repr().wrapping_rem(other.repr()))
+        )
+    }
+
+    #[cfg(feature = "specialized_div_rem")]
+    pub(crate) fn wrapping_divrem(self,other: DoubleDigit) -> (DoubleDigit,DoubleDigit) {
+        let temp = specialized_div_rem::u128_div_rem(self.repr(),other.repr());
+        (DoubleDigit(temp.0),DoubleDigit(temp.1))
     }
 }
 
@@ -211,71 +261,50 @@ impl Digit {
     /// Creates a digit that represents the value `0`.
     /// 
     /// **Note:** In twos-complement this means that all bits are `0`.
-    #[inline]
     pub fn zero() -> Digit { ZERO }
 
     /// Creates a digit that represents the value `1`.
-    #[inline]
     pub fn one() -> Digit { ONE	}
 
     /// Returns `true` if this `Digit` is zero (`0`).
-    #[inline]
     pub fn is_zero(self) -> bool { self == ZERO }
 
     /// Returns `true` if this `Digit` is one (`1`).
-    #[inline]
     pub fn is_one(self) -> bool { self == ONE }
 
     /// Returns `true` if this `Digit` has all bits set.
-    #[inline]
     pub fn is_all_set(self) -> bool { self == ONES }
 
     /// Creates a digit where all bits are initialized to `1`.
-    #[inline]
     pub fn all_set() -> Digit { ONES }
 }
 
 /// # Utility & helper methods.
 impl Digit {
     /// Returns the `Digit`'s value as internal representation.
-    #[inline]
     pub fn repr(self) -> DigitRepr {
         self.0
     }
 
     /// Returns a mutable reference to the underlying representation
     /// of this `Digit`.
-    #[inline]
     pub fn repr_mut(&mut self) -> &mut DigitRepr {
         &mut self.0
     }
 
     /// Returns the `DoubleDigit` representation of this `Digit`.
-    #[inline]
     pub(crate) fn dd(self) -> DoubleDigit {
         DoubleDigit(DoubleDigitRepr::from(self.repr()))
     }
 
-    #[inline]
+    pub(crate) fn leading_zeros(&self) -> u32 {
+        self.repr().leading_zeros()
+    }
+
     pub(crate) fn wrapping_add(self, other: Digit) -> Self {
         Digit(self.repr().wrapping_add(other.repr()))
     }
 
-    #[inline]
-    pub(crate) fn wrapping_mul(self, other: Digit) -> Self {
-        Digit(self.repr().wrapping_mul(other.repr()))
-    }
-
-    #[inline]
-    pub(crate) fn wrapping_mul_add(self, mul: Digit, add: Digit) -> Digit {
-        Digit(
-            self.repr()
-                .wrapping_mul(mul.repr())
-                .wrapping_add(add.repr()),
-        )
-    }
-
-    #[inline]
     pub(crate) fn carrying_add(self, other: Digit) -> (Digit, Digit) {
         //this is to make sure that the assembly compiles down to the `adc` function
         match self.repr().overflowing_add(other.repr()) {
@@ -284,17 +313,57 @@ impl Digit {
         }
     }
 
+    pub(crate) fn overflowing_add(self, other: Digit) -> (Digit, bool) {
+        match self.repr().overflowing_add(other.repr()) {
+            (x,false) => (Digit(x),false),
+            (x,true) => (Digit(x),true),
+        }
+    }
+
+    pub(crate) fn overflowing_sub(self, other: Digit) -> (Digit, bool) {
+        match self.repr().overflowing_sub(other.repr()) {
+            (x,false) => (Digit(x),false),
+            (x,true) => (Digit(x),true),
+        }
+    }
+
+    pub(crate) fn wrapping_sub(self, other: Digit) -> Self {
+        Digit(self.repr().wrapping_sub(other.repr()))
+    }
+
+    pub(crate) fn wrapping_mul(self, other: Digit) -> Self {
+        Digit(self.repr().wrapping_mul(other.repr()))
+    }
+
     //TODO if and when `carrying_mul` (rust-lang rfc #2417) is stabilized, this function and others in this crate should use `carrying_mul` as the operation
-    #[inline]
     pub(crate) fn carrying_mul(self, other: Digit) -> (Digit, Digit) {
         let temp = self.dd().wrapping_mul(other.dd());
         (temp.lo(), temp.hi())
     }
 
-    #[inline]
+    pub(crate) fn wrapping_mul_add(self, mul: Digit, add: Digit) -> Digit {
+        Digit(
+            self.repr()
+                .wrapping_mul(mul.repr())
+                .wrapping_add(add.repr()),
+        )
+    }
+
     pub(crate) fn carrying_mul_add(self, mul: Digit, add: Digit) -> (Digit, Digit) {
         let temp = self.dd().wrapping_mul(mul.dd()).wrapping_add(add.dd());
         (temp.lo(), temp.hi())
+    }
+
+    pub(crate) fn wrapping_divrem(self,other: Digit) -> (Digit,Digit) {
+        (self.wrapping_div(other),self.wrapping_rem(other))
+    }
+
+    pub(crate) fn wrapping_div(self, other: Digit) -> Self {
+        Digit(self.repr().wrapping_div(other.repr()))
+    }
+
+    pub(crate) fn wrapping_rem(self, other: Digit) -> Self {
+        Digit(self.repr().wrapping_rem(other.repr()))
     }
 }
 
@@ -365,14 +434,12 @@ impl Digit {
 }
 
 impl Width for Digit {
-    #[inline]
     fn width(&self) -> BitWidth {
         BitWidth::w64()
     }
 }
 
 impl Width for DoubleDigit {
-    #[inline]
     fn width(&self) -> BitWidth {
         BitWidth::w128()
     }
@@ -480,25 +547,10 @@ impl Digit {
 }
 
 /// # Bitwise operations
-impl Not for Digit {
-    type Output = Self;
-
-    fn not(self) -> Self::Output {
-        Digit(!self.repr())
-    }
-}
 
 impl Digit {
     pub fn not_inplace(&mut self) {
         self.0 = !self.repr()
-    }
-}
-
-impl BitAnd for Digit {
-    type Output = Self;
-
-    fn bitand(self, rhs: Self) -> Self::Output {
-        Digit(self.repr() & rhs.repr())
     }
 }
 
@@ -510,11 +562,25 @@ impl BitOr for Digit {
     }
 }
 
+impl BitAnd for Digit {
+    type Output = Self;
+
+    fn bitand(self, rhs: Self) -> Self::Output {
+        Digit(self.repr() & rhs.repr())
+    }
+}
+
 impl BitXor for Digit {
     type Output = Self;
 
     fn bitxor(self, rhs: Self) -> Self::Output {
         Digit(self.repr() ^ rhs.repr())
+    }
+}
+
+impl BitOrAssign for Digit {
+    fn bitor_assign(&mut self, rhs: Self) {
+        self.0 |= rhs.repr()
     }
 }
 
@@ -525,15 +591,33 @@ impl BitAndAssign for Digit {
     }
 }
 
-impl BitOrAssign for Digit {
-    fn bitor_assign(&mut self, rhs: Self) {
-        self.0 |= rhs.repr()
-    }
-}
-
 impl BitXorAssign for Digit {
     fn bitxor_assign(&mut self, rhs: Self) {
         self.0 ^= rhs.repr()
+    }
+}
+
+impl Shl<usize> for Digit {
+    type Output = Digit;
+
+    fn shl(self, rhs: usize) -> Self::Output {
+        Digit(self.repr().wrapping_shl(rhs as u32))
+    }
+}
+
+impl Shr<usize> for Digit {
+    type Output = Digit;
+
+    fn shr(self, rhs: usize) -> Self::Output {
+        Digit(self.repr().wrapping_shr(rhs as u32))
+    }
+}
+
+impl Not for Digit {
+    type Output = Self;
+
+    fn not(self) -> Self::Output {
+        Digit(!self.repr())
     }
 }
 
@@ -703,9 +787,9 @@ mod tests {
         }
 
         #[test]
-        fn hi_lo() {
+        fn lo_hi() {
             fn assert_for(input: DoubleDigitRepr, expected_hi: DigitRepr, expected_lo: DigitRepr) {
-                assert_eq!(DoubleDigit(input).hi_lo(), (Digit(expected_hi), Digit(expected_lo)))
+                assert_eq!(DoubleDigit(input).lo_hi(), (Digit(expected_lo), Digit(expected_hi)))
             }
             let test_values = &[
                 (0, (0, 0)),
@@ -724,9 +808,9 @@ mod tests {
         }
 
         #[test]
-        fn from_hi_lo() {
+        fn from_lo_hi() {
             fn assert_for(hi: DigitRepr, lo: DigitRepr, expected: DoubleDigitRepr) {
-                assert_eq!(DoubleDigit::from_hi_lo(Digit(hi), Digit(lo)), DoubleDigit(expected))
+                assert_eq!(DoubleDigit::from_lo_hi(Digit(lo), Digit(hi)), DoubleDigit(expected))
             }
             let test_values = &[
                 (0, (0, 0)),
