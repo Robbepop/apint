@@ -24,6 +24,9 @@
 
 extern crate smallvec;
 
+#[cfg(feature = "specialized_div_rem")]
+extern crate specialized_div_rem;
+
 #[cfg(feature = "rand_support")]
 extern crate rand;
 
@@ -31,7 +34,7 @@ extern crate rand;
 extern crate serde;
 
 #[cfg(feature = "serde_support")]
-#[macro_use]
+#[cfg_attr(feature = "serde_support", macro_use)]
 extern crate serde_derive;
 
 #[cfg(all(test, feature = "serde_support"))]
@@ -50,7 +53,6 @@ mod radix;
 mod apint;
 mod digit_seq;
 mod checks;
-mod ll;
 mod uint;
 mod int;
 mod utils;

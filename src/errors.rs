@@ -88,14 +88,22 @@ pub enum ErrorKind {
 /// All division operations that may be affected by division-by-zero errors.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 pub enum DivOp {
-    /// The signed division operation.
+    /// The unsigned quotient and remainder operation
+    UnsignedDivRem,
+    /// The unsigned remainder and quotient operation
+    UnsignedRemDiv,
+    /// The signed quotient and remainder operation
+    SignedDivRem,
+    /// The signed remainder and quotient operation
+    SignedRemDiv,
+    /// The unsigned quotient operation.
+    UnsignedDiv,
+    /// The unsigned remainder operation.
+    UnsignedRem,
+    /// The signed quotient operation.
     SignedDiv,
     /// The signed remainder operation.
     SignedRem,
-    /// The unsigned division operation.
-    UnsignedDiv,
-    /// The unsigned remainder operation.
-    UnsignedRem
 }
 
 /// Represents an error that may occure upon using the `ApInt` library.

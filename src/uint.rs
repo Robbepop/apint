@@ -38,7 +38,9 @@ use std::ops::{
 /// 
 /// This very cheaply transformes to and from `ApInt` and `Int` instances and together with
 /// `Int` offers a more elegant and higher-level abstraction interface to the lower-level `ApInt`.
-#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[cfg_attr(serde_derive, Serialize)]
+#[cfg_attr(serde_derive, Deserialize)]
 pub struct UInt {
     value: ApInt,
 }
