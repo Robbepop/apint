@@ -2136,18 +2136,41 @@ mod tests {
         use super::*;
         use bitwidth::BitWidth;
         use std::u64;
+        use rand::random;
 
         //throws all the functions together for an identities party. If one function breaks, the
         //whole thing should break.
         fn identities(size: usize, width: BitWidth, zero: &ApInt, lhs: ApInt, rhs: ApInt, third: ApInt) {
+            //basic addition and subtraction tests
+            let shift = random::<usize>() % size;
             let mut temp = lhs.clone().into_wrapping_inc();
             assert_eq!(temp, lhs.clone().into_wrapping_add(&ApInt::one(width)).unwrap());
+            assert_eq!(temp, lhs.clone().into_wrapping_sub(&ApInt::all_set(width)).unwrap());
             temp.wrapping_dec();
             assert_eq!(temp, lhs);
             temp.wrapping_dec();
+            assert_eq!(temp, lhs.clone().into_wrapping_sub(&ApInt::one(width)).unwrap());
             assert_eq!(temp, lhs.clone().into_wrapping_add(&ApInt::all_set(width)).unwrap());
             temp.wrapping_inc();
             assert_eq!(temp, lhs);
+            
+            //shifting tests
+            let rotated_left = if shift == 0 {
+                lhs.clone()
+            } else {
+                lhs.clone().into_wrapping_shl(shift).unwrap() | (&lhs.clone().into_wrapping_lshr(size - shift).unwrap())
+            };
+            assert_eq!(rotated_left, lhs.clone().into_rotate_left(shift).unwrap());
+            let rotated_right = if shift == 0 {
+                lhs.clone()
+            } else {
+                lhs.clone().into_wrapping_lshr(shift).unwrap() | (&lhs.clone().into_wrapping_shl(size - shift).unwrap())
+            };
+            assert_eq!(rotated_right, lhs.clone().into_rotate_right(shift).unwrap());
+
+            //multiplication and division tests
+            //the following tests that `((lhs * rhs) + (third % rhs)) / rhs == lhs` and
+            //`((lhs * rhs) + (third % rhs)) % rhs == (third % rhs)`
             let tot_leading_zeros = lhs.leading_zeros() + rhs.leading_zeros();
             let anti_overflow_mask = if tot_leading_zeros < size {
                 if rhs.leading_zeros() == 0 {
@@ -2166,8 +2189,8 @@ mod tests {
                     let mut temp1 = rhs.clone();
                     let mul_plus_rem = temp0.clone();
                     ApInt::wrapping_udivrem_assign(&mut temp0, &mut temp1).unwrap();
-                    if temp0 != (lhs.clone() & &anti_overflow_mask) {panic!("wrong div\nlhs:{:?}\nactual:{:?}\nrhs:{:?}\nthird:{:?}\nrem:{:?}\nmul:{:?}\nmul_plus_rem:{:?}\ntemp0:{:?}\ntemp1:{:?}",lhs,(lhs.clone() & &anti_overflow_mask),rhs,third,rem,mul,mul_plus_rem,temp0,temp1)}
-                    if temp1 != rem {panic!("wrong rem\nlhs:{:?}\nactual:{:?}\nrhs:{:?}\nthird:{:?}\nrem:{:?}\nmul:{:?}\nmul_plus_rem:{:?}\ntemp0:{:?}\ntemp1:{:?}",lhs,(lhs.clone() & &anti_overflow_mask),rhs,third,rem,mul,mul_plus_rem,temp0,temp1)}
+                    if temp0 != (lhs.clone() & &anti_overflow_mask) {panic!("wrong div\nlhs:{:?}\nrhs:{:?}\nthird:{:?}\nrem:{:?}\nmul:{:?}\nmul_plus_rem:{:?}\ntemp0:{:?}\ntemp1:{:?}",(lhs.clone() & &anti_overflow_mask),rhs,third,rem,mul,mul_plus_rem,temp0,temp1)}
+                    if temp1 != rem {panic!("wrong rem\nlhs:{:?}\nrhs:{:?}\nthird:{:?}\nrem:{:?}\nmul:{:?}\nmul_plus_rem:{:?}\ntemp0:{:?}\ntemp1:{:?}",(lhs.clone() & &anti_overflow_mask),rhs,third,rem,mul,mul_plus_rem,temp0,temp1)}
                 }
             }
         }
@@ -2175,40 +2198,39 @@ mod tests {
         //random length AND, XOR, and OR fuzzer;
         fn fuzz_random(size: usize, iterations: usize) {
             let width = BitWidth::new(size).unwrap();
-            use rand::random;
             let mut lhs = ApInt::from(0u8).into_zero_resize(width);
             let mut rhs = ApInt::from(0u8).into_zero_resize(width);
             let mut third = ApInt::from(0u8).into_zero_resize(width);
             let zero = ApInt::from(0u8).into_zero_resize(width);
             for _ in 0..iterations {
-                let mut r0 =  (random::<u32>() % (size as u32)) as usize;
-                if r0 == 0 {r0 = 1;}
-                let ones = ApInt::one(BitWidth::new(1).unwrap()).into_sign_extend(r0).unwrap().into_zero_extend(width).unwrap();
-                let r1 = (random::<u32>() % (size as u32)) as usize;
-                //circular shift
-                let mask = if r1 == 0 {
-                    ones.clone()
+                let r0 =  random::<usize>() % size;
+                let r1 = random::<usize>() % size;
+                let mask = if r0 == 0 {
+                    ApInt::zero(BitWidth::new(size).unwrap())
                 } else {
-                    ones.clone().into_wrapping_shl(r1).unwrap() | (&ones.clone().into_wrapping_lshr((size - r1) as usize).unwrap())
+                    ApInt::one(BitWidth::new(1).unwrap())
+                        .into_sign_extend(r0).unwrap()
+                        .into_zero_extend(width).unwrap()
+                        .into_rotate_left(r1).unwrap()
                 };
-                //assert_eq!(mask,ones.into_rotate_left(r1 as usize).unwrap());
-                match (random(),random(),random(),random()) {
-                    (false,false,false,false) => lhs |= &mask,
-                    (false,false,false,true) => lhs &= &mask,
-                    (false,false,true,false) => lhs ^= &mask,
-                    (false,false,true,true) => lhs ^= &mask,
-                    (false,true,false,false) => rhs |= &mask,
-                    (false,true,false,true) => rhs &= &mask,
-                    (false,true,true,false) => rhs ^= &mask,
-                    (false,true,true,true) => rhs ^= &mask,
-                    (true,false,false,false) => third |= &mask,
-                    (true,false,false,true) => third &= &mask,
-                    (true,false,true,false) => third ^= &mask,
-                    (true,false,true,true) => third ^= &mask,
-                    (true,true,false,false) => rhs |= &mask,
-                    (true,true,false,true) => rhs &= &mask,
-                    (true,true,true,false) => rhs ^= &mask,
-                    (true,true,true,true) => rhs ^= &mask,
+                match random::<u8>() % 16 {
+                    0 => lhs |= &mask,
+                    1 => lhs &= &mask,
+                    2 => lhs ^= &mask,
+                    3 => lhs ^= &mask,
+                    4 => rhs |= &mask,
+                    5 => rhs &= &mask,
+                    6 => rhs ^= &mask,
+                    7 => rhs ^= &mask,
+                    8 => third |= &mask,
+                    9 => third &= &mask,
+                    10 => third ^= &mask,
+                    11 => third ^= &mask,
+                    12 => rhs |= &mask,
+                    13 => rhs &= &mask,
+                    14 => rhs ^= &mask,
+                    15 => rhs ^= &mask,
+                    _ => unreachable!()
                 }
                 identities(size, width, &zero, lhs.clone(), lhs.clone(), rhs.clone());
                 identities(size, width, &zero, lhs.clone(), rhs.clone(), third.clone());
@@ -2220,6 +2242,7 @@ mod tests {
             }
         }
 
+        //named so because nesting this causes an explosion in testing time
         macro_rules! explode {
             ($cd:ident, $temp:ident, $i_zero:ident, $i_one:ident, $inner:tt) => {{
                 for $i_zero in 0..(2usize.pow(($cd * 2) as u32)) {
@@ -2238,7 +2261,7 @@ mod tests {
             }}
         }
 
-        //edge and corner case fuzzer
+        //catch edge and corner cases involving 0, 1, Digit::MAX - 1, and Digit::MAX
         fn fuzz_edge(size: usize) {
             let width = BitWidth::new(size).unwrap();
             let zero = ApInt::from(0u8).into_zero_resize(width);
@@ -2264,6 +2287,7 @@ mod tests {
             fuzz_random(1, a);
             fuzz_random(2, a);
             fuzz_random(3, a);
+            //trying to catch edge cases by going one bit below and over
             fuzz_random(31, a);
             fuzz_random(32, a);
             fuzz_random(33, a);
@@ -2286,13 +2310,26 @@ mod tests {
             fuzz_edge(129);
             fuzz_edge(191);
             fuzz_edge(192);
-            //very expensive
-            //fuzz_random(512, a);
-            //fuzz_random(777, a);
-            //fuzz_random(16*64, a);
-            //fuzz_edge(193);
-            //fuzz_edge(255);
-            //fuzz_edge(256);
+        }
+
+        //takes about an hour on one computer
+        #[test]
+        #[ignore]
+        fn expensive() {
+            let a = 10000;
+            fuzz_random(301, a);
+            fuzz_random(512, a);
+            fuzz_random(777, a);
+            fuzz_random(64*5, a);
+            fuzz_random(16*64, a);
+            //this is for functions like `rotate_left_assign` which like to fail on many digits
+            fuzz_random(33*64, a);
+            for _ in 0..1000 {
+                fuzz_random((random::<usize>() % (16 * 64)) + 1, 100);
+            }
+            fuzz_edge(193);
+            fuzz_edge(255);
+            fuzz_edge(256);
         }
     }
 }
