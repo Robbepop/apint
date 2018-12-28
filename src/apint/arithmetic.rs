@@ -634,34 +634,55 @@ impl ApInt {
 
         //Unsigned Greater or Equal to.
         //This checks for `$lhs >= $rhs`, checking only up to $lhs_len and $rhs_len (exclusive)
-        //respectively, and runs `$ge_branch` if true and `$ln_branch` otherwise
+        //respectively, and runs `$ge_branch` if true and `$lt_branch` otherwise
         macro_rules! uge {
             ($lhs_len:expr,
             $lhs:ident,
             $rhs_len:expr,
             $rhs:ident,
             $ge_branch:block,
-            $ln_branch:block) => {
-                let mut b0 = false;
-                //allows lhs.len() to be smaller than rhs.len()
-                for i in ($lhs_len..$rhs_len).rev() {
-                    if $rhs[i] != Digit::zero() {
-                        b0 = true;
-                        break
-                    }
-                }
-                if b0 || ({
-                    let mut b1 = false;
-                    for i in (0..$lhs_len).rev() {
-                        if $lhs[i] < $rhs[i] {
-                            b1 = true;
-                            break
-                        } else if $lhs[i] != $rhs[i] {
+            $lt_branch:block) => {
+                //the purpose of this macro is to allow for $lhs and $rhs to be different lengths
+                let mut inconclusive = true;
+                let mut b = true;
+                if $rhs_len <= $lhs_len {
+                    for i in $rhs_len..$lhs_len {
+                        if $lhs[i] != Digit::zero() {
+                            inconclusive = false;
+                            b = true;
                             break
                         }
                     }
-                    b1
-                }) {$ln_branch} else {$ge_branch}
+                    if inconclusive {
+                        for i in (0..$lhs_len).rev() {
+                            if $lhs[i] < $rhs[i] {
+                                b = false;
+                                break
+                            } else if $lhs[i] != $rhs[i] {
+                                break
+                            }
+                        }
+                    }
+                } else {
+                    for i in $lhs_len..$rhs_len {
+                        if $rhs[i] != Digit::zero() {
+                            inconclusive = false;
+                            b = false;
+                            break
+                        }
+                    }
+                    if inconclusive {
+                        for i in (0..$rhs_len).rev() {
+                            if $lhs[i] < $rhs[i] {
+                                b = false;
+                                break
+                            } else if $lhs[i] != $rhs[i] {
+                                break
+                            }
+                        }
+                    }
+                }
+                if b {$ge_branch} else {$lt_branch}
             };
         }
 
@@ -675,26 +696,47 @@ impl ApInt {
             $rhs:ident,
             $gt_branch:block,
             $le_branch:block) => {
-                let mut b0 = false;
-                //allows lhs.len() to be smaller than rhs.len()
-                for i in ($lhs_len..$rhs_len).rev() {
-                    if $rhs[i] != Digit::zero() {
-                        b0 = true;
-                        break
-                    }
-                }
-                if b0 || ({
-                    let mut b1 = true;
-                    for i in (0..$lhs_len).rev() {
-                        if $lhs[i] > $rhs[i] {
-                            b1 = false;
-                            break
-                        } else if $lhs[i] != $rhs[i] {
+                //the purpose of this macro is to allow for $lhs and $rhs to be different lengths
+                let mut inconclusive = true;
+                let mut b = false;
+                if $rhs_len <= $lhs_len {
+                    for i in $rhs_len..$lhs_len {
+                        if $lhs[i] != Digit::zero() {
+                            inconclusive = false;
+                            b = true;
                             break
                         }
                     }
-                    b1
-                }) {$le_branch} else {$gt_branch}
+                    if inconclusive {
+                        for i in (0..$lhs_len).rev() {
+                            if $rhs[i] < $lhs[i] {
+                                b = true;
+                                break
+                            } else if $lhs[i] != $rhs[i] {
+                                break
+                            }
+                        }
+                    }
+                } else {
+                    for i in $lhs_len..$rhs_len {
+                        if $rhs[i] != Digit::zero() {
+                            inconclusive = false;
+                            b = false;
+                            break
+                        }
+                    }
+                    if inconclusive {
+                        for i in (0..$rhs_len).rev() {
+                            if $rhs[i] < $lhs[i] {
+                                b = true;
+                                break
+                            } else if $lhs[i] != $rhs[i] {
+                                break
+                            }
+                        }
+                    }
+                }
+                if b {$gt_branch} else {$le_branch}
             };
         }
 
@@ -753,6 +795,9 @@ impl ApInt {
                     $sum[i0] = temp.0;
                     carry = temp.1;
                 }
+                for i0 in $add_len..$sum_len {
+                    $sum[i0].unset_all();
+                }
             }}
         }
 
@@ -789,8 +834,6 @@ impl ApInt {
             div_sb: usize, //the number of significant bits in `div`
             div_lz: usize //the number of leading zeros in `div[div_sd]`
         ) {
-            //this is an implication of the assumption `(`duo` / `div`) > 1`
-            let len = ini_duo_sd + 1;
             //difference between the places of the most significant bits
             let ini_diff_bits = ini_duo_sb - div_sb;
             if ini_diff_bits < digit::BITS {
@@ -812,65 +855,48 @@ impl ApInt {
                     )
                 };
                 let mul = duo_sig_dd.wrapping_div(div_sig_dd).lo();
-                //Allocation could be avoided but it would involve more long division to recover
-                //`div`.
+                //Allocation could be avoided, but if it turns out `mul - 1` should be used, more
+                //long division would have to occur to recover `div`, followed by a second long
+                //multiplication with `mul - 1`.
                 //this will become `-(div * mul)`
-                let mut sub: Vec<Digit> = Vec::with_capacity(len);
-                //first digit done and carry
-                let temp = mul.carrying_mul(div[0]);
-                sub.push(temp.0);
-                let mut carry = temp.1;
-                //middle of row
-                for i in 1..div_sd {
-                    let temp = mul.carrying_mul_add(div[i], carry);
-                    sub.push(temp.0);
-                    carry = temp.1;
+                let mut sub: Vec<Digit> = Vec::with_capacity(ini_duo_sd + 1);
+                let mut carry = Digit::zero();
+                for i in 0..=ini_duo_sd {
+                    let tmp = mul.carrying_mul_add(div[i], carry);
+                    sub.push(tmp.0);
+                    carry = tmp.1;
                 }
-                //this bool system is here to prevent too much inlining and unnecessary code bloat
-                let b0: bool;
-                //Final digit, test for `div * mul > duo`, and then form the two's complement.
-                if div_sd == len - 1 {
-                    let temp = mul.carrying_mul_add(div[div_sd], carry);
-                    sub.push(temp.0);
-                    b0 = true;
-                } else {
-                    let temp = mul.carrying_mul_add(div[div_sd], carry);
-                    sub.push(temp.0);
-                    sub.push(temp.1);
-                    for _ in sub.len()..len {
-                        sub.push(Digit::zero());
-                    }
-                    b0 = false;
-                }
-                let b1: bool;
-                //if `div * mul > duo` or overflow occured
-                ugt!(len,sub,len,duo,
-                    {
-                        b1 = true;
-                    },
-                    {
-                        if b0 && (temp.1 != Digit::zero()) {
-                            b1 = true;
-                        } else {
-                            b1 = false;
+                let sub_len = sub.len();
+                //when `div * mul > duo`, sometimes `sub` can overflow to a digit higher than the
+                //digits availiable in the slice, which has to be handled in this way for max
+                //performance
+                let mut b = true;
+                if carry == Digit::zero() {
+                    ugt!(sub_len, sub, sub_len, duo,
+                        {
+                            b = true;
+                        },
+                        {
+                            b = false;
                         }
-                    }
-                );
-                if b1 {
-                    //overflow
+                    );
+                }
+                if b {
                     //quotient = `mul - 1`
-                    //remainder = `duo + (div - div*mul)`
-                    twos_complement!(len, sub);
-                    add!(len,sub,div);
-                    special0!(len,duo,sub,div,mul.wrapping_sub(Digit::one()));
-                    return
+                    //remainder = `duo + (div - (div * mul))`
+                    twos_complement!(sub_len, sub);
+                    add!(sub_len, sub, div);
+                    special0!(sub_len, duo, sub, div, mul.wrapping_sub(Digit::one()));
+                    for i in sub_len..=ini_duo_sd {
+                        duo[i].unset_all();
+                    }
                 } else {
                     //quotient = `mult`
                     //remainder = `duo - (div * mult)`
-                    twos_complement!(len, sub);
-                    special0!(len,duo,sub,div,mul);
-                    return
+                    twos_complement!(sub_len, sub);
+                    special0!(sub_len,duo,sub,div,mul);
                 }
+                return
             }
             let mut duo_sd = ini_duo_sd;
             let mut duo_lz = ini_duo_lz;
@@ -972,7 +998,7 @@ impl ApInt {
                         //+______
                         // 103831 <- temp1
                         //
-                        // subtract duo by temp1 negated (with the carry from the two's complement
+                        //subtract duo by temp1 negated (with the carry from the two's complement
                         //being put into `wrap_carry`) and shifted (with `wrap_carry`)
 
                         let mul = mul.lo();
@@ -1022,8 +1048,6 @@ impl ApInt {
                         (div[duo_sd - 2].dd() >> (digit::BITS - duo_lz))
                     };
                     let mul = duo_sig_dd.wrapping_div(div_sig_dd).lo();
-                    //I could avoid allocation but it would involve more long division to recover
-                    //`div`, followed by a second long multiplication with `mul - 1`.
                     //this will become `-(div * mul)`
                     //note: div_sd != len - 1 because it would be caught by the first `mul` or
                     //`mul-1` algorithm
@@ -1113,7 +1137,7 @@ impl ApInt {
                                         for i1 in (i0 + 1)..quo.len() {
                                             duo[i1] = quo[i1];
                                         }
-                                        for i1 in quo.len()..=duo_sd {
+                                        for i1 in quo.len()..place {
                                             duo[i1].unset_all();
                                         }
                                         return
@@ -1123,7 +1147,7 @@ impl ApInt {
                                     }
                                 }
                             }
-                            for i in quo.len()..=duo_sd {
+                            for i in quo.len()..place {
                                 duo[i].unset_all();
                             }
                             return
@@ -1131,16 +1155,13 @@ impl ApInt {
                         {
                             //quotient = `quo`
                             //remainder = `duo`
-                            for i in 0..=duo_sd {
+                            for i in 0..place {
                                 div[i] = duo[i];
-                            }
-                            for i in (duo_sd + 1)..=div_sd {
-                                div[i].unset_all();
                             }
                             for i in 0..quo.len() {
                                 duo[i] = quo[i];
                             }
-                            for i in quo.len()..(duo_sd + 1) {
+                            for i in quo.len()..place {
                                 duo[i].unset_all();
                             }
                             return
@@ -1191,7 +1212,8 @@ impl ApInt {
                 let ini_duo_sd: usize = match duo.iter().rposition(|x| x != &Digit::zero()) {
                     Some(x) => x,
                     None => {
-                        //quotient and remainder should be 0
+                        //quotient = 0
+                        //remainder = 0
                         //duo is already 0
                         for x in div.iter_mut() {
                             x.unset_all()
@@ -1220,7 +1242,7 @@ impl ApInt {
                 //leading zeros of the most significant digit of `div`
                 let div_lz = div[div_sd].leading_zeros() as usize;
                 //initial number of significant bits of `duo`
-                let ini_duo_sb = (ini_duo_sd * digit::BITS) + (digit::BITS - (ini_duo_lz as usize));
+                let ini_duo_sb = (ini_duo_sd * digit::BITS) + (digit::BITS - ini_duo_lz);
                 //initial number of significant bits of `div`
                 let div_sb = (div_sd * digit::BITS) + (digit::BITS - div_lz);
                 //quotient is 0 precheck
@@ -1998,6 +2020,16 @@ mod tests {
                 .into_wrapping_udiv(&ApInt::from(7u8)).unwrap(),
                 ApInt::from(17u8));
             assert_eq!(
+                ApInt::from([9223372019674906879u64,18446743523953745919])
+                .into_wrapping_urem(&ApInt::from([1u64,18446744073709550592])).unwrap(),
+                ApInt::from([1u64,18446734727860984831])
+            );
+            assert_eq!(
+                ApInt::from([9223372019674906879u64,18446743523953745919])
+                .into_wrapping_urem(&ApInt::from([1u64,18446744073709550592])).unwrap(),
+                ApInt::from([1u64,18446734727860984831])
+            );
+            assert_eq!(
                 ApInt::from([0u64,0,0,123])
                 .into_wrapping_udiv(&ApInt::from([0u64,0,0,7])).unwrap(),
                 ApInt::from([0u64,0,0,17]));
@@ -2046,9 +2078,11 @@ mod tests {
             assert_eq!(ApInt::from([18446744073709551615u64, 18446744073709551615, 1048575, 18446462598732840960]).into_wrapping_urem(&ApInt::from([0u64, 0, 140668768878592, 0])).unwrap(), ApInt::from([0,0, 136545601323007, 18446462598732840960u64]));
             assert_eq!(ApInt::from([1u64, 17293821508111564796, 2305843009213693952]).into_wrapping_urem(&ApInt::from([0u64,1,18446742978492891132])).unwrap(),ApInt::from([0u64,0,0]));
             assert_eq!(ApInt::from([1u64,18446744073692774368,268435456]).into_wrapping_add(&ApInt::from([0u64,1,18446744073709519359])).unwrap().into_wrapping_udiv(&ApInt::from([0u64,1,18446744073709551584])).unwrap(),ApInt::from([0u64,0,18446744073701163008]));
+            assert_eq!(ApInt::from([1u64,18446744073692774368,268435456]).into_wrapping_udiv(&ApInt::from([0u64,1,18446744073709551584])).unwrap(),ApInt::from([0u64,0,18446744073701163008]));
             assert_eq!(ApInt::from([18446744073709551615u64,18446744073709551615,18446739675663040512,2199023255552]).into_wrapping_urem(&ApInt::from([18446744073709551615u64,18446744073709551615,18446739675663040512,2199023255552])).unwrap(),ApInt::from([0u64,0,0,0]));
             assert_eq!(ApInt::from([1u64,18446462598730776592,1047972020113]).into_wrapping_udiv(&ApInt::from([0u64,16383,18446744056529682433])).unwrap(),ApInt::from([0u64,0,2251782633816065]));
             assert_eq!(ApInt::from([54467619767447688u64, 18446739675392512496, 5200531536562092095, 18446744073709551615]).into_wrapping_udiv(&ApInt::from([0u64, 8255, 18446462598732840960, 0])).unwrap(), ApInt::from([0u64,0, 6597337677824, 288230376151678976]));
+            assert_eq!(ApInt::from([0u64, 35184372080640, 0]).into_wrapping_mul(&ApInt::from([0u64,0,1048575])).unwrap().into_wrapping_add(&ApInt::from([0u64, 123456789, 0])).unwrap().into_wrapping_urem(&ApInt::from([0u64, 35184372080640, 0])).unwrap(),ApInt::from([0u64,123456789,0]));
             let resize = [
                 7usize, 8, 9, 15, 16, 17, 31, 32, 33, 63, 64, 65, 127, 128, 129, 137, 200, 255,
                 256, 700, 907, 1024, 2018, 2019,
