@@ -1,8 +1,5 @@
-use digit;
-use storage::Storage;
-use bitpos::BitPos;
-use apint::{ShiftAmount};
-use errors::{Result, Error};
+use crate::data::{Digit,Storage};
+use crate::info::{BitPos,ShiftAmount,Result,Error};
 
 /// The `BitWidth` represents the length of an `ApInt`.
 /// 
@@ -11,9 +8,6 @@ use errors::{Result, Error};
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct BitWidth(usize);
 
-//  ===========================================================================
-///  Constructors
-/// ===========================================================================
 impl BitWidth {
     /// Creates a `BitWidth` that represents a bit-width of `1` bit.
     #[inline]
@@ -80,9 +74,6 @@ impl From<usize> for BitWidth {
     }
 }
 
-//  ===========================================================================
-///  API
-/// ===========================================================================
 impl BitWidth {
     /// Converts this `BitWidth` into a `usize`.
     #[inline]
@@ -101,7 +92,7 @@ impl BitWidth {
     /// 
     /// *Note:* A better name for this method has yet to be found!
     pub(crate) fn excess_bits(self) -> Option<usize> {
-        match self.to_usize() % digit::BITS {
+        match self.to_usize() % Digit::BITS {
             0 => None,
             n => Some(n)
         }
@@ -133,7 +124,7 @@ impl BitWidth {
     /// *Note:* Maybe we should move this method somewhere else?
     #[inline]
     pub(crate) fn required_digits(&self) -> usize {
-        ((self.to_usize() - 1) / digit::BITS) + 1
+        ((self.to_usize() - 1) / Digit::BITS) + 1
     }
 }
 

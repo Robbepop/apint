@@ -1,73 +1,15 @@
-use apint::{ApInt};
-use apint::utils::{DataAccessMut};
-use errors::{Result};
-use checks;
-use digit;
-use digit::{Bit, Digit};
-use traits::{Width};
-use utils::{try_forward_bin_mut_impl};
-
-/// Represents an amount of bits to shift an `ApInt`.
-/// 
-/// The purpose of this type is to create a generic abstraction
-/// over input types that may act as a `ShiftAmount` for shift
-/// operations.
-#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct ShiftAmount(usize);
-
-impl ShiftAmount {
-    /// Returns the internal shift amount representation as `usize`.
-    #[inline]
-    pub fn to_usize(self) -> usize {
-        self.0
-    }
-
-    /// Returns the number of digits this `ShiftAmount` will leap over.
-    /// 
-    /// # Examples
-    /// 
-    /// - `ShiftAmount(50)` leaps over zero digits.
-    /// - `ShiftAmount(64)` leaps exactly over one digit.
-    /// - `ShiftAmount(100)` leaps over 1 digit.
-    /// - `ShiftAmount(150)` leaps over 2 digits.
-    #[inline]
-    pub(in apint) fn digit_steps(self) -> usize {
-        self.to_usize() / digit::BITS
-    }
-
-    /// Returns the number of bits within a single digit this
-    /// `ShiftAmount` will leap over.
-    /// 
-    /// # TODO
-    /// 
-    /// Maybe adding `left_bit_steps` and `right_bit_steps` is better?
-    /// 
-    /// # Examples
-    /// 
-    /// - `ShiftAmount(50)` leaps over `50` bits.
-    /// - `ShiftAmount(64)` leaps exactly over `0` bits.
-    /// - `ShiftAmount(100)` leaps over `28` bits.
-    /// - `ShiftAmount(150)` leaps over `22` bits.
-    #[inline]
-    pub(in apint) fn bit_steps(self) -> usize {
-        self.to_usize() % digit::BITS
-    }
-}
-
-impl From<usize> for ShiftAmount {
-    /// Returns a new `ShiftAmount` from the given `usize`.
-    #[inline]
-    fn from(val: usize) -> ShiftAmount {
-        ShiftAmount(val)
-    }
-}
+use crate::data::{ApInt, DataAccessMut, Digit};
+use crate::info::{Result, Width, ShiftAmount};
+use crate::logic::try_forward_bin_mut_impl;
 
 /// # Shift Operations
+/// 
+/// **Note**: unless otherwise noted in the function specific documentation,
+/// 
+/// - The functions do **not** allocate memory.
 impl ApInt {
 
-    /// Shift this `ApInt` left by the given `shift_amount` bits.
-    /// 
-    /// This operation is inplace and will **not** allocate memory.
+    /// Left-shifts this `ApInt` by the given `shift_amount` bits.
     /// 
     /// # Errors
     /// 
@@ -76,7 +18,7 @@ impl ApInt {
         where S: Into<ShiftAmount>
     {
         let shift_amount = shift_amount.into();
-        checks::verify_shift_amount(self, shift_amount)?;
+        shift_amount.verify_shift_amount(self)?;
         match self.access_data_mut() {
             DataAccessMut::Inl(digit) => {
                 *digit.repr_mut() <<= shift_amount.to_usize();
@@ -102,7 +44,7 @@ impl ApInt {
                     let mut carry = 0;
                     for elem in digits[digit_steps..].iter_mut() {
                         let repr = elem.repr();
-                        let new_carry = repr >> (digit::BITS - bit_steps);
+                        let new_carry = repr >> (Digit::BITS - bit_steps);
                         *elem = Digit((repr << bit_steps) | carry);
                         carry = new_carry;
                     }
@@ -115,8 +57,6 @@ impl ApInt {
 
     /// Shift this `ApInt` left by the given `shift_amount` bits and returns the result.
     /// 
-    /// This operation is inplace and will **not** allocate memory.
-    /// 
     /// # Errors
     /// 
     /// - If the given `shift_amount` is invalid for the bit width of this `ApInt`.
@@ -128,7 +68,11 @@ impl ApInt {
 
     /// Logically right-shifts this `ApInt` by the given `shift_amount` bits.
     /// 
-    /// This operation is inplace and will **not** allocate memory.
+    /// # Note
+    /// 
+    /// Logical right shifts do not copy the sign bit (the most significant bits are filled up with
+    /// zeros), and thus can act as a floored division by a power of two for the **unsigned**
+    /// interpretation of `ApInt`s.
     /// 
     /// # Errors
     /// 
@@ -137,7 +81,7 @@ impl ApInt {
         where S: Into<ShiftAmount>
     {
         let shift_amount = shift_amount.into();
-        checks::verify_shift_amount(self, shift_amount)?;
+        shift_amount.verify_shift_amount(self)?;
         match self.access_data_mut() {
             DataAccessMut::Inl(digit) => {
                 *digit.repr_mut() >>= shift_amount.to_usize();
@@ -156,7 +100,7 @@ impl ApInt {
                     let mut borrow = 0;
                     for elem in digits.iter_mut().rev() {
                         let repr = elem.repr();
-                        let new_borrow = repr << (digit::BITS - bit_steps);
+                        let new_borrow = repr << (Digit::BITS - bit_steps);
                         *elem = Digit((repr >> bit_steps) | borrow);
                         borrow = new_borrow;
                     }
@@ -169,7 +113,11 @@ impl ApInt {
     /// Logically right-shifts this `ApInt` by the given `shift_amount` bits
     /// and returns the result.
     /// 
-    /// This operation is inplace and will **not** allocate memory.
+    /// # Note
+    /// 
+    /// Logical right shifts do not copy the sign bit (the most significant bits are filled up with
+    /// zeros), and thus can act as a floored division by a power of two for the **unsigned**
+    /// interpretation of `ApInt`s.
     /// 
     /// # Errors
     /// 
@@ -182,11 +130,10 @@ impl ApInt {
 
     /// Arithmetically right-shifts this `ApInt` by the given `shift_amount` bits.
     /// 
-    /// This operation is inplace and will **not** allocate memory.
-    /// 
     /// # Note
     /// 
-    /// Arithmetic shifting copies the sign bit instead of filling up with zeros.
+    /// Arithmetic right shifts copy the sign bit to the most significant bits, and thus can act as
+    /// a floored division by a power of two for the **signed** interpretation of `ApInt`s.
     /// 
     /// # Errors
     /// 
@@ -194,11 +141,11 @@ impl ApInt {
     pub fn wrapping_ashr_assign<S>(&mut self, shift_amount: S) -> Result<()>
         where S: Into<ShiftAmount>
     {
-        if self.sign_bit() == Bit::Unset {
+        if self.sign_bit() == false {
             return self.wrapping_lshr_assign(shift_amount)
         }
         let shift_amount = shift_amount.into();
-        checks::verify_shift_amount(self, shift_amount)?;
+        shift_amount.verify_shift_amount(self)?;
         let width = self.width();
         match self.access_data_mut() {
             DataAccessMut::Inl(digit) => {
@@ -219,10 +166,10 @@ impl ApInt {
                 }
                 let bit_steps = shift_amount.bit_steps();
                 if bit_steps > 0 {
-                    let mut borrow = 0xFFFF_FFFF_FFFF_FFFF << (digit::BITS - bit_steps);
+                    let mut borrow = 0xFFFF_FFFF_FFFF_FFFF << (Digit::BITS - bit_steps);
                     for elem in digits.iter_mut().rev().skip(digit_steps) {
                         let repr = elem.repr();
-                        let new_borrow = repr << (digit::BITS - bit_steps);
+                        let new_borrow = repr << (Digit::BITS - bit_steps);
                         *elem = Digit((repr >> bit_steps) | borrow);
                         borrow = new_borrow;
                     }
@@ -236,11 +183,10 @@ impl ApInt {
     /// Arithmetically right-shifts this `ApInt` by the given `shift_amount` bits
     /// and returns the result.
     /// 
-    /// This operation is inplace and will **not** allocate memory.
-    /// 
     /// # Note
     /// 
-    /// Arithmetic shifting copies the sign bit instead of filling up with zeros.
+    /// Arithmetic right shifts copy the sign bit to the most significant bits, and thus can act as
+    /// a floored division by a power of two for the **signed** interpretation of `ApInt`s.
     /// 
     /// # Errors
     /// 
@@ -251,23 +197,21 @@ impl ApInt {
         try_forward_bin_mut_impl(self, shift_amount, ApInt::wrapping_ashr_assign)
     }
 
-    /// Circularly shifts this `ApInt` left by the given `shift` bits. In other words, the bits are
-    /// shifted torwards more significant places and the bits that go outside the bit width of the
-    /// `ApInt` wrap around to the least significant bits.
-    /// 
-    /// This operation is inplace and will **not** allocate memory.
+    /// Circularly left-rotates this `ApInt` by the given `shift_amount` bits. In other words, the
+    /// bits are shifted like a logical left shift would, except the bits that go outside the bit
+    /// width of the `ApInt` wrap around to the least significant bits.
     /// 
     /// # Errors
     /// 
-    /// - If the given `shift` is invalid for the bit width of this `ApInt`.
+    /// - If the given `shift_amount` is invalid for the bit width of this `ApInt`.
     /// 
     /// # Performance
     /// 
     /// This function is equivalent to the following:
     /// ```
     /// use apint::{ApInt, Width};
-    /// let input = ApInt::from([1u64,2,3,4]);
-    /// let shift = 97usize;
+    /// let input = ApInt::from([1u64, 2, 3, 4]);
+    /// let shift = 64usize;
     /// let output = if shift == 0 {
     ///     input.clone()
     /// } else {
@@ -275,17 +219,18 @@ impl ApInt {
     ///         | (&input.clone().into_wrapping_lshr(input.width().to_usize() - shift).unwrap())
     /// };
     /// assert_eq!(output, input.into_rotate_left(shift).unwrap());
+    /// assert_eq!(output, ApInt::from([2, 3, 4, 1u64]));
     /// ```
     /// 
     /// However, this function avoids allocation and has many optimized branches for different input
     /// sizes and shifts.
-    pub fn rotate_left_assign<S>(&mut self, shift: S) -> Result<()>
+    pub fn rotate_left_assign<S>(&mut self, shift_amount: S) -> Result<()>
         where S: Into<ShiftAmount>
     {
         //A rotate left function that assumes `(0 < s < Digit::BITS) && (x.len() > 1)`, and treats
         //`x` as a whole `ApInt`.
         fn subdigit_rotate_left(x: &mut [Digit], s: usize) {
-            let uns = digit::BITS - s;
+            let uns = Digit::BITS - s;
             //keep the end for wrapping around to the beginning
             let wrap_around = (x[x.len() - 1] >> uns) | (x[0] << s);
             for i in (0..(x.len() - 1)).rev() {
@@ -297,7 +242,7 @@ impl ApInt {
         //A rotate right function that assumes `(0 < s < Digit::BITS) && (x.len() > 1)`, and treats
         //`x` as one whole `ApInt`
         fn subdigit_rotate_right(x: &mut [Digit], s: usize) {
-            let uns = digit::BITS - s;
+            let uns = Digit::BITS - s;
             //keep the beginning for wrapping around to the end
             let wrap_around = (x[x.len() - 1] >> s) | (x[0] << uns);
             for i in 0..(x.len() - 1) {
@@ -308,13 +253,13 @@ impl ApInt {
 
         //A rotate left function that assumes
         //`(0 < s < Digit::BITS) && (end_bits > 0) && (x.len() > 1)`. `end_bits` is
-        //`width % digit::BITS`.
+        //`width % Digit::BITS`.
         fn subdigit_rotate_left_nonmultiple(x: &mut [Digit], end_bits: usize, s: usize) {
-            let uns = digit::BITS - s;
-            let end_mask = digit::ONES >> (digit::BITS - end_bits);
+            let uns = Digit::BITS - s;
+            let end_mask = Digit::ONES >> (Digit::BITS - end_bits);
             //handle tricky wrap around from the end to be beginning
             let mut tmp0 = if s > end_bits {
-                (x[x.len() - 2] >> (digit::BITS + end_bits - s))
+                (x[x.len() - 2] >> (Digit::BITS + end_bits - s))
                 | (x[x.len() - 1] << (s - end_bits))
                 | (x[0] << s)
             } else {
@@ -343,6 +288,11 @@ impl ApInt {
         //A rotate left function that assumes `(s > 0) && (x.len() > 1)` and treats the width
         //as if it took up all of `x`. `s` is in digits.
         fn digit_rotate_left(x: &mut [Digit], s: usize) {
+            if x.len() > 16 {
+                //this becomes faster at about this point
+                x.rotate_left(s);
+                return
+            }
             //in order to avoid allocation, we have to "leapfrog" and wrap around the indexing.
             let mut start = 0;
             let mut lowest_nonstart = s;
@@ -397,16 +347,16 @@ impl ApInt {
         //assumes `(digits > 0) && (end_bits > 0)`
         fn nonmultiple_rotate_correction(x: &mut [Digit], end_bits: usize, digits: usize, shift_bits: usize) {
             //digits > 0, so the bits after the end_bits will always all be wrap around bits
-            let unshift = digit::BITS - shift_bits;
-            let unbits = digit::BITS - end_bits;
+            let unshift = Digit::BITS - shift_bits;
+            let unbits = Digit::BITS - end_bits;
             if shift_bits == 0 {
                 //this is difficult to explain, the best way is to look at a diagram
-                //[digit::BITS is 8 here]
+                //[Digit::BITS is 8 here]
                 //01234567_89abcdef //all of x
                 //01234567_8 //actual width end_bits = 1
                 //89abcdef_01234567 //x is shifted by 8
                 //8XXXXXXX_0 1234567 //`X`s are garbage bits and the end bits are wraparound.
-                //12345678_0 //is the true answer
+                //12345678_0 //the lowest bits and end bits are shifted to get a correct answer
                 
                 //in reverse order to avoid temporaries
                 for i in (0..(digits - 1)).rev() {
@@ -416,8 +366,9 @@ impl ApInt {
                 //Note that `digits > 0`, so bits after the end bits will always wrap around
                 x[0] = (x[x.len() - 1] >> end_bits) | (x[0] << unbits);
                 //get rid of the wraparound
-                x[x.len() - 1] = x[x.len() - 1] & (digit::ONES >> unbits);
+                x[x.len() - 1] = x[x.len() - 1] & (Digit::ONES >> unbits);
             } else if unbits < shift_bits {
+                //whenever the garbage bits are located in one digit
                 //01234567_89abcdef_ghijklmn //all of x
                 //01234567_89abcdef_ghijkl //actual width end_bits = 6
                 //defghijk_lmn01234_56789abc //x shifted by 11
@@ -432,8 +383,8 @@ impl ApInt {
 
                 //start with overwriting the bits in the middle
                 x[digits] = (x[digits - 1] >> end_bits)
-                    | ((x[digits] & (digit::ONES >> (unshift + unbits))) << unbits)
-                    | (x[digits] & (digit::ONES << shift_bits));
+                    | ((x[digits] & (Digit::ONES >> (unshift + unbits))) << unbits)
+                    | (x[digits] & (Digit::ONES << shift_bits));
 
                 //shift the lower bits up in reverse order to avoid temporaries
                 for i in (0..(digits - 1)).rev() {
@@ -442,7 +393,7 @@ impl ApInt {
                 //wrap around
                 x[0] = (x[x.len() - 1] >> end_bits) | (x[0] << unbits);
                 //get rid of the wraparound
-                x[x.len() - 1] = x[x.len() - 1] & (digit::ONES >> unbits);
+                x[x.len() - 1] = x[x.len() - 1] & (Digit::ONES >> unbits);
             } else {
                 //same as above but the bits that we want to overwrite are across digit boundaries
                 //01234567_89abcdef_ghijklmn //all of x
@@ -463,32 +414,32 @@ impl ApInt {
                 //fghijklm_n0123456_789abcde //shifted left 9
                 //fghijklm_X0123456_789abcd e
                 //efghijkl_m0123456_789abcd
-                x[digits] = ((x[digits - 1] >> end_bits) & (digit::ONES >> unshift))
-                    | (x[digits] & (digit::ONES << shift_bits));
+                x[digits] = ((x[digits - 1] >> end_bits) & (Digit::ONES >> unshift))
+                    | (x[digits] & (Digit::ONES << shift_bits));
                 //in reverse order to avoid temporaries
                 for i in (0..(digits - 1)).rev() {
                     x[i + 1] = (x[i] >> end_bits) | (x[i + 1] << unbits);
                 }
                 //wrap around
                 x[0] = (x[x.len() - 1] >> end_bits) | (x[0] << unbits);
-                //get rid of the wraparound
-                x[x.len() - 1] = x[x.len() - 1] & (digit::ONES >> unbits);
+                //get rid of the left over wraparound
+                x[x.len() - 1] = x[x.len() - 1] & (Digit::ONES >> unbits);
             }
         }
 
-        let s = shift.into();
-        checks::verify_shift_amount(self, s)?;
+        let s = shift_amount.into();
+        s.verify_shift_amount(self)?;
         let s = s.to_usize();
-        //this is necessary, otherwise there can be shifts by `digit::BITS` which causes overflows
+        //this is necessary, otherwise there can be shifts by `Digit::BITS` which causes overflows
         if s == 0 {return Ok(())}
         let width = self.width().to_usize();
         match self.access_data_mut() {
             DataAccessMut::Inl(x) => {
-                *x = (((*x) << s) | ((*x) >> (width - s))) & (digit::ONES >> (digit::BITS - width));
+                *x = (((*x) << s) | ((*x) >> (width - s))) & (Digit::ONES >> (Digit::BITS - width));
             }
             DataAccessMut::Ext(x) => {
-                let end_bits = width % digit::BITS;
-                let (digits, bits) = (s / digit::BITS, s % digit::BITS);
+                let end_bits = width % Digit::BITS;
+                let (digits, bits) = (s / Digit::BITS, s % Digit::BITS);
                 match (digits == 0, bits == 0, end_bits == 0) {
                     //`bits != 0` in the following two cases
                     (true, _, true) => subdigit_rotate_left(x, bits),
@@ -502,7 +453,7 @@ impl ApInt {
                         //most performant.
                         if digits == (x.len() - 1) {
                             //faster branch
-                            subdigit_rotate_right(x, digit::BITS - bits);
+                            subdigit_rotate_right(x, Digit::BITS - bits);
                         } else {
                             digit_rotate_left(x, digits);
                             subdigit_rotate_left(x, bits);
@@ -517,7 +468,7 @@ impl ApInt {
                         //off needed end bits for the `nonmultiple_rotate_correction`
                         if digits == (x.len() - 1) {
                             //faster branch
-                            subdigit_rotate_right(x, digit::BITS - bits);
+                            subdigit_rotate_right(x, Digit::BITS - bits);
                         } else {
                             digit_rotate_left(x, digits);
                             subdigit_rotate_left(x, bits);
@@ -530,29 +481,33 @@ impl ApInt {
         Ok(())
     }
 
-    pub fn into_rotate_left<S>(self, shift: S) -> Result<ApInt>
-        where S: Into<ShiftAmount>
-    {
-        try_forward_bin_mut_impl(self, shift, ApInt::rotate_left_assign)
-    }
-
-    /// Circularly shifts this `ApInt` right by the given `shift` bits. In other words, the bits are
-    /// shifted torwards less significant places and the bits that go outside the bit width of the
-    /// `ApInt` wrap around to the most significant bits.
-    /// 
-    /// This operation is inplace and will **not** allocate memory.
+    /// Circularly left-rotates this `ApInt` by the given `shift_amount` bits and returns the
+    /// result.
     /// 
     /// # Errors
     /// 
-    /// - If the given `shift` is invalid for the bit width of this `ApInt`.
+    /// - If the given `shift_amount` is invalid for the bit width of this `ApInt`.
+    pub fn into_rotate_left<S>(self, shift_amount: S) -> Result<ApInt>
+        where S: Into<ShiftAmount>
+    {
+        try_forward_bin_mut_impl(self, shift_amount, ApInt::rotate_left_assign)
+    }
+
+    /// Circularly right-rotates this `ApInt` by the given `shift_amount` bits. In other words, the
+    /// bits are shifted like a logical right shift would, except the bits that go outside the bit
+    /// width of the `ApInt` wrap around to the most significant bits.
+    /// 
+    /// # Errors
+    /// 
+    /// - If the given `shift_amount` is invalid for the bit width of this `ApInt`.
     /// 
     /// # Performance
     /// 
     /// This function is equivalent to the following:
     /// ```
     /// use apint::{ApInt, Width};
-    /// let input = ApInt::from([1u64,2,3,4]);
-    /// let shift = 97usize;
+    /// let input = ApInt::from([1u64, 2, 3,4 ]);
+    /// let shift = 64usize;
     /// let output = if shift == 0 {
     ///     input.clone()
     /// } else {
@@ -560,24 +515,31 @@ impl ApInt {
     ///         | (&input.clone().into_wrapping_shl(input.width().to_usize() - shift).unwrap())
     /// };
     /// assert_eq!(output, input.into_rotate_right(shift).unwrap());
+    /// assert_eq!(output, ApInt::from([4, 1u64, 2, 3]));
     /// ```
     /// 
     /// However, this function avoids allocation and has many optimized branches for different input
     /// sizes and shifts.
-    pub fn rotate_right_assign<S>(&mut self, shift: S) -> Result<()>
+    pub fn rotate_right_assign<S>(&mut self, shift_amount: S) -> Result<()>
         where S: Into<ShiftAmount>
     {
         //compiler should be able to clean this up
-        let s = shift.into().to_usize();
+        let s = shift_amount.into().to_usize();
         if s == 0 {return Ok(())}
         let width = self.width().to_usize();
         self.rotate_left_assign(ShiftAmount::from(width - s))
     }
 
-    pub fn into_rotate_right<S>(self, shift: S) -> Result<ApInt>
+    /// Circularly right-rotates this `ApInt` by the given `shift_amount` bits and returns the
+    /// result.
+    /// 
+    /// # Errors
+    /// 
+    /// - If the given `shift_amount` is invalid for the bit width of this `ApInt`.
+    pub fn into_rotate_right<S>(self, shift_amount: S) -> Result<ApInt>
         where S: Into<ShiftAmount>
     {
-        try_forward_bin_mut_impl(self, shift, ApInt::rotate_right_assign)
+        try_forward_bin_mut_impl(self, shift_amount, ApInt::rotate_right_assign)
     }
 }
 
@@ -648,7 +610,6 @@ mod tests {
 
         #[test]
         fn assign_xtra_large_ok() {
-            use digit;
             let d0 = 0xFEDC_BA98_7654_3210;
             let d1 = 0x5555_5555_4444_4444;
             let d2 = 0xAAAA_AAAA_CCCC_CCCC;
@@ -664,8 +625,8 @@ mod tests {
                     .into_wrapping_shl(shamt)
                     .unwrap();
                 let expected: [u64; 4] = [
-                    (d1 << bit_steps) | (d2 >> (digit::BITS - bit_steps)),
-                    (d2 << bit_steps) | (d3 >> (digit::BITS - bit_steps)),
+                    (d1 << bit_steps) | (d2 >> (Digit::BITS - bit_steps)),
+                    (d2 << bit_steps) | (d3 >> (Digit::BITS - bit_steps)),
                     (d3 << bit_steps),
                     0
                 ];
@@ -682,7 +643,7 @@ mod tests {
                     .into_wrapping_shl(shamt)
                     .unwrap();
                 let expected: [u64; 4] = [
-                    (d2 << bit_steps) | (d3 >> (digit::BITS - bit_steps)),
+                    (d2 << bit_steps) | (d3 >> (Digit::BITS - bit_steps)),
                     (d3 << bit_steps),
                     0,
                     0

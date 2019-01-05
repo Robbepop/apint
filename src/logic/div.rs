@@ -1,523 +1,28 @@
-use apint::{ApInt};
-use apint::utils::DataAccessMut;
-use apint::utils::{ZipDataAccessMutSelf::{Inl, Ext},ZipDataAccessMutBoth};
-use traits::{Width};
-use errors::{DivOp, Error, Result};
-use digit;
-use digit::{Digit, DoubleDigit};
-use utils::{try_forward_bin_mut_impl, forward_mut_impl};
-
-use std::ops::{
-    Neg,
-    Add,
-    Sub,
-    Mul,
-    AddAssign,
-    SubAssign,
-    MulAssign
-};
-
-/// # Basic Arithmetic Operations
-/// 
-/// **Note**: unless otherwise noted in the function specific documentation,
-/// 
-/// - The functions do **not** allocate memory.
-/// - The function works for both signed and unsigned interpretations of an `ApInt`. In other words, in the low-level bit-wise representation there is no difference between a signed and unsigned operation by a certain function on fixed bit-width integers. (Cite: LLVM)
-impl ApInt {
-    /// Increments this `ApInt` by one inplace.
-    pub fn wrapping_inc(&mut self) {
-        match self.access_data_mut() {
-            DataAccessMut::Inl(x) => {
-                *x = x.wrapping_add(Digit::one());
-            }
-            DataAccessMut::Ext(x) => {
-                for i in 0..x.len() {
-                    match x[i].overflowing_add(Digit::one()) {
-                        (v,false) => {
-                            x[i] = v;
-                            break;
-                        }
-                        (v,true) => {
-                            //if the ApInt was relatively random this should rarely happen
-                            x[i] = v;
-                        }
-                    }
-                }
-            }
-        }
-        self.clear_unused_bits();
-    }
-
-    /// Increments this `ApInt` by one and returns the result.
-    pub fn into_wrapping_inc(self) -> ApInt {
-        forward_mut_impl(self, ApInt::wrapping_inc)
-    }
-
-    /// Decrements this `ApInt` by one inplace.
-    pub fn wrapping_dec(&mut self) {
-        match self.access_data_mut() {
-            DataAccessMut::Inl(x) => {
-                *x = x.wrapping_sub(Digit::one());
-            }
-            DataAccessMut::Ext(x) => {
-                for i in 0..x.len() {
-                    match x[i].overflowing_sub(Digit::one()) {
-                        (v,false) => {
-                            x[i] = v;
-                            break;
-                        }
-                        (v,true) => {
-                            //if the ApInt was relatively random this should rarely happen
-                            x[i] = v;
-                        }
-                    }
-                }
-            }
-        }
-        self.clear_unused_bits();
-    }
-
-    /// Decrements this `ApInt` by one and returns the result.
-    pub fn into_wrapping_dec(self) -> ApInt {
-        forward_mut_impl(self, ApInt::wrapping_dec)
-    }
-
-    /// Negates this `ApInt` inplace.
-    pub fn wrapping_neg(&mut self) {
-        self.bitnot();
-        self.wrapping_inc();
-        //`wrapping_inc` handles clearing the unused bits
-    }
-
-    /// Negates this `ApInt` and returns the result.
-    pub fn into_wrapping_neg(self) -> ApInt {
-        forward_mut_impl(self, ApInt::wrapping_neg)
-    }
-
-    /// Add-assigns `rhs` to `self` inplace.
-    /// 
-    /// # Errors
-    /// 
-    /// - If `self` and `rhs` have unmatching bit widths.
-    pub fn wrapping_add_assign(&mut self, rhs: &ApInt) -> Result<()> {
-        match self.zip_access_data_mut_self(rhs)? {
-            Inl(lhs, rhs) => {
-                *lhs = lhs.wrapping_add(rhs);
-            }
-            Ext(lhs, rhs) => {
-                let (temp, mut carry) = lhs[0].carrying_add(rhs[0]);
-                lhs[0] = temp;
-                for i in 1..lhs.len() {
-                    let temp = lhs[i].dd()
-                        .wrapping_add(rhs[i].dd())
-                        .wrapping_add(carry.dd());
-                    lhs[i] = temp.lo();
-                    carry = temp.hi();
-                }
-            }
-        }
-        self.clear_unused_bits();
-        Ok(())
-    }
-
-    /// Adds `rhs` to `self` and returns the result.
-    /// 
-    /// # Errors
-    /// 
-    /// - If `self` and `rhs` have unmatching bit widths.
-    pub fn into_wrapping_add(self, rhs: &ApInt) -> Result<ApInt> {
-        try_forward_bin_mut_impl(self, rhs, ApInt::wrapping_add_assign)
-    }
-
-    /// Add-assigns `rhs` to `self` inplace, and returns a boolean indicating if overflow occured,
-    /// according to the **unsigned** interpretation of overflow.
-    /// 
-    /// # Errors
-    /// 
-    /// - If `self` and `rhs` have unmatching bit widths.
-    // TODO: add tests
-    #[allow(dead_code)]
-    pub(crate) fn overflowing_uadd_assign(&mut self, rhs: &ApInt) -> Result<bool> {
-        match self.width().excess_bits() {
-            Some(excess) => {
-                let mask = Digit::all_set() >> excess;
-                match self.zip_access_data_mut_self(rhs)? {
-                    Inl(lhs, rhs) => {
-                        let temp = lhs.wrapping_add(rhs);
-                        *lhs = temp & mask;
-                        //excess bits are cleared by the mask
-                        return Ok((temp & mask) != temp)
-                    }
-                    Ext(lhs, rhs) => {
-                        let (temp, mut carry) = lhs[0].carrying_add(rhs[0]);
-                        lhs[0] = temp;
-                        for i in 1..(lhs.len() - 1) {
-                            let temp = lhs[i].dd()
-                                .wrapping_add(rhs[i].dd())
-                                .wrapping_add(carry.dd());
-                            lhs[i] = temp.lo();
-                            carry = temp.hi();
-                        }
-                        let temp = lhs[lhs.len() - 1]
-                            .wrapping_add(rhs[lhs.len() - 1])
-                            .wrapping_add(carry);
-                        lhs[lhs.len() - 1] = temp & mask;
-                        //excess bits are cleared by the mask
-                        return Ok((temp & mask) != temp)
-                    }
-                }
-            }
-            None => {
-                match self.zip_access_data_mut_self(rhs)? {
-                    Inl(lhs, rhs) => {
-                        let temp = lhs.overflowing_add(rhs);
-                        *lhs = temp.0;
-                        //no excess bits to clear
-                        return Ok(temp.1)
-                    }
-                    Ext(lhs, rhs) => {
-                        let (temp, mut carry) = lhs[0].carrying_add(rhs[0]);
-                        lhs[0] = temp;
-                        for i in 1..lhs.len() {
-                            let temp = lhs[i].dd()
-                                .wrapping_add(rhs[i].dd())
-                                .wrapping_add(carry.dd());
-                            lhs[i] = temp.lo();
-                            carry = temp.hi();
-                        }
-                        //no excess bits to clear
-                        return Ok(carry != Digit::zero())
-                    }
-                }
-            }
-        }
-    }
-
-    /// Add-assigns `rhs` to `self` inplace, and returns a boolean indicating if overflow occured,
-    /// according to the **signed** interpretation of overflow.
-    /// 
-    /// # Errors
-    /// 
-    /// - If `self` and `rhs` have unmatching bit widths.
-    // TODO: add tests
-    #[allow(dead_code)]
-    pub(crate) fn overflowing_sadd_assign(&mut self, rhs: &ApInt) -> Result<bool> {
-        let self_sign = self.is_negative();
-        let rhs_sign = rhs.is_negative();
-        self.wrapping_add_assign(rhs)?;
-        Ok((self_sign == rhs_sign) && (self_sign != self.is_negative()))
-    }
-
-    /// Subtract-assigns `rhs` from `self` inplace.
-    /// 
-    /// # Errors
-    /// 
-    /// - If `self` and `rhs` have unmatching bit widths.
-    pub fn wrapping_sub_assign(&mut self, rhs: &ApInt) -> Result<()> {
-        match self.zip_access_data_mut_self(rhs)? {
-            Inl(lhs, rhs) => {
-                *lhs = lhs.wrapping_sub(rhs);
-            }
-            Ext(lhs, rhs) => {
-                let (temp, mut carry) = lhs[0].dd()
-                    .wrapping_add((!rhs[0]).dd())
-                    .wrapping_add(Digit::one().dd()).lo_hi();
-                lhs[0] = temp;
-                for i in 1..lhs.len() {
-                    let temp = lhs[i].dd()
-                        .wrapping_add((!rhs[i]).dd())
-                        .wrapping_add(carry.dd());
-                    lhs[i] = temp.lo();
-                    carry = temp.hi();
-                }
-            }
-        }
-        self.clear_unused_bits();
-        Ok(())
-    }
-
-    /// Subtracts `rhs` from `self` and returns the result.
-    /// 
-    /// # Errors
-    /// 
-    /// - If `self` and `rhs` have unmatching bit widths.
-    pub fn into_wrapping_sub(self, rhs: &ApInt) -> Result<ApInt> {
-        try_forward_bin_mut_impl(self, rhs, ApInt::wrapping_sub_assign)
-    }
-
-    /// Multiply-assigns `rhs` to `self` inplace. This function **may** allocate memory.
-    /// 
-    /// # Errors
-    /// 
-    /// - If `self` and `rhs` have unmatching bit widths.
-    /// 
-    /// # Performance
-    /// 
-    /// If the function detects a large number of leading zeros in front of the most significant
-    /// 1 bit, it will apply optimizations so that wasted multiplications and additions of zero are
-    /// avoided. This function is designed to efficiently handle 5 common kinds of multiplication.
-    /// Small here means both small ApInt `BitWidth` and/or small **unsigned** numerical
-    /// significance. (Signed multiplication works, but two's complement negative numbers may have a
-    /// large number of leading ones, leading to potential inefficiency.)
-    /// 
-    /// - multiplication of zero by any size integer (no allocation)
-    /// - multiplication of small (<= 1 `Digit`) integers (no allocation)
-    /// - wrapping multiplication of medium size (<= 512 bits) integers
-    /// - multiplication of medium size integers that will not overflow
-    /// - multiplication of small integers by large integers (or large integers multiplied by small
-    ///     integers) (no allocation)
-    /// 
-    /// Currently, Karatsuba multiplication is not implemented, so large integer multiplication 
-    /// may be very slow compared to other algorithms. According to Wikipedia, Karatsuba algorithms
-    /// outperform 𝒪(n^2) algorithms, starting around 320-640 bits.
-    pub fn wrapping_mul_assign(&mut self, rhs: &ApInt) -> Result<()> {
-        match self.zip_access_data_mut_self(rhs)? {
-            Inl(lhs, rhs) => {
-                *lhs = lhs.wrapping_mul(rhs);
-            }
-            Ext(lhs, rhs) => {
-                //finds the most significant nonzero digit (for later optimizations) and handles
-                //early return of multiplication by zero.
-                let rhs_sig_nonzero: usize = match rhs.iter().rposition(|x| x != &Digit::zero()) {
-                    Some(x) => x,
-                    None => {
-                        for x in lhs.iter_mut() {
-                            x.unset_all()
-                        }
-                        return Ok(());
-                    }
-                };
-                let lhs_sig_nonzero: usize = match lhs.iter().rposition(|x| x != &Digit::zero()) {
-                    Some(x) => x,
-                    None => {
-                        for x in lhs.iter_mut() {
-                            x.unset_all()
-                        }
-                        return Ok(());
-                    }
-                };
-                //for several routines below there was a nested loop that had its first and last
-                //iterations unrolled (and the unrolled loops had their first and last iterations
-                //unrolled), and then some if statements are added for digit overflow checks.
-                //This is done because the compiler probably cannot properly unroll the carry
-                //system, overflow system, and figure out that only `Digit` multiplications were
-                //needed instead of `DoubleDigit` multiplications in some places.
-                match (lhs_sig_nonzero == 0, rhs_sig_nonzero == 0) {
-                    (false, false) => {
-                        if lhs_sig_nonzero + rhs_sig_nonzero + 2 <= lhs.len() {
-                            //no possibility of overflow
-                            //first digit of first row
-                            let mult = lhs[0];
-                            let temp = mult.carrying_mul(rhs[0]);
-                            //middle digits of first row
-                            //the goal here with `sum` is to allocate and initialize it only once
-                            //here.
-                            let mut sum = Vec::with_capacity(lhs_sig_nonzero + rhs_sig_nonzero + 2);
-                            sum.push(temp.0);
-                            let mut mul_carry = temp.1;
-                            for rhs_i in 1..rhs_sig_nonzero {
-                                let temp = mult.carrying_mul_add(rhs[rhs_i], mul_carry);
-                                sum.push(temp.0);
-                                mul_carry = temp.1;
-                            }
-                            let temp = mult.carrying_mul_add(rhs[rhs_sig_nonzero], mul_carry);
-                            sum.push(temp.0);
-                            sum.push(temp.1);
-                            //middle rows
-                            for lhs_i in 1..lhs_sig_nonzero {
-                                let mult = lhs[lhs_i];
-                                //first digit of this row
-                                let temp0 = mult.carrying_mul(rhs[0]);
-                                let mut mul_carry = temp0.1;
-                                let temp1 = sum[lhs_i].carrying_add(temp0.0);
-                                sum[lhs_i] = temp1.0;
-                                let mut add_carry = temp1.1;
-                                //middle digits of this row
-                                for rhs_i in 1..rhs_sig_nonzero {
-                                    let temp0 = mult.carrying_mul_add(rhs[rhs_i], mul_carry);
-                                    mul_carry = temp0.1;
-                                    let temp1: DoubleDigit = sum[lhs_i + rhs_i].dd()
-                                        .wrapping_add(temp0.0.dd())
-                                        .wrapping_add(add_carry.dd());
-                                    sum[lhs_i + rhs_i] = temp1.lo();
-                                    add_carry = temp1.hi();
-                                }
-                                //final digits of this row
-                                let temp0 = mult.carrying_mul_add(rhs[rhs_sig_nonzero],mul_carry);
-                                let temp1: DoubleDigit = sum[lhs_i + rhs_sig_nonzero].dd()
-                                    .wrapping_add(temp0.0.dd())
-                                    .wrapping_add(add_carry.dd());
-                                sum[lhs_i + rhs_sig_nonzero] = temp1.lo();
-                                sum.push(temp1.hi().wrapping_add(temp0.1));
-                            }
-                            let mult = lhs[lhs_sig_nonzero];
-                            //first digit of final row
-                            let temp0 = mult.carrying_mul(rhs[0]);
-                            let mut mul_carry = temp0.1;
-                            let temp1 = sum[lhs_sig_nonzero].carrying_add(temp0.0);
-                            sum[lhs_sig_nonzero] = temp1.0;
-                            let mut add_carry = temp1.1;
-                            //middle digits of final row
-                            for rhs_i in 1..rhs_sig_nonzero {
-                                let temp0 = mult.carrying_mul_add(rhs[rhs_i], mul_carry);
-                                mul_carry = temp0.1;
-                                let temp1: DoubleDigit = sum[lhs_sig_nonzero + rhs_i].dd()
-                                    .wrapping_add(temp0.0.dd())
-                                    .wrapping_add(add_carry.dd());
-                                sum[lhs_sig_nonzero + rhs_i] = temp1.lo();
-                                add_carry = temp1.hi();
-                            }
-                            let temp0 = mult.carrying_mul_add(rhs[rhs_sig_nonzero], mul_carry);
-                            let temp1: DoubleDigit = sum[lhs_sig_nonzero + rhs_sig_nonzero].dd()
-                                .wrapping_add(temp0.0.dd())
-                                .wrapping_add(add_carry.dd());
-                            sum[lhs_sig_nonzero + rhs_sig_nonzero] = temp1.lo();
-                            sum.push(temp1.hi().wrapping_add(temp0.1));
-                            for i in 0..sum.len() {
-                                lhs[i] = sum[i];
-                            }
-                            return Ok(())
-                        } else {
-                            //wrapping (modular) multiplication
-                            let sig_nonzero = lhs.len() - 1;
-                            //first digit done and carry
-                            let temp = lhs[0].carrying_mul(rhs[0]);
-                            //the goal here with `sum` is to allocate and initialize it only once
-                            //here.
-                            //first row
-                            let mut sum = Vec::with_capacity(lhs.len());
-                            sum.push(temp.0);
-                            let mut mul_carry = temp.1;
-                            for rhs_i in 1..sig_nonzero {
-                                let temp = lhs[0].carrying_mul_add(rhs[rhs_i], mul_carry);
-                                sum.push(temp.0);
-                                mul_carry = temp.1;
-                            }
-                            //final digit of first row
-                            sum.push(lhs[0].wrapping_mul_add(rhs[sig_nonzero], mul_carry));
-                            //middle rows
-                            for lhs_i in 1..sig_nonzero {
-                                //first digit of this row
-                                let temp0 = lhs[lhs_i].carrying_mul(rhs[0]);
-                                mul_carry = temp0.1;
-                                let temp1 = sum[lhs_i].carrying_add(temp0.0);
-                                //sum[lhs_i] does not need to be used again
-                                sum[lhs_i] = temp1.0;
-                                let mut add_carry = temp1.1;
-                                //as we get to the higher lhs digits, the higher rhs digits do not
-                                //need to be considered
-                                let rhs_i_upper = sig_nonzero.wrapping_sub(lhs_i);
-                                //middle digits of this row
-                                for rhs_i in 1..rhs_i_upper {
-                                    let temp0 = lhs[lhs_i].carrying_mul_add(rhs[rhs_i], mul_carry);
-                                    mul_carry = temp0.1;
-                                    let temp1: DoubleDigit = sum[lhs_i + rhs_i].dd()
-                                        .wrapping_add(temp0.0.dd())
-                                        .wrapping_add(add_carry.dd());
-                                    sum[lhs_i + rhs_i] = temp1.lo();
-                                    add_carry = temp1.hi();
-                                    }
-                                //final digit of this row
-                                sum[sig_nonzero] = lhs[lhs_i]
-                                    .wrapping_mul(rhs[rhs_i_upper])
-                                    .wrapping_add(mul_carry)
-                                    .wrapping_add(sum[sig_nonzero])
-                                    .wrapping_add(add_carry);
-                            }
-                            for i in 0..sig_nonzero {
-                                lhs[i] = sum[i];
-                            }
-                            //final digit (the only one in its row)
-                            lhs[sig_nonzero] = lhs[sig_nonzero]
-                                .wrapping_mul_add(rhs[0], sum[sig_nonzero]);
-                            return Ok(())
-                        }
-                    },
-                    (true, false) => {
-                        let mult = lhs[0];
-                        //first digit done and carry
-                        let temp = mult.carrying_mul(rhs[0]);
-                        lhs[0] = temp.0;
-                        let mut mul_carry = temp.1;
-                        //middle of row
-                        for rhs_i in 1..rhs_sig_nonzero {
-                            let temp = mult.carrying_mul_add(rhs[rhs_i], mul_carry);
-                            lhs[rhs_i] = temp.0;
-                            mul_carry = temp.1;
-                        }
-                        //final digit
-                        if rhs_sig_nonzero == lhs.len() - 1 {
-                            lhs[rhs_sig_nonzero] = mult
-                                .wrapping_mul_add(rhs[rhs_sig_nonzero], mul_carry);
-                        } else {
-                            let temp = mult.carrying_mul_add(rhs[rhs_sig_nonzero], mul_carry);
-                            lhs[rhs_sig_nonzero] = temp.0;
-                            lhs[rhs_sig_nonzero + 1] = temp.1;
-                        }
-                    },
-                    (false, true) => {
-                        //first digit done and carry
-                        let temp = rhs[0].carrying_mul(lhs[0]);
-                        lhs[0] = temp.0;
-                        let mut mul_carry = temp.1;
-                        //middle of row
-                        for lhs_i in 1..lhs_sig_nonzero {
-                            let temp = rhs[0].carrying_mul_add(lhs[lhs_i], mul_carry);
-                            lhs[lhs_i] = temp.0;
-                            mul_carry = temp.1;
-                        }
-                        //final digit
-                        if lhs_sig_nonzero == lhs.len() - 1 {
-                            lhs[lhs_sig_nonzero] = rhs[0]
-                                .wrapping_mul_add(lhs[lhs_sig_nonzero], mul_carry);
-                        } else {
-                            let temp = rhs[0].carrying_mul_add(lhs[lhs_sig_nonzero], mul_carry);
-                            lhs[lhs_sig_nonzero] = temp.0;
-                            lhs[lhs_sig_nonzero + 1] = temp.1;
-                        }
-                    },
-                    (true, true) => {
-                        let temp0 = lhs[0].carrying_mul(rhs[0]);
-                        lhs[0] = temp0.0;
-                        lhs[1] = temp0.1;
-                    }
-                }
-            }
-        }
-        self.clear_unused_bits();
-        Ok(())
-    }
-
-    /// Multiplies `rhs` with `self` and returns the result. This function **may** allocate memory.
-    /// Note: see `wrapping_mul_assign` for more information.
-    /// 
-    /// # Errors
-    /// 
-    /// - If `self` and `rhs` have unmatching bit widths.
-    pub fn into_wrapping_mul(self, rhs: &ApInt) -> Result<ApInt> {
-        try_forward_bin_mut_impl(self, rhs, ApInt::wrapping_mul_assign)
-    }
-}
+use crate::data::{ApInt, ZipDataAccessMutSelf::{Inl, Ext}, ZipDataAccessMutBoth, Digit, DoubleDigit};
+use crate::info::{Error, Result, DivOp};
+use crate::logic::{try_forward_bin_mut_impl};
 
 /// # Division Operations
 /// 
 /// **Note**: unless otherwise noted in the function specific documentation,
 /// 
-/// - The functions do **not** allocate memory.
-/// - The function works for both signed and unsigned interpretations of an `ApInt`. In other words,
-///     in the low-level bit-wise representation there is no difference between a signed and
-///     unsigned operation by the function on fixed bit-width integers. (Cite: LLVM)
+/// - **An error is returned** If division by zero is attempted or function arguments have unmatching bitwidths.
+/// - The functions **may allocate** memory.
+/// - The function works for only the signed or unsigned, but not both interpretations of an
+///   `ApInt`. In other words, in the low-level bit-wise representation there is a difference
+///   between a signed and unsigned operation by the function on fixed bit-width integers.
 /// 
+/// Note regarding "divrem" and "remdiv" functions:
 /// In almost all integer division algorithms where "just" the quotient is calculated, the remainder
-/// is also produced and actually exists in memory (or at least is only one O(n) operation away)
+/// is also produced and actually exists in memory (or at least is only one 𝒪(n) operation away)
 /// prior to being dropped or overwritten, and vice versa for remainder only calculations. Note here
 /// that functions with `div` in their names (e.g. `wrapping_div`) should really be called `quo`
 /// (quotient) functions, because the division process produces both the quotient and remainder.
 /// However, to stay with Rust's naming scheme we have kept `div` naming. The instruction for
 /// division on many CPUs sets registers to both results of the division process, and compilers will
-/// detect if code uses both results and only use one division instruction. There is no such
-/// detection for `ApInt`s, and thus the `divrem` and `remdiv` type instructions exist to explicitly
-/// use just one division function for both results.
+/// detect if code uses both results and only use one division instruction. The compiler probably
+/// does not realize this for the `ApInt` division process, and thus the `divrem` and `remdiv` type
+/// instructions exist to explicitly use just one division function for both results.
 /// 
 /// ## Performance
 /// 
@@ -538,6 +43,12 @@ impl ApInt {
 /// 
 /// Currently, algorithms faster than 𝒪(n^2) are not implemented, so large integer division may be
 /// very slow compared to other algorithms.
+/// 
+/// Note: Currently there is just one internal division function that is optimized for the
+/// `udivrem` kind of function instead of `uremdiv`. In the future, there is planned a better
+/// implementation for the second one. It was found during designing the first implementation that
+/// this future one should be fundamentally faster than the current one (noticable for small to
+/// medium size `ApInt`s) because of the way `lhs` is subtracted.
 impl ApInt {
     //Note: the invariant of `ApInt`s where unused bits beyond the bit width must be all zero is
     //used heavily here, so that no `clear_unused_bits` needs to be used.
@@ -582,7 +93,7 @@ impl ApInt {
         //Assumptions:
         // - ini_duo_sd > 0
         // - div_sd == 0
-        // - div[0].leading_zeros() >= (digit::BITS / 2)
+        // - div[0].leading_zeros() >= (Digit::BITS / 2)
         fn large_div_by_u32(duo: &mut [Digit], ini_duo_sd: usize, div: &mut [Digit]) {
             let div_u32 = div[0].repr() as u32;
             fn dd(x: u32) -> Digit {Digit(u64::from(x))}
@@ -836,7 +347,7 @@ impl ApInt {
         ) {
             //difference between the places of the most significant bits
             let ini_diff_bits = ini_duo_sb - div_sb;
-            if ini_diff_bits < digit::BITS {
+            if ini_diff_bits < Digit::BITS {
                 //the `mul` or `mul - 1` algorithm
                 let (duo_sig_dd, div_sig_dd) = if ini_duo_lz == 0 {
                     //avoid shr overflow
@@ -846,12 +357,12 @@ impl ApInt {
                     )
                 } else {
                     (
-                        (duo[ini_duo_sd].dd() << (ini_duo_lz + digit::BITS)) |
+                        (duo[ini_duo_sd].dd() << (ini_duo_lz + Digit::BITS)) |
                         (duo[ini_duo_sd - 1].dd() << ini_duo_lz) |
-                        (duo[ini_duo_sd - 2].dd() >> (digit::BITS - ini_duo_lz)),
-                        (div[ini_duo_sd].dd() << (ini_duo_lz + digit::BITS)) |
+                        (duo[ini_duo_sd - 2].dd() >> (Digit::BITS - ini_duo_lz)),
+                        (div[ini_duo_sd].dd() << (ini_duo_lz + Digit::BITS)) |
                         (div[ini_duo_sd - 1].dd() << ini_duo_lz) |
-                        (div[ini_duo_sd - 2].dd() >> (digit::BITS - ini_duo_lz))
+                        (div[ini_duo_sd - 2].dd() >> (Digit::BITS - ini_duo_lz))
                     )
                 };
                 let mul = duo_sig_dd.wrapping_div(div_sig_dd).lo();
@@ -901,33 +412,33 @@ impl ApInt {
             let mut duo_sd = ini_duo_sd;
             let mut duo_lz = ini_duo_lz;
             //the number of lesser significant bits not a part of the greater `div_sig_d` bits
-            let div_lesser_bits = digit::BITS - (div_lz as usize) + (digit::BITS * (div_sd - 1));
+            let div_lesser_bits = Digit::BITS - (div_lz as usize) + (Digit::BITS * (div_sd - 1));
             //the most significant `Digit` bits of div
             let div_sig_d = if div_lz == 0 {
                 div[div_sd]
             } else {
-                (div[div_sd] << div_lz) | (div[div_sd - 1] >> (digit::BITS - div_lz))
+                (div[div_sd] << div_lz) | (div[div_sd - 1] >> (Digit::BITS - div_lz))
             };
             //has to be a `DoubleDigit` in case of overflow
             let div_sig_d_add1 = div_sig_d.dd().wrapping_add(Digit::one().dd());
             let mut duo_lesser_bits;
             let mut duo_sig_dd;
-            let quo_potential = (ini_diff_bits / digit::BITS) + 1;
+            let quo_potential = (ini_diff_bits / Digit::BITS) + 1;
             let mut quo: Vec<Digit> = vec![Digit::zero(); quo_potential as usize];
             loop {
-                duo_lesser_bits = (digit::BITS - (duo_lz as usize)) + (digit::BITS * (duo_sd - 2));
+                duo_lesser_bits = (Digit::BITS - (duo_lz as usize)) + (Digit::BITS * (duo_sd - 2));
                 duo_sig_dd = if duo_lz == 0 {
                     DoubleDigit::from_lo_hi(duo[duo_sd - 1],duo[duo_sd])
                 } else {
-                    (duo[duo_sd].dd() << (duo_lz + digit::BITS)) |
+                    (duo[duo_sd].dd() << (duo_lz + Digit::BITS)) |
                     (duo[duo_sd - 1].dd() << duo_lz) |
-                    (duo[duo_sd - 2].dd() >> (digit::BITS - duo_lz))
+                    (duo[duo_sd - 2].dd() >> (Digit::BITS - duo_lz))
                 };
                 if duo_lesser_bits >= div_lesser_bits {
                     let bits = duo_lesser_bits - div_lesser_bits;
                     //bits_ll is the number of lesser bits in the digit that contains both lesser
                     //and greater bits
-                    let (digits, bits_ll) = (bits / digit::BITS, bits % digit::BITS);
+                    let (digits, bits_ll) = (bits / Digit::BITS, bits % Digit::BITS);
                     //Unfortunately, `mul` here can be up to (2^2n - 1)/(2^(n-1)), where `n`
                     //is the number of bits in a `Digit`. This means that an `n+1` bit
                     //integer is needed to store mul. Because only one extra higher bit is involved,
@@ -947,7 +458,7 @@ impl ApInt {
                     quo[digits + 1] = temp.lo();
                     carry = temp.hi();
                     for i in (digits+2)..quo.len() {
-                        if carry == digit::ZERO {break}
+                        if carry == Digit::ZERO {break}
                         let temp = quo[i].carrying_add(carry);
                         quo[i] = temp.0;
                         carry = temp.1;
@@ -1043,9 +554,9 @@ impl ApInt {
                         //avoid shr overflow
                         DoubleDigit::from_lo_hi(div[duo_sd - 1], div[duo_sd])
                     } else {
-                        (div[duo_sd].dd() << (duo_lz + digit::BITS)) |
+                        (div[duo_sd].dd() << (duo_lz + Digit::BITS)) |
                         (div[duo_sd - 1].dd() << duo_lz) |
-                        (div[duo_sd - 2].dd() >> (digit::BITS - duo_lz))
+                        (div[duo_sd - 2].dd() >> (Digit::BITS - duo_lz))
                     };
                     let mul = duo_sig_dd.wrapping_div(div_sig_dd).lo();
                     //this will become `-(div * mul)`
@@ -1101,7 +612,7 @@ impl ApInt {
                     }
                 }
                 duo_lz = duo[duo_sd].leading_zeros() as usize;
-                let duo_sb = (duo_sd * digit::BITS) + (digit::BITS - duo_lz);
+                let duo_sb = (duo_sd * Digit::BITS) + (Digit::BITS - duo_lz);
                 //`quo` should have 0 added to it check
                 if div_sb > duo_sb {
                     //quotient = `quo`
@@ -1229,7 +740,7 @@ impl ApInt {
                         div[0] = temp.1;
                         return true
                     }
-                    if (div[0].leading_zeros() as usize) >= (digit::BITS / 2) {
+                    if (div[0].leading_zeros() as usize) >= (Digit::BITS / 2) {
                         large_div_by_u32(duo,ini_duo_sd,div);
                         return true
                     } else {
@@ -1242,9 +753,9 @@ impl ApInt {
                 //leading zeros of the most significant digit of `div`
                 let div_lz = div[div_sd].leading_zeros() as usize;
                 //initial number of significant bits of `duo`
-                let ini_duo_sb = (ini_duo_sd * digit::BITS) + (digit::BITS - ini_duo_lz);
+                let ini_duo_sb = (ini_duo_sd * Digit::BITS) + (Digit::BITS - ini_duo_lz);
                 //initial number of significant bits of `div`
-                let div_sb = (div_sd * digit::BITS) + (digit::BITS - div_lz);
+                let div_sb = (div_sd * Digit::BITS) + (Digit::BITS - div_lz);
                 //quotient is 0 precheck
                 if ini_duo_sb < div_sb {
                     //quotient = 0
@@ -1328,12 +839,7 @@ impl ApInt {
     }
 
     /// Divides `lhs` by `rhs` using **unsigned** interpretation and sets `lhs` equal to the
-    /// quotient and `rhs` equal to the remainder. This function **may** allocate memory.
-    /// 
-    /// # Errors
-    /// 
-    /// - If `lhs` and `rhs` have unmatching bit widths.
-    /// - If division by zero is attempted
+    /// quotient and `rhs` equal to the remainder.
     pub fn wrapping_udivrem_assign(lhs: &mut ApInt, rhs: &mut ApInt) -> Result<()> {
         match ApInt::zip_access_data_mut_both(lhs, rhs)? {
             ZipDataAccessMutBoth::Inl(duo,div) => {
@@ -1357,12 +863,7 @@ impl ApInt {
     }
 
     /// Divides `lhs` by `rhs` using **unsigned** interpretation and sets `lhs` equal to the
-    /// remainder and `rhs` equal to the quotient. This function **may** allocate memory.
-    /// 
-    /// # Errors
-    /// 
-    /// - If `lhs` and `rhs` have unmatching bit widths.
-    /// - If division by zero is attempted
+    /// remainder and `rhs` equal to the quotient.
     pub fn wrapping_uremdiv_assign(lhs: &mut ApInt, rhs: &mut ApInt) -> Result<()> {
         match ApInt::zip_access_data_mut_both(lhs, rhs)? {
             ZipDataAccessMutBoth::Inl(duo,div) => {
@@ -1383,12 +884,6 @@ impl ApInt {
     }
 
     /// Quotient-assigns `lhs` by `rhs` inplace using **unsigned** interpretation.
-    /// This function **may** allocate memory.
-    /// 
-    /// # Errors
-    /// 
-    /// - If `lhs` and `rhs` have unmatching bit widths.
-    /// - If division by zero is attempted
 	pub fn wrapping_udiv_assign(&mut self, rhs: &ApInt) -> Result<()> {
         match self.zip_access_data_mut_self(rhs)? {
             Inl(duo, div) => {
@@ -1407,23 +902,11 @@ impl ApInt {
 	}
 
     /// Divides `lhs` by `rhs` using **unsigned** interpretation and returns the quotient.
-    /// This function **may** allocate memory.
-    /// 
-    /// # Errors
-    /// 
-    /// - If `lhs` and `rhs` have unmatching bit widths.
-    /// - If division by zero is attempted
     pub fn into_wrapping_udiv(self, rhs: &ApInt) -> Result<ApInt> {
         try_forward_bin_mut_impl(self, rhs, ApInt::wrapping_udiv_assign)
     }
 
     /// Remainder-assigns `lhs` by `rhs` inplace using **unsigned** interpretation.
-    /// This function **may** allocate memory.
-    /// 
-    /// # Errors
-    /// 
-    /// - If `lhs` and `rhs` have unmatching bit widths.
-    /// - If division by zero is attempted
     pub fn wrapping_urem_assign(&mut self, rhs: &ApInt) -> Result<()> {
         match self.zip_access_data_mut_self(rhs)? {
             Inl(duo, div) => {
@@ -1442,23 +925,12 @@ impl ApInt {
     }
 
     /// Divides `lhs` by `rhs` using **unsigned** interpretation and returns the remainder.
-    /// This function **may** allocate memory.
-    /// 
-    /// # Errors
-    /// 
-    /// - If `lhs` and `rhs` have unmatching bit widths.
-    /// - If division by zero is attempted
     pub fn into_wrapping_urem(self, rhs: &ApInt) -> Result<ApInt> {
         try_forward_bin_mut_impl(self, rhs, ApInt::wrapping_urem_assign)
     }
 
     /// Divides `lhs` by `rhs` using **signed** interpretation and sets `lhs` equal to the
-    /// quotient and `rhs` equal to the remainder. This function **may** allocate memory.
-    /// 
-    /// # Errors
-    /// 
-    /// - If `lhs` and `rhs` have unmatching bit widths.
-    /// - If division by zero is attempted
+    /// quotient and `rhs` equal to the remainder.
     pub fn wrapping_sdivrem_assign(lhs: &mut ApInt, rhs: &mut ApInt) -> Result<()> {
         if rhs.is_zero() {
             return Err(Error::division_by_zero(DivOp::SignedDivRem, lhs.clone()))
@@ -1487,12 +959,7 @@ impl ApInt {
     }
 
     /// Divides `lhs` by `rhs` using **signed** interpretation and sets `lhs` equal to the
-    /// remainder and `rhs` equal to the quotient. This function **may** allocate memory.
-    /// 
-    /// # Errors
-    /// 
-    /// - If `lhs` and `rhs` have unmatching bit widths.
-    /// - If division by zero is attempted
+    /// remainder and `rhs` equal to the quotient.
     pub fn wrapping_sremdiv_assign(lhs: &mut ApInt, rhs: &mut ApInt) -> Result<()> {
         if rhs.is_zero() {
             return Err(Error::division_by_zero(DivOp::SignedRemDiv, lhs.clone()))
@@ -1521,12 +988,6 @@ impl ApInt {
     }
 
     /// Quotient-assigns `lhs` by `rhs` inplace using **signed** interpretation.
-    /// This function **may** allocate memory.
-    /// 
-    /// # Errors
-    /// 
-    /// - If `lhs` and `rhs` have unmatching bit widths.
-    /// - If division by zero is attempted
     pub fn wrapping_sdiv_assign(&mut self, rhs: &ApInt) -> Result<()> {
         if rhs.is_zero() {
             return Err(Error::division_by_zero(DivOp::SignedDiv, self.clone()))
@@ -1555,24 +1016,11 @@ impl ApInt {
     }
 
     /// Divides `self` by `rhs` using **signed** interpretation and returns the quotient.
-    /// This function **may** allocate memory.
-    /// 
-    /// # Errors
-    /// 
-    /// - If `self` and `rhs` have unmatching bit widths.
-    /// - If division by zero is attempted
-    /// 
     pub fn into_wrapping_sdiv(self, rhs: &ApInt) -> Result<ApInt> {
         try_forward_bin_mut_impl(self, rhs, ApInt::wrapping_sdiv_assign)
     }
 
     /// Remainder-assigns `lhs` by `rhs` inplace using **signed** interpretation.
-    /// This function **may** allocate memory.
-    /// 
-    /// # Errors
-    /// 
-    /// - If `lhs` and `rhs` have unmatching bit widths.
-    /// - If division by zero is attempted
     pub fn wrapping_srem_assign(&mut self, rhs: &ApInt) -> Result<()> {
         if rhs.is_zero() {
             return Err(Error::division_by_zero(DivOp::SignedRem, self.clone()))
@@ -1601,311 +1049,19 @@ impl ApInt {
     }
 
     /// Divides `self` by `rhs` using **signed** interpretation and returns the remainder.
-    /// This function **may** allocate memory.
-    /// 
-    /// # Errors
-    /// 
-    /// - If `self` and `rhs` have unmatching bit widths.
-    /// - If division by zero is attempted
     pub fn into_wrapping_srem(self, rhs: &ApInt) -> Result<ApInt> {
         try_forward_bin_mut_impl(self, rhs, ApInt::wrapping_srem_assign)
     }
 }
 
-/// ============================================================================
-///  Standard `ops` trait implementations.
-/// ----------------------------------------------------------------------------
-///  **Note:** These ops will panic if their corresponding functions return an
-///  error. They may also allocate memory.
-/// 
-///  `ApInt` implements some `std::ops` traits for improved usability.
-///  Only traits for operations that do not depend on the signedness
-///  interpretation of the specific `ApInt` instance are actually implemented.
-///  Operations like `div` and `rem` are not expected to have an
-///  implementation since a favor in unsigned or signed cannot be decided.
-/// ============================================================================
-
-impl Neg for ApInt {
-    type Output = ApInt;
-
-    fn neg(self) -> Self::Output {
-        self.into_wrapping_neg()
-    }
-}
-
-impl<'a> Neg for &'a ApInt {
-    type Output = ApInt;
-
-    fn neg(self) -> Self::Output {
-        self.clone().into_wrapping_neg()
-    }
-}
-
-impl<'a> Neg for &'a mut ApInt {
-    type Output = &'a mut ApInt;
-
-    fn neg(self) -> Self::Output {
-        self.wrapping_neg();
-        self
-    }
-}
-
-impl<'a> Add<&'a ApInt> for ApInt {
-    type Output = ApInt;
-
-    fn add(self, rhs: &'a ApInt) -> Self::Output {
-        self.into_wrapping_add(rhs).unwrap()
-    }
-}
-
-impl<'a, 'b> Add<&'a ApInt> for &'b ApInt {
-    type Output = ApInt;
-
-    fn add(self, rhs: &'a ApInt) -> Self::Output {
-        self.clone().into_wrapping_add(rhs).unwrap()
-    }
-}
-
-impl<'a> AddAssign<&'a ApInt> for ApInt {
-    fn add_assign(&mut self, rhs: &'a ApInt) {
-        self.wrapping_add_assign(rhs).unwrap()
-    }
-}
-
-impl<'a> Sub<&'a ApInt> for ApInt {
-    type Output = ApInt;
-
-    fn sub(self, rhs: &'a ApInt) -> Self::Output {
-        self.into_wrapping_sub(rhs).unwrap()
-    }
-}
-
-impl<'a, 'b> Sub<&'a ApInt> for &'b ApInt {
-    type Output = ApInt;
-
-    fn sub(self, rhs: &'a ApInt) -> Self::Output {
-        self.clone().into_wrapping_sub(rhs).unwrap()
-    }
-}
-
-impl<'a> SubAssign<&'a ApInt> for ApInt {
-    fn sub_assign(&mut self, rhs: &'a ApInt) {
-        self.wrapping_sub_assign(rhs).unwrap()
-    }
-}
-
-impl<'a> Mul<&'a ApInt> for ApInt {
-    type Output = ApInt;
-
-    fn mul(self, rhs: &'a ApInt) -> Self::Output {
-        self.into_wrapping_mul(rhs).unwrap()
-    }
-}
-
-impl<'a, 'b> Mul<&'a ApInt> for &'b ApInt {
-    type Output = ApInt;
-
-    fn mul(self, rhs: &'a ApInt) -> Self::Output {
-        self.clone().into_wrapping_mul(rhs).unwrap()
-    }
-}
-
-impl<'a> MulAssign<&'a ApInt> for ApInt {
-    fn mul_assign(&mut self, rhs: &'a ApInt) {
-        self.wrapping_mul_assign(rhs).unwrap();
-    }
-}
-
 #[cfg(test)]
+#[rustfmt::skip]
 mod tests {
     use super::*;
-
-    mod inc {
-        use super::*;
-        use std::u64;
-
-        #[test]
-        fn test() {
-            assert_eq!(ApInt::from(14u8).into_wrapping_inc(),ApInt::from(15u8));
-            assert_eq!(ApInt::from(15u8).into_wrapping_inc(),ApInt::from(16u8));
-            assert_eq!(ApInt::from(16u8).into_wrapping_inc(),ApInt::from(17u8));
-            assert_eq!(ApInt::from(17u8).into_wrapping_inc(),ApInt::from(18u8));
-            assert_eq!(ApInt::from([0u64,0,0]).into_wrapping_inc(),ApInt::from([0u64,0,1]));			
-            assert_eq!(ApInt::from([0,7,u64::MAX]).into_wrapping_inc(),ApInt::from([0u64,8,0]));
-            assert_eq!(ApInt::from([u64::MAX,u64::MAX]).into_wrapping_inc(),ApInt::from([0u64,0]));
-            assert_eq!(ApInt::from([0,u64::MAX,u64::MAX - 1]).into_wrapping_inc(),ApInt::from([0,u64::MAX,u64::MAX]));
-            assert_eq!(ApInt::from([0,u64::MAX,0]).into_wrapping_inc(),ApInt::from([0,u64::MAX,1]));	
-        }
-    }
-
-    mod wrapping_neg {
-        use super::*;
-        use bitwidth::{BitWidth};
-
-        fn assert_symmetry(input: ApInt, expected: ApInt) {
-            assert_eq!(input.clone().into_wrapping_neg(), expected.clone());
-            assert_eq!(expected.into_wrapping_neg(), input);
-        }
-
-        fn test_vals() -> impl Iterator<Item = i128> {
-            [0_i128, 1, 2, 4, 5, 7, 10, 42, 50, 100, 128, 150,
-             1337, 123123, 999999, 987432, 77216417].into_iter().map(|v| *v)
-        }
-
-        #[test]
-        fn simple() {
-            assert_symmetry(ApInt::zero(BitWidth::w1()), ApInt::zero(BitWidth::w1()));
-            assert_symmetry(ApInt::one(BitWidth::w1()), ApInt::all_set(BitWidth::w1()));
-        }
-
-        #[test]
-        fn range() {
-            for v in test_vals() {
-                assert_symmetry(ApInt::from_i8(v as i8), ApInt::from_i8(-v as i8));
-                assert_symmetry(ApInt::from_i16(v as i16), ApInt::from_i16(-v as i16));
-                assert_symmetry(ApInt::from_i32(v as i32), ApInt::from_i32(-v as i32));
-                assert_symmetry(ApInt::from_i64(v as i64), ApInt::from_i64(-v as i64));
-                assert_symmetry(ApInt::from_i128(v), ApInt::from_i128(-v));
-            }
-        }
-    }
-
-    mod mul {
-        use super::*;
-        use bitwidth::BitWidth;
-        use std::{u8,u64};
-
-        #[test]
-        fn rigorous() {
-            //there are many special case and size optimization paths, so this test must be very
-            //rigorous.
-
-            //multiplication of apints composed of only u8::MAX in their least significant digits
-            //only works for num_u8 > 1
-            fn nine_test(num_u8: usize) {
-                let mut lhs;
-                let mut rhs = ApInt::from(0u8).into_zero_resize(BitWidth::new(num_u8 * 8).unwrap());
-                let nine =
-                    ApInt::from(u8::MAX).into_zero_resize(BitWidth::new(num_u8 * 8).unwrap());
-                for rhs_nine in 0..num_u8 {
-                    rhs.wrapping_shl_assign(8usize).unwrap();
-                    rhs |= &nine;
-                    lhs = ApInt::from(0u8).into_zero_resize(BitWidth::new(num_u8 * 8).unwrap());
-                    'outer: for lhs_nine in 0..num_u8 {
-                        lhs.wrapping_shl_assign(8usize).unwrap();
-                        lhs |= &nine;
-                        //imagine multiplying a string of base 10 nines together.
-                        //It will produce things like 998001, 8991, 98901, 9989001.
-                        //this uses a formula for the number of nines, eights, and zeros except here
-                        //nine is u8::MAX, eight is u8::MAX - 1, and zero is 0u8
-                        let mut zeros_after_one = if lhs_nine < rhs_nine {
-                            lhs_nine
-                        } else {
-                            rhs_nine
-                        };
-                        let mut nines_before_eight = if lhs_nine > rhs_nine {
-                            lhs_nine - rhs_nine
-                        } else {
-                            rhs_nine - lhs_nine
-                        };
-                        let mut nines_after_eight = if lhs_nine < rhs_nine {
-                            lhs_nine
-                        } else {
-                            rhs_nine
-                        };
-                        let mut result = lhs.clone().into_wrapping_mul(&rhs).unwrap();
-                        assert_eq!(result.clone().resize_to_u8(), 1u8);
-                        for i in 0..zeros_after_one {
-                            if i >= num_u8 - 1 {
-                                continue 'outer
-                            }
-                            result.wrapping_lshr_assign(8usize).unwrap();
-                            assert_eq!(result.clone().resize_to_u8(),0);
-                        }
-                        for i in 0..nines_before_eight {
-                            if zeros_after_one + i >= num_u8 - 1 {
-                                continue 'outer
-                            }
-                            result.wrapping_lshr_assign(8usize).unwrap();
-                            assert_eq!(result.clone().resize_to_u8(), u8::MAX);
-                        }
-                        if zeros_after_one + nines_before_eight >= num_u8 - 1 {
-                            continue 'outer
-                        }
-                        result.wrapping_lshr_assign(8usize).unwrap();
-                        assert_eq!(result.clone().resize_to_u8(),u8::MAX - 1);
-                        for i in 0..nines_after_eight {
-                            if 1 + zeros_after_one + nines_before_eight + i >= num_u8 - 1 {
-                                continue 'outer
-                            }
-                            result.wrapping_lshr_assign(8usize).unwrap();
-                            assert_eq!(result.clone().resize_to_u8(),u8::MAX);
-                        }
-                    }
-                }
-            }
-            //test inl apints
-            assert_eq!(
-                ApInt::from(u8::MAX)
-                    .into_wrapping_mul(&ApInt::from(u8::MAX))
-                    .unwrap(),
-                ApInt::from(1u8)
-            );
-            nine_test(2);
-            nine_test(3);
-            nine_test(4);
-            nine_test(7);
-            nine_test(8);
-            //test ext apints
-            nine_test(9);
-            nine_test(16);
-            //5 digits wide
-            nine_test(40);
-            nine_test(63);
-            //non overflowing test
-            let resize = [
-                7usize, 8, 9, 15, 16, 17, 31, 32, 33, 63, 64, 65, 127, 128, 129, 137, 200, 255,
-                256, 700, 907, 1024, 2018, 2019,
-            ];
-            let lhs_shl = [
-                0usize, 1, 0, 1, 4, 7, 4, 10, 13, 0, 31, 25, 7, 17, 32, 50, 0, 64, 249, 8, 777, 0,
-                1000, 0,
-            ];
-            let rhs_shl = [
-                0usize, 0, 1, 1, 3, 6, 4, 14, 10, 0, 0, 25, 0, 18, 32, 49, 100, 64, 0, 256, 64,
-                900, 1000, 0,
-            ];
-            for (i, _) in resize.iter().enumerate() {
-                let mut lhs = ApInt::from(5u8)
-                    .into_zero_resize(BitWidth::new(resize[i]).unwrap())
-                    .into_wrapping_shl(lhs_shl[i])
-                    .unwrap();
-                let mut rhs = ApInt::from(11u8)
-                    .into_zero_resize(BitWidth::new(resize[i]).unwrap())
-                    .into_wrapping_shl(rhs_shl[i])
-                    .unwrap();
-                let mut zero = ApInt::from(0u8).into_zero_resize(BitWidth::new(resize[i]).unwrap());
-                let mut one = ApInt::from(1u8).into_zero_resize(BitWidth::new(resize[i]).unwrap());
-                let mut expected = ApInt::from(55u8)
-                    .into_zero_resize(BitWidth::new(resize[i]).unwrap())
-                    .into_wrapping_shl(rhs_shl[i] + lhs_shl[i])
-                    .unwrap();
-                assert_eq!(lhs.clone().into_wrapping_mul(&zero).unwrap(), zero);
-                assert_eq!(zero.clone().into_wrapping_mul(&rhs).unwrap(), zero);
-                assert_eq!(lhs.clone().into_wrapping_mul(&one).unwrap(), lhs);
-                assert_eq!(one.clone().into_wrapping_mul(&rhs).unwrap(), rhs);
-                assert_eq!(lhs.clone().into_wrapping_mul(&rhs).unwrap(), expected);
-            }
-            assert_eq!(
-                ApInt::from([0,0,0,0,u64::MAX,0,u64::MAX,u64::MAX])
-                .into_wrapping_mul(&ApInt::from([0,0,0,0,u64::MAX,u64::MAX,0,u64::MAX])).unwrap()
-                ,ApInt::from([u64::MAX,0,1,u64::MAX - 3,1,u64::MAX,u64::MAX,1]));
-        }
-    }
+    use crate::info::BitWidth;
 
     mod div_rem {
         use super::*;
-        use bitwidth::BitWidth;
         use std::u64;
 
         //TODO: add division by zero testing after error refactoring is finished
@@ -2096,17 +1252,17 @@ mod tests {
                 900, 1000, 0,
             ];
             for (i, _) in resize.iter().enumerate() {
-                let mut lhs = ApInt::from(5u8)
+                let lhs = ApInt::from(5u8)
                     .into_zero_resize(BitWidth::new(resize[i]).unwrap())
                     .into_wrapping_shl(lhs_shl[i])
                     .unwrap();
-                let mut rhs = ApInt::from(11u8)
+                let rhs = ApInt::from(11u8)
                     .into_zero_resize(BitWidth::new(resize[i]).unwrap())
                     .into_wrapping_shl(rhs_shl[i])
                     .unwrap();
-                let mut zero = ApInt::from(0u8).into_zero_resize(BitWidth::new(resize[i]).unwrap());
-                let mut one = ApInt::from(1u8).into_zero_resize(BitWidth::new(resize[i]).unwrap());
-                let mut product = lhs.clone().into_wrapping_mul(&rhs).unwrap();
+                let zero = ApInt::from(0u8).into_zero_resize(BitWidth::new(resize[i]).unwrap());
+                let one = ApInt::from(1u8).into_zero_resize(BitWidth::new(resize[i]).unwrap());
+                let product = lhs.clone().into_wrapping_mul(&rhs).unwrap();
                 assert_eq!(zero.clone().into_wrapping_udiv(&lhs).unwrap(), zero);
                 assert_eq!(zero.clone().into_wrapping_udiv(&rhs).unwrap(), zero);
                 assert_eq!(lhs.clone().into_wrapping_udiv(&one).unwrap(), lhs);
@@ -2129,207 +1285,6 @@ mod tests {
                 assert_eq!(product.clone().into_wrapping_add(&one).unwrap().into_wrapping_urem(&lhs).unwrap(), one);
                 assert_eq!(product.clone().into_wrapping_add(&one).unwrap().into_wrapping_urem(&rhs).unwrap(), one);
             }
-        }
-    }
-
-    mod megafuzz {
-        use super::*;
-        use bitwidth::BitWidth;
-        use std::u64;
-        use rand::random;
-
-        //throws all the functions together for an identities party. If one function breaks, the
-        //whole thing should break.
-        fn identities(size: usize, width: BitWidth, zero: &ApInt, lhs: ApInt, rhs: ApInt, third: ApInt) {
-            //basic addition and subtraction tests
-            let shift = random::<usize>() % size;
-            let mut temp = lhs.clone().into_wrapping_inc();
-            assert_eq!(temp, lhs.clone().into_wrapping_add(&ApInt::one(width)).unwrap());
-            assert_eq!(temp, lhs.clone().into_wrapping_sub(&ApInt::all_set(width)).unwrap());
-            temp.wrapping_dec();
-            assert_eq!(temp, lhs);
-            temp.wrapping_dec();
-            assert_eq!(temp, lhs.clone().into_wrapping_sub(&ApInt::one(width)).unwrap());
-            assert_eq!(temp, lhs.clone().into_wrapping_add(&ApInt::all_set(width)).unwrap());
-            temp.wrapping_inc();
-            assert_eq!(temp, lhs);
-            
-            //shifting tests
-            let rotated_left = if shift == 0 {
-                lhs.clone()
-            } else {
-                lhs.clone().into_wrapping_shl(shift).unwrap() | (&lhs.clone().into_wrapping_lshr(size - shift).unwrap())
-            };
-            assert_eq!(rotated_left, lhs.clone().into_rotate_left(shift).unwrap());
-            let rotated_right = if shift == 0 {
-                lhs.clone()
-            } else {
-                lhs.clone().into_wrapping_lshr(shift).unwrap() | (&lhs.clone().into_wrapping_shl(size - shift).unwrap())
-            };
-            assert_eq!(rotated_right, lhs.clone().into_rotate_right(shift).unwrap());
-
-            //multiplication and division tests
-            //the following tests that `((lhs * rhs) + (third % rhs)) / rhs == lhs` and
-            //`((lhs * rhs) + (third % rhs)) % rhs == (third % rhs)`
-            let tot_leading_zeros = lhs.leading_zeros() + rhs.leading_zeros();
-            let anti_overflow_mask = if tot_leading_zeros < size {
-                if rhs.leading_zeros() == 0 {
-                    ApInt::zero(width)
-                } else {
-                    ApInt::one(BitWidth::new(1).unwrap()).into_sign_extend(rhs.leading_zeros()).unwrap().into_zero_extend(width).unwrap()
-                }
-            } else {
-                ApInt::one(BitWidth::new(1).unwrap()).into_sign_extend(width).unwrap()
-            };
-            let mul = (lhs.clone() & &anti_overflow_mask).into_wrapping_mul(&rhs).unwrap();
-            if rhs != *zero {
-                let rem = third.clone().into_wrapping_urem(&rhs).unwrap();
-                let mut temp0 = mul.clone();
-                if !temp0.overflowing_uadd_assign(&rem).unwrap() {
-                    let mut temp1 = rhs.clone();
-                    let mul_plus_rem = temp0.clone();
-                    ApInt::wrapping_udivrem_assign(&mut temp0, &mut temp1).unwrap();
-                    if temp0 != (lhs.clone() & &anti_overflow_mask) {panic!("wrong div\nlhs:{:?}\nrhs:{:?}\nthird:{:?}\nrem:{:?}\nmul:{:?}\nmul_plus_rem:{:?}\ntemp0:{:?}\ntemp1:{:?}",(lhs.clone() & &anti_overflow_mask),rhs,third,rem,mul,mul_plus_rem,temp0,temp1)}
-                    if temp1 != rem {panic!("wrong rem\nlhs:{:?}\nrhs:{:?}\nthird:{:?}\nrem:{:?}\nmul:{:?}\nmul_plus_rem:{:?}\ntemp0:{:?}\ntemp1:{:?}",(lhs.clone() & &anti_overflow_mask),rhs,third,rem,mul,mul_plus_rem,temp0,temp1)}
-                }
-            }
-        }
-
-        //random length AND, XOR, and OR fuzzer;
-        fn fuzz_random(size: usize, iterations: usize) {
-            let width = BitWidth::new(size).unwrap();
-            let mut lhs = ApInt::from(0u8).into_zero_resize(width);
-            let mut rhs = ApInt::from(0u8).into_zero_resize(width);
-            let mut third = ApInt::from(0u8).into_zero_resize(width);
-            let zero = ApInt::from(0u8).into_zero_resize(width);
-            for _ in 0..iterations {
-                let r0 =  random::<usize>() % size;
-                let r1 = random::<usize>() % size;
-                let mask = if r0 == 0 {
-                    ApInt::zero(BitWidth::new(size).unwrap())
-                } else {
-                    ApInt::one(BitWidth::new(1).unwrap())
-                        .into_sign_extend(r0).unwrap()
-                        .into_zero_extend(width).unwrap()
-                        .into_rotate_left(r1).unwrap()
-                };
-                match random::<u8>() % 16 {
-                    0 => lhs |= &mask,
-                    1 => lhs &= &mask,
-                    2 => lhs ^= &mask,
-                    3 => lhs ^= &mask,
-                    4 => rhs |= &mask,
-                    5 => rhs &= &mask,
-                    6 => rhs ^= &mask,
-                    7 => rhs ^= &mask,
-                    8 => third |= &mask,
-                    9 => third &= &mask,
-                    10 => third ^= &mask,
-                    11 => third ^= &mask,
-                    12 => rhs |= &mask,
-                    13 => rhs &= &mask,
-                    14 => rhs ^= &mask,
-                    15 => rhs ^= &mask,
-                    _ => unreachable!()
-                }
-                identities(size, width, &zero, lhs.clone(), lhs.clone(), rhs.clone());
-                identities(size, width, &zero, lhs.clone(), rhs.clone(), third.clone());
-                identities(size, width, &zero, rhs.clone(), lhs.clone(), third.clone());
-                identities(size, width, &zero, third.clone(), lhs.clone(), rhs.clone());
-                identities(size, width, &zero, lhs.clone(), third.clone(), rhs.clone());
-                identities(size, width, &zero, third.clone(), rhs.clone(), lhs.clone());
-                identities(size, width, &zero, rhs.clone(), third.clone(), lhs.clone());
-            }
-        }
-
-        //named so because nesting this causes an explosion in testing time
-        macro_rules! explode {
-            ($cd:ident, $temp:ident, $i_zero:ident, $i_one:ident, $inner:tt) => {{
-                for $i_zero in 0..(2usize.pow(($cd * 2) as u32)) {
-                    let mut $temp: Vec<u64> = Vec::with_capacity($cd);
-                    for $i_one in 0..$cd {
-                        match ($i_zero >> ($i_one * 2)) & 0b11 {
-                            0b0 => $temp.push(0),
-                            0b1 => $temp.push(1),
-                            0b10 => $temp.push(u64::MAX - 1),
-                            0b11 => $temp.push(u64::MAX),
-                            _ => unreachable!()
-                        }
-                    }
-                    $inner
-                }
-            }}
-        }
-
-        //catch edge and corner cases involving 0, 1, Digit::MAX - 1, and Digit::MAX
-        fn fuzz_edge(size: usize) {
-            let width = BitWidth::new(size).unwrap();
-            let zero = ApInt::from(0u8).into_zero_resize(width);
-            let cd = 
-                if (size % 64) == 0 {size / 64}
-                else {(size / 64) + 1};
-            explode!(cd,temp0,i0,i1,
-                {explode!(cd,temp1,i1,i2,
-                    {explode!(cd,temp2,i2,i3,
-                        {identities(size, width, &zero,
-                            ApInt::from_vec_u64(temp0.clone()).unwrap().into_truncate(size).unwrap(),
-                            ApInt::from_vec_u64(temp1.clone()).unwrap().into_truncate(size).unwrap(),
-                            ApInt::from_vec_u64(temp2.clone()).unwrap().into_truncate(size).unwrap());}
-                    )}
-                )}
-            )
-        }
-
-        #[test]
-        fn fuzz_test() {
-            assert_eq!(ApInt::from_vec_u64(vec![32u64,234,23]).unwrap(),ApInt::from([32u64,234,23]));
-            let a = 10000;
-            fuzz_random(1, a);
-            fuzz_random(2, a);
-            fuzz_random(3, a);
-            //trying to catch edge cases by going one bit below and over
-            fuzz_random(31, a);
-            fuzz_random(32, a);
-            fuzz_random(33, a);
-            fuzz_random(63, a);
-            fuzz_random(64, a);
-            fuzz_random(65, a);
-            fuzz_random(127, a);
-            fuzz_random(128, a);
-            fuzz_random(129, a);
-            fuzz_random(191, a);
-            fuzz_random(192, a);
-            fuzz_random(193, a);
-            fuzz_random(255, a);
-            fuzz_random(256, a);
-            fuzz_edge(63);
-            fuzz_edge(64);
-            fuzz_edge(65);
-            fuzz_edge(127);
-            fuzz_edge(128);
-            fuzz_edge(129);
-            fuzz_edge(191);
-            fuzz_edge(192);
-        }
-
-        //takes about an hour on one computer
-        #[test]
-        #[ignore]
-        fn expensive() {
-            let a = 10000;
-            fuzz_random(301, a);
-            fuzz_random(512, a);
-            fuzz_random(777, a);
-            fuzz_random(64*5, a);
-            fuzz_random(16*64, a);
-            //this is for functions like `rotate_left_assign` which like to fail on many digits
-            fuzz_random(33*64, a);
-            for _ in 0..1000 {
-                fuzz_random((random::<usize>() % (16 * 64)) + 1, 100);
-            }
-            fuzz_edge(193);
-            fuzz_edge(255);
-            fuzz_edge(256);
         }
     }
 }

@@ -1,6 +1,5 @@
-use apint::{ApInt};
-use digit::{Digit};
-use bitwidth::{BitWidth};
+use crate::data::{ApInt, Digit};
+use crate::info::BitWidth;
 
 use serde::{
     Serialize,

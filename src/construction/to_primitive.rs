@@ -1,9 +1,5 @@
-use apint::{ApInt};
-use digit;
-use digit::{Digit};
-use bitwidth::{BitWidth};
-use errors::{Result, Error};
-use traits::{Width};
+use crate::data::{ApInt, Digit};
+use crate::info::{BitWidth, Error, Result, Width};
 
 /// Represents a primitive data type.
 /// 
@@ -287,7 +283,7 @@ impl ApInt {
         let ( lsd_0, rest) = self.split_least_significant_digit();
         let (&lsd_1, _) = rest.split_first().unwrap_or((&Digit(0), &[]));
         let mut result: i128 =
-            (i128::from(lsd_1.repr()) << digit::BITS) + i128::from(lsd_0.repr());
+            (i128::from(lsd_1.repr()) << Digit::BITS) + i128::from(lsd_0.repr());
         let actual_width = self.width();
         let target_width = BitWidth::w128();
 
@@ -313,7 +309,7 @@ impl ApInt {
         let ( lsd_0, rest) = self.split_least_significant_digit();
         let (&lsd_1, _) = rest.split_first().unwrap_or((&Digit(0), &[]));
         let result: u128 =
-            (u128::from(lsd_1.repr()) << digit::BITS) + u128::from(lsd_0.repr());
+            (u128::from(lsd_1.repr()) << Digit::BITS) + u128::from(lsd_0.repr());
         result
     }
 }
@@ -541,7 +537,7 @@ impl ApInt {
                 self.clone(), PrimitiveTy::I128).into()
         }
         let mut result: i128 =
-            (i128::from(lsd_1.repr()) << digit::BITS) + i128::from(lsd_0.repr());
+            (i128::from(lsd_1.repr()) << Digit::BITS) + i128::from(lsd_0.repr());
 
         let actual_width = self.width();
         let target_width = BitWidth::w128();
@@ -579,7 +575,7 @@ impl ApInt {
                 self.clone(), PrimitiveTy::U128).into()
         }
         let result: u128 =
-            (u128::from(lsd_1.repr()) << digit::BITS) + u128::from(lsd_0.repr());
+            (u128::from(lsd_1.repr()) << Digit::BITS) + u128::from(lsd_0.repr());
         Ok(result)
     }
 }
@@ -644,7 +640,7 @@ mod tests {
                 match prim_ty {
                     Bool => {
                         let val = val != 0;
-                        (val as u128, ApInt::from_bit(val))
+                        (val as u128, ApInt::from_bool(val))
                     }
                     I8 => {
                         let val = val as i8;
@@ -853,7 +849,7 @@ mod tests {
         }
     }
 
-    mod try {
+    mod try_to {
         use super::*;
 
         #[test]

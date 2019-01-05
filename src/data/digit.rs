@@ -1,8 +1,4 @@
-use bitpos::BitPos;
-use bitwidth::BitWidth;
-use errors::{Error, Result};
-use traits::{Width};
-use checks;
+use crate::info::{BitPos,BitWidth,Error,Result};
 
 use std::ops::{
     BitAnd,
@@ -22,9 +18,13 @@ use std::ops::{
     Rem,
 };
 
+use std::fmt;
+
 /// The type for the internal `Digit` representation.
 /// 
 /// Must be exactly half the size of `DoubleDigitRepr`.
+/// 
+/// Note: when changing this to other built in integers, be sure to change `DoubleDigitRepr` and `Digit::BITS`
 pub(crate) type DigitRepr = u64;
 
 /// The type for the internal `DoubleDigit` representation.
@@ -32,251 +32,42 @@ pub(crate) type DigitRepr = u64;
 /// Must be exactly double the size of `DigitRepr`.
 pub(crate) type DoubleDigitRepr = u128;
 
-/// The amount of bits within a single `Digit`.
-pub(crate) const BITS: usize = 64;
-
 const REPR_ONE : DigitRepr = 0x1;
 const REPR_ZERO: DigitRepr = 0x0;
 const REPR_ONES: DigitRepr = !REPR_ZERO;
-
-pub(crate) const ONE : Digit = Digit(REPR_ONE);
-pub(crate) const ZERO: Digit = Digit(REPR_ZERO);
-pub(crate) const ONES: Digit = Digit(REPR_ONES);
-
-/// Represents the set or unset state of a bit within an `ApInt`.
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
-pub enum Bit {
-    /// Unset, or `false` or `off` state.
-    Unset = 0,
-    /// Set, or `true` or `on` state.
-    Set = 1
-}
-
-impl Bit {
-    /// Converts this `Bit` into a `bool`.
-    /// 
-    /// - `Unset` to `false`
-    /// - `Set` to `true`
-    #[inline]
-    pub fn to_bool(self) -> bool {
-        match self {
-            Bit::Unset => false,
-            Bit::Set   => true
-        }
-    }
-}
-
-impl From<bool> for Bit {
-    #[inline]
-    fn from(flag: bool) -> Bit {
-        if flag { Bit::Set } else { Bit::Unset }
-    }
-}
-
-impl From<Bit> for bool {
-    #[inline]
-    fn from(bit: Bit) -> bool {
-        bit.to_bool()
-    }
-}
 
 /// A (big) digit within an `ApInt` or similar representations.
 /// 
 /// It uses the `DoubleDigit` as computation unit.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub(crate) struct Digit(pub DigitRepr);
-
-use std::fmt;
-
-impl fmt::Binary for Digit {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        self.repr().fmt(f)
-    }
-}
-
-impl fmt::Octal for Digit {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        self.repr().fmt(f)
-    }
-}
-
-impl fmt::LowerHex for Digit {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        self.repr().fmt(f)
-    }
-}
-
-impl fmt::UpperHex for Digit {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        self.repr().fmt(f)
-    }
-}
-
-/// A doubled digit.
-/// 
-/// This is used as a compute unit for `Digit`'s since many `Digit` arithmetic operations
-/// may overflow or have carries this is required in order to not lose those overflow- and underflow values.
-/// 
-/// Has wrapping arithmetics for better machine emulation and improved performance.
-#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub(crate) struct DoubleDigit(pub DoubleDigitRepr);
-
-impl BitOr for DoubleDigit {
-    type Output = Self;
-
-    fn bitor(self, rhs: Self) -> Self {
-        DoubleDigit(self.repr() | rhs.repr())
-    }
-}
-
-impl BitAnd for DoubleDigit {
-    type Output = Self;
-
-    fn bitand(self, rhs: Self) -> Self {
-        DoubleDigit(self.repr() & rhs.repr())
-    }
-}
-
-impl Shl<usize> for DoubleDigit {
-    type Output = DoubleDigit;
-
-    fn shl(self, rhs: usize) -> Self::Output {
-        assert!(rhs < (BITS * 2));
-        DoubleDigit(self.repr().wrapping_shl(rhs as u32))
-    }
-}
-
-impl Shr<usize> for DoubleDigit {
-    type Output = DoubleDigit;
-
-    fn shr(self, rhs: usize) -> Self::Output {
-        assert!(rhs < (BITS * 2));
-        DoubleDigit(self.repr().wrapping_shr(rhs as u32))
-    }
-}
-
-impl Not for DoubleDigit {
-    type Output = Self;
-
-    fn not(self) -> Self::Output {
-        DoubleDigit(!self.repr())
-    }
-}
-
-impl Add for DoubleDigit {
-    type Output = DoubleDigit;
-
-    fn add(self, rhs: DoubleDigit) -> Self::Output {
-        DoubleDigit(self.repr().wrapping_add(rhs.repr()))
-    }
-}
-
-impl Sub for DoubleDigit {
-    type Output = DoubleDigit;
-
-    fn sub(self, rhs: DoubleDigit) -> Self::Output {
-        DoubleDigit(self.repr().wrapping_sub(rhs.repr()))
-    }
-}
-
-impl Mul for DoubleDigit {
-    type Output = DoubleDigit;
-
-    fn mul(self, rhs: DoubleDigit) -> Self::Output {
-        DoubleDigit(self.repr().wrapping_mul(rhs.repr()))
-    }
-}
-
-impl Div for DoubleDigit {
-    type Output = DoubleDigit;
-
-    fn div(self, rhs: DoubleDigit) -> Self::Output {
-        DoubleDigit(self.repr().wrapping_div(rhs.repr()))
-    }
-}
-
-impl Rem for DoubleDigit {
-    type Output = DoubleDigit;
-
-    fn rem(self, rhs: DoubleDigit) -> Self::Output {
-        DoubleDigit(self.repr().wrapping_rem(rhs.repr()))
-    }
-}
-
-impl DoubleDigit {
-    /// Returns the value as its internal representation.
-    pub(crate) fn repr(self) -> DoubleDigitRepr {
-        self.0
-    }
-
-    /// Returns the hi part of this `DoubleDigit` as `Digit`.
-    pub(crate) fn hi(self) -> Digit {
-        Digit((self.0 >> BITS) as DigitRepr)
-    }
-
-    /// Returns the hi part of this `DoubleDigit` as `Digit`.
-    pub(crate) fn lo(self) -> Digit {
-        Digit(self.0 as DigitRepr)
-    }
-
-    /// Returns the lo and hi parts of this `DoubleDigit` as `Digit` each.
-    pub(crate) fn lo_hi(self) -> (Digit, Digit) {
-        (self.lo(), self.hi())
-    }
-
-    /// Returns a `DoubleDigit` from the given lo and hi raw `Digit` parts.
-    pub(crate) fn from_lo_hi(lo: Digit, hi: Digit) -> DoubleDigit {
-        DoubleDigit(DoubleDigitRepr::from(lo.repr()) | (DoubleDigitRepr::from(hi.repr()) << BITS))
-    }
-
-    pub(crate) fn wrapping_add(self, other: DoubleDigit) -> Self {
-        DoubleDigit(self.repr().wrapping_add(other.repr()))
-    }
-
-    pub(crate) fn wrapping_mul(self, other: DoubleDigit) -> Self {
-        DoubleDigit(self.repr().wrapping_mul(other.repr()))
-    }
-
-    pub(crate) fn wrapping_div(self, other: DoubleDigit) -> Self {
-        self.wrapping_divrem(other).0
-    }
-
-    #[cfg(not(feature = "specialized_div_rem"))]
-    pub(crate) fn wrapping_divrem(self,other: DoubleDigit) -> (DoubleDigit,DoubleDigit) {
-        (
-            DoubleDigit(self.repr().wrapping_div(other.repr())),
-            DoubleDigit(self.repr().wrapping_rem(other.repr()))
-        )
-    }
-
-    #[cfg(feature = "specialized_div_rem")]
-    pub(crate) fn wrapping_divrem(self,other: DoubleDigit) -> (DoubleDigit,DoubleDigit) {
-        let temp = specialized_div_rem::u128_div_rem(self.repr(),other.repr());
-        (DoubleDigit(temp.0),DoubleDigit(temp.1))
-    }
-}
-
 /// # Constructors
 impl Digit {
+    /// The amount of bits within a single `Digit`.
+    pub(crate) const BITS: usize = 64;
+    pub(crate) const ONE : Digit = Digit(REPR_ONE);
+    pub(crate) const ZERO: Digit = Digit(REPR_ZERO);
+    pub(crate) const ONES: Digit = Digit(REPR_ONES);
+
     /// Creates a digit that represents the value `0`.
     /// 
     /// **Note:** In twos-complement this means that all bits are `0`.
-    pub fn zero() -> Digit { ZERO }
+    pub fn zero() -> Digit { Digit::ZERO }
 
     /// Creates a digit that represents the value `1`.
-    pub fn one() -> Digit { ONE	}
+    pub fn one() -> Digit { Digit::ONE	}
 
     /// Returns `true` if this `Digit` is zero (`0`).
-    pub fn is_zero(self) -> bool { self == ZERO }
+    pub fn is_zero(self) -> bool { self == Digit::ZERO }
 
     /// Returns `true` if this `Digit` is one (`1`).
-    pub fn is_one(self) -> bool { self == ONE }
+    pub fn is_one(self) -> bool { self == Digit::ONE }
 
     /// Returns `true` if this `Digit` has all bits set.
-    pub fn is_all_set(self) -> bool { self == ONES }
+    pub fn is_all_set(self) -> bool { self == Digit::ONES }
 
     /// Creates a digit where all bits are initialized to `1`.
-    pub fn all_set() -> Digit { ONES }
+    pub fn all_set() -> Digit { Digit::ONES }
 }
 
 /// # Utility & helper methods.
@@ -374,7 +165,7 @@ impl Digit {
         where W: Into<BitWidth>
     {
         let width = width.into();
-        if width.to_usize() > BITS {
+        if width.to_usize() > Digit::BITS {
             return Err(Error::invalid_bitwidth(width.to_usize())
                 .with_annotation(format!("Encountered invalid `BitWidth` for operating \
                                           on a `Digit`.")))
@@ -433,27 +224,15 @@ impl Digit {
     }
 }
 
-impl Width for Digit {
-    fn width(&self) -> BitWidth {
-        BitWidth::w64()
-    }
-}
-
-impl Width for DoubleDigit {
-    fn width(&self) -> BitWidth {
-        BitWidth::w128()
-    }
-}
-
 /// # Bitwise access
 impl Digit {
-    /// Returns the least significant `Bit` of this `Digit`.
+    /// Returns the least significant bit, as a `bool`, of this `Digit`.
     /// 
     /// Note: This may be useful to determine if a `Digit`
     ///       represents an even or an uneven number for example.
     #[inline]
-    pub fn least_significant_bit(self) -> Bit {
-        Bit::from((self.repr() & 0x1) != 0)
+    pub fn least_significant_bit(self) -> bool {
+        (self.repr() & 0x1) != 0
     }
 
     /// Returns `true` if the `n`th bit is set to `1`, else returns `false`.
@@ -462,12 +241,12 @@ impl Digit {
     /// 
     /// If the given `n` is greater than the digit size.
     #[inline]
-    pub fn get<P>(self, pos: P) -> Result<Bit>
+    pub fn get<P>(self, pos: P) -> Result<bool>
         where P: Into<BitPos>
     {
         let pos = pos.into();
-        checks::verify_bit_access(&self, pos)?;
-        Ok(Bit::from(((self.repr() >> pos.to_usize()) & 0x01) == 1))
+        pos.verify_bit_access(&self)?;
+        Ok(((self.repr() >> pos.to_usize()) & 0x1) == 1)
     }
 
     /// Sets the bit at position `pos` to `1`.
@@ -480,8 +259,8 @@ impl Digit {
         where P: Into<BitPos>
     {
         let pos = pos.into();
-        checks::verify_bit_access(self, pos)?;
-        Ok(self.0 |= 0x01 << pos.to_usize())
+        pos.verify_bit_access(self)?;
+        Ok(self.0 |= 0x1 << pos.to_usize())
     }
 
     /// Sets the bit at position `pos` to `0`.
@@ -494,8 +273,8 @@ impl Digit {
         where P: Into<BitPos>
     {
         let pos = pos.into();
-        checks::verify_bit_access(self, pos)?;
-        Ok(self.0 &= !(0x01 << pos.to_usize()))
+        pos.verify_bit_access(self)?;
+        Ok(self.0 &= !(0x1 << pos.to_usize()))
     }
 
     /// Flips the bit at position `pos`.
@@ -508,8 +287,8 @@ impl Digit {
         where P: Into<BitPos>
     {
         let pos = pos.into();
-        checks::verify_bit_access(self, pos)?;
-        Ok(self.0 ^= 0x01 << pos.to_usize())
+        pos.verify_bit_access(self)?;
+        Ok(self.0 ^= 0x1 << pos.to_usize())
     }
 
     /// Sets all bits in this digit to `1`.
@@ -541,16 +320,40 @@ impl Digit {
     /// If the given `n` is greater than the digit size.
     #[inline]
     pub fn retain_last_n(&mut self, n: usize) -> Result<()> {
-        checks::verify_bit_access(self, n)?;
+        BitPos::from(n).verify_bit_access(self)?;
         Ok(self.0 &= !(REPR_ONES << n))
     }
 }
 
-/// # Bitwise operations
+impl fmt::Binary for Digit {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        self.repr().fmt(f)
+    }
+}
 
-impl Digit {
-    pub fn not_inplace(&mut self) {
-        self.0 = !self.repr()
+impl fmt::Octal for Digit {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        self.repr().fmt(f)
+    }
+}
+
+impl fmt::LowerHex for Digit {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        self.repr().fmt(f)
+    }
+}
+
+impl fmt::UpperHex for Digit {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        self.repr().fmt(f)
+    }
+}
+
+impl Not for Digit {
+    type Output = Self;
+
+    fn not(self) -> Self::Output {
+        Digit(!self.repr())
     }
 }
 
@@ -584,7 +387,6 @@ impl BitOrAssign for Digit {
     }
 }
 
-// # Bitwise assign operations
 impl BitAndAssign for Digit {
     fn bitand_assign(&mut self, rhs: Self) {
         self.0 &= rhs.repr()
@@ -613,11 +415,147 @@ impl Shr<usize> for Digit {
     }
 }
 
-impl Not for Digit {
+/// A doubled digit.
+/// 
+/// This is used as a compute unit for `Digit`'s since many `Digit` arithmetic operations
+/// may overflow or have carries this is required in order to not lose those overflow- and underflow values.
+/// 
+/// Has wrapping arithmetics for better machine emulation and improved performance.
+#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub(crate) struct DoubleDigit(pub DoubleDigitRepr);
+
+impl DoubleDigit {
+    /// Returns the value as its internal representation.
+    pub(crate) fn repr(self) -> DoubleDigitRepr {
+        self.0
+    }
+
+    /// Returns the hi part of this `DoubleDigit` as `Digit`.
+    pub(crate) fn hi(self) -> Digit {
+        Digit((self.0 >> Digit::BITS) as DigitRepr)
+    }
+
+    /// Returns the hi part of this `DoubleDigit` as `Digit`.
+    pub(crate) fn lo(self) -> Digit {
+        Digit(self.0 as DigitRepr)
+    }
+
+    /// Returns the lo and hi parts of this `DoubleDigit` as `Digit` each.
+    pub(crate) fn lo_hi(self) -> (Digit, Digit) {
+        (self.lo(), self.hi())
+    }
+
+    /// Returns a `DoubleDigit` from the given lo and hi raw `Digit` parts.
+    pub(crate) fn from_lo_hi(lo: Digit, hi: Digit) -> DoubleDigit {
+        DoubleDigit(DoubleDigitRepr::from(lo.repr()) | (DoubleDigitRepr::from(hi.repr()) << Digit::BITS))
+    }
+
+    pub(crate) fn wrapping_add(self, other: DoubleDigit) -> Self {
+        DoubleDigit(self.repr().wrapping_add(other.repr()))
+    }
+
+    pub(crate) fn wrapping_mul(self, other: DoubleDigit) -> Self {
+        DoubleDigit(self.repr().wrapping_mul(other.repr()))
+    }
+
+    pub(crate) fn wrapping_div(self, other: DoubleDigit) -> Self {
+        self.wrapping_divrem(other).0
+    }
+
+    #[cfg(not(feature = "specialized_div_rem"))]
+    pub(crate) fn wrapping_divrem(self,other: DoubleDigit) -> (DoubleDigit,DoubleDigit) {
+        (
+            DoubleDigit(self.repr().wrapping_div(other.repr())),
+            DoubleDigit(self.repr().wrapping_rem(other.repr()))
+        )
+    }
+
+    #[cfg(feature = "specialized_div_rem")]
+    pub(crate) fn wrapping_divrem(self,other: DoubleDigit) -> (DoubleDigit,DoubleDigit) {
+        let temp = specialized_div_rem::u128_div_rem(self.repr(),other.repr());
+        (DoubleDigit(temp.0),DoubleDigit(temp.1))
+    }
+}
+
+impl Not for DoubleDigit {
     type Output = Self;
 
     fn not(self) -> Self::Output {
-        Digit(!self.repr())
+        DoubleDigit(!self.repr())
+    }
+}
+
+impl BitOr for DoubleDigit {
+    type Output = Self;
+
+    fn bitor(self, rhs: Self) -> Self {
+        DoubleDigit(self.repr() | rhs.repr())
+    }
+}
+
+impl BitAnd for DoubleDigit {
+    type Output = Self;
+
+    fn bitand(self, rhs: Self) -> Self {
+        DoubleDigit(self.repr() & rhs.repr())
+    }
+}
+
+impl Shl<usize> for DoubleDigit {
+    type Output = DoubleDigit;
+
+    fn shl(self, rhs: usize) -> Self::Output {
+        assert!(rhs < (Digit::BITS * 2));
+        DoubleDigit(self.repr().wrapping_shl(rhs as u32))
+    }
+}
+
+impl Shr<usize> for DoubleDigit {
+    type Output = DoubleDigit;
+
+    fn shr(self, rhs: usize) -> Self::Output {
+        assert!(rhs < (Digit::BITS * 2));
+        DoubleDigit(self.repr().wrapping_shr(rhs as u32))
+    }
+}
+
+impl Add for DoubleDigit {
+    type Output = DoubleDigit;
+
+    fn add(self, rhs: DoubleDigit) -> Self::Output {
+        DoubleDigit(self.repr().wrapping_add(rhs.repr()))
+    }
+}
+
+impl Sub for DoubleDigit {
+    type Output = DoubleDigit;
+
+    fn sub(self, rhs: DoubleDigit) -> Self::Output {
+        DoubleDigit(self.repr().wrapping_sub(rhs.repr()))
+    }
+}
+
+impl Mul for DoubleDigit {
+    type Output = DoubleDigit;
+
+    fn mul(self, rhs: DoubleDigit) -> Self::Output {
+        DoubleDigit(self.repr().wrapping_mul(rhs.repr()))
+    }
+}
+
+impl Div for DoubleDigit {
+    type Output = DoubleDigit;
+
+    fn div(self, rhs: DoubleDigit) -> Self::Output {
+        DoubleDigit(self.repr().wrapping_div(rhs.repr()))
+    }
+}
+
+impl Rem for DoubleDigit {
+    type Output = DoubleDigit;
+
+    fn rem(self, rhs: DoubleDigit) -> Self::Output {
+        DoubleDigit(self.repr().wrapping_rem(rhs.repr()))
     }
 }
 
@@ -625,24 +563,9 @@ impl Not for Digit {
 mod tests {
     use super::*;
 
-    mod bit {
-        use super::*;
-
-        #[test]
-        fn from_bool() {
-            assert_eq!(Bit::from(true) , Bit::Set);
-            assert_eq!(Bit::from(false), Bit::Unset);
-        }
-
-        #[test]
-        fn from_bit() {
-            assert_eq!(bool::from(Bit::Set)  , true);
-            assert_eq!(bool::from(Bit::Unset), false);
-        }
-    }
-
     mod double_digit {
         use super::*;
+        use crate::info::Width;
 
         static TEST_VALUES: &[DoubleDigitRepr] = &[0, 1, 2, 10, 42, 1337];
 
@@ -831,6 +754,7 @@ mod tests {
 
     mod digit {
         use super::*;
+        use crate::info::Width;
 
         use std::usize;
 
@@ -883,8 +807,8 @@ mod tests {
 
         #[test]
         fn width() {
-            assert_eq!(digit::ONES.width(), BitWidth::w64());
-            assert_eq!(digit::ZERO.width(), BitWidth::w64());
+            assert_eq!(Digit::ONES.width(), BitWidth::w64());
+            assert_eq!(Digit::ZERO.width(), BitWidth::w64());
             assert_eq!(even_digit().width(), BitWidth::w64());
             assert_eq!(odd_digit().width(), BitWidth::w64());
         }
@@ -892,10 +816,10 @@ mod tests {
         #[test]
         fn get_ok() {
             for &pos in VALID_TEST_POS_VALUES {
-                assert_eq!(digit::ONES.get(pos), Ok(Bit::Set));
-                assert_eq!(digit::ZERO.get(pos), Ok(Bit::Unset));
-                assert_eq!(even_digit().get(pos), Ok(if pos % 2 == 0 { Bit::Set } else { Bit::Unset }));
-                assert_eq!(odd_digit().get(pos), Ok(if pos % 2 == 1 { Bit::Set } else { Bit::Unset }));
+                assert_eq!(Digit::ONES.get(pos), Ok(true));
+                assert_eq!(Digit::ZERO.get(pos), Ok(false));
+                assert_eq!(even_digit().get(pos), Ok(pos % 2 == 0));
+                assert_eq!(odd_digit().get(pos), Ok(pos % 2 == 1));
             }
         }
 
@@ -903,8 +827,8 @@ mod tests {
         fn get_fail() {
             for &pos in INVALID_TEST_POS_VALUES {
                 let expected_err = Err(Error::invalid_bit_access(pos, BitWidth::w64()));
-                assert_eq!(digit::ONES.get(pos), expected_err);
-                assert_eq!(digit::ZERO.get(pos), expected_err);
+                assert_eq!(Digit::ONES.get(pos), expected_err);
+                assert_eq!(Digit::ZERO.get(pos), expected_err);
                 assert_eq!(digit::even_digit().get(pos), expected_err);
                 assert_eq!(digit::odd_digit().get(pos), expected_err);
             }
@@ -916,7 +840,7 @@ mod tests {
                 let mut digit = Digit(val);
                 for &pos in VALID_TEST_POS_VALUES {
                     digit.set(pos).unwrap();
-                    assert_eq!(digit.get(pos), Ok(Bit::Set));
+                    assert_eq!(digit.get(pos), Ok(true));
                 }
             }
         }
@@ -925,8 +849,8 @@ mod tests {
         fn set_fail() {
             for &pos in INVALID_TEST_POS_VALUES {
                 let expected_err = Err(Error::invalid_bit_access(pos, BitWidth::w64()));
-                assert_eq!(digit::ONES.set(pos), expected_err);
-                assert_eq!(digit::ZERO.set(pos), expected_err);
+                assert_eq!(Digit::ONES.set(pos), expected_err);
+                assert_eq!(Digit::ZERO.set(pos), expected_err);
                 assert_eq!(digit::even_digit().set(pos), expected_err);
                 assert_eq!(digit::odd_digit().set(pos), expected_err);
             }
@@ -944,7 +868,7 @@ mod tests {
 
         #[test]
         fn retain_last_n() {
-            let mut d = ONES;
+            let mut d = Digit::ONES;
             d.retain_last_n(32).unwrap();
             assert_eq!(d, Digit(0x0000_0000_FFFF_FFFF));
         }

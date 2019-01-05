@@ -7,8 +7,8 @@
 //! or for solving bitvector formulas of SMT solvers.
 //! 
 //! Internally `ApInt` uses small-value optimization for values with a bit-width less than or
-//! equal to `64` bits. It uses `64` bit digits and thus its algorithms computes within the base
-//! of 2<sup>64</sup>.
+//! equal to `64` bits. It uses `64` bit `Digit`s (by default, however it can be configured to use
+//! other types) and thus its algorithms computes within the base of 2<sup>64</sup>.
 //! 
 //! The `ApInt` data structure does **not** know signedness. Instead, the operations defined on it
 //! (methods) do so. This makes it the perfect building block for higher-level primitives later on.
@@ -16,13 +16,7 @@
 //! The crate was designed for correctness of emulation and performance in mind and the interface
 //! of `ApInt` is very comprehensive.
 
-// #![allow(dead_code)]
-// #![deny(missing_docs)]
-// #![deny(warnings)]
-
 #![doc(html_root_url = "https://docs.rs/crate/apint/0.2.0")]
-
-extern crate smallvec;
 
 #[cfg(feature = "specialized_div_rem")]
 extern crate specialized_div_rem;
@@ -34,7 +28,6 @@ extern crate rand;
 extern crate serde;
 
 #[cfg(feature = "serde_support")]
-#[cfg_attr(feature = "serde_support", macro_use)]
 extern crate serde_derive;
 
 #[cfg(all(test, feature = "serde_support"))]
@@ -43,36 +36,32 @@ extern crate serde_test;
 #[cfg(test)]
 extern crate itertools;
 
-mod errors;
-mod traits;
-mod digit;
-mod bitwidth;
-mod bitpos;
-mod storage;
-mod radix;
-mod apint;
-mod digit_seq;
-mod checks;
-mod uint;
-mod int;
-mod utils;
+//NOTE: the file structure used in this library has less to do with the actual dependencies between
+//files and more about organizing files in a way that helps with programmers finding where stuff is.
 
-pub use apint::{
-    ApInt,
-    ShiftAmount
-};
-pub use errors::{
+//The `ApInt` definition and most of the extremely unsafe function impls on `ApInt`s are located in
+//`apint.rs`. The other bulk of unsafe functions is found in `access.rs` and `constructors.rs`.
+
+pub(crate) mod info;
+pub(crate) mod data;
+pub(crate) mod construction;
+pub(crate) mod logic;
+
+pub use crate::info::{
+    Radix,
+    BitWidth,
+    BitPos,
+    Width,
+    ShiftAmount,
     Result,
     Error,
     ErrorKind
 };
-pub use bitwidth::BitWidth;
-pub use digit::{Bit};
-pub use radix::{Radix};
-pub use bitpos::{BitPos};
-pub use traits::{Width};
-pub use uint::{UInt};
-pub use int::{Int};
+pub use crate::data::{
+    ApInt,
+    UInt,
+    Int
+};
 
 /// Re-exports some commonly used items of this crate.
 pub mod prelude {

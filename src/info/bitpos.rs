@@ -1,5 +1,5 @@
-use errors::{Result};
-use digit;
+use crate::data::Digit;
+use crate::info::{Result, Error, Width};
 
 /// Represents a bit position within an `ApInt`.
 /// 
@@ -34,16 +34,27 @@ impl BitPos {
     /// on `Digit` instances.
     #[inline]
     pub(crate) fn to_pos_within_digit(self) -> BitPos {
-        BitPos(self.0 % digit::BITS)
+        BitPos(self.0 % Digit::BITS)
     }
 
     /// Splits this `BitPos` that may range over several `Digit`s within an `ApInt`
     /// into the associated `Digit` offset and its `Digit`-relative bit position.
     #[inline]
     pub(crate) fn to_digit_and_bit_pos(self) -> (DigitPos, BitPos) {
-        let digit_pos = DigitPos::from(self.0 / digit::BITS);
-        let bit_pos = BitPos::from(self.0 % digit::BITS);
+        let digit_pos = DigitPos::from(self.0 / Digit::BITS);
+        let bit_pos = BitPos::from(self.0 % Digit::BITS);
         (digit_pos, bit_pos)
+    }
+
+    #[inline]
+    pub(crate) fn verify_bit_access<T>(self, a: &T) -> Result<()>
+        where T: Width,
+    {
+        let width = a.width();
+        if !width.is_valid_pos(self) {
+            return Err(Error::invalid_bit_access(self, width))
+        }
+        Ok(())
     }
 }
 
@@ -53,6 +64,7 @@ impl From<usize> for BitPos {
         BitPos(pos)
     }
 }
+
 
 #[cfg(test)]
 mod tests {

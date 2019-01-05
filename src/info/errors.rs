@@ -1,8 +1,6 @@
-use bitwidth::BitWidth;
-use bitpos::BitPos;
-use radix::Radix;
-use apint::{ApInt, ShiftAmount};
-use apint::{PrimitiveTy};
+use crate::info::{Radix, BitPos, BitWidth, ShiftAmount};
+use crate::data::{ApInt};
+use crate::construction::PrimitiveTy;
 
 use std::result;
 use std::error;
@@ -117,9 +115,7 @@ pub struct Error {
     annotation: Option<String>
 }
 
-//  ===========================================================================
 ///  Public getters for `Error`.
-/// ===========================================================================
 impl Error {
     /// Returns a reference to the kind of this `Error`.
     #[inline]
@@ -143,9 +139,7 @@ impl Error {
     }
 }
 
-//  ===========================================================================
 ///  Extending constructors for `Error`.
-/// ===========================================================================
 impl Error {
     #[inline]
     pub(crate) fn with_annotation<A>(mut self, annotation: A) -> Error
@@ -156,9 +150,7 @@ impl Error {
     }
 }
 
-//  ===========================================================================
 ///  Default constructors for `Error`.
-/// ===========================================================================
 impl Error {
     pub(crate) fn invalid_radix(val: u8) -> Error {
         Error{

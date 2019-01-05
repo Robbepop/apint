@@ -1,27 +1,13 @@
-use apint::{ApInt};
-use digit::{Bit};
-use digit;
-use errors::{Result};
-use apint::utils::{
-    DataAccess,
-    DataAccessMut
-};
-use bitpos::{BitPos};
-use traits::{Width};
-use checks;
-use utils::{try_forward_bin_mut_impl, forward_mut_impl};
-
-use std::ops::{
-    Not,
-    BitAnd,
-    BitOr,
-    BitXor,
-    BitAndAssign,
-    BitOrAssign,
-    BitXorAssign
-};
+use crate::data::{ApInt, Digit, DataAccess, DataAccessMut};
+use crate::info::{Result, BitPos, Width};
+use crate::logic::{try_forward_bin_mut_impl, forward_mut_impl};
 
 /// # Bitwise Operations
+/// 
+/// **Note**: unless otherwise noted in the function specific documentation,
+/// 
+/// - **An Error is returned** if function arguments have unmatching bitwidths.
+/// - The functions do **not** allocate memory.
 impl ApInt {
     /// Flips all bits of `self` and returns the result.
     pub fn into_bitnot(self) -> Self {
@@ -30,91 +16,60 @@ impl ApInt {
 
     /// Flip all bits of this `ApInt` inplace.
     pub fn bitnot(&mut self) {
-        self.modify_digits(|digit| digit.not_inplace());
+        self.modify_digits(|digit| digit.flip_all());
         self.clear_unused_bits();
     }
 
     /// Tries to bit-and assign this `ApInt` inplace to `rhs`
     /// and returns the result.
-    /// 
-    /// # Errors
-    /// 
-    /// If `self` and `rhs` have unmatching bit widths.
     pub fn into_bitand(self, rhs: &ApInt) -> Result<ApInt> {
         try_forward_bin_mut_impl(self, rhs, ApInt::bitand_assign)
     }
 
     /// Bit-and assigns all bits of this `ApInt` with the bits of `rhs`.
-    /// 
-    /// **Note:** This operation is inplace of `self` and won't allocate memory.
-    /// 
-    /// # Errors
-    /// 
-    /// If `self` and `rhs` have unmatching bit widths.
     pub fn bitand_assign(&mut self, rhs: &ApInt) -> Result<()> {
         self.modify_zipped_digits(rhs, |l, r| *l &= r)
     }
 
     /// Tries to bit-and assign this `ApInt` inplace to `rhs`
     /// and returns the result.
-    /// 
-    /// # Errors
-    /// 
-    /// If `self` and `rhs` have unmatching bit widths.
     pub fn into_bitor(self, rhs: &ApInt) -> Result<ApInt> {
         try_forward_bin_mut_impl(self, rhs, ApInt::bitor_assign)
     }
 
     /// Bit-or assigns all bits of this `ApInt` with the bits of `rhs`.
-    /// 
-    /// **Note:** This operation is inplace of `self` and won't allocate memory.
-    /// 
-    /// # Errors
-    /// 
-    /// If `self` and `rhs` have unmatching bit widths.
     pub fn bitor_assign(&mut self, rhs: &ApInt) -> Result<()> {
         self.modify_zipped_digits(rhs, |l, r| *l |= r)
     }
 
     /// Tries to bit-xor assign this `ApInt` inplace to `rhs`
     /// and returns the result.
-    /// 
-    /// # Errors
-    /// 
-    /// If `self` and `rhs` have unmatching bit widths.
     pub fn into_bitxor(self, rhs: &ApInt) -> Result<ApInt> {
         try_forward_bin_mut_impl(self, rhs, ApInt::bitxor_assign)
     }
 
     /// Bit-xor assigns all bits of this `ApInt` with the bits of `rhs`.
-    /// 
-    /// **Note:** This operation is inplace of `self` and won't allocate memory.
-    /// 
-    /// # Errors
-    /// 
-    /// If `self` and `rhs` have unmatching bit widths.
     pub fn bitxor_assign(&mut self, rhs: &ApInt) -> Result<()> {
         self.modify_zipped_digits(rhs, |l, r| *l ^= r)
     }
 }
 
 /// # Bitwise Access
+/// 
+/// **Note**: unless otherwise noted in the function specific documentation,
+/// 
+/// - The functions do **not** allocate memory.
 impl ApInt {
     /// Returns the bit at the given bit position `pos`.
-    /// 
-    /// This returns
-    /// 
-    /// - `Bit::Set` if the bit at `pos` is `1`
-    /// - `Bit::Unset` otherwise
     /// 
     /// # Errors
     /// 
     /// - If `pos` is not a valid bit position for the width of this `ApInt`.
-    pub fn get_bit_at<P>(&self, pos: P) -> Result<Bit>
+    pub fn get_bit_at<P>(&self, pos: P) -> Result<bool>
         where P: Into<BitPos>
     {
         let pos = pos.into();
-        checks::verify_bit_access(self, pos)?;
+        pos.verify_bit_access(self)?;
         match self.access_data() {
             DataAccess::Inl(digit) => digit.get(pos),
             DataAccess::Ext(digits) => {
@@ -133,7 +88,7 @@ impl ApInt {
         where P: Into<BitPos>
     {
         let pos = pos.into();
-        checks::verify_bit_access(self, pos)?;
+        pos.verify_bit_access(self)?;
         match self.access_data_mut() {
             DataAccessMut::Inl(digit) => digit.set(pos),
             DataAccessMut::Ext(digits) => {
@@ -152,7 +107,7 @@ impl ApInt {
         where P: Into<BitPos>
     {
         let pos = pos.into();
-        checks::verify_bit_access(self, pos)?;
+        pos.verify_bit_access(self)?;
         match self.access_data_mut() {
             DataAccessMut::Inl(digit) => digit.unset(pos),
             DataAccessMut::Ext(digits) => {
@@ -176,7 +131,7 @@ impl ApInt {
         where P: Into<BitPos>
     {
         let pos = pos.into();
-        checks::verify_bit_access(self, pos)?;
+        pos.verify_bit_access(self)?;
         match self.access_data_mut() {
             DataAccessMut::Inl(digit) => digit.flip(pos),
             DataAccessMut::Ext(digits) => {
@@ -192,7 +147,7 @@ impl ApInt {
         self.clear_unused_bits();
     }
 
-    /// Returns``true` if all bits in the `ApInt` are set.
+    /// Returns `true` if all bits in the `ApInt` are set.
     pub fn is_all_set(&self) -> bool {
         let (msb, rest) = self.split_most_significant_digit();
         if let Some(excess_bits) = self.width().excess_bits() {
@@ -223,7 +178,7 @@ impl ApInt {
     /// Returns the sign bit of this `ApInt`.
     /// 
     /// **Note:** This is equal to the most significant bit of this `ApInt`.
-    pub fn sign_bit(&self) -> Bit {
+    pub fn sign_bit(&self) -> bool {
         self.most_significant_bit()
     }
 
@@ -277,7 +232,7 @@ impl ApInt {
         // Since `ApInt` instances with width's that are no powers of two
         // have unused excess bits that are always zero we need to cut them off
         // for a correct implementation of this operation.
-        zeros - (digit::BITS - self.width().excess_bits().unwrap_or(digit::BITS))
+        zeros - (Digit::BITS - self.width().excess_bits().unwrap_or(Digit::BITS))
     }
 
     /// Returns the number of leading zeros in the binary representation of this `ApInt`.
@@ -286,11 +241,11 @@ impl ApInt {
         for d in self.as_digit_slice().into_iter().rev() {
             let leading_zeros = d.repr().leading_zeros() as usize;
             zeros += leading_zeros;
-            if leading_zeros != digit::BITS {
+            if leading_zeros != Digit::BITS {
                 break;
             }
         }
-        zeros - (digit::BITS - self.width().excess_bits().unwrap_or(digit::BITS))
+        zeros - (Digit::BITS - self.width().excess_bits().unwrap_or(Digit::BITS))
     }
 
     /// Returns the number of trailing zeros in the binary representation of this `ApInt`.
@@ -299,140 +254,21 @@ impl ApInt {
         for d in self.as_digit_slice() {
             let trailing_zeros = d.repr().trailing_zeros() as usize;
             zeros += trailing_zeros;
-            if trailing_zeros != digit::BITS {
+            if trailing_zeros != Digit::BITS {
                 break;
             }
         }
         if zeros >= self.width().to_usize() {
-            zeros -= digit::BITS - self.width().excess_bits().unwrap_or(digit::BITS);
+            zeros -= Digit::BITS - self.width().excess_bits().unwrap_or(Digit::BITS);
         }
         zeros
-    }
-}
-
-//  ===========================================================================
-//  `Not` (bitwise) impls
-//  ===========================================================================
-
-impl Not for ApInt {
-    type Output = ApInt;
-
-    fn not(self) -> Self::Output {
-        forward_mut_impl(self, ApInt::bitnot)
-    }
-}
-
-//  ===========================================================================
-//  `BitAnd` impls
-//  ===========================================================================
-
-impl<'a> BitAnd<&'a ApInt> for ApInt {
-    type Output = ApInt;
-
-    fn bitand(self, rhs: &'a ApInt) -> Self::Output {
-        self.into_bitand(rhs).unwrap()
-    }
-}
-
-impl<'a, 'b> BitAnd<&'a ApInt> for &'b ApInt {
-    type Output = ApInt;
-
-    fn bitand(self, rhs: &'a ApInt) -> Self::Output {
-        self.clone().into_bitand(rhs).unwrap()
-    }
-}
-
-impl<'a, 'b> BitAnd<&'a ApInt> for &'b mut ApInt {
-    type Output = ApInt;
-
-    fn bitand(self, rhs: &'a ApInt) -> Self::Output {
-        self.clone().into_bitand(rhs).unwrap()
-    }
-}
-
-//  ===========================================================================
-//  `BitOr` impls
-//  ===========================================================================
-
-impl<'a> BitOr<&'a ApInt> for ApInt {
-    type Output = ApInt;
-
-    fn bitor(self, rhs: &'a ApInt) -> Self::Output {
-        self.into_bitor(rhs).unwrap()
-    }
-}
-
-impl<'a, 'b> BitOr<&'a ApInt> for &'b ApInt {
-    type Output = ApInt;
-
-    fn bitor(self, rhs: &'a ApInt) -> Self::Output {
-        self.clone().into_bitor(rhs).unwrap()
-    }
-}
-
-impl<'a, 'b> BitOr<&'a ApInt> for &'b mut ApInt {
-    type Output = ApInt;
-
-    fn bitor(self, rhs: &'a ApInt) -> Self::Output {
-        self.clone().into_bitor(rhs).unwrap()
-    }
-}
-
-//  ===========================================================================
-//  `BitXor` impls
-//  ===========================================================================
-
-impl<'a> BitXor<&'a ApInt> for ApInt {
-    type Output = ApInt;
-
-    fn bitxor(self, rhs: &'a ApInt) -> Self::Output {
-        self.into_bitxor(rhs).unwrap()
-    }
-}
-
-impl<'a, 'b> BitXor<&'a ApInt> for &'b ApInt {
-    type Output = ApInt;
-
-    fn bitxor(self, rhs: &'a ApInt) -> Self::Output {
-        self.clone().into_bitxor(rhs).unwrap()
-    }
-}
-
-impl<'a, 'b> BitXor<&'a ApInt> for &'b mut ApInt {
-    type Output = ApInt;
-
-    fn bitxor(self, rhs: &'a ApInt) -> Self::Output {
-        self.clone().into_bitxor(rhs).unwrap()
-    }
-}
-
-//  ===========================================================================
-//  `BitAndAssign`, `BitOrAssign` and `BitXorAssign` impls
-//  ===========================================================================
-
-impl<'a> BitAndAssign<&'a ApInt> for ApInt {
-    fn bitand_assign(&mut self, rhs: &'a ApInt) {
-        self.bitand_assign(rhs).unwrap();
-    }
-}
-
-impl<'a> BitOrAssign<&'a ApInt> for ApInt {
-    fn bitor_assign(&mut self, rhs: &'a ApInt) {
-        self.bitor_assign(rhs).unwrap();
-    }
-}
-
-impl<'a> BitXorAssign<&'a ApInt> for ApInt {
-    fn bitxor_assign(&mut self, rhs: &'a ApInt) {
-        self.bitxor_assign(rhs).unwrap();
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    use bitwidth::{BitWidth};
+    use crate::info::BitWidth;
 
     #[test]
     fn count_ones() {

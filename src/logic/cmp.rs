@@ -1,11 +1,5 @@
-use apint::{ApInt};
-use apint::utils::{
-    ZipDataAccess
-};
-use errors::{Result};
-use traits::Width;
-use digit;
-use digit::{Bit};
+use crate::data::{ApInt, Digit, DataAccess, ZipDataAccess};
+use crate::info::{Result, Width};
 
 use std::cmp::Ordering;
 use std::ops::Not;
@@ -23,19 +17,76 @@ impl PartialEq for ApInt {
 impl Eq for ApInt {}
 
 /// # Comparison Operations
+/// 
+/// **Note**: unless otherwise noted in the function specific documentation,
+/// 
+/// - **An Error is returned** if function arguments have unmatching bitwidths.
+/// - The functions do **not** allocate memory.
+/// - The function works for both signed and unsigned interpretations of an `ApInt`. In other words, in the low-level bit-wise representation there is no difference between a signed and unsigned operation by a certain function on fixed bit-width integers. (Cite: LLVM)
 impl ApInt {
-
-    /// Unsigned less-than (`ult`) comparison between `self` and `rhs`.
+    /// Returns `true` if this `ApInt` represents the value zero (`0`).
     /// 
     /// # Note
     /// 
-    /// - `checked_` for this function means that it checks the bit widths
-    /// - Returns `Ok(true)` if `self < rhs`.
-    /// - Interprets both `ApInt` instances as **unsigned** values.
+    /// - Zero (`0`) is also called the additive neutral element.
+    /// - This operation is more efficient than comparing two instances of `ApInt`
+    #[inline]    
+    pub fn is_zero(&self) -> bool {
+        match self.access_data() {
+            DataAccess::Inl(digit) => digit.is_zero(),
+            DataAccess::Ext(digits) => {
+                digits.into_iter().all(|digit| digit.is_zero())
+            }
+        }
+    }
+
+    /// Returns `true` if this `ApInt` represents the value one (`1`).
     /// 
-    /// # Errors
+    /// # Note
     /// 
-    /// - If `self` and `rhs` have unmatching bit widths.
+    /// - One (`1`) is also called the multiplicative neutral element.
+    /// - This operation is more efficient than comparing two instances of `ApInt`
+    #[inline]    
+    pub fn is_one(&self) -> bool {
+        match self.access_data() {
+            DataAccess::Inl(digit) => digit == Digit::one(),
+            DataAccess::Ext(digits) => {
+                let (last, rest) = digits.split_last().unwrap_or_else(|| unreachable!());
+                last.is_one() && rest.into_iter().all(|digit| digit.is_zero())
+            }
+        }
+    }
+
+    /// Returns `true` if this `ApInt` represents an even number.
+    /// Equivalent to testing if the least significant bit is zero.
+    #[inline]
+    pub fn is_even(&self) -> bool {
+        self.least_significant_bit() == false
+    }
+
+    /// Returns `true` if this `ApInt` represents an odd number.
+    /// Equivalent to testing if the least significant bit is one.
+    #[inline]
+    pub fn is_odd(&self) -> bool {
+        self.least_significant_bit() == true
+    }
+
+    /// Returns `true` if the **signed** representation of this `ApInt` is positive.
+    /// Equivalent to testing if the most significant bit is zero.
+    #[inline]
+    pub fn is_positive(&self) -> bool {
+        self.most_significant_bit() == false
+    }
+
+    /// Returns `true` if the **signed** representation of this `ApInt` is negative.
+    /// Equivalent to testing if the most significant bit is one.
+    #[inline]
+    pub fn is_negative(&self) -> bool {
+        self.most_significant_bit() == true
+    }
+
+    /// Unsigned less-than (`ult`) comparison between `self` and `rhs`, meaning the returned boolean
+    /// indicates if `self < rhs` for the **unsigned** interpretation of `ApInt`s.
     pub fn checked_ult(&self, rhs: &ApInt) -> Result<bool> {
         match self
             .zip_access_data(rhs)
@@ -64,17 +115,8 @@ impl ApInt {
         }
     }
 
-    /// Unsigned less-equals (`ule`) comparison between `self` and `rhs`.
-    /// 
-    /// # Note
-    /// 
-    /// - `checked_` for this function means that it checks the bit widths
-    /// - Returns `Ok(true)` if `self <= rhs`.
-    /// - Interprets both `ApInt` instances as **unsigned** values.
-    /// 
-    /// # Errors
-    /// 
-    /// - If `self` and `rhs` have unmatching bit widths.
+    /// Unsigned less-equals (`ule`) comparison between `self` and `rhs`, meaning the returned
+    /// boolean indicates if `self <= rhs` for the **unsigned** interpretation of `ApInt`s.
     #[inline]
     pub fn checked_ule(&self, rhs: &ApInt) -> Result<bool> {
         rhs.checked_ult(self).map(Not::not)
@@ -86,17 +128,8 @@ impl ApInt {
             ))
     }
 
-    /// Unsigned greater-than (`ugt`) comparison between `self` and `rhs`.
-    /// 
-    /// # Note
-    /// 
-    /// - `checked_` for this function means that it checks the bit widths
-    /// - Returns `Ok(true)` if `self > rhs`.
-    /// - Interprets both `ApInt` instances as **unsigned** values.
-    /// 
-    /// # Errors
-    /// 
-    /// - If `self` and `rhs` have unmatching bit widths.
+    /// Unsigned greater-than (`ugt`) comparison between `self` and `rhs`, meaning the returned
+    /// boolean indicates if `self > rhs` for the **unsigned** interpretation of `ApInt`s.
     #[inline]
     pub fn checked_ugt(&self, rhs: &ApInt) -> Result<bool> {
         rhs.checked_ult(self)
@@ -108,17 +141,8 @@ impl ApInt {
             ))
     }
 
-    /// Unsigned greater-equals (`uge`) comparison between `self` and `rhs`.
-    /// 
-    /// # Note
-    /// 
-    /// - `checked_` for this function means that it checks the bit widths
-    /// - Returns `Ok(true)` if `self >= rhs`.
-    /// - Interprets both `ApInt` instances as **unsigned** values.
-    /// 
-    /// # Errors
-    /// 
-    /// - If `self` and `rhs` have unmatching bit widths.
+    /// Unsigned greater-equals (`uge`) comparison between `self` and `rhs`, meaning the returned
+    /// boolean indicates if `self >= rhs` for the **unsigned** interpretation of `ApInt`s.
     #[inline]
     pub fn checked_uge(&self, rhs: &ApInt) -> Result<bool> {
         self.checked_ult(rhs).map(Not::not)
@@ -130,33 +154,24 @@ impl ApInt {
             ))
     }
 
-    /// Signed less-than (`slt`) comparison between `self` and `rhs`.
-    /// 
-    /// # Note
-    /// 
-    /// - `checked_` for this function means that it checks the bit widths
-    /// - Returns `Ok(true)` if `self < rhs`.
-    /// - Interprets both `ApInt` instances as **signed** values.
-    /// 
-    /// # Errors
-    /// 
-    /// - If `self` and `rhs` have unmatching bit widths.
+    /// Signed less-than (`slt`) comparison between `self` and `rhs`, meaning the returned boolean
+    /// indicates if `self < rhs` for the **signed** interpretation of `ApInt`s.
     pub fn checked_slt(&self, rhs: &ApInt) -> Result<bool> {
         let lhs = self;
         lhs.zip_access_data(rhs).and_then(|zipped| {
             match zipped {
                 ZipDataAccess::Inl(lhs, rhs) => {
-                    let infate_abs = digit::BITS - self.width().to_usize();
+                    let infate_abs = Digit::BITS - self.width().to_usize();
                     let lhs = (lhs.repr() << infate_abs) as i64;
                     let rhs = (rhs.repr() << infate_abs) as i64;
                     Ok(lhs < rhs)
                 }
                 ZipDataAccess::Ext(_, _) => {
                     match (lhs.sign_bit(), rhs.sign_bit()) {
-                        (Bit::Unset, Bit::Unset) => lhs.checked_ult(rhs),
-                        (Bit::Unset, Bit::Set  ) => Ok(false),
-                        (Bit::Set  , Bit::Unset) => Ok(true),
-                        (Bit::Set  , Bit::Set  ) => rhs.checked_ugt(lhs)
+                        (false, false) => lhs.checked_ult(rhs),
+                        (false, true) => Ok(false),
+                        (true, false) => Ok(true),
+                        (true, true) => rhs.checked_ugt(lhs)
                     }
                 }
             }
@@ -169,17 +184,8 @@ impl ApInt {
         ))
     }
 
-    /// Signed less-equals (`sle`) comparison between `self` and `rhs`.
-    /// 
-    /// # Note
-    /// 
-    /// - `checked_` for this function means that it checks the bit widths
-    /// - Returns `Ok(true)` if `self <= rhs`.
-    /// - Interprets both `ApInt` instances as **signed** values.
-    /// 
-    /// # Errors
-    /// 
-    /// - If `self` and `rhs` have unmatching bit widths.
+    /// Signed less-equals (`sle`) comparison between `self` and `rhs`, meaning the returned boolean
+    /// indicates if `self <= rhs` for the **signed** interpretation of `ApInt`s.
     #[inline]
     pub fn checked_sle(&self, rhs: &ApInt) -> Result<bool> {
         rhs.checked_slt(self).map(Not::not)
@@ -191,17 +197,8 @@ impl ApInt {
             ))
     }
 
-    /// Signed greater-than (`sgt`) comparison between `self` and `rhs`.
-    /// 
-    /// # Note
-    /// 
-    /// - `checked_` for this function means that it checks the bit widths
-    /// - Returns `Ok(true)` if `self > rhs`.
-    /// - Interprets both `ApInt` instances as **signed** values.
-    /// 
-    /// # Errors
-    /// 
-    /// - If `self` and `rhs` have unmatching bit widths.
+    /// Signed greater-than (`sgt`) comparison between `self` and `rhs`, meaning the returned
+    /// boolean indicates if `self > rhs` for the **signed** interpretation of `ApInt`s.
     #[inline]
     pub fn checked_sgt(&self, rhs: &ApInt) -> Result<bool> {
         rhs.checked_slt(self)
@@ -213,17 +210,8 @@ impl ApInt {
             ))
     }
 
-    /// Signed greater-equals (`sge`) comparison between `self` and `rhs`.
-    /// 
-    /// # Note
-    /// 
-    /// - `checked_` for this function means that it checks the bit widths
-    /// - Returns `Ok(true)` if `self >= rhs`.
-    /// - Interprets both `ApInt` instances as **signed** values.
-    /// 
-    /// # Errors
-    /// 
-    /// - If `self` and `rhs` have unmatching bit widths.
+    /// Signed greater-equals (`sge`) comparison between `self` and `rhs`, meaning the returned
+    /// boolean indicates if `self >= rhs` for the **signed** interpretation of `ApInt`s.
     #[inline]
     pub fn checked_sge(&self, rhs: &ApInt) -> Result<bool> {
         self.checked_slt(rhs).map(Not::not)
@@ -234,7 +222,6 @@ impl ApInt {
                 self, rhs)
             ))
     }
-
 }
 
 #[cfg(test)]

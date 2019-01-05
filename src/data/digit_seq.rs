@@ -1,4 +1,4 @@
-use digit::Digit;
+use crate::data::Digit;
 
 use std::slice;
 

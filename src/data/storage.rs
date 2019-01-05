@@ -1,5 +1,5 @@
-use digit;
-use bitwidth::BitWidth;
+use crate::data::Digit;
+use crate::info::BitWidth;
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 pub(crate) enum Storage { Inl, Ext }
@@ -26,6 +26,6 @@ impl Storage {
     ///       similar to the well-known small-string optimization.
     #[inline]
     fn is_inline(width: BitWidth) -> bool {
-        width.to_usize() <= digit::BITS
+        width.to_usize() <= Digit::BITS
     }
 }

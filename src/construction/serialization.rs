@@ -1,9 +1,24 @@
-use radix::{Radix};
-use apint::{ApInt};
-use errors::{Error, Result};
-use digit;
+use crate::data::{ApInt, Digit, DigitRepr};
+use crate::info::{Radix, Error, Result, Width};
 
 use std::fmt;
+use std::hash::{Hash, Hasher};
+
+impl fmt::Debug for ApInt {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        f.debug_struct("ApInt")
+         .field("len", &self.width())
+         .field("digits", &self.as_digit_slice())
+         .finish()
+    }
+}
+
+impl Hash for ApInt {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.len.hash(state);
+        self.as_digit_slice().hash(state);
+    }
+}
 
 impl fmt::Binary for ApInt {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -147,7 +162,7 @@ impl ApInt {
         let result = match radix.exact_bits_per_digit() {
             Some(bits) => {
                 v.reverse();
-                if digit::BITS % bits == 0 {
+                if Digit::BITS % bits == 0 {
                     ApInt::from_bitwise_digits(&v, bits)
                 }
                 else {
@@ -170,13 +185,10 @@ impl ApInt {
     // 
     // TODO: Better document what happens here and why.
     fn from_bitwise_digits(v: &[u8], bits: usize) -> ApInt {
-        use digit;
-        use digit::{DigitRepr, Digit};
-
-        debug_assert!(!v.is_empty() && bits <= 8 && digit::BITS % bits == 0);
+        debug_assert!(!v.is_empty() && bits <= 8 && Digit::BITS % bits == 0);
         debug_assert!(v.iter().all(|&c| DigitRepr::from(c) < (1 << bits)));
 
-        let radix_digits_per_digit = digit::BITS / bits;
+        let radix_digits_per_digit = Digit::BITS / bits;
 
         let data = v.chunks(radix_digits_per_digit)
                     .map(|chunk| chunk.iter()
@@ -194,34 +206,31 @@ impl ApInt {
     // 
     // TODO: Better document what happens here and why.
     fn from_inexact_bitwise_digits(v: &[u8], bits: usize) -> ApInt {
-        use digit;
-        use digit::{DigitRepr, Digit};
-
-        debug_assert!(!v.is_empty() && bits <= 8 && digit::BITS % bits != 0);
+        debug_assert!(!v.is_empty() && bits <= 8 && Digit::BITS % bits != 0);
         debug_assert!(v.iter().all(|&c| (DigitRepr::from(c)) < (1 << bits)));
 
-        let len_digits = (v.len() * bits + digit::BITS - 1) / digit::BITS;
+        let len_digits = (v.len() * bits + Digit::BITS - 1) / Digit::BITS;
         let mut data = Vec::with_capacity(len_digits);
 
         let mut d = 0;
         let mut dbits = 0; // Number of bits we currently have in d.
 
-        // Walk v accumulating bits in d; whenever we accumulate digit::BITS in d, spit out a digit:
+        // Walk v accumulating bits in d; whenever we accumulate Digit::BITS in d, spit out a digit:
         for &c in v {
             d |= (DigitRepr::from(c)) << dbits;
             dbits += bits;
 
-            if dbits >= digit::BITS {
+            if dbits >= Digit::BITS {
                 data.push(Digit(d));
-                dbits -= digit::BITS;
-                // If `dbits` was greater than `digit::BITS`, we dropped some of the bits in c
+                dbits -= Digit::BITS;
+                // If `dbits` was greater than `Digit::BITS`, we dropped some of the bits in c
                 // (they couldn't fit in d) - grab the bits we lost here:
                 d = (DigitRepr::from(c)) >> (bits - dbits);
             }
         }
 
         if dbits > 0 {
-            debug_assert!(dbits < digit::BITS);
+            debug_assert!(dbits < Digit::BITS);
             data.push(Digit(d));
         }
 
@@ -235,15 +244,12 @@ impl ApInt {
     // TODO: This does not work, yet. Some parts of the algorithm are
     //       commented-out since the required functionality does not exist, yet.
     fn from_radix_digits(v: &[u8], radix: Radix) -> ApInt {
-        use digit;
-        use digit::{DigitRepr, Digit};
-
         debug_assert!(!v.is_empty() && !radix.is_power_of_two());
         debug_assert!(v.iter().all(|&c| radix.is_valid_byte(c)));
 
         // Estimate how big the result will be, so we can pre-allocate it.
         let bits = (f64::from(radix.to_u8())).log2() * v.len() as f64;
-        let big_digits = (bits / digit::BITS as f64).ceil();
+        let big_digits = (bits / Digit::BITS as f64).ceil();
         let mut data = Vec::with_capacity(big_digits as usize);
 
         let (_base, power) = radix.get_radix_base();
@@ -266,7 +272,7 @@ impl ApInt {
                 data.push(0);
             }
 
-            let mut carry = 0;
+            let carry = 0;
             for _d in &mut data {
                 // *d = mac_with_carry(0, *d, base, &mut carry); // TODO! This was commented out.
 
@@ -285,9 +291,7 @@ impl ApInt {
     }
 }
 
-//  =======================================================================
 ///  Serialization
-/// =======================================================================
 impl ApInt {
     /// Returns a `String` representation of the binary encoded `ApInt` for the given `Radix`.
     pub fn to_string_radix<R>(&self, radix: R) -> String
@@ -302,8 +306,7 @@ impl ApInt {
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    use bitwidth::{BitWidth};
+    use crate::info::BitWidth;
 
     mod binary {
         use super::*;
