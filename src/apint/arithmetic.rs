@@ -304,8 +304,15 @@ impl ApInt {
                 //needed instead of `DoubleDigit` multiplications in some places.
                 match (lhs_sig_nonzero == 0, rhs_sig_nonzero == 0) {
                     (false, false) => {
-                        if lhs_sig_nonzero + rhs_sig_nonzero + 2 <= lhs.len() {
-                            //no possibility of overflow
+                        let lhs_sig_bits = (lhs_sig_nonzero * digit::BITS)
+                            + (digit::BITS - (lhs[lhs_sig_nonzero].leading_zeros() as usize));
+                        let rhs_sig_bits = (rhs_sig_nonzero * digit::BITS)
+                            + (digit::BITS - (rhs[rhs_sig_nonzero].leading_zeros() as usize));
+                        let tot_sig_bits = lhs_sig_bits + rhs_sig_bits;
+                        if tot_sig_bits <= (lhs.len() * digit::BITS) {
+                            //No possibility of `Digit` wise overflow. Note that end bits still
+                            //have to be trimmed for `ApInt`s with a width that is not a multiple of
+                            //`Digit`s.
                             //first digit of first row
                             let mult = lhs[0];
                             let temp = mult.carrying_mul(rhs[0]);
@@ -373,10 +380,15 @@ impl ApInt {
                                 .wrapping_add(add_carry.dd());
                             sum[lhs_sig_nonzero + rhs_sig_nonzero] = temp1.lo();
                             sum.push(temp1.hi().wrapping_add(temp0.1));
-                            for i in 0..sum.len() {
-                                lhs[i] = sum[i];
+                            if lhs.len() < sum.len() {
+                                for i in 0..lhs.len() {
+                                    lhs[i] = sum[i];
+                                }
+                            } else {
+                                for i in 0..sum.len() {
+                                    lhs[i] = sum[i];
+                                }
                             }
-                            return Ok(())
                         } else {
                             //wrapping (modular) multiplication
                             let sig_nonzero = lhs.len() - 1;
@@ -430,7 +442,6 @@ impl ApInt {
                             //final digit (the only one in its row)
                             lhs[sig_nonzero] = lhs[sig_nonzero]
                                 .wrapping_mul_add(rhs[0], sum[sig_nonzero]);
-                            return Ok(())
                         }
                     },
                     (true, false) => {
