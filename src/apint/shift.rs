@@ -185,9 +185,9 @@ impl ApInt {
     /// This operation is inplace and will **not** allocate memory.
     /// 
     /// # Note
-    /// 
+    ///
     /// Arithmetic shifting copies the sign bit instead of filling up with zeros.
-    /// 
+    ///
     /// # Errors
     /// 
     /// - If the given `shift_amount` is invalid for the bit width of this `ApInt`.
@@ -199,32 +199,44 @@ impl ApInt {
         }
         let shift_amount = shift_amount.into();
         checks::verify_shift_amount(self, shift_amount)?;
+        let shift_amount = shift_amount.to_usize();
+        //prevents shift overflow below
+        if shift_amount == 0 {return Ok(())}
         let width = self.width();
+        let width_bits = width.to_usize() % digit::BITS;
+        let (digits, bits) = (shift_amount / digit::BITS, shift_amount % digit::BITS);
+        let uns = digit::BITS - bits;
         match self.access_data_mut() {
-            DataAccessMut::Inl(digit) => {
-                let mut signed = digit.clone();
-                signed.sign_extend_from(width).unwrap();
-                let signed = signed.repr() as i64;
-                let shifted = signed >> shift_amount.to_usize();
-                *digit.repr_mut() = shifted as u64;
+            DataAccessMut::Inl(x) => {
+                *x = (*x >> bits) | (digit::ONES << (width.to_usize() - bits));
             }
-            DataAccessMut::Ext(digits) => {
-                let digit_steps = shift_amount.digit_steps();
-                if digit_steps != 0 {
-                    digits.rotate_left(digit_steps);
-                    digits.iter_mut()
-                          .rev()
-                          .take(digit_steps)
-                          .for_each(|d| *d = Digit::all_set());
+            DataAccessMut::Ext(x) => {
+                if width_bits != 0 {
+                    x[x.len() - 1].sign_extend_from(width_bits).unwrap();
                 }
-                let bit_steps = shift_amount.bit_steps();
-                if bit_steps > 0 {
-                    let mut borrow = 0xFFFF_FFFF_FFFF_FFFF << (digit::BITS - bit_steps);
-                    for elem in digits.iter_mut().rev().skip(digit_steps) {
-                        let repr = elem.repr();
-                        let new_borrow = repr << (digit::BITS - bit_steps);
-                        *elem = Digit((repr >> bit_steps) | borrow);
-                        borrow = new_borrow;
+                let diff = x.len() - digits;
+                if digits == 0 {
+                    //subdigit shift
+                    for i in 0..(x.len() - 1) {
+                        x[i] = (x[i] >> bits) | (x[i + 1] << uns);
+                    }
+                    x[x.len() - 1] = (x[x.len() - 1] >> bits) | (digit::ONES << uns);
+                } else if bits == 0 {
+                    //digit shift
+                    for i in digits..x.len() {
+                        x[i - digits] = x[i];
+                    }
+                    for i in 0..digits {
+                        x[i + diff].set_all();
+                    }
+                } else {
+                    //digit and subdigit shift
+                    for i in digits..(x.len() - 1) {
+                        x[i - digits] = (x[i] >> bits) | (x[i + 1] << uns);
+                    }
+                    x[diff - 1] = (x[x.len() - 1] >> bits) | (digit::ONES << uns);
+                    for i in 0..digits {
+                        x[i + diff].set_all();
                     }
                 }
             }
