@@ -2097,18 +2097,87 @@ mod tests {
         use super::*;
         use bitwidth::BitWidth;
         use std::u64;
+        use rand::random;
+
+        #[test]
+        fn pull_request_35_regression() {
+            let width = BitWidth::new(65).unwrap();
+            //arithmetic shift right shift
+            assert_eq!(
+                ApInt::from([1u64, u64::MAX - (1 << 6)]).into_truncate(width).unwrap(),
+                ApInt::from([1u64, u64::MAX - (1 << 10)]).into_truncate(width).unwrap()
+                    .into_wrapping_ashr(4).unwrap()
+            );
+            //multiplication related
+            let v1 = ApInt::from((1u128 << 64) | (7u128)).into_zero_resize(width);
+            let v2 = ApInt::one(BitWidth::w1()).into_zero_extend(width).unwrap().into_wrapping_shl(64).unwrap();
+            let v3 = v1.clone().into_wrapping_mul(&v2).unwrap();
+            assert_eq!(v1, ApInt::from([1u64,7]).into_zero_resize(width));
+            assert_eq!(v2, ApInt::from([1u64,0]).into_zero_resize(width));
+            assert_eq!(v3, ApInt::from([1u64,0]).into_zero_resize(width));
+            let width = BitWidth::new(193).unwrap();
+            let v3 = ApInt::from([0u64, 0, 17179852800, 1073676288]).into_zero_resize(width).into_wrapping_mul(&ApInt::from(1u128 << 115).into_zero_resize(width)).unwrap();
+            assert_eq!(v3, ApInt::from([0u64, 0, 17179852800, 1073676288]).into_wrapping_shl(115).unwrap().into_zero_resize(width));
+        }
 
         //throws all the functions together for an identities party. If one function breaks, the
         //whole thing should break.
         fn identities(size: usize, width: BitWidth, zero: &ApInt, lhs: ApInt, rhs: ApInt, third: ApInt) {
+            //basic addition and subtraction tests
+            let shift = random::<usize>() % size;
             let mut temp = lhs.clone().into_wrapping_inc();
             assert_eq!(temp, lhs.clone().into_wrapping_add(&ApInt::one(width)).unwrap());
+            assert_eq!(temp, lhs.clone().into_wrapping_sub(&ApInt::all_set(width)).unwrap());
             temp.wrapping_dec();
             assert_eq!(temp, lhs);
             temp.wrapping_dec();
+            assert_eq!(temp, lhs.clone().into_wrapping_sub(&ApInt::one(width)).unwrap());
             assert_eq!(temp, lhs.clone().into_wrapping_add(&ApInt::all_set(width)).unwrap());
             temp.wrapping_inc();
             assert_eq!(temp, lhs);
+
+            //power of two multiplication and division shifting tests
+            let mut tmp1 = ApInt::one(BitWidth::w1()).into_zero_extend(width).unwrap().into_wrapping_shl(shift).unwrap();
+            assert_eq!(
+                lhs.clone().into_wrapping_shl(shift).unwrap(),
+                lhs.clone().into_wrapping_mul(&tmp1).unwrap()
+            );
+            //negation test also
+            assert_eq!(
+                lhs.clone().into_wrapping_neg().into_wrapping_shl(shift).unwrap(),
+                lhs.clone().into_wrapping_mul(
+                    &ApInt::one(BitWidth::w1()).into_sign_extend(width).unwrap().into_wrapping_shl(shift).unwrap()
+                ).unwrap()
+            );
+            assert_eq!(
+                lhs.clone().into_wrapping_lshr(shift).unwrap(),
+                lhs.clone().into_wrapping_udiv(&tmp1).unwrap()
+            );
+            if (shift == (size - 1)) && (lhs == tmp1) {
+                //unfortunate numerical corner case where the result of the shift is -1 but the
+                //division ends up as +1
+                assert_eq!(
+                    lhs.clone().into_wrapping_sdiv(&tmp1).unwrap(),
+                    ApInt::one(width)
+                );
+            } else {
+                let mut tmp0 = lhs.clone();
+                ApInt::wrapping_sdivrem_assign(&mut tmp0, &mut tmp1).unwrap();
+                //make it a floored division
+                if lhs.is_negative() && !tmp1.is_zero() {
+                    tmp0.wrapping_dec();
+                }
+                assert_eq!(tmp0, lhs.clone().into_wrapping_ashr(shift).unwrap());
+            }
+            let rand_width = BitWidth::new((random::<usize>() % size) + 1).unwrap();
+            //wrapping multiplication test
+            assert_eq!(
+                lhs.clone().into_zero_extend(BitWidth::new(size * 2).unwrap()).unwrap()
+                    .into_wrapping_mul(
+                        &rhs.clone().into_zero_extend(BitWidth::new(size * 2).unwrap()).unwrap()
+                    ).unwrap().into_zero_resize(rand_width),
+                lhs.clone().into_wrapping_mul(&rhs).unwrap().into_zero_resize(rand_width)
+            );
             let tot_leading_zeros = lhs.leading_zeros() + rhs.leading_zeros();
             let anti_overflow_mask = if tot_leading_zeros < size {
                 if rhs.leading_zeros() == 0 {
