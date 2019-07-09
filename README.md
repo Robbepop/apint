@@ -1,5 +1,4 @@
-ApInt - Arbitrary Precision Integer
-===================================
+# ApInt - Arbitrary Precision Integer
 
 |        Linux        |       Windows       |       Codecov        |       Coveralls      |       Docs       |       Crates.io      |
 |:-------------------:|:-------------------:|:--------------------:|:--------------------:|:----------------:|:--------------------:|
@@ -7,7 +6,7 @@ ApInt - Arbitrary Precision Integer
 
 **Development in progress:** *The implementation has not been finished and may not work.*
 
-**A**rbitrary **p**recision **Int**egers (**ApInt**) represent integers that have an arbitrary but 
+**A**rbitrary **p**recision **Int**egers (**ApInt**) represent integers that have an arbitrary but
 fixed runtime bit-width and offers two's complement modulo arithmetic equal to machine integers.
 
 The integer types offered by this library are:
@@ -24,19 +23,27 @@ The API is based on the LLVM [`APInt`](http://llvm.org/doxygen/classllvm_1_1APIn
 - SMT solvers may use this as an underlying model for the theory of bitvectors.
 - Operations and backend for cryptographic keys.
 - Also usable as a simple bitset with runtime length information.
+- Use it like any other big integer library, with the difference that the user manages the bit
+  widths of all instances, and numbers can be purposely overflowed like machine integers.
 
 ## Internals
 
 The design focus is at efficiency and robustness.
-`ApInt` instances are small-value-optimized. This means that only `ApInt` instances with a bit-width larger than 64 bits allocate dynamic memory.
+An `ApInt` constists of a sequence of `Digit`s.
+A `Digit` is currently `u64`, but in the future a feature could be added to allow changing this.
+The `Digit` struct is never going to be made public for this reason and other internal reasons,
+although the term is used often in documentation to convey what happens inside the public interface.
+`ApInt` instances are small-value-optimized. This means that only `ApInt` instances with a bit-width
+larger than the number of bits in a `Digit` allocate dynamic memory.
 
-An `ApInt` constists of a sequence of 64-bit `Digit`s.
-Computations are done within their 128-bit `DoubleDigit` form to prevent bit-loss on over- or underflows.
-This implies a dependency on 128-bit integers which are currently unstable in Rust.
+By default, very little `unsafe` is used outside of managing internal `union`s. The robustness of
+`ApInt` operations is backed by extensive fuzz testing (including unit, regression, random input,
+and edge case testing in multiple flag modes).
 
 ## Differences & Parallels
 
-The below table lists public and internal differences between `ApInt` and `num::BigInt`.
+The below table lists public and internal differences between `ApInt` and `num::BigInt`. Pointer
+widths of 64 bits are assumed.
 
 |        Topic             |               `num::BigInt`               |               `ApInt`                   |
 |:------------------------:|:------------------------------------------|:----------------------------------------|
@@ -45,16 +52,17 @@ The below table lists public and internal differences between `ApInt` and `num::
 | Small Value Optimization | No                                        | Yes: Up to 64-bits.                     |
 | Building Blocks          | 32-bit `BigDigit` aka `u32`               | 64-bit `Digit`                          |
 | Compute Unit             | 64-bit `DoubleBigDigit` aka `u64`         | 128-bit `DoubleDigit`                   |
-| Signed                   | Yes: `num::BigUint` is for unsigned.      | No: Operations know signedness instead. |
-| `mem::size_of<..>`       | About 24 bytes + some signedness info.    | Exactly 128 bits (16 bytes).            |
+| Signed                   | Yes: `num::BigUint` is for unsigned       | No: Operations know signedness instead  |
+| `mem::size_of<..>`       | About 24 bytes + some signedness info     | Exactly 128 bits                        |
 | Width interoperability   | No restriction to operate between `BigInt` instances with different bit-widths. | Only `ApInt` instances with the same bit-width can interoperate. |
-| Memory footprint         | Determined by current value stored.       | Determined by bit-width.                |
-| Can grow and shrink?     | Yes                                       | No, see above.                          |
-| Unstable features?       | None                                      | Stable as of Rust 1.26.                 |
+| Memory footprint         | Determined by current value stored        | Determined by bit-width                 |
+| Auto-resize              | Yes                                       | No                                      |
+| Unstable features?       | None                                      | Stable as of Rust 1.36                  |
 
 ## Current State
 
-Currently only a few parts of the implementation are done - especially the implementation of `ApInt`'s with bit-widths greater than 64 bits is incomplete.
+Currently only a few parts of the implementation are done - especially the implementation of
+`ApInt`'s with bit-widths greater than 64 bits is incomplete.
 
 State of the API modules implemented so far:
 
@@ -75,16 +83,21 @@ State of the API modules implemented so far:
 ## Planned Features
 
 - Full and efficient `ApInt` implementation and decent test coverage.
-- Mid-level `ApsInt` wrapper around `ApInt` that stores a run-time sign information.
-  This is different from `Int` and `UInt` since those types store
-  their sign immutable in their type. This is the same as LLVM's `APSInt` data type.
+- Mid-level `ApsInt` wrapper around `ApInt` that stores a run-time sign information. This is the
+  same as LLVM's `APSInt` data type. These allow for constant time complexity changes in sign and
+  more efficient operations on negative numbers in some cases.
+- Low level unsafe functions that have no bounds checking, allow for `ApInt`s of different bit
+  widths to be operated on, and have access to reusing internal allocations for calculations that
+  require allocated temporaries.
+- More efficient operations.
 
 ## License
 
 Licensed under either of
 
- * Apache License, Version 2.0, ([LICENSE-APACHE](LICENSE-APACHE) or http://www.apache.org/licenses/LICENSE-2.0)
- * MIT license ([LICENSE-MIT](LICENSE-MIT) or http://opensource.org/licenses/MIT)
+- Apache License, Version 2.0,
+  ([LICENSE-APACHE](LICENSE-APACHE) or <http://www.apache.org/licenses/LICENSE-2.0>)
+- MIT license ([LICENSE-MIT](LICENSE-MIT) or <http://opensource.org/licenses/MIT>)
 
 at your option.
 
@@ -92,8 +105,8 @@ at your option.
 
 ### Contribution
 
-Unless you explicitly state otherwise, any contribution intentionally submitted
-for inclusion in the work by you, as defined in the Apache-2.0 license, shall be dual licensed as above, without any
+Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in the
+work by you, as defined in the Apache-2.0 license, shall be dual licensed as above, without any
 additional terms or conditions.
 
 [1]: https://travis-ci.org/Robbepop/apint.svg?branch=master
@@ -123,6 +136,16 @@ additional terms or conditions.
 
 ## Release Notes
 
+### Version 0.3.0 TODO
+
+- Rename many functions from `_checked_` to `_wrapping_` and clarified documentation.
+- Added multiplication and division functions.
+- Add circular shift functions like `rotate_left_assign`.
+- Removed `Bit`, changed `ApInt::from_bit` to `ApInt::from_bool`.
+- reorganized internals with updated dependencies and better performance all around.
+- Corrected README.md for markdown lints.
+- Fixed all Clippy warnings
+
 ### Version 0.2.0 - 2018-05-16
 
 - Add `Binary`, `LowerHex` and `UpperHex` impls to `Int`, `UInt` and `ApInt`.  
@@ -134,7 +157,9 @@ additional terms or conditions.
 - Add `into_bitnot` to `ApInt`, `Int` and `UInt`.
 - Add division-by-zero error and managing around it for respective operations.
 - Add a crate prelude module for simple usage of commonly used types.
-- Fixed bug in `ApInt::sign_extend` and `Int::extend` (issue [#15](https://github.com/Robbepop/apint/issues/15)). Thanks [AaronKutch](https://github.com/AaronKutch) for reporting!
+- Fixed bug in `ApInt::sign_extend` and `Int::extend`
+  (issue [#15](https://github.com/Robbepop/apint/issues/15)).
+  Thanks [AaronKutch](https://github.com/AaronKutch) for reporting!
 - Fixed markdown headers of many public impl blocks.
 - Fixed several documentation comments of public APIs, like `ApInt::from_{i128, u128}`.
 - Fixed several minor bugs due to forwarding to wrong implementation methods.

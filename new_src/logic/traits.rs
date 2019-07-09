@@ -1,5 +1,4 @@
 use crate::data::ApInt;
-use crate::logic::forward_mut_impl;
 
 use std::ops::{
     Not,

@@ -19,24 +19,6 @@
 
 #![doc(html_root_url = "https://docs.rs/crate/apint/0.2.0")]
 
-#[cfg(feature = "specialized_div_rem")]
-extern crate specialized_div_rem;
-
-#[cfg(feature = "rand_support")]
-extern crate rand;
-
-#[cfg(feature = "serde_support")]
-extern crate serde;
-
-#[cfg(feature = "serde_support")]
-extern crate serde_derive;
-
-#[cfg(all(test, feature = "serde_support"))]
-extern crate serde_test;
-
-#[cfg(test)]
-extern crate itertools;
-
 // NOTE: the file structure used in this library has less to do with the actual dependencies between
 // files and more about organizing files in a way that helps with programmers finding where stuff
 // is.
