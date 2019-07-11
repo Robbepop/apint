@@ -2,10 +2,11 @@ use crate::data::{ApInt, DataAccessMut, ZipDataAccessMutSelf::{Inl, Ext}, Digit}
 use crate::info::{Result, Width};
 use crate::logic::{try_forward_bin_mut_impl,forward_mut_impl};
 
-/// # Basic Arithmetic Operations
+/// # Addition and Subtraction Operations
 /// 
 /// **Note**: unless otherwise noted in the function specific documentation,
 /// 
+/// - **An Error is returned** if function arguments have unmatching bitwidths.
 /// - The functions do **not** allocate memory.
 /// - The function works for both signed and unsigned interpretations of an `ApInt`. In other words, in the low-level bit-wise representation there is no difference between a signed and unsigned operation by a certain function on fixed bit-width integers. (Cite: LLVM)
 impl ApInt {
@@ -23,7 +24,8 @@ impl ApInt {
                             break;
                         }
                         (v,true) => {
-                            //if the ApInt was relatively random this should rarely happen
+                            //This case is expected to match very rarely, unless `Digit::MAX` is
+                            //common among the digits.
                             x[i] = v;
                         }
                     }
@@ -52,7 +54,6 @@ impl ApInt {
                             break;
                         }
                         (v,true) => {
-                            //if the ApInt was relatively random this should rarely happen
                             x[i] = v;
                         }
                     }
@@ -83,7 +84,7 @@ impl ApInt {
     /// 
     /// # Errors
     /// 
-    /// - If `self` and `rhs` have unmatching bit widths.
+    /// - If `self` and `rhs` have unmatching bitwidths.
     pub fn wrapping_add_assign(&mut self, rhs: &ApInt) -> Result<()> {
         match self.zip_access_data_mut_self(rhs)? {
             Inl(lhs, rhs) => {
@@ -109,7 +110,7 @@ impl ApInt {
     /// 
     /// # Errors
     /// 
-    /// - If `self` and `rhs` have unmatching bit widths.
+    /// - If `self` and `rhs` have unmatching bitwidths.
     pub fn into_wrapping_add(self, rhs: &ApInt) -> Result<ApInt> {
         try_forward_bin_mut_impl(self, rhs, ApInt::wrapping_add_assign)
     }
@@ -119,19 +120,18 @@ impl ApInt {
     /// 
     /// # Errors
     /// 
-    /// - If `self` and `rhs` have unmatching bit widths.
-    // TODO: add tests
-    #[allow(dead_code)]
+    /// - If `self` and `rhs` have unmatching bitwidths.
+    #[cfg(test)]
     pub(crate) fn overflowing_uadd_assign(&mut self, rhs: &ApInt) -> Result<bool> {
         match self.width().excess_bits() {
             Some(excess) => {
-                let mask = Digit::all_set() >> excess;
+                let mask = Digit::ONES >> (Digit::BITS - excess);
                 match self.zip_access_data_mut_self(rhs)? {
                     Inl(lhs, rhs) => {
                         let temp = lhs.wrapping_add(rhs);
                         *lhs = temp & mask;
                         //excess bits are cleared by the mask
-                        return Ok((temp & mask) != temp)
+                        Ok((temp & mask) != temp)
                     }
                     Ext(lhs, rhs) => {
                         let (temp, mut carry) = lhs[0].carrying_add(rhs[0]);
@@ -148,7 +148,7 @@ impl ApInt {
                             .wrapping_add(carry);
                         lhs[lhs.len() - 1] = temp & mask;
                         //excess bits are cleared by the mask
-                        return Ok((temp & mask) != temp)
+                        Ok((temp & mask) != temp)
                     }
                 }
             }
@@ -158,7 +158,7 @@ impl ApInt {
                         let temp = lhs.overflowing_add(rhs);
                         *lhs = temp.0;
                         //no excess bits to clear
-                        return Ok(temp.1)
+                        Ok(temp.1)
                     }
                     Ext(lhs, rhs) => {
                         let (temp, mut carry) = lhs[0].carrying_add(rhs[0]);
@@ -171,7 +171,7 @@ impl ApInt {
                             carry = temp.hi();
                         }
                         //no excess bits to clear
-                        return Ok(carry != Digit::zero())
+                        Ok(carry != Digit::zero())
                     }
                 }
             }
@@ -183,9 +183,8 @@ impl ApInt {
     /// 
     /// # Errors
     /// 
-    /// - If `self` and `rhs` have unmatching bit widths.
-    // TODO: add tests
-    #[allow(dead_code)]
+    /// - If `self` and `rhs` have unmatching bitwidths.
+    #[cfg(test)]
     pub(crate) fn overflowing_sadd_assign(&mut self, rhs: &ApInt) -> Result<bool> {
         let self_sign = self.is_negative();
         let rhs_sign = rhs.is_negative();
@@ -197,7 +196,7 @@ impl ApInt {
     /// 
     /// # Errors
     /// 
-    /// - If `self` and `rhs` have unmatching bit widths.
+    /// - If `self` and `rhs` have unmatching bitwidths.
     pub fn wrapping_sub_assign(&mut self, rhs: &ApInt) -> Result<()> {
         match self.zip_access_data_mut_self(rhs)? {
             Inl(lhs, rhs) => {
@@ -225,7 +224,7 @@ impl ApInt {
     /// 
     /// # Errors
     /// 
-    /// - If `self` and `rhs` have unmatching bit widths.
+    /// - If `self` and `rhs` have unmatching bitwidths.
     pub fn into_wrapping_sub(self, rhs: &ApInt) -> Result<ApInt> {
         try_forward_bin_mut_impl(self, rhs, ApInt::wrapping_sub_assign)
     }
