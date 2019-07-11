@@ -1,12 +1,6 @@
-use apint::ApInt;
-use traits::Width;
-use digit::Bit;
-use bitwidth::BitWidth;
-use errors::Result;
-use apint::{ShiftAmount};
-use bitpos::{BitPos};
-use int::Int;
-use utils::{try_forward_bin_mut_impl, forward_mut_impl, forward_bin_mut_impl};
+use crate::data::{ApInt, Int};
+use crate::info::{Width, BitWidth, Result, ShiftAmount, BitPos};
+use crate::logic::{try_forward_bin_mut_impl, forward_mut_impl, forward_bin_mut_impl};
 
 #[cfg(feature = "rand_support")]
 use rand;
@@ -65,14 +59,11 @@ impl UInt {
 
 /// # Constructors
 impl UInt {
-    /// Creates a new `UInt` from the given `Bit` value with a bit width of `1`.
-    ///
-    /// This function is generic over types that are convertible to `Bit` such as `bool`.
-    pub fn from_bit<B>(bit: B) -> UInt
-    where
-        B: Into<Bit>,
-    {
-        UInt::from(ApInt::from_bit(bit))
+    /// Creates a new `UInt` from the given boolean value with a bit width of `1`.
+    /// 
+    /// When `bit` is `false`, the single bit in the `ApInt` is 0, otherwise it is 1.
+    pub fn from_bool(bit: bool) -> UInt {
+        UInt::from(ApInt::from_bool(bit))
     }
 
     /// Creates a new `UInt` from a given `u8` value with a bit-width of 8.
@@ -141,12 +132,9 @@ impl UInt {
     }
 }
 
-impl<B> From<B> for UInt
-    where B: Into<Bit>
-{
-    #[inline]
-    fn from(bit: B) -> UInt {
-        UInt::from_bit(bit)
+impl From<bool> for UInt {
+    fn from(bit: bool) -> UInt {
+        UInt::from_bool(bit)
     }
 }
 
@@ -848,15 +836,10 @@ impl UInt {
 impl UInt {
     /// Returns the bit at the given bit position `pos`.
     /// 
-    /// This returns
-    /// 
-    /// - `Bit::Set` if the bit at `pos` is `1`
-    /// - `Bit::Unset` otherwise
-    /// 
     /// # Errors
     /// 
     /// - If `pos` is not a valid bit position for the width of this `UInt`.
-    pub fn get_bit_at<P>(&self, pos: P) -> Result<Bit>
+    pub fn get_bit_at<P>(&self, pos: P) -> Result<bool>
         where P: Into<BitPos>
     {
         self.value.get_bit_at(pos)
@@ -958,6 +941,14 @@ impl Not for UInt {
 
     fn not(self) -> Self::Output {
         forward_mut_impl(self, UInt::bitnot)
+    }
+}
+
+impl Width for UInt {
+    /// Returns the `BitWidth` of this `ApInt`.
+    #[inline]
+    fn width(&self) -> BitWidth {
+        self.value.width()
     }
 }
 
