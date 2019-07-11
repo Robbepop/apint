@@ -1,9 +1,5 @@
-use apint::{ApInt};
-use digit;
-use digit::{Digit};
-use bitwidth::{BitWidth};
-use errors::{Result, Error};
-use traits::{Width};
+use crate::data::{ApInt, Digit};
+use crate::info::{BitWidth, Error, Result, Width};
 
 /// Represents a primitive data type.
 /// 
@@ -135,13 +131,11 @@ impl ApInt {
         let mut lsd = self.least_significant_digit();
         let actual_width = self.width();
         let target_width = prim_ty.associated_width();
-        if prim_ty.is_signed() {
-            if actual_width < target_width {
-                lsd.sign_extend_from(actual_width)
-                   .expect("We already asserted that `actual_width` < `target_width` \
-                            and since `target_width` is always less than or equal to \
-                            `64` bits calling `Digit::sign_extend_from` is safe for it.");
-            }
+        if prim_ty.is_signed() && (actual_width < target_width) {
+            lsd.sign_extend_from(actual_width)
+                .expect("We already asserted that `actual_width` < `target_width` \
+                        and since `target_width` is always less than or equal to \
+                        `64` bits calling `Digit::sign_extend_from` is safe for it.");
         }
         if target_width < BitWidth::w64() {
             lsd.truncate_to(target_width)
@@ -158,8 +152,8 @@ impl ApInt {
     /// 
     /// # Note
     /// 
-    /// - Basically this returns `true` if the least significant
-    ///   bit of this `ApInt` is `1` and `false` otherwise.
+    /// In this context, a `bool` is interpreted as a single bit, where `false`
+    /// is 0 and `true` is 1.
     pub fn resize_to_bool(&self) -> bool {
         match self.resize_to_primitive_ty(PrimitiveTy::Bool) {
             Digit(0) => false,
@@ -287,7 +281,7 @@ impl ApInt {
         let ( lsd_0, rest) = self.split_least_significant_digit();
         let (&lsd_1, _) = rest.split_first().unwrap_or((&Digit(0), &[]));
         let mut result: i128 =
-            (i128::from(lsd_1.repr()) << digit::BITS) + i128::from(lsd_0.repr());
+            (i128::from(lsd_1.repr()) << Digit::BITS) + i128::from(lsd_0.repr());
         let actual_width = self.width();
         let target_width = BitWidth::w128();
 
@@ -313,7 +307,7 @@ impl ApInt {
         let ( lsd_0, rest) = self.split_least_significant_digit();
         let (&lsd_1, _) = rest.split_first().unwrap_or((&Digit(0), &[]));
         let result: u128 =
-            (u128::from(lsd_1.repr()) << digit::BITS) + u128::from(lsd_0.repr());
+            (u128::from(lsd_1.repr()) << Digit::BITS) + u128::from(lsd_0.repr());
         result
     }
 }
@@ -339,7 +333,7 @@ impl ApInt {
         debug_assert_ne!(prim_ty, PrimitiveTy::I128);
         let (mut lsd, rest) = self.split_least_significant_digit();
         if !prim_ty.is_valid_repr(lsd.repr())
-           || rest.into_iter().any(|d| d.repr() != 0)
+           || rest.iter().any(|d| d.repr() != 0)
         {
             return Error::encountered_unrepresentable_value(
                 self.clone(), prim_ty).into()
@@ -536,12 +530,12 @@ impl ApInt {
     pub fn try_to_i128(&self) -> Result<i128> {
         let ( lsd_0, rest) = self.split_least_significant_digit();
         let (&lsd_1, rest) = rest.split_first().unwrap_or((&Digit(0), &[]));
-        if rest.into_iter().any(|d| d.repr() != 0) {
+        if rest.iter().any(|d| d.repr() != 0) {
             return Error::encountered_unrepresentable_value(
                 self.clone(), PrimitiveTy::I128).into()
         }
         let mut result: i128 =
-            (i128::from(lsd_1.repr()) << digit::BITS) + i128::from(lsd_0.repr());
+            (i128::from(lsd_1.repr()) << Digit::BITS) + i128::from(lsd_0.repr());
 
         let actual_width = self.width();
         let target_width = BitWidth::w128();
@@ -574,12 +568,12 @@ impl ApInt {
     pub fn try_to_u128(&self) -> Result<u128> {
         let ( lsd_0, rest) = self.split_least_significant_digit();
         let (&lsd_1, rest) = rest.split_first().unwrap_or((&Digit(0), &[]));
-        if rest.into_iter().any(|d| d.repr() != 0) {
+        if rest.iter().any(|d| d.repr() != 0) {
             return Error::encountered_unrepresentable_value(
                 self.clone(), PrimitiveTy::U128).into()
         }
         let result: u128 =
-            (u128::from(lsd_1.repr()) << digit::BITS) + u128::from(lsd_0.repr());
+            (u128::from(lsd_1.repr()) << Digit::BITS) + u128::from(lsd_0.repr());
         Ok(result)
     }
 }
@@ -644,7 +638,7 @@ mod tests {
                 match prim_ty {
                     Bool => {
                         let val = val != 0;
-                        (val as u128, ApInt::from_bit(val))
+                        (val as u128, ApInt::from_bool(val))
                     }
                     I8 => {
                         let val = val as i8;
@@ -853,7 +847,7 @@ mod tests {
         }
     }
 
-    mod try {
+    mod try_to {
         use super::*;
 
         #[test]
