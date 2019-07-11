@@ -31,7 +31,6 @@ use std::ops::{
     ShrAssign
 };
 
-
 /// Signed machine integer with arbitrary bitwidths and modulo arithmetics.
 /// 
 /// Thin convenience wrapper around `ApInt` for static signed interpretation of the value.
@@ -65,14 +64,11 @@ impl Int {
 
 /// # Constructors
 impl Int {
-    /// Creates a new `Int` from the given `Bit` value with a bit width of `1`.
-    ///
-    /// This function is generic over types that are convertible to `Bit` such as `bool`.
-    pub fn from_bit<B>(bit: B) -> Int
-    where
-        B: Into<Bit>,
-    {
-        Int::from(ApInt::from_bit(bit))
+    /// Creates a new `Int` from the given boolean value with a bit width of `1`.
+    /// 
+    /// When `bit` is `false`, the single bit in the `ApInt` is 0, otherwise it is 1.
+    pub fn from_bool(bit: bool) -> Int {
+        Int::from(ApInt::from_bool(bit))
     }
 
     /// Creates a new `Int` from a given `i8` value with a bit-width of 8.
@@ -141,12 +137,9 @@ impl Int {
     }
 }
 
-impl<B> From<B> for Int
-    where B: Into<Bit>
-{
-    #[inline]
-    fn from(bit: B) -> Int {
-        Int::from_bit(bit)
+impl From<bool> for Int {
+    fn from(bit: bool) -> Int {
+        Int::from_bool(bit)
     }
 }
 
@@ -236,7 +229,7 @@ impl Int {
 
     /// Returns `true` if the value of this `Int` is positive.
     pub fn is_positive(&self) -> bool {
-        self.sign_bit() == Bit::Unset
+        !self.sign_bit()
     }
 
     /// Returns `true` if the value of this `Int` is negative.
@@ -386,9 +379,9 @@ impl Int {
     /// of the `bool` are being ignored.
     ///
     /// # Note
-    ///
-    /// - Basically this returns `true` if the least significant
-    ///   bit of this `Int` is `1` and `false` otherwise.
+    /// 
+    /// In this context, a `bool` is interpreted as a single bit, where `false`
+    /// is 0 and `true` is 1.
     pub fn resize_to_bool(&self) -> bool {
         self.value.resize_to_bool()
     }
@@ -898,7 +891,7 @@ impl Int {
     /// # Errors
     /// 
     /// - If `pos` is not a valid bit position for the width of this `Int`.
-    pub fn get_bit_at<P>(&self, pos: P) -> Result<Bit>
+    pub fn get_bit_at<P>(&self, pos: P) -> Result<bool>
         where P: Into<BitPos>
     {
         self.value.get_bit_at(pos)
@@ -970,7 +963,7 @@ impl Int {
     /// Returns the sign bit of this `Int`.
     /// 
     /// **Note:** This is equal to the most significant bit of this `Int`.
-    pub fn sign_bit(&self) -> Bit {
+    pub fn sign_bit(&self) -> bool {
         self.value.sign_bit()
     }
 
@@ -1016,6 +1009,14 @@ impl Int {
     /// Returns the number of trailing zeros in the binary representation of this `Int`.
     pub fn trailing_zeros(&self) -> usize {
         self.value.trailing_zeros()
+    }
+}
+
+impl Width for Int {
+    /// Returns the `BitWidth` of this `ApInt`.
+    #[inline]
+    fn width(&self) -> BitWidth {
+        self.value.width()
     }
 }
 
