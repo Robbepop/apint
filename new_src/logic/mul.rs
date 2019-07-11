@@ -1,31 +1,40 @@
 use crate::data::{ApInt, Digit, DoubleDigit, ZipDataAccessMutSelf::{Inl, Ext}};
 use crate::info::Result;
 use crate::logic::try_forward_bin_mut_impl;
-    /// Multiply-assigns `rhs` to `self` inplace. This function **may** allocate memory.
+
+/// # Multiplication Operations
+/// 
+/// **Note**: unless otherwise noted in the function specific documentation,
+/// 
+/// - **An Error is returned** if function arguments have unmatching bitwidths.
+/// - The functions **may allocate** memory.
+/// - The function works for both signed and unsigned interpretations of an `ApInt`. In other words, in the low-level bit-wise representation there is no difference between a signed and unsigned operation by a certain function on fixed bit-width integers. (Cite: LLVM)
+/// 
+/// ## Performance
+/// 
+/// All of the multiplication functions in this `impl` quickly check for various edge cases and use an efficient algorithm for these cases.
+/// If the function detects a large number of leading zeros in front of the most significant
+/// 1 bit, it will apply optimizations so that wasted multiplications and additions of zero are
+/// avoided. This function is designed to efficiently handle 5 common kinds of multiplication.
+/// Small here means both small ApInt `BitWidth` and/or small **unsigned** numerical
+/// significance. (Signed multiplication works, but two's complement negative numbers may have a
+/// large number of leading ones, leading to potential inefficiency.)
+/// 
+/// - multiplication of zero by any size integer (no allocation)
+/// - multiplication of small (<= 1 `Digit`) integers (no allocation)
+/// - multiplication of small integers by large integers (or vice versa) (no allocation)
+/// - wrapping multiplication of medium size (<= 512 bits) integers
+/// - multiplication of medium size integers that will not overflow
+/// 
+/// Currently, Karatsuba multiplication is not implemented, so large integer multiplication 
+/// may be very slow compared to other algorithms. According to Wikipedia, Karatsuba algorithms
+/// outperform 𝒪(n^2) algorithms, starting around 320-640 bits
+impl ApInt {
+    /// Multiply-assigns `rhs` to `self` inplace.
     /// 
     /// # Errors
     /// 
-    /// - If `self` and `rhs` have unmatching bit widths.
-    /// 
-    /// # Performance
-    /// 
-    /// If the function detects a large number of leading zeros in front of the most significant
-    /// 1 bit, it will apply optimizations so that wasted multiplications and additions of zero are
-    /// avoided. This function is designed to efficiently handle 5 common kinds of multiplication.
-    /// Small here means both small ApInt `BitWidth` and/or small **unsigned** numerical
-    /// significance. (Signed multiplication works, but two's complement negative numbers may have a
-    /// large number of leading ones, leading to potential inefficiency.)
-    /// 
-    /// - multiplication of zero by any size integer (no allocation)
-    /// - multiplication of small (<= 1 `Digit`) integers (no allocation)
-    /// - wrapping multiplication of medium size (<= 512 bits) integers
-    /// - multiplication of medium size integers that will not overflow
-    /// - multiplication of small integers by large integers (or large integers multiplied by small
-    ///     integers) (no allocation)
-    /// 
-    /// Currently, Karatsuba multiplication is not implemented, so large integer multiplication 
-    /// may be very slow compared to other algorithms. According to Wikipedia, Karatsuba algorithms
-    /// outperform 𝒪(n^2) algorithms, starting around 320-640 bits.
+    /// - If `self` and `rhs` have unmatching bitwidths.
     pub fn wrapping_mul_assign(&mut self, rhs: &ApInt) -> Result<()> {
         match self.zip_access_data_mut_self(rhs)? {
             Inl(lhs, rhs) => {
@@ -52,20 +61,20 @@ use crate::logic::try_forward_bin_mut_impl;
                         return Ok(());
                     }
                 };
-                //for several routines below there was a nested loop that had its first and last
-                //iterations unrolled (and the unrolled loops had their first and last iterations
-                //unrolled), and then some if statements are added for digit overflow checks.
-                //This is done because the compiler probably cannot properly unroll the carry
-                //system, overflow system, and figure out that only `Digit` multiplications were
-                //needed instead of `DoubleDigit` multiplications in some places.
+                // For several routines below there was a nested loop that had its first and last
+                // iterations unrolled (and the unrolled loops had their first and last iterations
+                // unrolled), and then some if statements are added for digit overflow checks.
+                // This is done because the compiler probably cannot properly unroll the carry
+                // system, overflow system, and figure out that only `Digit` multiplications were
+                // needed instead of `DoubleDigit` multiplications in some places.
                 match (lhs_sig_nonzero == 0, rhs_sig_nonzero == 0) {
                     (false, false) => {
-                        let lhs_sig_bits = (lhs_sig_nonzero * digit::BITS)
-                            + (digit::BITS - (lhs[lhs_sig_nonzero].leading_zeros() as usize));
-                        let rhs_sig_bits = (rhs_sig_nonzero * digit::BITS)
-                            + (digit::BITS - (rhs[rhs_sig_nonzero].leading_zeros() as usize));
+                        let lhs_sig_bits = (lhs_sig_nonzero * Digit::BITS)
+                            + (Digit::BITS - (lhs[lhs_sig_nonzero].leading_zeros() as usize));
+                        let rhs_sig_bits = (rhs_sig_nonzero * Digit::BITS)
+                            + (Digit::BITS - (rhs[rhs_sig_nonzero].leading_zeros() as usize));
                         let tot_sig_bits = lhs_sig_bits + rhs_sig_bits;
-                        if tot_sig_bits <= (lhs.len() * digit::BITS) {
+                        if tot_sig_bits <= (lhs.len() * Digit::BITS) {
                             //No possibility of `Digit` wise overflow. Note that end bits still
                             //have to be trimmed for `ApInt`s with a width that is not a multiple of
                             //`Digit`s.
@@ -137,13 +146,9 @@ use crate::logic::try_forward_bin_mut_impl;
                             sum[lhs_sig_nonzero + rhs_sig_nonzero] = temp1.lo();
                             sum.push(temp1.hi().wrapping_add(temp0.1));
                             if lhs.len() < sum.len() {
-                                for i in 0..lhs.len() {
-                                    lhs[i] = sum[i];
-                                }
+                                lhs.copy_from_slice(&sum[..lhs.len()]);
                             } else {
-                                for i in 0..sum.len() {
-                                    lhs[i] = sum[i];
-                                }
+                                lhs[..sum.len()].copy_from_slice(&sum[..]);
                             }
                         } else {
                             //wrapping (modular) multiplication
@@ -192,9 +197,7 @@ use crate::logic::try_forward_bin_mut_impl;
                                     .wrapping_add(sum[sig_nonzero])
                                     .wrapping_add(add_carry);
                             }
-                            for i in 0..sig_nonzero {
-                                lhs[i] = sum[i];
-                            }
+                            lhs[..sig_nonzero].copy_from_slice(&sum[..sig_nonzero]);
                             //final digit (the only one in its row)
                             lhs[sig_nonzero] = lhs[sig_nonzero]
                                 .wrapping_mul_add(rhs[0], sum[sig_nonzero]);
@@ -255,19 +258,19 @@ use crate::logic::try_forward_bin_mut_impl;
         Ok(())
     }
 
-    /// Multiplies `rhs` with `self` and returns the result. This function **may** allocate memory.
-    /// Note: see `wrapping_mul_assign` for more information.
-    /// 
-    /// # Errors
-    /// 
-    /// - If `self` and `rhs` have unmatching bit widths.
+    /// Multiplies `rhs` with `self` and returns the result.
     pub fn into_wrapping_mul(self, rhs: &ApInt) -> Result<ApInt> {
         try_forward_bin_mut_impl(self, rhs, ApInt::wrapping_mul_assign)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::info::BitWidth;
+
     mod mul {
         use super::*;
-        use bitwidth::BitWidth;
         use std::{u8,u64};
 
         #[test]
@@ -293,17 +296,17 @@ use crate::logic::try_forward_bin_mut_impl;
                         //It will produce things like 998001, 8991, 98901, 9989001.
                         //this uses a formula for the number of nines, eights, and zeros except here
                         //nine is u8::MAX, eight is u8::MAX - 1, and zero is 0u8
-                        let mut zeros_after_one = if lhs_nine < rhs_nine {
+                        let zeros_after_one = if lhs_nine < rhs_nine {
                             lhs_nine
                         } else {
                             rhs_nine
                         };
-                        let mut nines_before_eight = if lhs_nine > rhs_nine {
+                        let nines_before_eight = if lhs_nine > rhs_nine {
                             lhs_nine - rhs_nine
                         } else {
                             rhs_nine - lhs_nine
                         };
-                        let mut nines_after_eight = if lhs_nine < rhs_nine {
+                        let nines_after_eight = if lhs_nine < rhs_nine {
                             lhs_nine
                         } else {
                             rhs_nine
@@ -371,17 +374,17 @@ use crate::logic::try_forward_bin_mut_impl;
                 900, 1000, 0,
             ];
             for (i, _) in resize.iter().enumerate() {
-                let mut lhs = ApInt::from(5u8)
+                let lhs = ApInt::from(5u8)
                     .into_zero_resize(BitWidth::new(resize[i]).unwrap())
                     .into_wrapping_shl(lhs_shl[i])
                     .unwrap();
-                let mut rhs = ApInt::from(11u8)
+                let rhs = ApInt::from(11u8)
                     .into_zero_resize(BitWidth::new(resize[i]).unwrap())
                     .into_wrapping_shl(rhs_shl[i])
                     .unwrap();
-                let mut zero = ApInt::from(0u8).into_zero_resize(BitWidth::new(resize[i]).unwrap());
-                let mut one = ApInt::from(1u8).into_zero_resize(BitWidth::new(resize[i]).unwrap());
-                let mut expected = ApInt::from(55u8)
+                let zero = ApInt::from(0u8).into_zero_resize(BitWidth::new(resize[i]).unwrap());
+                let one = ApInt::from(1u8).into_zero_resize(BitWidth::new(resize[i]).unwrap());
+                let expected = ApInt::from(55u8)
                     .into_zero_resize(BitWidth::new(resize[i]).unwrap())
                     .into_wrapping_shl(rhs_shl[i] + lhs_shl[i])
                     .unwrap();
@@ -397,3 +400,4 @@ use crate::logic::try_forward_bin_mut_impl;
                 ,ApInt::from([u64::MAX,0,1,u64::MAX - 3,1,u64::MAX,u64::MAX,1]));
         }
     }
+}
