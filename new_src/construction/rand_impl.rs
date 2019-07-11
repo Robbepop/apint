@@ -1,6 +1,5 @@
-use apint::{ApInt};
-use bitwidth::{BitWidth};
-use digit::{Digit};
+use crate::data::{ApInt, Digit};
+use crate::info::{BitWidth};
 
 use rand;
 use rand::{FromEntropy};
@@ -73,7 +72,7 @@ mod tests {
         let default_seed = <rand::XorShiftRng as rand::SeedableRng>::Seed::default();
         let mut rng = rand::XorShiftRng::from_seed(default_seed);
         let r = &mut rng;
-        assert_eq!(ApInt::random_with_width_using(BitWidth::w1(), r), ApInt::from_bit(true));
+        assert_eq!(ApInt::random_with_width_using(BitWidth::w1(), r), ApInt::from_bool(true));
         assert_eq!(ApInt::random_with_width_using(BitWidth::w8(), r), ApInt::from_u8(100));
         assert_eq!(ApInt::random_with_width_using(BitWidth::w16(), r), ApInt::from_u16(30960));
         assert_eq!(ApInt::random_with_width_using(BitWidth::w32(), r), ApInt::from_u32(1788231528));
@@ -90,7 +89,7 @@ mod tests {
         let r2 = &mut rng2;
 
         {
-            let mut randomized = ApInt::from_bit(false);
+            let mut randomized = ApInt::from_bool(false);
             randomized.randomize_using(r1);
             let new_random = ApInt::random_with_width_using(BitWidth::w1(), r2);
             assert_eq!(randomized, new_random);
