@@ -26,6 +26,6 @@ impl Storage {
     ///       similar to the well-known small-string optimization.
     #[inline]
     fn is_inline(width: BitWidth) -> bool {
-        width.to_usize() <= digit::BITS
+        width.to_usize() <= Digit::BITS
     }
 }
