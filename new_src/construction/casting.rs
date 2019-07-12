@@ -3,32 +3,13 @@ use crate::info::{BitWidth, Error, Result, Width};
 use crate::logic::{try_forward_bin_mut_impl, forward_bin_mut_impl};
 
 /// # Casting: Truncation & Extension
+/// 
+/// **Note**: unless otherwise noted in the function specific documentation,
+/// 
+/// - These operations **will reallocate** if `self.width()` and `target_width` require different amounts of digits for their representation.
+/// - These functions optimize to no-ops if `self.width()` and `target_width` are equal.
 impl ApInt {
-    /// Tries to truncate this `ApInt` inplace to the given `target_width`
-    /// and returns the result.
-    /// 
-    /// # Note
-    /// 
-    /// - This is useful for method chaining.
-    /// - For more details look into
-    ///   [`truncate`](struct.ApInt.html#method.truncate).
-    /// 
-    /// # Errors
-    /// 
-    /// - If the `target_width` is greater than the current width.
-    pub fn into_truncate<W>(self, target_width: W) -> Result<ApInt>
-        where W: Into<BitWidth>
-    {
-        try_forward_bin_mut_impl(self, target_width, ApInt::truncate)
-    }
-
     /// Tries to truncate this `ApInt` inplace to the given `target_width`.
-    /// 
-    /// # Note
-    /// 
-    /// - This is a no-op if `self.width()` and `target_width` are equal.
-    /// - This operation is inplace as long as `self.width()` and `target_width`
-    ///   require the same amount of digits for their representation.
     /// 
     /// # Errors
     /// 
@@ -101,16 +82,18 @@ impl ApInt {
         Ok(())
     }
 
-    // ========================================================================
+    /// Tries to truncate this `ApInt` inplace to the given `target_width` and returns the result.
+    /// 
+    /// # Errors
+    /// 
+    /// - If the `target_width` is greater than the current width.
+    pub fn into_truncate<W>(self, target_width: W) -> Result<ApInt>
+        where W: Into<BitWidth>
+    {
+        try_forward_bin_mut_impl(self, target_width, ApInt::truncate)
+    }
 
-    /// Tries to zero-extend this `ApInt` inplace to the given `target_width`
-    /// and returns the result.
-    /// 
-    /// # Note
-    /// 
-    /// - This is useful for method chaining.
-    /// - For more details look into
-    ///   [`zero_extend`](struct.ApInt.html#method.zero_extend).
+    /// Tries to zero-extend this `ApInt` inplace to the given `target_width` and returns the result.
     /// 
     /// # Errors
     /// 
@@ -122,12 +105,6 @@ impl ApInt {
     }
 
     /// Tries to zero-extend this `ApInt` inplace to the given `target_width`.
-    /// 
-    /// # Note
-    /// 
-    /// - This is a no-op if `self.width()` and `target_width` are equal.
-    /// - This operation is inplace as long as `self.width()` and `target_width`
-    ///   require the same amount of digits for their representation.
     /// 
     /// # Errors
     /// 
@@ -171,29 +148,19 @@ impl ApInt {
             // must allocate a new buffer that fits for the required amount of digits
             // for the target width. Also we need to `memcpy` the digits of the
             // extended `ApInt` to the newly allocated buffer.
-            use digit;
             use std::iter;
             assert!(target_req_digits > actual_req_digits);
             let additional_digits = target_req_digits - actual_req_digits;
             let extended_clone = ApInt::from_iter(
                 self.digits()
-                    .chain(iter::repeat(digit::ZERO).take(additional_digits)))
+                    .chain(iter::repeat(Digit::ZERO).take(additional_digits)))
                 .and_then(|apint| apint.into_truncate(target_width))?;
             *self = extended_clone;
         }
         Ok(())
     }
 
-    // ========================================================================
-
-    /// Tries to sign-extend this `ApInt` inplace to the given `target_width`
-    /// and returns the result.
-    /// 
-    /// # Note
-    /// 
-    /// - This is useful for method chaining.
-    /// - For more details look into
-    ///   [`sign_extend`](struct.ApInt.html#method.sign_extend).
+    /// Tries to sign-extend this `ApInt` inplace to the given `target_width` and returns the result.
     /// 
     /// # Errors
     /// 
@@ -205,12 +172,6 @@ impl ApInt {
     }
 
     /// Tries to sign-extend this `ApInt` inplace to the given `target_width`.
-    /// 
-    /// # Note
-    /// 
-    /// - This is a no-op if `self.width()` and `target_width` are equal.
-    /// - This operation is inplace as long as `self.width()` and `target_width`
-    ///   require the same amount of digits for their representation.
     /// 
     /// # Errors
     /// 
@@ -237,7 +198,7 @@ impl ApInt {
                 .into()
         }
 
-        if self.most_significant_bit() == Bit::Unset {
+        if !self.most_significant_bit() {
             return self.zero_extend(target_width)
         }
 
@@ -269,7 +230,6 @@ impl ApInt {
             // must allocate a new buffer that fits for the required amount of digits
             // for the target width. Also we need to `memcpy` the digits of the
             // extended `ApInt` to the newly allocated buffer.
-            use digit;
             use std::iter;
             assert!(target_req_digits > actual_req_digits);
             let additional_digits = target_req_digits - actual_req_digits;
@@ -281,7 +241,7 @@ impl ApInt {
 
             let extended_copy = ApInt::from_iter(
                 self.digits()
-                    .chain(iter::repeat(digit::ONES).take(additional_digits)))
+                    .chain(iter::repeat(Digit::ONES).take(additional_digits)))
                 .and_then(|apint| apint.into_truncate(target_width))?;
 
             self.clear_unused_bits();
@@ -291,30 +251,14 @@ impl ApInt {
         Ok(())
     }
 
-    // ========================================================================
-
-    /// Zero-resizes this `ApInt` to the given `target_width`
-    /// and returns the result.
-    /// 
-    /// # Note
-    /// 
-    /// - This is useful for method chaining.
-    /// - For more details look into
-    ///   [`zero_resize`](struct.ApInt.html#method.zero_resize).
+    /// Zero-resizes this `ApInt` to the given `target_width` and returns the result.
     pub fn into_zero_resize<W>(self, target_width: W) -> ApInt
         where W: Into<BitWidth>
     {
         forward_bin_mut_impl(self, target_width, ApInt::zero_resize)
     }
 
-    /// Sign-resizes this `ApInt` to the given `target_width`
-    /// and returns the result.
-    /// 
-    /// # Note
-    /// 
-    /// - This is useful for method chaining.
-    /// - For more details look into
-    ///   [`sign_resize`](struct.ApInt.html#method.sign_resize).
+    /// Sign-resizes this `ApInt` to the given `target_width` and returns the result.
     pub fn into_sign_resize<W>(self, target_width: W) -> ApInt
         where W: Into<BitWidth>
     {
