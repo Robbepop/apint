@@ -81,6 +81,56 @@ unsafe impl Sync for ApInt {}
         }
     }
 
+    /// Returns the number of bits of the bit width of this `ApInt`.
+    #[inline]
+    pub(in apint) fn len_bits(&self) -> usize {
+        self.len.to_usize()
+    }
+
+    /// Returns the number of digits used internally for the value
+    /// representation of this `ApInt`.
+    #[inline]
+    pub(in apint) fn len_digits(&self) -> usize {
+        self.len.required_digits()
+    }
+
+    /// Returns the storage specifier of this `ApInt`.
+    /// 
+    /// This is `Storage::Inl` for `ApInt` instances that can be stored
+    /// entirely on the stack and `Storage::Ext` otherwise.
+    #[inline]
+    pub(in apint) fn storage(&self) -> Storage {
+        self.len.storage()
+    }
+
+    /// Returns a slice over the `Digit`s of this `ApInt` in little-endian order.
+    #[inline]    
+    pub(in apint) fn as_digit_slice(&self) -> &[Digit] {
+        use std::slice;
+        match self.len.storage() {
+            Storage::Inl => unsafe {
+                slice::from_raw_parts(&self.data.inl, 1)
+            },
+            Storage::Ext => unsafe {
+                slice::from_raw_parts(self.data.ext.as_ptr(), self.len_digits())
+            }
+        }
+    }
+
+    /// Returns a mutable slice over the `Digit`s of this `ApInt` in little-endian order.
+    #[inline]    
+    pub(in apint) fn as_digit_slice_mut(&mut self) -> &mut [Digit] {
+        use std::slice;
+        match self.len.storage() {
+            Storage::Inl => unsafe {
+                slice::from_raw_parts_mut(&mut self.data.inl, 1)
+            },
+            Storage::Ext => unsafe {
+                slice::from_raw_parts_mut(self.data.ext.as_ptr(), self.len_digits())
+            }
+        }
+    }
+
     /// Assigns `rhs` to this `ApInt`.
     ///
     /// This mutates digits and may affect the bitwidth of `self`
