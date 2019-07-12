@@ -6,41 +6,6 @@ use smallvec::SmallVec;
 /// # Constructors
 impl ApInt {
 
-    /// Creates a new small `ApInt` from the given `BitWidth` and `Digit`.
-    /// 
-    /// Small `ApInt` instances are stored entirely on the stack.
-    /// 
-    /// # Panics
-    /// 
-    /// - If the given `width` represents a `BitWidth` larger than `64` bits.
-    #[inline]
-    pub(in apint) fn new_inl(width: BitWidth, digit: Digit) -> ApInt {
-        assert_eq!(width.storage(), Storage::Inl);
-        ApInt {
-            len: width,
-            data: ApIntData { inl: digit }
-        }
-    }
-
-    /// Creates a new large `ApInt` from the given `BitWidth` and `Digit`.
-    /// 
-    /// Large `ApInt` instances allocate their digits on the heap.
-    /// 
-    /// **Note:** This operation is unsafe since the buffer length behind the
-    ///           given `ext_ptr` must be trusted.
-    /// 
-    /// # Panics
-    /// 
-    /// - If the given `width` represents a `BitWidth` smaller than
-    ///   or equal to `64` bits.
-    pub(in apint) unsafe fn new_ext(width: BitWidth, ext_ptr: *mut Digit) -> ApInt {
-        assert_eq!(width.storage(), Storage::Ext);
-        ApInt{
-            len: width,
-            data: ApIntData{ ext: NonNull::new_unchecked(ext_ptr) }
-        }
-    }
-
     /// Creates a new `ApInt` from the given `Bit` value with a bit width of `1`.
     /// 
     /// This function is generic over types that are convertible to `Bit` such as `bool`.
