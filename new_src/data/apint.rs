@@ -4,18 +4,20 @@ use crate::info::{BitWidth, Width, Result, Error};
 use std::ptr::NonNull;
 
 /// An arbitrary precision integer with modulo arithmetics similar to machine integers.
+/// 
+/// Note: The width of the `ApInt` can be found at runtime through importing the [`Width`](trait.Width.html) trait.
 pub struct ApInt {
     /// The width in bits of this `ApInt`.
-    len : BitWidth,
+    pub(crate) len : BitWidth,
     /// The actual data (bits) of this `ApInt`.
-    data: ApIntData
+    pub(in crate::data) data: ApIntData
 }
 
-union ApIntData {
+pub(in crate::data) union ApIntData {
     /// Inline storage (up to 64 bits) for small-space optimization.
-    inl: Digit,
+    pub(in crate::data) inl: Digit,
     /// Extern storage (>64 bits) for larger `ApInt`s.
-    ext: NonNull<Digit>
+    pub(in crate::data) ext: NonNull<Digit>
 }
 
 /// `ApInt` is safe to send between threads since it does not own
@@ -26,7 +28,7 @@ unsafe impl Send for ApInt {}
 /// aliasing memory and has no mutable internal state like `Cell` or `RefCell`.
 unsafe impl Sync for ApInt {}
 
-
+impl ApInt {
     /// Deallocates memory that may be allocated by this `ApInt`.
     /// 
     /// `ApInt` instances with a bit width larger than `64` bits
@@ -38,9 +40,10 @@ unsafe impl Sync for ApInt {}
     /// 
     /// **Note:** This is `unsafe` since it violates invariants
     ///           of the `ApInt`.
-    pub(in apint) unsafe fn drop_digits(&mut self) {
+    pub(crate) unsafe fn drop_digits(&mut self) {
         if self.len.storage() == Storage::Ext {
             let len = self.len_digits();
+            // TODO: Is there a more direct way to do this?
             drop(Vec::from_raw_parts(
                 self.data.ext.as_ptr(), len, len))
         }
@@ -83,14 +86,14 @@ unsafe impl Sync for ApInt {}
 
     /// Returns the number of bits of the bit width of this `ApInt`.
     #[inline]
-    pub(in apint) fn len_bits(&self) -> usize {
+    pub(crate) fn len_bits(&self) -> usize {
         self.len.to_usize()
     }
 
     /// Returns the number of digits used internally for the value
     /// representation of this `ApInt`.
     #[inline]
-    pub(in apint) fn len_digits(&self) -> usize {
+    pub(crate) fn len_digits(&self) -> usize {
         self.len.required_digits()
     }
 
@@ -99,13 +102,13 @@ unsafe impl Sync for ApInt {}
     /// This is `Storage::Inl` for `ApInt` instances that can be stored
     /// entirely on the stack and `Storage::Ext` otherwise.
     #[inline]
-    pub(in apint) fn storage(&self) -> Storage {
+    pub(crate) fn storage(&self) -> Storage {
         self.len.storage()
     }
 
     /// Returns a slice over the `Digit`s of this `ApInt` in little-endian order.
     #[inline]    
-    pub(in apint) fn as_digit_slice(&self) -> &[Digit] {
+    pub(crate) fn as_digit_slice(&self) -> &[Digit] {
         use std::slice;
         match self.len.storage() {
             Storage::Inl => unsafe {
@@ -119,7 +122,7 @@ unsafe impl Sync for ApInt {}
 
     /// Returns a mutable slice over the `Digit`s of this `ApInt` in little-endian order.
     #[inline]    
-    pub(in apint) fn as_digit_slice_mut(&mut self) -> &mut [Digit] {
+    pub(crate) fn as_digit_slice_mut(&mut self) -> &mut [Digit] {
         use std::slice;
         match self.len.storage() {
             Storage::Inl => unsafe {
@@ -134,7 +137,7 @@ unsafe impl Sync for ApInt {}
     /// Assigns `rhs` to this `ApInt`.
     ///
     /// This mutates digits and may affect the bitwidth of `self`
-    /// which **might result in an expensive operations**.
+    /// which **may cause allocations**.
     ///
     /// After this operation `rhs` and `self` are equal to each other.
     pub fn assign(&mut self, rhs: &ApInt) {
@@ -215,6 +218,7 @@ impl Clone for ApInt {
             Storage::Ext => {
                 use std::mem;
                 let req_digits = self.len_digits();
+                //TODO: this can be simplified and should be benchmarked
                 let mut buffer = self.as_digit_slice()
                     .to_vec()
                     .into_boxed_slice();
