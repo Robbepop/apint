@@ -5,14 +5,11 @@ use smallvec::SmallVec;
 
 /// # Constructors
 impl ApInt {
-
-    /// Creates a new `ApInt` from the given `Bit` value with a bit width of `1`.
+    /// Creates a new `ApInt` from the given boolean value with a bit width of `1`.
     /// 
-    /// This function is generic over types that are convertible to `Bit` such as `bool`.
-    pub fn from_bit<B>(bit: B) -> ApInt
-        where B: Into<Bit>
-    {
-        ApInt::new_inl(BitWidth::w1(), Digit(bit.into().to_bool() as u64))
+    /// When `bit` is `false`, the single bit in the `ApInt` is 0, otherwise it is 1.
+    pub fn from_bool(bit: bool) -> ApInt {
+        ApInt::new_inl(BitWidth::w1(), Digit(bit as DigitRepr))
     }
 
     /// Creates a new `ApInt` from a given `i8` value with a bit-width of 8.
@@ -71,7 +68,7 @@ impl ApInt {
 
     /// Creates a new `ApInt` from a given `u128` value with a bit-width of 128.
     pub fn from_u128(val: u128) -> ApInt {
-        let hi = (val >> digit::BITS) as u64;
+        let hi = (val >> Digit::BITS) as u64;
         let lo = (val & ((1u128 << 64) - 1)) as u64;
         ApInt::from([hi, lo])
     }
@@ -91,7 +88,7 @@ impl ApInt {
     /// # Errors
     /// 
     /// - If the iterator yields no elements.
-    pub(in apint) fn from_iter<I>(digits: I) -> Result<ApInt>
+    pub(crate) fn from_iter<I>(digits: I) -> Result<ApInt>
         where I: IntoIterator<Item=Digit>,
     {
         let mut buffer = digits.into_iter().collect::<SmallVec<[Digit; 1]>>();
@@ -107,7 +104,7 @@ impl ApInt {
             }
             n => {
                 use std::mem;
-                let bitwidth = BitWidth::new(n * digit::BITS)
+                let bitwidth = BitWidth::new(n * Digit::BITS)
                     .expect("We have already asserted that the number of items the given Iterator \
                              iterates over is greater than `1` and thus non-zero and thus a valid `BitWidth`.");
                 let req_digits = bitwidth.required_digits();
@@ -122,8 +119,9 @@ impl ApInt {
     }
 
     // TODO: convert this to take from a slice or IntoIterator<u64>
+    #[cfg(test)]
     pub(crate) fn from_vec_u64(val: Vec<u64>) -> Option<ApInt> {
-        if val.len() == 0 {
+        if val.is_empty() {
             None
         } else {
             let buffer = val.into_iter()
@@ -139,7 +137,7 @@ impl ApInt {
     /// 
     /// Note: The last digit in the generated sequence is truncated to make the `ApInt`'s
     ///       value representation fit the given bit-width.
-    pub(in apint) fn repeat_digit<D>(target_width: BitWidth, digit: D) -> ApInt
+    pub(crate) fn repeat_digit<D>(target_width: BitWidth, digit: D) -> ApInt
         where D: Into<Digit>
     {
         use std::iter;
@@ -160,7 +158,7 @@ impl ApInt {
 
     /// Creates a new `ApInt` with the given bit width that represents zero.
     pub fn zero(width: BitWidth) -> ApInt {
-        ApInt::repeat_digit(width, digit::ZERO)
+        ApInt::repeat_digit(width, Digit::ZERO)
     }
 
     /// Creates a new `ApInt` with the given bit width that represents one.
@@ -177,7 +175,7 @@ impl ApInt {
 
     /// Creates a new `ApInt` with the given bit width that has all bits set.
     pub fn all_set(width: BitWidth) -> ApInt {
-        ApInt::repeat_digit(width, digit::ONES)
+        ApInt::repeat_digit(width, Digit::ONES)
     }
 
     /// Returns the smallest unsigned `ApInt` that can be represented by the given `BitWidth`.
@@ -205,12 +203,10 @@ impl ApInt {
     }
 }
 
-impl<B> From<B> for ApInt
-    where B: Into<Bit>
-{
+impl From<bool> for ApInt {
     #[inline]
-    fn from(bit: B) -> ApInt {
-        ApInt::from_bit(bit)
+    fn from(bit: bool) -> ApInt {
+        ApInt::from_bool(bit)
     }
 }
 
@@ -319,6 +315,8 @@ impl_from_array_for_apint!(8);  // 512 bits
 impl_from_array_for_apint!(16); // 1024 bits
 impl_from_array_for_apint!(32); // 2048 bits
 
+// Note: There are some tests for this file that are located in `apint.rs`
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -333,38 +331,34 @@ mod tests {
         powers().skip(range.start).take(range.end - range.start)
     }
 
-    mod tests {
-        use super::{powers, powers_from_to};
+    #[test]
+    fn test_powers() {
+        let mut pows = powers();
+        assert_eq!(pows.next(), Some(1 << 0));
+        assert_eq!(pows.next(), Some(1 << 1));
+        assert_eq!(pows.next(), Some(1 << 2));
+        assert_eq!(pows.next(), Some(1 << 3));
+        assert_eq!(pows.next(), Some(1 << 4));
+        assert_eq!(pows.next(), Some(1 << 5));
+        assert_eq!(pows.last(), Some(1 << 127));
+    }
 
-        #[test]
-        fn test_powers() {
-            let mut pows = powers();
-            assert_eq!(pows.next(), Some(1 << 0));
-            assert_eq!(pows.next(), Some(1 << 1));
-            assert_eq!(pows.next(), Some(1 << 2));
-            assert_eq!(pows.next(), Some(1 << 3));
-            assert_eq!(pows.next(), Some(1 << 4));
-            assert_eq!(pows.next(), Some(1 << 5));
-            assert_eq!(pows.last(), Some(1 << 127));
+    #[test]
+    fn test_powers_from_to() {
+        {
+            let mut powsft = powers_from_to(0..4);
+            assert_eq!(powsft.next(), Some(1 << 0));
+            assert_eq!(powsft.next(), Some(1 << 1));
+            assert_eq!(powsft.next(), Some(1 << 2));
+            assert_eq!(powsft.next(), Some(1 << 3));
+            assert_eq!(powsft.next(), None);
         }
-
-        #[test]
-        fn test_powers_from_to() {
-            {
-                let mut powsft = powers_from_to(0..4);
-                assert_eq!(powsft.next(), Some(1 << 0));
-                assert_eq!(powsft.next(), Some(1 << 1));
-                assert_eq!(powsft.next(), Some(1 << 2));
-                assert_eq!(powsft.next(), Some(1 << 3));
-                assert_eq!(powsft.next(), None);
-            }
-            {
-                let mut powsft = powers_from_to(4..7);
-                assert_eq!(powsft.next(), Some(1 << 4));
-                assert_eq!(powsft.next(), Some(1 << 5));
-                assert_eq!(powsft.next(), Some(1 << 6));
-                assert_eq!(powsft.next(), None);
-            }
+        {
+            let mut powsft = powers_from_to(4..7);
+            assert_eq!(powsft.next(), Some(1 << 4));
+            assert_eq!(powsft.next(), Some(1 << 5));
+            assert_eq!(powsft.next(), Some(1 << 6));
+            assert_eq!(powsft.next(), None);
         }
     }
 
@@ -382,38 +376,20 @@ mod tests {
     }
 
     #[test]
-    fn from_bit() {
+    fn from_bool() {
         {
-            let explicit = ApInt::from_bit(Bit::Set);
-            let implicit = ApInt::from(Bit::Set);
+            let explicit = ApInt::from_bool(true);
+            let implicit = ApInt::from(true);
             let expected = ApInt::new_inl(BitWidth::w1(), Digit::one());
             assert_eq!(explicit, implicit);
             assert_eq!(explicit, expected);
         }
         {
-            let explicit = ApInt::from_bit(Bit::Unset);
-            let implicit = ApInt::from(Bit::Unset);
+            let explicit = ApInt::from_bool(false);
+            let implicit = ApInt::from(false);
             let expected = ApInt::new_inl(BitWidth::w1(), Digit::zero());
             assert_eq!(explicit, implicit);
             assert_eq!(explicit, expected);
-        }
-    }
-
-    #[test]
-    fn from_w8() {
-        for val in test_values_u8() {
-            let explicit_u8 = ApInt::from_u8(val);
-            let explicit_i8 = ApInt::from_i8(val as i8);
-            let implicit_u8 = ApInt::from(val);
-            let implicit_i8 = ApInt::from(val as i8);
-            let expected = ApInt{
-                len : BitWidth::w8(),
-                data: ApIntData{inl: Digit(u64::from(val))}
-            };
-            assert_eq!(explicit_u8, explicit_i8);
-            assert_eq!(explicit_u8, implicit_i8);
-            assert_eq!(explicit_u8, implicit_u8);
-            assert_eq!(explicit_u8, expected);
         }
     }
 
@@ -432,24 +408,6 @@ mod tests {
             ].into_iter().map(|v| *v))
     }
 
-    #[test]
-    fn from_w16() {
-        for val in test_values_u16() {
-            let explicit_u16 = ApInt::from_u16(val);
-            let explicit_i16 = ApInt::from_i16(val as i16);
-            let implicit_u16 = ApInt::from(val);
-            let implicit_i16 = ApInt::from(val as i16);
-            let expected = ApInt{
-                len : BitWidth::w16(),
-                data: ApIntData{inl: Digit(u64::from(val))}
-            };
-            assert_eq!(explicit_u16, explicit_i16);
-            assert_eq!(explicit_u16, implicit_i16);
-            assert_eq!(explicit_u16, implicit_u16);
-            assert_eq!(explicit_u16, expected);
-        }
-    }
-
     fn test_values_u32() -> impl Iterator<Item=u32> {
         test_values_u16()
             .map(u32::from)
@@ -463,24 +421,6 @@ mod tests {
             ].into_iter().map(|v| *v))
     }
 
-    #[test]
-    fn from_w32() {
-        for val in test_values_u32() {
-            let explicit_u32 = ApInt::from_u32(val);
-            let explicit_i32 = ApInt::from_i32(val as i32);
-            let implicit_u32 = ApInt::from(val);
-            let implicit_i32 = ApInt::from(val as i32);
-            let expected = ApInt{
-                len : BitWidth::w32(),
-                data: ApIntData{inl: Digit(u64::from(val))}
-            };
-            assert_eq!(explicit_u32, explicit_i32);
-            assert_eq!(explicit_u32, implicit_i32);
-            assert_eq!(explicit_u32, implicit_u32);
-            assert_eq!(explicit_u32, expected);
-        }
-    }
-
     fn test_values_u64() -> impl Iterator<Item=u64> {
         test_values_u32()
             .map(u64::from)
@@ -492,24 +432,6 @@ mod tests {
                 999_999_999_999_999_999,
                 0x0123_4567_89AB_CDEF
             ].into_iter().map(|v| *v))
-    }
-
-    #[test]
-    fn from_w64() {
-        for val in test_values_u64() {
-            let explicit_u64 = ApInt::from_u64(val);
-            let explicit_i64 = ApInt::from_i64(val as i64);
-            let implicit_u64 = ApInt::from(val);
-            let implicit_i64 = ApInt::from(val as i64);
-            let expected = ApInt{
-                len : BitWidth::w64(),
-                data: ApIntData{inl: Digit(u64::from(val))}
-            };
-            assert_eq!(explicit_u64, explicit_i64);
-            assert_eq!(explicit_u64, implicit_i64);
-            assert_eq!(explicit_u64, implicit_u64);
-            assert_eq!(explicit_u64, expected);
-        }
     }
 
     fn test_values_u128() -> impl Iterator<Item=u128> {
@@ -527,7 +449,6 @@ mod tests {
 
     #[test]
     fn from_w128() {
-        use digit::{Digit, DigitRepr};
         for val in test_values_u128() {
             let explicit_u128 = ApInt::from_u128(val);
             let explicit_i128 = ApInt::from_i128(val as i128);
@@ -547,7 +468,7 @@ mod tests {
 
     #[test]
     fn zero() {
-        assert_eq!(ApInt::zero(BitWidth::w1()), ApInt::from_bit(false));
+        assert_eq!(ApInt::zero(BitWidth::w1()), ApInt::from_bool(false));
         assert_eq!(ApInt::zero(BitWidth::w8()), ApInt::from_u8(0));
         assert_eq!(ApInt::zero(BitWidth::w16()), ApInt::from_u16(0));
         assert_eq!(ApInt::zero(BitWidth::w32()), ApInt::from_u32(0));
@@ -559,7 +480,7 @@ mod tests {
 
     #[test]
     fn one() {
-        assert_eq!(ApInt::one(BitWidth::w1()), ApInt::from_bit(true));
+        assert_eq!(ApInt::one(BitWidth::w1()), ApInt::from_bool(true));
         assert_eq!(ApInt::one(BitWidth::w8()), ApInt::from_u8(1));
         assert_eq!(ApInt::one(BitWidth::w16()), ApInt::from_u16(1));
         assert_eq!(ApInt::one(BitWidth::w32()), ApInt::from_u32(1));
@@ -594,7 +515,7 @@ mod tests {
 
     #[test]
     fn all_set() {
-        assert_eq!(ApInt::all_set(BitWidth::w1()), ApInt::from_bit(true));
+        assert_eq!(ApInt::all_set(BitWidth::w1()), ApInt::from_bool(true));
         assert_eq!(ApInt::all_set(BitWidth::w8()), ApInt::from_i8(-1));
         assert_eq!(ApInt::all_set(BitWidth::w16()), ApInt::from_i16(-1));
         assert_eq!(ApInt::all_set(BitWidth::w32()), ApInt::from_i32(-1));
@@ -640,7 +561,7 @@ mod tests {
 
     #[test]
     fn signed_min_value() {
-        assert_eq!(ApInt::signed_min_value(BitWidth::w1()), ApInt::from_bit(true));
+        assert_eq!(ApInt::signed_min_value(BitWidth::w1()), ApInt::from_bool(true));
         assert_eq!(ApInt::signed_min_value(BitWidth::w8()), ApInt::from_i8(i8::min_value()));
         assert_eq!(ApInt::signed_min_value(BitWidth::w16()), ApInt::from_i16(i16::min_value()));
         assert_eq!(ApInt::signed_min_value(BitWidth::w32()), ApInt::from_i32(i32::min_value()));
@@ -670,7 +591,7 @@ mod tests {
 
     #[test]
     fn signed_max_value() {
-        assert_eq!(ApInt::signed_max_value(BitWidth::w1()), ApInt::from_bit(false));
+        assert_eq!(ApInt::signed_max_value(BitWidth::w1()), ApInt::from_bool(false));
         assert_eq!(ApInt::signed_max_value(BitWidth::w8()), ApInt::from_i8(i8::max_value()));
         assert_eq!(ApInt::signed_max_value(BitWidth::w16()), ApInt::from_i16(i16::max_value()));
         assert_eq!(ApInt::signed_max_value(BitWidth::w32()), ApInt::from_i32(i32::max_value()));
