@@ -75,14 +75,6 @@ pub(crate) enum ZipDataAccessMutBoth<'a, 'b> {
 
 // ============================================================================
 
-impl Width for ApInt {
-    /// Returns the `BitWidth` of this `ApInt`.
-    #[inline]
-    fn width(&self) -> BitWidth {
-        BitWidth::new(self.len_bits()).unwrap()
-    }
-}
-
 /// # Utility & Helper Methods
 impl ApInt {
     /// Returns the number of bits of the bit width of this `ApInt`.

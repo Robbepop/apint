@@ -177,6 +177,14 @@ impl Clone for ApInt {
     }
 }
 
+impl Width for ApInt {
+    /// Returns the `BitWidth` of this `ApInt`.
+    #[inline]
+    fn width(&self) -> BitWidth {
+        BitWidth::new(self.len_bits()).unwrap()
+    }
+}
+
 // These are tests that would normally be in `constructors.rs`.
 // This is put here to be able to constrict the visibility modifiers for
 // `ApIntData`.
