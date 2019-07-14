@@ -40,7 +40,7 @@ impl ApInt {
     /// 
     /// **Note:** This is `unsafe` since it violates invariants
     ///           of the `ApInt`.
-    pub(crate) unsafe fn drop_digits(&mut self) {
+    pub unsafe fn drop_digits(&mut self) {
         if self.len.storage() == Storage::Ext {
             let len = self.len_digits();
             // TODO: Is there a more direct way to do this?
