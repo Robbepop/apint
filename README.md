@@ -52,7 +52,7 @@ widths of 64 bits are assumed.
 | Small Value Optimization | No                                        | Yes: Up to 64-bits.                     |
 | Building Blocks          | 32-bit `BigDigit` aka `u32`               | 64-bit `Digit`                          |
 | Compute Unit             | 64-bit `DoubleBigDigit` aka `u64`         | 128-bit `DoubleDigit`                   |
-| Signed                   | Yes: `num::BigUint` is for unsigned       | No: Operations know signedness instead  |
+| Signed                   | Yes: `num::BigInt` is for signed       | No: Operations know signedness instead  |
 | `mem::size_of<..>`       | About 24 bytes + some signedness info     | Exactly 128 bits                        |
 | Width interoperability   | No restriction to operate between `BigInt` instances with different bit-widths. | Only `ApInt` instances with the same bit-width can interoperate. |
 | Memory footprint         | Determined by current value stored        | Determined by bit-width                 |
