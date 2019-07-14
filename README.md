@@ -61,20 +61,20 @@ widths of 64 bits are assumed.
 
 ## Current State
 
-Currently only a few parts of the implementation are done - especially the implementation of
-`ApInt`'s with bit-widths greater than 64 bits is incomplete.
+Currently most of the implementation is done. Many parts could use performance or ergonomics
+improvements however.
 
 State of the API modules implemented so far:
 
 |        Module       | Design | Implementation | Testing | TODO |
 |:-------------------:|:------:|:--------------:|:-------:|:----:|
-| `arithmetic`        | **done** | unfinished | unfinished | |
+| `arithmetic`        | **done** | **done** | **done** | |
 | `constructors`      | **done** | **done** | **done** | |
 | `casting`           | **done** | **done** | *not started* | issue [#4](https://github.com/Robbepop/apint/issues/4) |
 | `bitwise`           | **done** | **done** | *not started* | |
 | `shift`             | **done** | **done** |  **done** | |
-| `relational`        | **done** | **done** | *not started* | |
-| `utils`             | **done** | **done** | *not started* | |
+| `relational`        | **done** | **done** | unfinished | |
+| `utils`             | **done** | **done** | unfinished | |
 | `serialization`     | **done** | unfinished | unfinished | depends on `arithmetic` |
 | `to_primitive`      | **done** | **done** | **done** | |
 | `serde_impl` (opt.) | **done** | **done** | **done** | |
@@ -89,7 +89,7 @@ State of the API modules implemented so far:
 - Low level unsafe functions that have no bounds checking, allow for `ApInt`s of different bit
   widths to be operated on, and have access to reusing internal allocations for calculations that
   require allocated temporaries.
-- More efficient operations.
+- More efficient algorithms.
 
 ## License
 
@@ -142,9 +142,7 @@ additional terms or conditions.
 - Added multiplication and division functions.
 - Add circular shift functions like `rotate_left_assign`.
 - Removed `Bit`, changed `ApInt::from_bit` to `ApInt::from_bool`.
-- reorganized internals with updated dependencies and better performance all around.
-- Corrected README.md for markdown lints.
-- Fixed all Clippy warnings
+- Fixes a wide variety of internal technical debts, and fixed several bugs.
 
 ### Version 0.2.0 - 2018-05-16
 
