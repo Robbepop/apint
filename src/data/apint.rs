@@ -34,12 +34,11 @@ impl ApInt {
     /// `ApInt` instances with a bit width larger than `64` bits
     /// allocate their digits on the heap. With `drop_digits` this
     /// memory can be freed.
+    ///
+    /// # Safety
     /// 
-    /// **Note:** This is extremely unsafe, only use this if the
-    ///           `ApInt` no longer needs its digits.
-    /// 
-    /// **Note:** This is `unsafe` since it violates invariants
-    ///           of the `ApInt`.
+    /// This is extremely unsafe, only use this if the `ApInt` no longer needs its digits.
+    /// This is `unsafe` since it violates invariants of the `ApInt`.
     pub unsafe fn drop_digits(&mut self) {
         if self.len.storage() == Storage::Ext {
             let len = self.len_digits();
@@ -68,9 +67,10 @@ impl ApInt {
     /// Creates a new large `ApInt` from the given `BitWidth` and `Digit`.
     /// 
     /// Large `ApInt` instances allocate their digits on the heap.
+    ///
+    /// # Safety
     /// 
-    /// **Note:** This operation is unsafe since the buffer length behind the
-    ///           given `ext_ptr` must be trusted.
+    /// This operation is unsafe since the buffer length behind the given `ext_ptr` must be trusted.
     /// 
     /// # Panics
     /// 
