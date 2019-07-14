@@ -135,7 +135,7 @@ impl ApInt {
     /// Creates a new `ApInt` that represents the repetition of the given digit
     /// up to the given target bitwidth.
     /// 
-    /// Note: The last digit in the generated sequence is truncated to make the `ApInt`'s
+    /// Note: The last and thus the most-significant digit in the generated sequence is truncated to make the `ApInt`'s
     ///       value representation fit the given bit-width.
     pub(crate) fn repeat_digit<D>(target_width: BitWidth, digit: D) -> ApInt
         where D: Into<Digit>
