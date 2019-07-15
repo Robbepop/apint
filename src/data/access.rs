@@ -32,17 +32,17 @@ pub(crate) enum ZipDataAccessMutBoth<'a, 'b> {
 }
 
 impl ApInt {
-    pub fn digits(&self) -> ContiguousDigitSeq {
+    pub(crate) fn digits(&self) -> ContiguousDigitSeq {
         ContiguousDigitSeq::from(self.as_digit_slice())
     }
 
-    pub fn digits_mut(&mut self) -> ContiguousDigitSeqMut {
+    pub(crate) fn digits_mut(&mut self) -> ContiguousDigitSeqMut {
         ContiguousDigitSeqMut::from(self.as_digit_slice_mut())
     }
 
     /// Accesses the internal `Digit` data of this `ApInt` in a safe way.
     #[inline]
-    pub fn access_data(&self) -> DataAccess {
+    pub(crate) fn access_data(&self) -> DataAccess {
         match self.storage() {
             Storage::Inl => DataAccess::Inl(unsafe{self.data.inl}),
             Storage::Ext => DataAccess::Ext(self.as_digit_slice())
@@ -51,7 +51,7 @@ impl ApInt {
 
     /// Mutably accesses the internal `Digit` data of this `ApInt` in a safe way.
     #[inline]
-    pub fn access_data_mut(&mut self) -> DataAccessMut {
+    pub(crate) fn access_data_mut(&mut self) -> DataAccessMut {
         match self.storage() {
             Storage::Inl => DataAccessMut::Inl(unsafe{&mut self.data.inl}),
             Storage::Ext => DataAccessMut::Ext(self.as_digit_slice_mut())
@@ -64,7 +64,7 @@ impl ApInt {
     /// 
     /// - If both given `ApInt` instances have non-matching bit widths.
     #[inline]
-    pub fn zip_access_data<'a, 'b>(&'a self, other: &'b ApInt) -> Result<ZipDataAccess<'a, 'b>> {
+    pub(crate) fn zip_access_data<'a, 'b>(&'a self, other: &'b ApInt) -> Result<ZipDataAccess<'a, 'b>> {
         if self.width() != other.width() {
             return Error::unmatching_bitwidths(self.width(), other.width()).into()
         }
@@ -89,7 +89,7 @@ impl ApInt {
     /// 
     /// - If both given `ApInt` instances have non-matching bit widths.
     #[inline]    
-    pub fn zip_access_data_mut_self<'a, 'b>(&'a mut self, other: &'b ApInt) -> Result<ZipDataAccessMutSelf<'a, 'b>> {
+    pub(crate) fn zip_access_data_mut_self<'a, 'b>(&'a mut self, other: &'b ApInt) -> Result<ZipDataAccessMutSelf<'a, 'b>> {
         if self.width() != other.width() {
             return Error::unmatching_bitwidths(self.width(), other.width()).into()
         }
@@ -114,7 +114,7 @@ impl ApInt {
     /// 
     /// - If both given `ApInt` instances have non-matching bit widths.
     #[inline]    
-    pub fn zip_access_data_mut_both<'a, 'b>(lhs: &'a mut ApInt, rhs: &'b mut ApInt) -> Result<ZipDataAccessMutBoth<'a, 'b>> {
+    pub(crate) fn zip_access_data_mut_both<'a, 'b>(lhs: &'a mut ApInt, rhs: &'b mut ApInt) -> Result<ZipDataAccessMutBoth<'a, 'b>> {
         if lhs.width() != rhs.width() {
             return Error::unmatching_bitwidths(lhs.width(), rhs.width()).into()
         }
