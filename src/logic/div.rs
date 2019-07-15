@@ -95,13 +95,14 @@ impl ApInt {
     // This is needed for clarity in this function
     #[allow(clippy::needless_return)]
     pub(crate) fn algorithm_divrem(duo: &mut [Digit], div: &mut [Digit]) -> bool {
-        //Some parts were put into their own functions and macros because indentation levels were
-        //getting too high, even for me.
+        // Some parts were put into their own functions and macros because indentation levels were
+        // getting too high, even for me.
 
-        //The algorithm here is just like the algorithm in
-        //https://github.com/AaronKutch/specialized-div-rem,
-        //except that there are more branches and preconditions. There are comments in this function
-        //such as  `//quotient is 0 or 1 check` which correspond to comments in that function.
+        // The algorithm here is just like the algorithm in
+        // https://github.com/AaronKutch/specialized-div-rem,
+        // except that there are more branches and preconditions. There are comments in these
+        // functions such as  `// quotient is 0 or 1 branch` which correspond to the comments in
+        // `specialized-div-rem`
         
         //Divides `duo` by `div` and sets `duo` to the quotient and `div` to the remainder.
         //Assumptions:
