@@ -26,7 +26,7 @@ use std::fmt;
 /// 
 /// Must be exactly half the size of `DoubleDigitRepr`.
 /// 
-/// Note: when changing this to other built in integers, be sure to change `DoubleDigitRepr` and `Digit::BITS`
+/// Note: When changing this to other built in integers, be sure to change `DoubleDigitRepr` and `Digit::BITS`.
 pub(crate) type DigitRepr = u64;
 
 /// The type for the internal `DoubleDigit` representation.
