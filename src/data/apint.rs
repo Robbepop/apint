@@ -218,7 +218,6 @@ impl Clone for ApInt {
             Storage::Ext => {
                 use std::mem;
                 let req_digits = self.len_digits();
-                //TODO: this can be simplified and should be benchmarked
                 let mut buffer = self.as_digit_slice()
                     .to_vec()
                     .into_boxed_slice();
