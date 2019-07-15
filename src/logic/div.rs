@@ -4,7 +4,7 @@ use crate::logic::{try_forward_bin_mut_impl};
 
 /// # Division Operations
 /// 
-/// **Note**: unless otherwise noted in the function specific documentation,
+/// **Note**: Unless otherwise noted in the function specific documentation,
 /// 
 /// - **An error is returned** If division by zero is attempted or function arguments have unmatching bitwidths.
 /// 
@@ -79,8 +79,8 @@ use crate::logic::{try_forward_bin_mut_impl};
 /// this future one should be slightly faster than the current one (noticable for small to
 /// medium size `ApInt`s) because of the way `lhs` is subtracted.
 impl ApInt {
-    //Note: the invariant of `ApInt`s where unused bits beyond the bit width must be all zero is
-    //used heavily here, so that no `clear_unused_bits` needs to be used.
+    // **Note:** The invariant of `ApInt`s where unused bits beyond the bit width must be all zero is
+    // used heavily here, so that no `clear_unused_bits` needs to be used.
 
     /// This function is intended to be inlined into all of the unsigned quotient and remainder
     /// functions for optimal assembly.
