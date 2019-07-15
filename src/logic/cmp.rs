@@ -19,7 +19,7 @@ impl Eq for ApInt {}
 
 /// # Comparison Operations
 /// 
-/// **Note**: unless otherwise noted in the function specific documentation,
+/// **Note**: Unless otherwise noted in the function specific documentation,
 /// 
 /// - **An Error is returned** if function arguments have unmatching bitwidths.
 /// - The functions do **not** allocate memory.
