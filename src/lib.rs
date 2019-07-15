@@ -17,11 +17,11 @@
 //! equal to a `Digit`. It uses `64` bit `Digit`s by default, however it can potentially be
 //! configured to use other types.
 
-#![doc(html_root_url = "https://docs.rs/crate/apint/0.2.0")]
+#![doc(html_root_url = "https://docs.rs/crate/apint/0.3.0")]
 
-// NOTE: the file structure used in this library has less to do with the actual dependencies between
-// files and more about organizing files in a way that helps with programmers finding where stuff
-// is.
+// NOTE: The file structure used in this library has less to do with the actual dependencies between
+// files and more about organizing files in a way that helps with programmers finding where implementations
+// are.
 
 // The `ApInt` definition and most of the extremely unsafe function impls on `ApInt`s are located in
 // `apint.rs`. The other bulk of unsafe functions is found in `access.rs` and `constructors.rs`.

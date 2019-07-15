@@ -55,7 +55,7 @@ impl ApInt {
         match self.access_data() {
             Inl(digit) => digit,
             Ext(digits) => {
-                *digits.last().unwrap()
+                *digits.last().expect("apint instances do always have at least one digit; qed")
             }
         }
     }
@@ -67,7 +67,7 @@ impl ApInt {
         match self.access_data_mut() {
             Inl(digit) => digit,
             Ext(digits) => {
-                digits.last_mut().unwrap()
+                digits.last_mut().expect("apint instances do always have at least one digit; qed")
             }
         }
     }
