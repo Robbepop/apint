@@ -2,7 +2,6 @@ use crate::data::{ApInt, Digit, DigitRepr};
 use crate::info::{Radix, Error, Result, Width};
 
 use std::fmt;
-use std::hash::{Hash, Hasher};
 
 impl fmt::Debug for ApInt {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {

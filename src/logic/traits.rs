@@ -1,4 +1,5 @@
 use crate::data::ApInt;
+use std::hash::{Hash, Hasher};
 
 use std::ops::{
     Not,
