@@ -6,7 +6,7 @@ use crate::logic::{try_forward_bin_mut_impl,forward_mut_impl};
 
 /// # Addition and Subtraction Operations
 /// 
-/// **Note**: unless otherwise noted in the function specific documentation,
+/// **Note**: Unless otherwise noted in the function specific documentation,
 /// 
 /// - **An Error is returned** if function arguments have unmatching bitwidths.
 /// - The functions do **not** allocate memory.
@@ -26,8 +26,8 @@ impl ApInt {
                             break;
                         }
                         (v,true) => {
-                            //This case is expected to match very rarely, unless `Digit::MAX` is
-                            //common among the digits.
+                            // This case is expected to match very rarely, unless `Digit::MAX` is
+                            // common among the digits.
                             x[i] = v;
                         }
                     }
@@ -132,7 +132,7 @@ impl ApInt {
                     Inl(lhs, rhs) => {
                         let temp = lhs.wrapping_add(rhs);
                         *lhs = temp & mask;
-                        //excess bits are cleared by the mask
+                        // Excess bits are cleared by the mask.
                         Ok((temp & mask) != temp)
                     }
                     Ext(lhs, rhs) => {
@@ -149,7 +149,7 @@ impl ApInt {
                             .wrapping_add(rhs[lhs.len() - 1])
                             .wrapping_add(carry);
                         lhs[lhs.len() - 1] = temp & mask;
-                        //excess bits are cleared by the mask
+                        // Excess bits are cleared by the mask.
                         Ok((temp & mask) != temp)
                     }
                 }
