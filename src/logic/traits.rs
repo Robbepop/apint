@@ -36,6 +36,15 @@ use std::ops::{
 ///  favor the user side to be more explicit.
 /// ============================================================================
 
+// miscellanious ops
+
+impl Hash for ApInt {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.len.hash(state);
+        self.as_digit_slice().hash(state);
+    }
+}
+
 // unary ops
 
 impl Not for ApInt {

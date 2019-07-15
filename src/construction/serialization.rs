@@ -13,13 +13,6 @@ impl fmt::Debug for ApInt {
     }
 }
 
-impl Hash for ApInt {
-    fn hash<H: Hasher>(&self, state: &mut H) {
-        self.len.hash(state);
-        self.as_digit_slice().hash(state);
-    }
-}
-
 impl fmt::Binary for ApInt {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         if self.is_zero() {
