@@ -159,7 +159,6 @@ impl ApInt {
                     Inl(lhs, rhs) => {
                         let temp = lhs.overflowing_add(rhs);
                         *lhs = temp.0;
-                        //no excess bits to clear
                         Ok(temp.1)
                     }
                     Ext(lhs, rhs) => {
@@ -172,7 +171,6 @@ impl ApInt {
                             lhs[i] = temp.lo();
                             carry = temp.hi();
                         }
-                        //no excess bits to clear
                         Ok(carry != Digit::zero())
                     }
                 }
