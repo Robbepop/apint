@@ -141,14 +141,34 @@ mod tests {
                 assert!(!soverflow);
             }
 
-            //wrapping multiplication test
+            // Wrapping multiplication test. Note: this just tests that the nonwrapping and
+            // wrapping multiplication branches correspond to each other, but not that the
+            // multiplications in general are working. The test for that is in `mul.rs`.
             assert_eq!(
-                lhs.clone().into_zero_extend(BitWidth::new(size * 2).unwrap()).unwrap()
+                lhs.clone()
+                    .into_zero_extend(BitWidth::new(size * 2).unwrap()).unwrap()
                     .into_wrapping_mul(
-                        &rhs.clone().into_zero_extend(BitWidth::new(size * 2).unwrap()).unwrap()
-                    ).unwrap().into_zero_resize(rand_width),
-                lhs.clone().into_wrapping_mul(&rhs).unwrap().into_zero_resize(rand_width)
+                        &rhs.clone()
+                            .into_zero_extend(BitWidth::new(size * 2).unwrap()).unwrap()
+                    ).unwrap()
+                    .into_zero_resize(rand_width),
+                lhs.clone()
+                    .into_wrapping_mul(&rhs).unwrap()
+                    .into_zero_resize(rand_width)
             );
+
+            // overflowing multiplication test
+            let tmp0 = lhs.clone().into_zero_extend(BitWidth::new(size * 2).unwrap()).unwrap()
+                .into_wrapping_mul(
+                    &rhs.clone().into_zero_extend(BitWidth::new(size * 2).unwrap()).unwrap()
+                ).unwrap();
+            let mut tmp1 = lhs.clone();
+            let overflow = tmp1.overflowing_umul_assign(&rhs).unwrap();
+            // first check that overflow is working
+            assert_eq!((size * 2) - tmp0.leading_zeros() > size, overflow);
+            // check that the result is equal to what the wrapping mul produces
+            assert_eq!(tmp0.into_truncate(width).unwrap(), tmp1);
+            
             //multiplication and division tests
             //the following tests that `((lhs * rhs) + (third % rhs)) / rhs == lhs` and
             //`((lhs * rhs) + (third % rhs)) % rhs == (third % rhs)`

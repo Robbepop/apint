@@ -95,7 +95,7 @@ impl ApInt {
             Ext(lhs, rhs) => {
                 let (temp, mut carry) = lhs[0].carrying_add(rhs[0]);
                 lhs[0] = temp;
-                for i in 1..lhs.len() {
+                for i in 1..rhs.len() {
                     let temp = lhs[i].dd()
                         .wrapping_add(rhs[i].dd())
                         .wrapping_add(carry.dd());
@@ -125,53 +125,56 @@ impl ApInt {
     /// - If `self` and `rhs` have unmatching bitwidths.
     #[cfg(test)]
     pub(crate) fn overflowing_uadd_assign(&mut self, rhs: &ApInt) -> Result<bool> {
-        match self.width().excess_bits() {
-            Some(excess) => {
-                let mask = Digit::ONES >> (Digit::BITS - excess);
+        match rhs.width().unused_bits() {
+            0 => {
                 match self.zip_access_data_mut_self(rhs)? {
                     Inl(lhs, rhs) => {
-                        let temp = lhs.wrapping_add(rhs);
-                        *lhs = temp & mask;
-                        // Excess bits are cleared by the mask.
-                        Ok((temp & mask) != temp)
+                        let tmp = lhs.overflowing_add(rhs);
+                        *lhs = tmp.0;
+                        Ok(tmp.1)
                     }
                     Ext(lhs, rhs) => {
-                        let (temp, mut carry) = lhs[0].carrying_add(rhs[0]);
-                        lhs[0] = temp;
-                        for i in 1..(lhs.len() - 1) {
-                            let temp = lhs[i].dd()
+                        let (tmp, mut carry) = lhs[0].carrying_add(rhs[0]);
+                        lhs[0] = tmp;
+                        for i in 1..rhs.len() {
+                            let tmp = lhs[i].dd()
                                 .wrapping_add(rhs[i].dd())
                                 .wrapping_add(carry.dd());
-                            lhs[i] = temp.lo();
-                            carry = temp.hi();
+                            lhs[i] = tmp.lo();
+                            carry = tmp.hi();
                         }
-                        let temp = lhs[lhs.len() - 1]
-                            .wrapping_add(rhs[lhs.len() - 1])
-                            .wrapping_add(carry);
-                        lhs[lhs.len() - 1] = temp & mask;
-                        // Excess bits are cleared by the mask.
-                        Ok((temp & mask) != temp)
+                        Ok(carry != Digit::zero())
                     }
                 }
             }
-            None => {
+            unused => {
+                let mask = Digit::ONES >> unused;
                 match self.zip_access_data_mut_self(rhs)? {
                     Inl(lhs, rhs) => {
-                        let temp = lhs.overflowing_add(rhs);
-                        *lhs = temp.0;
-                        Ok(temp.1)
+                        let tmp = lhs.wrapping_add(rhs);
+                        // We do not need to use `overflowing_add` here, because `unused` must be
+                        // at least 1 and no overflow of a `Digit` can actually happen
+                        *lhs = tmp & mask;
+                        // Excess bits are cleared by the mask.
+                        Ok((tmp & mask) != tmp)
                     }
                     Ext(lhs, rhs) => {
-                        let (temp, mut carry) = lhs[0].carrying_add(rhs[0]);
-                        lhs[0] = temp;
-                        for i in 1..lhs.len() {
-                            let temp = lhs[i].dd()
+                        let len = rhs.len();
+                        let (tmp, mut carry) = lhs[0].carrying_add(rhs[0]);
+                        lhs[0] = tmp;
+                        for i in 1..(len - 1) {
+                            let tmp = lhs[i].dd()
                                 .wrapping_add(rhs[i].dd())
                                 .wrapping_add(carry.dd());
-                            lhs[i] = temp.lo();
-                            carry = temp.hi();
+                            lhs[i] = tmp.lo();
+                            carry = tmp.hi();
                         }
-                        Ok(carry != Digit::zero())
+                        let tmp = lhs[len - 1]
+                            .wrapping_add(rhs[len - 1])
+                            .wrapping_add(carry);
+                        lhs[len - 1] = tmp & mask;
+                        // Excess bits are cleared by the mask.
+                        Ok((tmp & mask) != tmp)
                     }
                 }
             }
@@ -207,7 +210,7 @@ impl ApInt {
                     .wrapping_add((!rhs[0]).dd())
                     .wrapping_add(Digit::one().dd()).lo_hi();
                 lhs[0] = temp;
-                for i in 1..lhs.len() {
+                for i in 1..rhs.len() {
                     let temp = lhs[i].dd()
                         .wrapping_add((!rhs[i]).dd())
                         .wrapping_add(carry.dd());

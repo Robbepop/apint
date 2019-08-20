@@ -43,6 +43,7 @@ const REPR_ONES: DigitRepr = !REPR_ZERO;
 /// It uses the `DoubleDigit` as computation unit.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub(crate) struct Digit(pub DigitRepr);
+
 /// # Constructors
 impl Digit {
     /// The amount of bits within a single `Digit`.
@@ -126,6 +127,14 @@ impl Digit {
 
     pub(crate) fn wrapping_mul(self, other: Digit) -> Self {
         Digit(self.repr().wrapping_mul(other.repr()))
+    }
+
+    #[cfg(test)]
+    pub(crate) fn overflowing_mul(self, other: Digit) -> (Digit, bool) {
+        match self.repr().overflowing_mul(other.repr()) {
+            (x,false) => (Digit(x), false),
+            (x,true) => (Digit(x), true),
+        }
     }
 
     //TODO if and when `carrying_mul` (rust-lang rfc #2417) is stabilized, this function and others in this crate should use `carrying_mul` as the operation

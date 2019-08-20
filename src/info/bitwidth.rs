@@ -81,8 +81,10 @@ impl BitWidth {
         self.0
     }
 
-    /// Returns the number of exceeding bits that is implied for `ApInt`
-    /// instances with this `BitWidth`.
+    /// Returns the number of excess bits that is implied for `ApInt` instances with this
+    /// `BitWidth`. These bits arise when the `BitWidth` is not a multiple of `Digit::BITS`, and
+    /// the most significant `bitwidth % Digit::BITS` bits must be placed in a whole digit.
+    /// `None` is returned if there are no excess bits.
     /// 
     /// For example for an `ApInt` with a `BitWidth` of `140` bits requires
     /// exactly `3` digits (each with its `64` bits). The third however,
@@ -105,6 +107,15 @@ impl BitWidth {
     ///         about what is actually returned by this.
     pub(crate) fn excess_width(self) -> Option<BitWidth> {
         self.excess_bits().map(BitWidth::from)
+    }
+
+    /// Returns the number of unused bits in the most significant digit. This number can be in the
+    /// range `0..Digit::BITS`. This is different from `ApInt::excess_bits`.
+    pub(crate) fn unused_bits(self) -> usize {
+        match Digit::BITS - (self.to_usize() % Digit::BITS) {
+            Digit::BITS => 0,
+            n => n
+        }
     }
 
     /// Returns a storage specifier that tells the caller if `ApInt`'s 

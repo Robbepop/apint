@@ -250,9 +250,9 @@ impl ApInt {
             .map(|d| d.repr().count_zeros() as usize)
             .sum::<usize>();
         // Since `ApInt` instances with width's that are no powers of two
-        // have unused excess bits that are always zero we need to cut them off
+        // have unused bits that are always zero we need to cut them off
         // for a correct implementation of this operation.
-        zeros - (Digit::BITS - self.width().excess_bits().unwrap_or(Digit::BITS))
+        zeros - self.width().unused_bits()
     }
 
     /// Returns the number of leading zeros in the binary representation of this `ApInt`.
@@ -265,7 +265,7 @@ impl ApInt {
                 break;
             }
         }
-        zeros - (Digit::BITS - self.width().excess_bits().unwrap_or(Digit::BITS))
+        zeros - self.width().unused_bits()
     }
 
     /// Returns the number of trailing zeros in the binary representation of this `ApInt`.
@@ -279,7 +279,7 @@ impl ApInt {
             }
         }
         if zeros >= self.width().to_usize() {
-            zeros -= Digit::BITS - self.width().excess_bits().unwrap_or(Digit::BITS);
+            zeros -= self.width().unused_bits();
         }
         zeros
     }

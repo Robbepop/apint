@@ -41,10 +41,17 @@ impl ApInt {
         }
     }
 
-    /// Returns `true` if this `ApInt` represents the value one (`1`).
+    /// Returns `true` if the **unsigned** interpretation `ApInt` represents the value one (`1`).
+    ///
+    /// # Corner Case
+    ///
+    /// Normally, both signed and unsigned `ApInt`s have the same representation for the value one.
+    /// For the signed interpretation of `ApInt`s with a bitwidth of 1, the sign bit is the only
+    /// bit, meaning that it can only represent negative one and zero. This function treats the
+    /// `ApInt` as unsigned in this corner case.
     /// 
     /// # Note
-    /// 
+    ///
     /// - One (`1`) is also called the multiplicative neutral element.
     /// - This operation is more efficient than comparing two instances of `ApInt`
     #[inline]    
@@ -52,8 +59,50 @@ impl ApInt {
         match self.access_data() {
             DataAccess::Inl(digit) => digit == Digit::one(),
             DataAccess::Ext(digits) => {
-                let (last, rest) = digits.split_last().unwrap_or_else(|| unreachable!());
+                let (last, rest) = digits.split_last().unwrap();
                 last.is_one() && rest.iter().all(|digit| digit.is_zero())
+            }
+        }
+    }
+
+    pub fn is_unsigned_max_value(&self) -> bool {
+        let mask = Digit::ONES >> self.width().unused_bits();
+        match self.access_data() {
+            DataAccess::Inl(digit) => digit == mask,
+            DataAccess::Ext(digits) => {
+                let (first, rest) = digits.split_first().unwrap();
+                *first == mask && rest.iter().all(|digit| digit.is_all_set())
+            }
+        }
+    }
+
+    pub fn is_signed_max_value(&self) -> bool {
+        let unused = self.width().unused_bits();
+        let mask = if unused == Digit::BITS - 1 {
+            Digit::ZERO
+        } else {
+            Digit::ONES >> unused
+        };
+        match self.access_data() {
+            DataAccess::Inl(digit) => digit == mask,
+            DataAccess::Ext(digits) => {
+                let (first, rest) = digits.split_first().unwrap();
+                *first == mask && rest.iter().all(|digit| digit.is_all_set())
+            }
+        }
+    }
+
+    pub fn is_unsigned_min_value(&self) -> bool {
+        self.is_zero()
+    }
+
+    pub fn is_signed_min_value(&self) -> bool {
+        let mask = Digit::ONE << (self.width().excess_bits().unwrap_or(Digit::BITS) - 1);
+        match self.access_data() {
+            DataAccess::Inl(digit) => digit == mask,
+            DataAccess::Ext(digits) => {
+                let (first, rest) = digits.split_first().unwrap();
+                *first == mask && rest.iter().all(|digit| digit.is_all_set())
             }
         }
     }
@@ -179,7 +228,7 @@ impl ApInt {
         lhs.zip_access_data(rhs).and_then(|zipped| {
             match zipped {
                 ZipDataAccess::Inl(lhs, rhs) => {
-                    let infate_abs = Digit::BITS - self.width().to_usize();
+                    let infate_abs = Digit::BITS - rhs.width().to_usize();
                     let lhs = (lhs.repr() << infate_abs) as i64;
                     let rhs = (rhs.repr() << infate_abs) as i64;
                     Ok(lhs < rhs)
