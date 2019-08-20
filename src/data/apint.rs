@@ -39,7 +39,7 @@ impl ApInt {
     /// 
     /// This is extremely unsafe, only use this if the `ApInt` no longer needs its digits.
     /// This is `unsafe` since it violates invariants of the `ApInt`.
-    pub unsafe fn drop_digits(&mut self) {
+    unsafe fn drop_digits(&mut self) {
         if self.len.storage() == Storage::Ext {
             let len = self.len_digits();
             // TODO: Is there a more direct way to do this?
