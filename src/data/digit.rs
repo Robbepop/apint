@@ -38,7 +38,9 @@ const REPR_ONE : DigitRepr = 0x1;
 const REPR_ZERO: DigitRepr = 0x0;
 const REPR_ONES: DigitRepr = !REPR_ZERO;
 
-/// A (big) digit within an `ApInt` or similar representations.
+/// A (big) digit within an `ApInt` or similar representations. The `DigitRepr` is public only to
+/// help with construction and mapping. It is preferred to use the `repr` function to get access to
+/// the internal representation.
 /// 
 /// It uses the `DoubleDigit` as computation unit.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -68,9 +70,6 @@ impl Digit {
 
     /// Returns `true` if this `Digit` has all bits set.
     pub fn is_all_set(self) -> bool { self == Digit::ONES }
-
-    /// Creates a digit where all bits are initialized to `1`.
-    pub fn all_set() -> Digit { Digit::ONES }
 }
 
 /// # Utility & helper methods.
@@ -78,12 +77,6 @@ impl Digit {
     /// Returns the `Digit`'s value as internal representation.
     pub fn repr(self) -> DigitRepr {
         self.0
-    }
-
-    /// Returns a mutable reference to the underlying representation
-    /// of this `Digit`.
-    pub fn repr_mut(&mut self) -> &mut DigitRepr {
-        &mut self.0
     }
 
     /// Returns the `DoubleDigit` representation of this `Digit`.
@@ -323,22 +316,6 @@ impl Digit {
     #[inline]
     pub fn flip_all(&mut self) {
         self.0 ^= REPR_ONES
-    }
-
-    /// Unsets all bits but the last `n` ones.
-    /// 
-    /// # Note
-    /// 
-    /// This is equal to calling `Digit::truncate_to`.
-    /// 
-    /// # Errors
-    /// 
-    /// If the given `n` is greater than the digit size.
-    #[inline]
-    pub fn retain_last_n(&mut self, n: usize) -> Result<()> {
-        BitPos::from(n).verify_bit_access(self)?;
-        self.0 &= !(REPR_ONES << n);
-        Ok(())
     }
 }
 
@@ -906,12 +883,5 @@ mod tests {
         // pub fn set_first_n(&mut self, n: usize) -> Result<()> {
         // pub fn unset_first_n(&mut self, n: usize) -> Result<()> {
         // pub fn retain_last_n(&mut self, n: usize) -> Result<()> {
-
-        #[test]
-        fn retain_last_n() {
-            let mut d = Digit::ONES;
-            d.retain_last_n(32).unwrap();
-            assert_eq!(d, Digit(0x0000_0000_FFFF_FFFF));
-        }
     }
 }
