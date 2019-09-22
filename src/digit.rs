@@ -9,7 +9,7 @@ use crate::{
     traits::Width,
 };
 
-use std::ops::{
+use core::ops::{
     Add,
     BitAnd,
     BitAndAssign,
@@ -94,7 +94,7 @@ impl From<Bit> for bool {
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub(crate) struct Digit(pub DigitRepr);
 
-use std::fmt;
+use core::fmt;
 
 impl fmt::Binary for Digit {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -941,7 +941,7 @@ mod tests {
     mod digit {
         use super::*;
 
-        use std::usize;
+        use core::usize;
 
         static VALID_TEST_POS_VALUES: &[usize] = &[0, 1, 2, 3, 10, 32, 42, 48, 63];
 

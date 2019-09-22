@@ -6,10 +6,10 @@ use crate::{
     digit,
     digit::Bit,
     errors::Result,
+    mem::format,
     traits::Width,
 };
-
-use std::{
+use core::{
     cmp::Ordering,
     ops::Not,
 };

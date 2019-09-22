@@ -17,7 +17,7 @@ use crate::{
     traits::Width,
 };
 
-use std::{
+use core::{
     fmt,
     hash::{
         Hash,
@@ -272,7 +272,7 @@ impl ApInt {
     /// Returns a slice over the `Digit`s of this `ApInt` in little-endian order.
     #[inline]
     pub(in crate::apint) fn as_digit_slice(&self) -> &[Digit] {
-        use std::slice;
+        use core::slice;
         match self.len.storage() {
             Storage::Inl => unsafe { slice::from_raw_parts(&self.data.inl, 1) },
             Storage::Ext => unsafe {
@@ -284,7 +284,7 @@ impl ApInt {
     /// Returns a mutable slice over the `Digit`s of this `ApInt` in little-endian order.
     #[inline]
     pub(in crate::apint) fn as_digit_slice_mut(&mut self) -> &mut [Digit] {
-        use std::slice;
+        use core::slice;
         match self.len.storage() {
             Storage::Inl => unsafe { slice::from_raw_parts_mut(&mut self.data.inl, 1) },
             Storage::Ext => unsafe {

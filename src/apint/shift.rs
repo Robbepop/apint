@@ -93,7 +93,7 @@ impl ApInt {
                 if digit_steps != 0 {
                     let digits_len = digits.len();
                     {
-                        use std::ptr;
+                        use core::ptr;
                         let src_ptr = digits.as_mut_ptr();
                         unsafe {
                             let dst_ptr = src_ptr.add(digit_steps);

@@ -1,6 +1,6 @@
 use crate::digit::Digit;
 
-use std::slice;
+use core::slice;
 
 /// A sequence of digits.
 ///

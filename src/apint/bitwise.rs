@@ -18,7 +18,7 @@ use crate::{
     },
 };
 
-use std::ops::{
+use core::ops::{
     BitAnd,
     BitAndAssign,
     BitOr,

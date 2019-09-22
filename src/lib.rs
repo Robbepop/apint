@@ -20,24 +20,11 @@
 // #![deny(missing_docs)]
 // #![deny(warnings)]
 
+#![cfg_attr(not(feature = "std"), no_std)]
 #![doc(html_root_url = "https://docs.rs/crate/apint/0.2.0")]
 
-extern crate smallvec;
-
-#[cfg(feature = "specialized_div_rem")]
-extern crate specialized_div_rem;
-
-#[cfg(feature = "rand_support")]
-extern crate rand;
-
-#[cfg(feature = "serde_support")]
-extern crate serde;
-
-#[cfg(all(test, feature = "serde_support"))]
-extern crate serde_test;
-
-#[cfg(test)]
-extern crate itertools;
+#[cfg(not(feature = "std"))]
+extern crate alloc;
 
 mod apint;
 mod bitpos;
@@ -47,6 +34,7 @@ mod digit;
 mod digit_seq;
 mod errors;
 mod int;
+mod mem;
 mod radix;
 mod storage;
 mod traits;

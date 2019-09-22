@@ -19,7 +19,7 @@ use crate::{
 #[cfg(feature = "rand_support")]
 use rand;
 
-use std::{
+use core::{
     cmp::Ordering,
     ops::{
         Add,
@@ -1329,7 +1329,7 @@ impl Int {
 }
 
 // ============================================================================
-//  Unary arithmetic negation: `std::ops::Add` and `std::ops::AddAssign`
+//  Unary arithmetic negation: `core::ops::Add` and `core::ops::AddAssign`
 // ============================================================================
 
 impl Neg for Int {
@@ -1358,7 +1358,7 @@ impl<'a> Neg for &'a mut Int {
 }
 
 // ============================================================================
-//  Add and Add-Assign: `std::ops::Add` and `std::ops::AddAssign`
+//  Add and Add-Assign: `core::ops::Add` and `core::ops::AddAssign`
 // ============================================================================
 
 impl<'a> Add<&'a Int> for Int {
@@ -1384,7 +1384,7 @@ impl<'a> AddAssign<&'a Int> for Int {
 }
 
 // ============================================================================
-//  Sub and Sub-Assign: `std::ops::Sub` and `std::ops::SubAssign`
+//  Sub and Sub-Assign: `core::ops::Sub` and `core::ops::SubAssign`
 // ============================================================================
 
 impl<'a> Sub<&'a Int> for Int {
@@ -1410,7 +1410,7 @@ impl<'a> SubAssign<&'a Int> for Int {
 }
 
 // ============================================================================
-//  Mul and Mul-Assign: `std::ops::Mul` and `std::ops::MulAssign`
+//  Mul and Mul-Assign: `core::ops::Mul` and `core::ops::MulAssign`
 // ============================================================================
 
 impl<'a> Mul<&'a Int> for Int {
@@ -1436,7 +1436,7 @@ impl<'a> MulAssign<&'a Int> for Int {
 }
 
 // ============================================================================
-//  Div and Div-Assign: `std::ops::Div` and `std::ops::DivAssign`
+//  Div and Div-Assign: `core::ops::Div` and `core::ops::DivAssign`
 // ============================================================================
 
 impl<'a> Div<&'a Int> for Int {
@@ -1462,7 +1462,7 @@ impl<'a> DivAssign<&'a Int> for Int {
 }
 
 // ============================================================================
-//  Rem and Rem-Assign: `std::ops::Rem` and `std::ops::RemAssign`
+//  Rem and Rem-Assign: `core::ops::Rem` and `core::ops::RemAssign`
 // ============================================================================
 
 impl<'a> Rem<&'a Int> for Int {
@@ -1491,7 +1491,7 @@ impl<'a> RemAssign<&'a Int> for Int {
 //  Binary, Oct, LowerHex and UpperHex implementations
 // ============================================================================
 
-use std::fmt;
+use core::fmt;
 
 impl fmt::Binary for Int {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {

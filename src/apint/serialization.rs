@@ -5,10 +5,13 @@ use crate::{
         Error,
         Result,
     },
+    mem::{
+        string::String,
+        vec::Vec,
+    },
     radix::Radix,
 };
-
-use std::fmt;
+use core::fmt;
 
 impl fmt::Binary for ApInt {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -144,7 +147,7 @@ impl ApInt {
                 b'a'..=b'z' => b - b'a' + 10,
                 b'A'..=b'Z' => b - b'A' + 10,
                 b'_' => continue,
-                _ => ::std::u8::MAX,
+                _ => ::core::u8::MAX,
             };
             if !radix.is_valid_byte(d) {
                 return Err(Error::invalid_char_in_string_repr(
@@ -261,7 +264,7 @@ impl ApInt {
         debug_assert!(v.iter().all(|&c| radix.is_valid_byte(c)));
 
         // Estimate how big the result will be, so we can pre-allocate it.
-        let bits = (f64::from(radix.to_u8())).log2() * v.len() as f64;
+        let bits = f64::from(radix.to_u8()).log2() * v.len() as f64;
         let big_digits = (bits / digit::BITS as f64).ceil();
         let mut data = Vec::with_capacity(big_digits as usize);
 
@@ -512,7 +515,7 @@ mod tests {
 
         #[test]
         fn small_values() {
-            use std::u64;
+            use core::u64;
             let samples = vec![
                 // (Radix, Input String, Expected ApInt)
                 (2, "0", 0),
