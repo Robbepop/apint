@@ -1,11 +1,11 @@
 
-use storage::{Storage};
-use digit::{Digit, Bit};
-use apint::{ApInt};
-use errors::{Error, Result};
-use traits::Width;
-use bitwidth::BitWidth;
-use digit_seq::{
+use crate::storage::{Storage};
+use crate::digit::{Digit, Bit};
+use crate::apint::{ApInt};
+use crate::errors::{Error, Result};
+use crate::traits::Width;
+use crate::bitwidth::BitWidth;
+use crate::digit_seq::{
     ContiguousDigitSeq,
     ContiguousDigitSeqMut
 };
@@ -32,11 +32,11 @@ impl Hash for ApInt {
 // ============================================================================
 
 impl ApInt {
-    pub(in apint) fn digits(&self) -> ContiguousDigitSeq {
+    pub(in crate::apint) fn digits(&self) -> ContiguousDigitSeq {
         ContiguousDigitSeq::from(self.as_digit_slice())
     }
 
-    pub(in apint) fn digits_mut(&mut self) -> ContiguousDigitSeqMut {
+    pub(in crate::apint) fn digits_mut(&mut self) -> ContiguousDigitSeqMut {
         ContiguousDigitSeqMut::from(self.as_digit_slice_mut())
     }
 }
@@ -87,14 +87,14 @@ impl Width for ApInt {
 impl ApInt {
     /// Returns the number of bits of the bit width of this `ApInt`.
     #[inline]
-    pub(in apint) fn len_bits(&self) -> usize {
+    pub(in crate::apint) fn len_bits(&self) -> usize {
         self.len.to_usize()
     }
 
     /// Returns the number of digits used internally for the value
     /// representation of this `ApInt`.
     #[inline]
-    pub(in apint) fn len_digits(&self) -> usize {
+    pub(in crate::apint) fn len_digits(&self) -> usize {
         self.len.required_digits()
     }
 
@@ -103,13 +103,13 @@ impl ApInt {
     /// This is `Storage::Inl` for `ApInt` instances that can be stored
     /// entirely on the stack and `Storage::Ext` otherwise.
     #[inline]
-    pub(in apint) fn storage(&self) -> Storage {
+    pub(in crate::apint) fn storage(&self) -> Storage {
         self.len.storage()
     }
 
     /// Accesses the internal `Digit` data of this `ApInt` in a safe way.
     #[inline]
-    pub(in apint) fn access_data(&self) -> DataAccess {
+    pub(in crate::apint) fn access_data(&self) -> DataAccess {
         match self.storage() {
             Storage::Inl => DataAccess::Inl(unsafe{self.data.inl}),
             Storage::Ext => DataAccess::Ext(self.as_digit_slice())
@@ -118,7 +118,7 @@ impl ApInt {
 
     /// Mutably accesses the internal `Digit` data of this `ApInt` in a safe way.
     #[inline]
-    pub(in apint) fn access_data_mut(&mut self) -> DataAccessMut {
+    pub(in crate::apint) fn access_data_mut(&mut self) -> DataAccessMut {
         match self.storage() {
             Storage::Inl => DataAccessMut::Inl(unsafe{&mut self.data.inl}),
             Storage::Ext => DataAccessMut::Ext(self.as_digit_slice_mut())
@@ -131,7 +131,7 @@ impl ApInt {
     /// 
     /// - If both given `ApInt` instances have non-matching bit widths.
     #[inline]
-    pub(in apint) fn zip_access_data<'a, 'b>(&'a self, other: &'b ApInt) -> Result<ZipDataAccess<'a, 'b>> {
+    pub(in crate::apint) fn zip_access_data<'a, 'b>(&'a self, other: &'b ApInt) -> Result<ZipDataAccess<'a, 'b>> {
         if self.width() != other.width() {
             return Error::unmatching_bitwidths(self.width(), other.width()).into()
         }
@@ -156,7 +156,7 @@ impl ApInt {
     /// 
     /// - If both given `ApInt` instances have non-matching bit widths.
     #[inline]    
-    pub(in apint) fn zip_access_data_mut_self<'a, 'b>(&'a mut self, other: &'b ApInt) -> Result<ZipDataAccessMutSelf<'a, 'b>> {
+    pub(in crate::apint) fn zip_access_data_mut_self<'a, 'b>(&'a mut self, other: &'b ApInt) -> Result<ZipDataAccessMutSelf<'a, 'b>> {
         if self.width() != other.width() {
             return Error::unmatching_bitwidths(self.width(), other.width()).into()
         }
@@ -181,7 +181,7 @@ impl ApInt {
     /// 
     /// - If both given `ApInt` instances have non-matching bit widths.
     #[inline]    
-    pub(in apint) fn zip_access_data_mut_both<'a, 'b>(lhs: &'a mut ApInt, rhs: &'b mut ApInt) -> Result<ZipDataAccessMutBoth<'a, 'b>> {
+    pub(in crate::apint) fn zip_access_data_mut_both<'a, 'b>(lhs: &'a mut ApInt, rhs: &'b mut ApInt) -> Result<ZipDataAccessMutBoth<'a, 'b>> {
         if lhs.width() != rhs.width() {
             return Error::unmatching_bitwidths(lhs.width(), rhs.width()).into()
         }
@@ -207,7 +207,7 @@ impl ApInt {
     /// operation for all digits within this `ApInt` as this operation
     /// uses the most efficient way to do so.
     #[inline]    
-    pub(in apint) fn modify_digits<F>(&mut self, f: F)
+    pub(in crate::apint) fn modify_digits<F>(&mut self, f: F)
         where F: Fn(&mut Digit)
     {
         use self::DataAccessMut::*;
@@ -229,7 +229,7 @@ impl ApInt {
     /// Prefer this utility method for these use cases since this operation
     /// uses the most efficient way to perform the specified task.
     #[inline]    
-    pub(in apint) fn modify_zipped_digits<F>(&mut self, rhs: &ApInt, f: F) -> Result<()>
+    pub(in crate::apint) fn modify_zipped_digits<F>(&mut self, rhs: &ApInt, f: F) -> Result<()>
         where F: Fn(&mut Digit, Digit)
     {
         use self::ZipDataAccessMutSelf::*;
@@ -246,7 +246,7 @@ impl ApInt {
 
     /// Returns a slice over the `Digit`s of this `ApInt` in little-endian order.
     #[inline]    
-    pub(in apint) fn as_digit_slice(&self) -> &[Digit] {
+    pub(in crate::apint) fn as_digit_slice(&self) -> &[Digit] {
         use std::slice;
         match self.len.storage() {
             Storage::Inl => unsafe {
@@ -260,7 +260,7 @@ impl ApInt {
 
     /// Returns a mutable slice over the `Digit`s of this `ApInt` in little-endian order.
     #[inline]    
-    pub(in apint) fn as_digit_slice_mut(&mut self) -> &mut [Digit] {
+    pub(in crate::apint) fn as_digit_slice_mut(&mut self) -> &mut [Digit] {
         use std::slice;
         match self.len.storage() {
             Storage::Inl => unsafe {
@@ -274,7 +274,7 @@ impl ApInt {
 
     /// Returns the most significant `Digit` of this `ApInt`.
     #[inline]    
-    pub(in apint) fn most_significant_digit(&self) -> Digit {
+    pub(in crate::apint) fn most_significant_digit(&self) -> Digit {
         match self.access_data() {
             DataAccess::Inl(digit) => digit,
             DataAccess::Ext(digits) => {
@@ -285,7 +285,7 @@ impl ApInt {
 
     /// Returns a mutable reference to the most significant `Digit` of this `ApInt`.
     #[inline]    
-    pub(in apint) fn most_significant_digit_mut(&mut self) -> &mut Digit {
+    pub(in crate::apint) fn most_significant_digit_mut(&mut self) -> &mut Digit {
         match self.access_data_mut() {
             DataAccessMut::Inl(digit) => digit,
             DataAccessMut::Ext(digits) => {
@@ -296,7 +296,7 @@ impl ApInt {
 
     /// Returns the least significant `Digit` of this `ApInt`.
     #[inline]    
-    pub(in apint) fn least_significant_digit(&self) -> Digit {
+    pub(in crate::apint) fn least_significant_digit(&self) -> Digit {
         match self.access_data() {
             DataAccess::Inl(digit) => digit,
             DataAccess::Ext(digits) => digits[0]
@@ -306,7 +306,7 @@ impl ApInt {
     /// Returns `Bit::Set` if the most significant bit of this `ApInt` is set
     /// and `Bit::Unset` otherwise.
     #[inline]    
-    pub(in apint) fn most_significant_bit(&self) -> Bit {
+    pub(in crate::apint) fn most_significant_bit(&self) -> Bit {
         let sign_bit_pos = self.width().sign_bit_pos();
         self.most_significant_digit()
             .get(sign_bit_pos.to_pos_within_digit())
@@ -318,7 +318,7 @@ impl ApInt {
     /// Returns `Bit::Set` if the least significant bit of this `ApInt` is set
     /// and `Bit::Unset` otherwise.
     #[inline]    
-    pub(in apint) fn least_significant_bit(&self) -> Bit {
+    pub(in crate::apint) fn least_significant_bit(&self) -> Bit {
         self.least_significant_digit().least_significant_bit()
     }
 
@@ -333,7 +333,7 @@ impl ApInt {
     /// So upon a call to `ApInt::clear_unused_bits` the upper
     /// `128-100 = 28` bits are cleared (set to zero (`0`)).
     #[inline]    
-    pub(in apint) fn clear_unused_bits(&mut self) {
+    pub(in crate::apint) fn clear_unused_bits(&mut self) {
         if let Some(bits) = self.width().excess_bits() {
             self.most_significant_digit_mut()
                 .retain_last_n(bits)
@@ -408,7 +408,7 @@ impl ApInt {
     /// Splits the least significant digits from the rest of the digit slice
     /// and returns it as well as the remaining part of the digit slice.
     #[inline]    
-    pub(in apint) fn split_least_significant_digit(&self) -> (Digit, &[Digit]) {
+    pub(in crate::apint) fn split_least_significant_digit(&self) -> (Digit, &[Digit]) {
         match self.access_data() {
             DataAccess::Inl(digit) => (digit, &[]),
             DataAccess::Ext(digits) => {
@@ -424,7 +424,7 @@ impl ApInt {
     /// Splits the most significant digits from the rest of the digit slice
     /// and returns it as well as the remaining part of the digit slice.
     #[inline]    
-    pub(in apint) fn split_most_significant_digit(&self) -> (Digit, &[Digit]) {
+    pub(in crate::apint) fn split_most_significant_digit(&self) -> (Digit, &[Digit]) {
         match self.access_data() {
             DataAccess::Inl(digit) => (digit, &[]),
             DataAccess::Ext(digits) => {

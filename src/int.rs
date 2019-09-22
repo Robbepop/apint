@@ -1,12 +1,12 @@
-use apint::ApInt;
-use traits::Width;
-use digit::Bit;
-use bitwidth::BitWidth;
-use errors::Result;
-use apint::{ShiftAmount};
-use bitpos::{BitPos};
-use uint::UInt;
-use utils::{try_forward_bin_mut_impl, forward_mut_impl, forward_bin_mut_impl};
+use crate::apint::ApInt;
+use crate::traits::Width;
+use crate::digit::Bit;
+use crate::bitwidth::BitWidth;
+use crate::errors::Result;
+use crate::apint::{ShiftAmount};
+use crate::bitpos::{BitPos};
+use crate::uint::UInt;
+use crate::utils::{try_forward_bin_mut_impl, forward_mut_impl, forward_bin_mut_impl};
 
 #[cfg(feature = "rand_support")]
 use rand;
@@ -38,14 +38,14 @@ use std::ops::{
 };
 
 /// Signed machine integer with arbitrary bitwidths and modulo arithmetics.
-/// 
+///
 /// Thin convenience wrapper around `ApInt` for static signed interpretation of the value.
-/// 
+///
 /// This very cheaply transformes to and from `ApInt` and `UInt` instances and together with
 /// `UInt` offers a more elegant and higher-level abstraction interface to the lower-level `ApInt`.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-#[cfg_attr(serde_derive, Serialize)]
-#[cfg_attr(serde_derive, Deserialize)]
+#[cfg_attr(serde_support, Serialize)]
+#[cfg_attr(serde_support, Deserialize)]
 pub struct Int {
     value: ApInt,
 }
@@ -250,7 +250,7 @@ impl Int {
     }
 
     /// Returns a number representing sign of this `ApInt`.
-    /// 
+    ///
     /// - `0` if the number is zero
     /// - `1` if the number is positive
     /// - `-1` if the number is negative
@@ -265,9 +265,9 @@ impl Int {
     }
 
     /// Returns an absolute value representation of this `Int`.
-    /// 
+    ///
     /// # Note
-    /// 
+    ///
     /// - Consumes `self`.
     /// - Does nothing for positive `Int` instances.
     pub fn into_abs(self) -> Int {
@@ -275,7 +275,7 @@ impl Int {
     }
 
     /// Converts this `Int` into its absolute value representation.
-    /// 
+    ///
     /// - Does nothing for positive `Int` instances.
     pub fn wrapping_abs(&mut self) {
         if self.is_negative() {
@@ -287,30 +287,30 @@ impl Int {
 /// # Comparisons
 impl Int {
     /// Less-than (`lt`) comparison between `self` and `rhs`.
-    /// 
+    ///
     /// # Note
-    /// 
+    ///
     /// - `checked_` for this function means that it checks the bit widths
     /// - Returns `Ok(true)` if `self < rhs`.
     /// - Interprets both `Int` instances as **unsigned** values.
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// - If `self` and `rhs` have unmatching bit widths.
     pub fn checked_lt(&self, rhs: &Int) -> Result<bool> {
         self.value.checked_slt(&rhs.value)
     }
 
     /// Less-equals (`le`) comparison between `self` and `rhs`.
-    /// 
+    ///
     /// # Note
-    /// 
+    ///
     /// - `checked_` for this function means that it checks the bit widths
     /// - Returns `Ok(true)` if `self <= rhs`.
     /// - Interprets both `Int` instances as **unsigned** values.
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// - If `self` and `rhs` have unmatching bit widths.
     #[inline]
     pub fn checked_le(&self, rhs: &Int) -> Result<bool> {
@@ -318,15 +318,15 @@ impl Int {
     }
 
     /// Greater-than (`gt`) comparison between `self` and `rhs`.
-    /// 
+    ///
     /// # Note
-    /// 
+    ///
     /// - `checked_` for this function means that it checks the bit widths
     /// - Returns `Ok(true)` if `self > rhs`.
     /// - Interprets both `Int` instances as **unsigned** values.
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// - If `self` and `rhs` have unmatching bit widths.
     #[inline]
     pub fn checked_gt(&self, rhs: &Int) -> Result<bool> {
@@ -334,15 +334,15 @@ impl Int {
     }
 
     /// Greater-equals (`ge`) comparison between `self` and `rhs`.
-    /// 
+    ///
     /// # Note
-    /// 
+    ///
     /// - `checked_` for this function means that it checks the bit widths
     /// - Returns `Ok(true)` if `self >= rhs`.
     /// - Interprets both `Int` instances as **unsigned** values.
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// - If `self` and `rhs` have unmatching bit widths.
     #[inline]
     pub fn checked_ge(&self, rhs: &Int) -> Result<bool> {
@@ -555,11 +555,11 @@ impl Int {
 /// # Shifts
 impl Int {
     /// Shift this `Int` left by the given `shift_amount` bits.
-    /// 
+    ///
     /// This operation is inplace and will **not** allocate memory.
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// - If the given `shift_amount` is invalid for the bit width of this `Int`.
     pub fn wrapping_shl_assign<S>(&mut self, shift_amount: S) -> Result<()>
         where S: Into<ShiftAmount>
@@ -568,11 +568,11 @@ impl Int {
     }
 
     /// Shift this `Int` left by the given `shift_amount` bits and returns the result.
-    /// 
+    ///
     /// This operation is inplace and will **not** allocate memory.
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// - If the given `shift_amount` is invalid for the bit width of this `Int`.
     pub fn into_wrapping_shl<S>(self, shift_amount: S) -> Result<Int>
         where S: Into<ShiftAmount>
@@ -581,11 +581,11 @@ impl Int {
     }
 
     /// Right-shifts this `Int` by the given `shift_amount` bits.
-    /// 
+    ///
     /// This operation is inplace and will **not** allocate memory.
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// - If the given `shift_amount` is invalid for the bit width of this `Int`.
     pub fn wrapping_shr_assign<S>(&mut self, shift_amount: S) -> Result<()>
         where S: Into<ShiftAmount>
@@ -595,11 +595,11 @@ impl Int {
 
     /// Right-shifts this `Int` by the given `shift_amount` bits
     /// and returns the result.
-    /// 
+    ///
     /// This operation is inplace and will **not** allocate memory.
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// - If the given `shift_amount` is invalid for the bit width of this `Int`.
     pub fn into_wrapping_shr<S>(self, shift_amount: S) -> Result<Int>
         where S: Into<ShiftAmount>
@@ -654,7 +654,7 @@ impl Int {
 
     /// Creates a new `Int` with the given `BitWidth` and random `Digit`s
     /// using the given random number generator.
-    /// 
+    ///
     /// **Note:** This is useful for cryptographic or testing purposes.
     pub fn random_with_width_using<R>(width: BitWidth, rng: &mut R) -> Int
         where R: rand::Rng
@@ -663,7 +663,7 @@ impl Int {
     }
 
     /// Randomizes the digits of this `Int` inplace.
-    /// 
+    ///
     /// This won't change its `BitWidth`.
     pub fn randomize(&mut self) {
         self.value.randomize()
@@ -671,7 +671,7 @@ impl Int {
 
     /// Randomizes the digits of this `Int` inplace using the given
     /// random number generator.
-    /// 
+    ///
     /// This won't change its `BitWidth`.
     pub fn randomize_using<R>(&mut self, rng: &mut R)
         where R: rand::Rng
@@ -692,15 +692,15 @@ impl Int {
     }
 
     /// Strictly assigns `rhs` to this `Int`.
-    /// 
+    ///
     /// After this operation `rhs` and `self` are equal to each other.
-    /// 
+    ///
     /// **Note:** Strict assigns protect against mutating the bit width
     /// of `self` and thus return an error instead of executing a probably
     /// expensive `assign` operation.
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// - If `rhs` and `self` have unmatching bit widths.
     pub fn strict_assign(&mut self, rhs: &Int) -> Result<()> {
         self.value.strict_assign(&rhs.value)
@@ -711,15 +711,15 @@ impl Int {
 impl Int {
     /// Tries to truncate this `Int` inplace to the given `target_width`
     /// and returns the result.
-    /// 
+    ///
     /// # Note
-    /// 
+    ///
     /// - This is useful for method chaining.
     /// - For more details look into
     ///   [`truncate`](struct.Int.html#method.truncate).
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// - If the `target_width` is greater than the current width.
     pub fn into_truncate<W>(self, target_width: W) -> Result<Int>
         where W: Into<BitWidth>
@@ -728,15 +728,15 @@ impl Int {
     }
 
     /// Tries to truncate this `Int` inplace to the given `target_width`.
-    /// 
+    ///
     /// # Note
-    /// 
+    ///
     /// - This is a no-op if `self.width()` and `target_width` are equal.
     /// - This operation is inplace as long as `self.width()` and `target_width`
     ///   require the same amount of digits for their representation.
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// - If the `target_width` is greater than the current width.
     pub fn truncate<W>(&mut self, target_width: W) -> Result<()>
         where W: Into<BitWidth>
@@ -748,15 +748,15 @@ impl Int {
 
     /// Tries to zero-extend this `Int` inplace to the given `target_width`
     /// and returns the result.
-    /// 
+    ///
     /// # Note
-    /// 
+    ///
     /// - This is useful for method chaining.
     /// - For more details look into
     ///   [`extend`](struct.Int.html#method.extend).
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// - If the `target_width` is less than the current width.
     pub fn into_extend<W>(self, target_width: W) -> Result<Int>
         where W: Into<BitWidth>
@@ -765,15 +765,15 @@ impl Int {
     }
 
     /// Tries to extend this `Int` inplace to the given `target_width`.
-    /// 
+    ///
     /// # Note
-    /// 
+    ///
     /// - This is a no-op if `self.width()` and `target_width` are equal.
     /// - This operation is inplace as long as `self.width()` and `target_width`
     ///   require the same amount of digits for their representation.
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// - If the `target_width` is less than the current width.
     pub fn extend<W>(&mut self, target_width: W) -> Result<()>
         where W: Into<BitWidth>
@@ -785,9 +785,9 @@ impl Int {
 
     /// Resizes this `Int` to the given `target_width`
     /// and returns the result.
-    /// 
+    ///
     /// # Note
-    /// 
+    ///
     /// - This is useful for method chaining.
     /// - For more details look into
     ///   [`resize`](struct.Int.html#method.resize).
@@ -798,11 +798,11 @@ impl Int {
     }
 
     /// Resizes the given `Int` inplace.
-    /// 
+    ///
     /// # Note
-    /// 
+    ///
     /// This operation will forward to
-    /// 
+    ///
     /// - [`truncate`](struct.Int.html#method.truncate)
     ///   if `target_width` is less than or equal to the width of
     ///   the given `Int`
@@ -829,20 +829,20 @@ impl Int {
 
     /// Tries to bit-and assign this `Int` inplace to `rhs`
     /// and returns the result.
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// If `self` and `rhs` have unmatching bit widths.
     pub fn into_bitand(self, rhs: &Int) -> Result<Int> {
         try_forward_bin_mut_impl(self, rhs, Int::bitand_assign)
     }
 
     /// Bit-and assigns all bits of this `Int` with the bits of `rhs`.
-    /// 
+    ///
     /// **Note:** This operation is inplace of `self` and won't allocate memory.
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// If `self` and `rhs` have unmatching bit widths.
     pub fn bitand_assign(&mut self, rhs: &Int) -> Result<()> {
         self.value.bitand_assign(&rhs.value)
@@ -850,20 +850,20 @@ impl Int {
 
     /// Tries to bit-and assign this `Int` inplace to `rhs`
     /// and returns the result.
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// If `self` and `rhs` have unmatching bit widths.
     pub fn into_bitor(self, rhs: &Int) -> Result<Int> {
         try_forward_bin_mut_impl(self, rhs, Int::bitor_assign)
     }
 
     /// Bit-or assigns all bits of this `Int` with the bits of `rhs`.
-    /// 
+    ///
     /// **Note:** This operation is inplace of `self` and won't allocate memory.
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// If `self` and `rhs` have unmatching bit widths.
     pub fn bitor_assign(&mut self, rhs: &Int) -> Result<()> {
         self.value.bitor_assign(&rhs.value)
@@ -871,20 +871,20 @@ impl Int {
 
     /// Tries to bit-xor assign this `Int` inplace to `rhs`
     /// and returns the result.
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// If `self` and `rhs` have unmatching bit widths.
     pub fn into_bitxor(self, rhs: &Int) -> Result<Int> {
         try_forward_bin_mut_impl(self, rhs, Int::bitxor_assign)
     }
 
     /// Bit-xor assigns all bits of this `Int` with the bits of `rhs`.
-    /// 
+    ///
     /// **Note:** This operation is inplace of `self` and won't allocate memory.
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// If `self` and `rhs` have unmatching bit widths.
     pub fn bitxor_assign(&mut self, rhs: &Int) -> Result<()> {
         self.value.bitxor_assign(&rhs.value)
@@ -894,14 +894,14 @@ impl Int {
 /// # Bitwise Access
 impl Int {
     /// Returns the bit at the given bit position `pos`.
-    /// 
+    ///
     /// This returns
-    /// 
+    ///
     /// - `Bit::Set` if the bit at `pos` is `1`
     /// - `Bit::Unset` otherwise
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// - If `pos` is not a valid bit position for the width of this `Int`.
     pub fn get_bit_at<P>(&self, pos: P) -> Result<Bit>
         where P: Into<BitPos>
@@ -910,9 +910,9 @@ impl Int {
     }
 
     /// Sets the bit at the given bit position `pos` to one (`1`).
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// - If `pos` is not a valid bit position for the width of this `Int`.
     pub fn set_bit_at<P>(&mut self, pos: P) -> Result<()>
         where P: Into<BitPos>
@@ -921,9 +921,9 @@ impl Int {
     }
 
     /// Sets the bit at the given bit position `pos` to zero (`0`).
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// - If `pos` is not a valid bit position for the width of this `Int`.
     pub fn unset_bit_at<P>(&mut self, pos: P) -> Result<()>
         where P: Into<BitPos>
@@ -932,14 +932,14 @@ impl Int {
     }
 
     /// Flips the bit at the given bit position `pos`.
-    /// 
+    ///
     /// # Note
-    /// 
+    ///
     /// - If the bit at the given position was `0` it will be `1`
     ///   after this operation and vice versa.
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// - If `pos` is not a valid bit position for the width of this `Int`.
     pub fn flip_bit_at<P>(&mut self, pos: P) -> Result<()>
         where P: Into<BitPos>
@@ -973,7 +973,7 @@ impl Int {
     }
 
     /// Returns the sign bit of this `Int`.
-    /// 
+    ///
     /// **Note:** This is equal to the most significant bit of this `Int`.
     pub fn sign_bit(&self) -> Bit {
         self.value.sign_bit()
@@ -990,9 +990,9 @@ impl Int {
     }
 
     /// Flips the sign bit of this `Int`.
-    /// 
+    ///
     /// # Note
-    /// 
+    ///
     /// - If the sign bit was `0` it will be `1` after this operation and vice versa.
     /// - Depending on the interpretation of the `Int` this
     ///   operation changes its signedness.
@@ -1145,152 +1145,152 @@ impl<'a> BitXorAssign<&'a Int> for Int {
 /// # Arithmetic Operations
 impl Int {
     /// Negates this `Int` inplace and returns the result.
-    /// 
+    ///
     /// **Note:** This will **not** allocate memory.
     pub fn into_wrapping_neg(self) -> Int {
         forward_mut_impl(self, Int::wrapping_neg)
     }
 
     /// Negates this `Int` inplace.
-    /// 
+    ///
     /// **Note:** This will **not** allocate memory.
     pub fn wrapping_neg(&mut self) {
         self.value.wrapping_neg()
     }
 
     /// Adds `rhs` to `self` and returns the result.
-    /// 
+    ///
     /// **Note:** This will **not** allocate memory.
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// - If `self` and `rhs` have unmatching bit widths.
     pub fn into_wrapping_add(self, rhs: &Int) -> Result<Int> {
         try_forward_bin_mut_impl(self, rhs, Int::wrapping_add_assign)
     }
 
     /// Add-assigns `rhs` to `self` inplace.
-    /// 
+    ///
     /// **Note:** This will **not** allocate memory.
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// - If `self` and `rhs` have unmatching bit widths.
     pub fn wrapping_add_assign(&mut self, rhs: &Int) -> Result<()> {
         self.value.wrapping_add_assign(&rhs.value)
     }
 
     /// Subtracts `rhs` from `self` and returns the result.
-    /// 
+    ///
     /// # Note
-    /// 
+    ///
     /// In the low-level bit-wise representation there is no difference between signed
     /// and unsigned subtraction of fixed bit-width integers. (Cite: LLVM)
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// - If `self` and `rhs` have unmatching bit widths.
     pub fn into_wrapping_sub(self, rhs: &Int) -> Result<Int> {
         try_forward_bin_mut_impl(self, rhs, Int::wrapping_sub_assign)
     }
 
     /// Subtract-assigns `rhs` from `self` inplace.
-    /// 
+    ///
     /// # Note
-    /// 
+    ///
     /// In the low-level bit-wise representation there is no difference between signed
     /// and unsigned subtraction of fixed bit-width integers. (Cite: LLVM)
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// - If `self` and `rhs` have unmatching bit widths.
     pub fn wrapping_sub_assign(&mut self, rhs: &Int) -> Result<()> {
         self.value.wrapping_sub_assign(&rhs.value)
     }
 
     /// Subtracts `rhs` from `self` and returns the result.
-    /// 
+    ///
     /// # Note
-    /// 
+    ///
     /// In the low-level bit-wise representation there is no difference between signed
     /// and unsigned multiplication of fixed bit-width integers. (Cite: LLVM)
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// - If `self` and `rhs` have unmatching bit widths.
     pub fn into_wrapping_mul(self, rhs: &Int) -> Result<Int> {
         try_forward_bin_mut_impl(self, rhs, Int::wrapping_mul_assign)
     }
 
     /// Multiply-assigns `rhs` to `self` inplace.
-    /// 
+    ///
     /// # Note
-    /// 
+    ///
     /// In the low-level bit-wise representation there is no difference between signed
     /// and unsigned multiplication of fixed bit-width integers. (Cite: LLVM)
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// - If `self` and `rhs` have unmatching bit widths.
     pub fn wrapping_mul_assign(&mut self, rhs: &Int) -> Result<()> {
         self.value.wrapping_mul_assign(&rhs.value)
     }
 
     /// Divides `self` by `rhs` and returns the result.
-    /// 
+    ///
     /// # Note
-    /// 
+    ///
     /// - This operation will **not** allocate memory and computes inplace of `self`.
     /// - In the low-level machine abstraction signed division and unsigned division
     ///   are two different operations.
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// - If `self` and `rhs` have unmatching bit widths.
     pub fn into_wrapping_div(self, rhs: &Int) -> Result<Int> {
         try_forward_bin_mut_impl(self, rhs, Int::wrapping_div_assign)
     }
 
     /// Assignes `self` to the division of `self` by `rhs`.
-    /// 
+    ///
     /// # Note
-    /// 
+    ///
     /// - This operation will **not** allocate memory and computes inplace of `self`.
     /// - In the low-level machine abstraction signed division and unsigned division
     ///   are two different operations.
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// - If `self` and `rhs` have unmatching bit widths.
     pub fn wrapping_div_assign(&mut self, rhs: &Int) -> Result<()> {
         self.value.wrapping_sdiv_assign(&rhs.value)
     }
 
     /// Calculates the **unsigned** remainder of `self` by `rhs` and returns the result.
-    /// 
+    ///
     /// # Note
-    /// 
+    ///
     /// - This operation will **not** allocate memory and computes inplace of `self`.
     /// - In the low-level machine abstraction signed division and unsigned division
     ///   are two different operations.
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// - If `self` and `rhs` have unmatching bit widths.
     pub fn into_wrapping_rem(self, rhs: &Int) -> Result<Int> {
         try_forward_bin_mut_impl(self, rhs, Int::wrapping_rem_assign)
     }
 
     /// Assignes `self` to the **unsigned** remainder of `self` by `rhs`.
-    /// 
+    ///
     /// # Note
-    /// 
+    ///
     /// - This operation will **not** allocate memory and computes inplace of `self`.
     /// - In the low-level machine abstraction signed division and unsigned division
     ///   are two different operations.
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// - If `self` and `rhs` have unmatching bit widths.
     pub fn wrapping_rem_assign(&mut self, rhs: &Int) -> Result<()> {
         self.value.wrapping_srem_assign(&rhs.value)

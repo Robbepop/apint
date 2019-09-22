@@ -1,7 +1,7 @@
-use radix::{Radix};
-use apint::{ApInt};
-use errors::{Error, Result};
-use digit;
+use crate::radix::{Radix};
+use crate::apint::{ApInt};
+use crate::errors::{Error, Result};
+use crate::digit;
 
 use std::fmt;
 
@@ -79,24 +79,24 @@ impl fmt::UpperHex for ApInt {
 impl ApInt {
     /// Parses the given `input` `String` with the given `Radix` and returns an `ApInt`
     /// with the given `target_width` `BitWidth`.
-    /// 
+    ///
     /// **Note:** The given `input` is parsed as big-endian value. This means, the most significant bit (MSB)
     /// is the leftst bit in the string representation provided by the user.
-    /// 
-    /// The string is assumed to contain no whitespace and contain only values within a subset of the 
+    ///
+    /// The string is assumed to contain no whitespace and contain only values within a subset of the
     /// range of `0`..`9` and `a`..`z` depending on the given `radix`.
-    /// 
+    ///
     /// The string is assumed to have no sign as `ApInt` does not handle signdness.
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// - If `input` is empty.
     /// - If `input` is not a valid representation for an `ApInt` for the given `radix`.
     /// - If `input` has trailing zero characters (`0`), e.g. `"0042"` instead of `"42"`.
     /// - If `input` represents an `ApInt` value that does not fit into the given `target_bitwidth`.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```no_run
     /// # use apint::ApInt;
     /// let a = ApInt::from_str_radix(10, "42");      // ok
@@ -165,13 +165,12 @@ impl ApInt {
 
     // Convert from a power of two radix (bits == ilog2(radix)) where bits evenly divides
     // Digit::BITS.
-    // 
+    //
     // Forked from: https://github.com/rust-num/num/blob/master/bigint/src/biguint.rs#L126
-    // 
+    //
     // TODO: Better document what happens here and why.
     fn from_bitwise_digits(v: &[u8], bits: usize) -> ApInt {
-        use digit;
-        use digit::{DigitRepr, Digit};
+        use crate::digit::{DigitRepr, Digit};
 
         debug_assert!(!v.is_empty() && bits <= 8 && digit::BITS % bits == 0);
         debug_assert!(v.iter().all(|&c| DigitRepr::from(c) < (1 << bits)));
@@ -189,13 +188,12 @@ impl ApInt {
 
     // Convert from a power of two radix (bits == ilog2(radix)) where bits doesn't evenly divide
     // Digit::BITS.
-    // 
+    //
     // Forked from: https://github.com/rust-num/num/blob/master/bigint/src/biguint.rs#L143
-    // 
+    //
     // TODO: Better document what happens here and why.
     fn from_inexact_bitwise_digits(v: &[u8], bits: usize) -> ApInt {
-        use digit;
-        use digit::{DigitRepr, Digit};
+        use crate::digit::{DigitRepr, Digit};
 
         debug_assert!(!v.is_empty() && bits <= 8 && digit::BITS % bits != 0);
         debug_assert!(v.iter().all(|&c| (DigitRepr::from(c)) < (1 << bits)));
@@ -229,14 +227,13 @@ impl ApInt {
     }
 
     // Read little-endian radix digits.
-    // 
+    //
     // Forked from: https://github.com/rust-num/num/blob/master/bigint/src/biguint.rs#L177
-    // 
+    //
     // TODO: This does not work, yet. Some parts of the algorithm are
     //       commented-out since the required functionality does not exist, yet.
     fn from_radix_digits(v: &[u8], radix: Radix) -> ApInt {
-        use digit;
-        use digit::{DigitRepr, Digit};
+        use crate::digit::{DigitRepr, Digit};
 
         debug_assert!(!v.is_empty() && !radix.is_power_of_two());
         debug_assert!(v.iter().all(|&c| radix.is_valid_byte(c)));
@@ -266,7 +263,7 @@ impl ApInt {
                 data.push(0);
             }
 
-            let mut carry = 0;
+            let carry = 0;
             for _d in &mut data {
                 // *d = mac_with_carry(0, *d, base, &mut carry); // TODO! This was commented out.
 
@@ -303,7 +300,7 @@ impl ApInt {
 mod tests {
     use super::*;
 
-    use bitwidth::{BitWidth};
+    use crate::bitwidth::{BitWidth};
 
     mod binary {
         use super::*;

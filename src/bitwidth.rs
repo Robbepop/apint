@@ -1,8 +1,8 @@
-use digit;
-use storage::Storage;
-use bitpos::BitPos;
-use apint::{ShiftAmount};
-use errors::{Result, Error};
+use crate::digit;
+use crate::storage::Storage;
+use crate::bitpos::BitPos;
+use crate::apint::{ShiftAmount};
+use crate::errors::{Result, Error};
 
 /// The `BitWidth` represents the length of an `ApInt`.
 /// 

@@ -1,6 +1,6 @@
 
-use digit::{Digit, DigitRepr};
-use errors::{Error, Result};
+use crate::digit::{Digit, DigitRepr};
+use crate::errors::{Error, Result};
 
 /// A radix for parsing strings as `ApInt`s.
 /// 

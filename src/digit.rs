@@ -1,8 +1,8 @@
-use bitpos::BitPos;
-use bitwidth::BitWidth;
-use errors::{Error, Result};
-use traits::{Width};
-use checks;
+use crate::bitpos::BitPos;
+use crate::bitwidth::BitWidth;
+use crate::errors::{Error, Result};
+use crate::traits::{Width};
+use crate::checks;
 
 use std::ops::{
     BitAnd,

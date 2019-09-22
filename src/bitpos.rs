@@ -1,5 +1,5 @@
-use errors::{Result};
-use digit;
+use crate::errors::{Result};
+use crate::digit;
 
 /// Represents a bit position within an `ApInt`.
 /// 

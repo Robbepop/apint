@@ -1,11 +1,11 @@
-use apint::{ApInt};
-use apint::utils::DataAccessMut;
-use apint::utils::{ZipDataAccessMutSelf::{Inl, Ext},ZipDataAccessMutBoth};
-use traits::{Width};
-use errors::{DivOp, Error, Result};
-use digit;
-use digit::{Digit, DoubleDigit};
-use utils::{try_forward_bin_mut_impl, forward_mut_impl};
+use crate::apint::{ApInt};
+use crate::apint::utils::DataAccessMut;
+use crate::apint::utils::{ZipDataAccessMutSelf::{Inl, Ext},ZipDataAccessMutBoth};
+use crate::traits::{Width};
+use crate::errors::{DivOp, Error, Result};
+use crate::digit;
+use crate::digit::{Digit, DoubleDigit};
+use crate::utils::{try_forward_bin_mut_impl, forward_mut_impl};
 
 use std::ops::{
     Neg,
@@ -18,9 +18,9 @@ use std::ops::{
 };
 
 /// # Basic Arithmetic Operations
-/// 
+///
 /// **Note**: unless otherwise noted in the function specific documentation,
-/// 
+///
 /// - The functions do **not** allocate memory.
 /// - The function works for both signed and unsigned interpretations of an `ApInt`. In other words, in the low-level bit-wise representation there is no difference between a signed and unsigned operation by a certain function on fixed bit-width integers. (Cite: LLVM)
 impl ApInt {
@@ -95,9 +95,9 @@ impl ApInt {
     }
 
     /// Add-assigns `rhs` to `self` inplace.
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// - If `self` and `rhs` have unmatching bit widths.
     pub fn wrapping_add_assign(&mut self, rhs: &ApInt) -> Result<()> {
         match self.zip_access_data_mut_self(rhs)? {
@@ -121,9 +121,9 @@ impl ApInt {
     }
 
     /// Adds `rhs` to `self` and returns the result.
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// - If `self` and `rhs` have unmatching bit widths.
     pub fn into_wrapping_add(self, rhs: &ApInt) -> Result<ApInt> {
         try_forward_bin_mut_impl(self, rhs, ApInt::wrapping_add_assign)
@@ -131,9 +131,9 @@ impl ApInt {
 
     /// Add-assigns `rhs` to `self` inplace, and returns a boolean indicating if overflow occured,
     /// according to the **unsigned** interpretation of overflow.
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// - If `self` and `rhs` have unmatching bit widths.
     // TODO: add tests
     #[allow(dead_code)]
@@ -195,9 +195,9 @@ impl ApInt {
 
     /// Add-assigns `rhs` to `self` inplace, and returns a boolean indicating if overflow occured,
     /// according to the **signed** interpretation of overflow.
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// - If `self` and `rhs` have unmatching bit widths.
     // TODO: add tests
     #[allow(dead_code)]
@@ -209,9 +209,9 @@ impl ApInt {
     }
 
     /// Subtract-assigns `rhs` from `self` inplace.
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// - If `self` and `rhs` have unmatching bit widths.
     pub fn wrapping_sub_assign(&mut self, rhs: &ApInt) -> Result<()> {
         match self.zip_access_data_mut_self(rhs)? {
@@ -237,37 +237,37 @@ impl ApInt {
     }
 
     /// Subtracts `rhs` from `self` and returns the result.
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// - If `self` and `rhs` have unmatching bit widths.
     pub fn into_wrapping_sub(self, rhs: &ApInt) -> Result<ApInt> {
         try_forward_bin_mut_impl(self, rhs, ApInt::wrapping_sub_assign)
     }
 
     /// Multiply-assigns `rhs` to `self` inplace. This function **may** allocate memory.
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// - If `self` and `rhs` have unmatching bit widths.
-    /// 
+    ///
     /// # Performance
-    /// 
+    ///
     /// If the function detects a large number of leading zeros in front of the most significant
     /// 1 bit, it will apply optimizations so that wasted multiplications and additions of zero are
     /// avoided. This function is designed to efficiently handle 5 common kinds of multiplication.
     /// Small here means both small ApInt `BitWidth` and/or small **unsigned** numerical
     /// significance. (Signed multiplication works, but two's complement negative numbers may have a
     /// large number of leading ones, leading to potential inefficiency.)
-    /// 
+    ///
     /// - multiplication of zero by any size integer (no allocation)
     /// - multiplication of small (<= 1 `Digit`) integers (no allocation)
     /// - wrapping multiplication of medium size (<= 512 bits) integers
     /// - multiplication of medium size integers that will not overflow
     /// - multiplication of small integers by large integers (or large integers multiplied by small
     ///     integers) (no allocation)
-    /// 
-    /// Currently, Karatsuba multiplication is not implemented, so large integer multiplication 
+    ///
+    /// Currently, Karatsuba multiplication is not implemented, so large integer multiplication
     /// may be very slow compared to other algorithms. According to Wikipedia, Karatsuba algorithms
     /// outperform 𝒪(n^2) algorithms, starting around 320-640 bits.
     pub fn wrapping_mul_assign(&mut self, rhs: &ApInt) -> Result<()> {
@@ -501,9 +501,9 @@ impl ApInt {
 
     /// Multiplies `rhs` with `self` and returns the result. This function **may** allocate memory.
     /// Note: see `wrapping_mul_assign` for more information.
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// - If `self` and `rhs` have unmatching bit widths.
     pub fn into_wrapping_mul(self, rhs: &ApInt) -> Result<ApInt> {
         try_forward_bin_mut_impl(self, rhs, ApInt::wrapping_mul_assign)
@@ -511,14 +511,14 @@ impl ApInt {
 }
 
 /// # Division Operations
-/// 
+///
 /// **Note**: unless otherwise noted in the function specific documentation,
-/// 
+///
 /// - The functions do **not** allocate memory.
 /// - The function works for both signed and unsigned interpretations of an `ApInt`. In other words,
 ///     in the low-level bit-wise representation there is no difference between a signed and
 ///     unsigned operation by the function on fixed bit-width integers. (Cite: LLVM)
-/// 
+///
 /// In almost all integer division algorithms where "just" the quotient is calculated, the remainder
 /// is also produced and actually exists in memory (or at least is only one O(n) operation away)
 /// prior to being dropped or overwritten, and vice versa for remainder only calculations. Note here
@@ -529,15 +529,15 @@ impl ApInt {
 /// detect if code uses both results and only use one division instruction. There is no such
 /// detection for `ApInt`s, and thus the `divrem` and `remdiv` type instructions exist to explicitly
 /// use just one division function for both results.
-/// 
+///
 /// ## Performance
-/// 
+///
 /// All of the division functions in this `impl` quickly check for various edge cases and use an
 /// efficient algorithm for these cases.
 /// Small here means both small ApInt `BitWidth` and/or small **unsigned** numerical significance.
 /// (Signed division works, but two's complement negative numbers may have a large number of
 /// leading ones, leading to potential inefficiency.)
-/// 
+///
 /// - division of zero by any size integer (no allocation)
 /// - division of small (1 `Digit`) integers (no allocation)
 /// - any division that will lead to the quotient being zero or one (no allocation)
@@ -546,7 +546,7 @@ impl ApInt {
 ///     allocation than what long division normally requires)
 /// - during long division, the algorithm may encounter a case from above and will use that instead
 /// - division of medium size (<= 512 bits) integers
-/// 
+///
 /// Currently, algorithms faster than 𝒪(n^2) are not implemented, so large integer division may be
 /// very slow compared to other algorithms.
 impl ApInt {
@@ -568,7 +568,7 @@ impl ApInt {
         //https://github.com/AaronKutch/specialized-div-rem,
         //except that there are more branches and preconditions. There are comments in this function
         //such as  `//quotient is 0 or 1 check` which correspond to comments in that function.
-        
+
         //assumptions:
         //  *ini_duo_sd > 0
         //  *div_sd == 0
@@ -846,7 +846,7 @@ impl ApInt {
                     //avoid shr overflow
                     (
                         DoubleDigit::from_lo_hi(duo[ini_duo_sd - 1], duo[ini_duo_sd]),
-                        DoubleDigit::from_lo_hi(div[ini_duo_sd - 1], div[ini_duo_sd]) 
+                        DoubleDigit::from_lo_hi(div[ini_duo_sd - 1], div[ini_duo_sd])
                     )
                 } else {
                     (
@@ -1045,7 +1045,7 @@ impl ApInt {
                         let (temp3, mut add1_carry) = temp2.carrying_add(duo[digits]);
                         duo[digits] = temp3;
                         for i in (digits + 1)..=duo_sd {
-                            let temp0 = 
+                            let temp0 =
                                 mul.dd()
                                 .wrapping_mul(div[i - digits].dd())
                                 .wrapping_add(mul_carry.dd());
@@ -1302,9 +1302,9 @@ impl ApInt {
 
     /// Divides `lhs` by `rhs` using **unsigned** interpretation and sets `lhs` equal to the
     /// quotient and `rhs` equal to the remainder. This function **may** allocate memory.
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// - If `lhs` and `rhs` have unmatching bit widths.
     /// - If division by zero is attempted
     pub fn wrapping_udivrem_assign(lhs: &mut ApInt, rhs: &mut ApInt) -> Result<()> {
@@ -1331,9 +1331,9 @@ impl ApInt {
 
     /// Divides `lhs` by `rhs` using **unsigned** interpretation and sets `lhs` equal to the
     /// remainder and `rhs` equal to the quotient. This function **may** allocate memory.
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// - If `lhs` and `rhs` have unmatching bit widths.
     /// - If division by zero is attempted
     pub fn wrapping_uremdiv_assign(lhs: &mut ApInt, rhs: &mut ApInt) -> Result<()> {
@@ -1357,9 +1357,9 @@ impl ApInt {
 
     /// Quotient-assigns `lhs` by `rhs` inplace using **unsigned** interpretation.
     /// This function **may** allocate memory.
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// - If `lhs` and `rhs` have unmatching bit widths.
     /// - If division by zero is attempted
 	pub fn wrapping_udiv_assign(&mut self, rhs: &ApInt) -> Result<()> {
@@ -1381,9 +1381,9 @@ impl ApInt {
 
     /// Divides `lhs` by `rhs` using **unsigned** interpretation and returns the quotient.
     /// This function **may** allocate memory.
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// - If `lhs` and `rhs` have unmatching bit widths.
     /// - If division by zero is attempted
     pub fn into_wrapping_udiv(self, rhs: &ApInt) -> Result<ApInt> {
@@ -1392,9 +1392,9 @@ impl ApInt {
 
     /// Remainder-assigns `lhs` by `rhs` inplace using **unsigned** interpretation.
     /// This function **may** allocate memory.
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// - If `lhs` and `rhs` have unmatching bit widths.
     /// - If division by zero is attempted
     pub fn wrapping_urem_assign(&mut self, rhs: &ApInt) -> Result<()> {
@@ -1416,9 +1416,9 @@ impl ApInt {
 
     /// Divides `lhs` by `rhs` using **unsigned** interpretation and returns the remainder.
     /// This function **may** allocate memory.
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// - If `lhs` and `rhs` have unmatching bit widths.
     /// - If division by zero is attempted
     pub fn into_wrapping_urem(self, rhs: &ApInt) -> Result<ApInt> {
@@ -1427,9 +1427,9 @@ impl ApInt {
 
     /// Divides `lhs` by `rhs` using **signed** interpretation and sets `lhs` equal to the
     /// quotient and `rhs` equal to the remainder. This function **may** allocate memory.
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// - If `lhs` and `rhs` have unmatching bit widths.
     /// - If division by zero is attempted
     pub fn wrapping_sdivrem_assign(lhs: &mut ApInt, rhs: &mut ApInt) -> Result<()> {
@@ -1461,9 +1461,9 @@ impl ApInt {
 
     /// Divides `lhs` by `rhs` using **signed** interpretation and sets `lhs` equal to the
     /// remainder and `rhs` equal to the quotient. This function **may** allocate memory.
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// - If `lhs` and `rhs` have unmatching bit widths.
     /// - If division by zero is attempted
     pub fn wrapping_sremdiv_assign(lhs: &mut ApInt, rhs: &mut ApInt) -> Result<()> {
@@ -1495,9 +1495,9 @@ impl ApInt {
 
     /// Quotient-assigns `lhs` by `rhs` inplace using **signed** interpretation.
     /// This function **may** allocate memory.
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// - If `lhs` and `rhs` have unmatching bit widths.
     /// - If division by zero is attempted
     pub fn wrapping_sdiv_assign(&mut self, rhs: &ApInt) -> Result<()> {
@@ -1529,21 +1529,21 @@ impl ApInt {
 
     /// Divides `self` by `rhs` using **signed** interpretation and returns the quotient.
     /// This function **may** allocate memory.
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// - If `self` and `rhs` have unmatching bit widths.
     /// - If division by zero is attempted
-    /// 
+    ///
     pub fn into_wrapping_sdiv(self, rhs: &ApInt) -> Result<ApInt> {
         try_forward_bin_mut_impl(self, rhs, ApInt::wrapping_sdiv_assign)
     }
 
     /// Remainder-assigns `lhs` by `rhs` inplace using **signed** interpretation.
     /// This function **may** allocate memory.
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// - If `lhs` and `rhs` have unmatching bit widths.
     /// - If division by zero is attempted
     pub fn wrapping_srem_assign(&mut self, rhs: &ApInt) -> Result<()> {
@@ -1575,9 +1575,9 @@ impl ApInt {
 
     /// Divides `self` by `rhs` using **signed** interpretation and returns the remainder.
     /// This function **may** allocate memory.
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// - If `self` and `rhs` have unmatching bit widths.
     /// - If division by zero is attempted
     pub fn into_wrapping_srem(self, rhs: &ApInt) -> Result<ApInt> {
@@ -1590,7 +1590,7 @@ impl ApInt {
 /// ----------------------------------------------------------------------------
 ///  **Note:** These ops will panic if their corresponding functions return an
 ///  error. They may also allocate memory.
-/// 
+///
 ///  `ApInt` implements some `std::ops` traits for improved usability.
 ///  Only traits for operations that do not depend on the signedness
 ///  interpretation of the specific `ApInt` instance are actually implemented.
@@ -1703,17 +1703,17 @@ mod tests {
             assert_eq!(ApInt::from(15u8).into_wrapping_inc(),ApInt::from(16u8));
             assert_eq!(ApInt::from(16u8).into_wrapping_inc(),ApInt::from(17u8));
             assert_eq!(ApInt::from(17u8).into_wrapping_inc(),ApInt::from(18u8));
-            assert_eq!(ApInt::from([0u64,0,0]).into_wrapping_inc(),ApInt::from([0u64,0,1]));			
+            assert_eq!(ApInt::from([0u64,0,0]).into_wrapping_inc(),ApInt::from([0u64,0,1]));
             assert_eq!(ApInt::from([0,7,u64::MAX]).into_wrapping_inc(),ApInt::from([0u64,8,0]));
             assert_eq!(ApInt::from([u64::MAX,u64::MAX]).into_wrapping_inc(),ApInt::from([0u64,0]));
             assert_eq!(ApInt::from([0,u64::MAX,u64::MAX - 1]).into_wrapping_inc(),ApInt::from([0,u64::MAX,u64::MAX]));
-            assert_eq!(ApInt::from([0,u64::MAX,0]).into_wrapping_inc(),ApInt::from([0,u64::MAX,1]));	
+            assert_eq!(ApInt::from([0,u64::MAX,0]).into_wrapping_inc(),ApInt::from([0,u64::MAX,1]));
         }
     }
 
     mod wrapping_neg {
         use super::*;
-        use bitwidth::{BitWidth};
+        use crate::bitwidth::{BitWidth};
 
         fn assert_symmetry(input: ApInt, expected: ApInt) {
             assert_eq!(input.clone().into_wrapping_neg(), expected.clone());
@@ -1745,7 +1745,7 @@ mod tests {
 
     mod mul {
         use super::*;
-        use bitwidth::BitWidth;
+        use crate::bitwidth::BitWidth;
         use std::{u8,u64};
 
         #[test]
@@ -1771,17 +1771,17 @@ mod tests {
                         //It will produce things like 998001, 8991, 98901, 9989001.
                         //this uses a formula for the number of nines, eights, and zeros except here
                         //nine is u8::MAX, eight is u8::MAX - 1, and zero is 0u8
-                        let mut zeros_after_one = if lhs_nine < rhs_nine {
+                        let zeros_after_one = if lhs_nine < rhs_nine {
                             lhs_nine
                         } else {
                             rhs_nine
                         };
-                        let mut nines_before_eight = if lhs_nine > rhs_nine {
+                        let nines_before_eight = if lhs_nine > rhs_nine {
                             lhs_nine - rhs_nine
                         } else {
                             rhs_nine - lhs_nine
                         };
-                        let mut nines_after_eight = if lhs_nine < rhs_nine {
+                        let nines_after_eight = if lhs_nine < rhs_nine {
                             lhs_nine
                         } else {
                             rhs_nine
@@ -1849,17 +1849,17 @@ mod tests {
                 900, 1000, 0,
             ];
             for (i, _) in resize.iter().enumerate() {
-                let mut lhs = ApInt::from(5u8)
+                let lhs = ApInt::from(5u8)
                     .into_zero_resize(BitWidth::new(resize[i]).unwrap())
                     .into_wrapping_shl(lhs_shl[i])
                     .unwrap();
-                let mut rhs = ApInt::from(11u8)
+                let rhs = ApInt::from(11u8)
                     .into_zero_resize(BitWidth::new(resize[i]).unwrap())
                     .into_wrapping_shl(rhs_shl[i])
                     .unwrap();
-                let mut zero = ApInt::from(0u8).into_zero_resize(BitWidth::new(resize[i]).unwrap());
-                let mut one = ApInt::from(1u8).into_zero_resize(BitWidth::new(resize[i]).unwrap());
-                let mut expected = ApInt::from(55u8)
+                let zero = ApInt::from(0u8).into_zero_resize(BitWidth::new(resize[i]).unwrap());
+                let one = ApInt::from(1u8).into_zero_resize(BitWidth::new(resize[i]).unwrap());
+                let expected = ApInt::from(55u8)
                     .into_zero_resize(BitWidth::new(resize[i]).unwrap())
                     .into_wrapping_shl(rhs_shl[i] + lhs_shl[i])
                     .unwrap();
@@ -1878,7 +1878,7 @@ mod tests {
 
     mod div_rem {
         use super::*;
-        use bitwidth::BitWidth;
+        use crate::bitwidth::BitWidth;
         use std::u64;
 
         //TODO: add division by zero testing after error refactoring is finished
@@ -2057,17 +2057,17 @@ mod tests {
                 900, 1000, 0,
             ];
             for (i, _) in resize.iter().enumerate() {
-                let mut lhs = ApInt::from(5u8)
+                let lhs = ApInt::from(5u8)
                     .into_zero_resize(BitWidth::new(resize[i]).unwrap())
                     .into_wrapping_shl(lhs_shl[i])
                     .unwrap();
-                let mut rhs = ApInt::from(11u8)
+                let rhs = ApInt::from(11u8)
                     .into_zero_resize(BitWidth::new(resize[i]).unwrap())
                     .into_wrapping_shl(rhs_shl[i])
                     .unwrap();
-                let mut zero = ApInt::from(0u8).into_zero_resize(BitWidth::new(resize[i]).unwrap());
-                let mut one = ApInt::from(1u8).into_zero_resize(BitWidth::new(resize[i]).unwrap());
-                let mut product = lhs.clone().into_wrapping_mul(&rhs).unwrap();
+                let zero = ApInt::from(0u8).into_zero_resize(BitWidth::new(resize[i]).unwrap());
+                let one = ApInt::from(1u8).into_zero_resize(BitWidth::new(resize[i]).unwrap());
+                let product = lhs.clone().into_wrapping_mul(&rhs).unwrap();
                 assert_eq!(zero.clone().into_wrapping_udiv(&lhs).unwrap(), zero);
                 assert_eq!(zero.clone().into_wrapping_udiv(&rhs).unwrap(), zero);
                 assert_eq!(lhs.clone().into_wrapping_udiv(&one).unwrap(), lhs);
@@ -2095,7 +2095,7 @@ mod tests {
 
     mod megafuzz {
         use super::*;
-        use bitwidth::BitWidth;
+        use crate::bitwidth::BitWidth;
         use std::u64;
         use rand::random;
 
@@ -2205,7 +2205,6 @@ mod tests {
         //random length AND, XOR, and OR fuzzer;
         fn fuzz_random(size: usize, iterations: usize) {
             let width = BitWidth::new(size).unwrap();
-            use rand::random;
             let mut lhs = ApInt::from(0u8).into_zero_resize(width);
             let mut rhs = ApInt::from(0u8).into_zero_resize(width);
             let mut third = ApInt::from(0u8).into_zero_resize(width);
@@ -2272,7 +2271,7 @@ mod tests {
         fn fuzz_edge(size: usize) {
             let width = BitWidth::new(size).unwrap();
             let zero = ApInt::from(0u8).into_zero_resize(width);
-            let cd = 
+            let cd =
                 if (size % 64) == 0 {size / 64}
                 else {(size / 64) + 1};
             explode!(cd,temp0,i0,i1,

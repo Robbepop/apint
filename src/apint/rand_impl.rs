@@ -1,6 +1,6 @@
-use apint::{ApInt};
-use bitwidth::{BitWidth};
-use digit::{Digit};
+use crate::apint::{ApInt};
+use crate::bitwidth::{BitWidth};
+use crate::digit::{Digit};
 
 use rand;
 use rand::{FromEntropy};

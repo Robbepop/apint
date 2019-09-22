@@ -1,7 +1,7 @@
-use errors::{Error, Result};
-use traits::{Width};
-use bitpos::{BitPos};
-use apint::{ShiftAmount};
+use crate::errors::{Error, Result};
+use crate::traits::{Width};
+use crate::bitpos::{BitPos};
+use crate::apint::{ShiftAmount};
 
 #[inline]
 pub(crate) fn verify_bit_access<T, P>(a: &T, pos: P) -> Result<()>

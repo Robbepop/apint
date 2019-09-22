@@ -1,10 +1,10 @@
 
-use apint::{ApInt, ApIntData};
-use bitwidth::{BitWidth};
-use errors::{Error, Result};
-use storage::{Storage};
-use digit::{Bit, Digit};
-use digit;
+use crate::apint::{ApInt, ApIntData};
+use crate::bitwidth::{BitWidth};
+use crate::errors::{Error, Result};
+use crate::storage::{Storage};
+use crate::digit::{Bit, Digit};
+use crate::digit;
 
 use smallvec::SmallVec;
 
@@ -12,17 +12,17 @@ use std::ptr::NonNull;
 
 impl ApInt {
     /// Deallocates memory that may be allocated by this `ApInt`.
-    /// 
+    ///
     /// `ApInt` instances with a bit width larger than `64` bits
     /// allocate their digits on the heap. With `drop_digits` this
     /// memory can be freed.
-    /// 
+    ///
     /// **Note:** This is extremely unsafe, only use this if the
     ///           `ApInt` no longer needs its digits.
-    /// 
+    ///
     /// **Note:** This is `unsafe` since it violates invariants
     ///           of the `ApInt`.
-    pub(in apint) unsafe fn drop_digits(&mut self) {
+    pub(in crate::apint) unsafe fn drop_digits(&mut self) {
         if self.len.storage() == Storage::Ext {
             let len = self.len_digits();
             drop(Vec::from_raw_parts(
@@ -41,14 +41,14 @@ impl Drop for ApInt {
 impl ApInt {
 
     /// Creates a new small `ApInt` from the given `BitWidth` and `Digit`.
-    /// 
+    ///
     /// Small `ApInt` instances are stored entirely on the stack.
-    /// 
+    ///
     /// # Panics
-    /// 
+    ///
     /// - If the given `width` represents a `BitWidth` larger than `64` bits.
     #[inline]
-    pub(in apint) fn new_inl(width: BitWidth, digit: Digit) -> ApInt {
+    pub(in crate::apint) fn new_inl(width: BitWidth, digit: Digit) -> ApInt {
         assert_eq!(width.storage(), Storage::Inl);
         ApInt {
             len: width,
@@ -57,17 +57,17 @@ impl ApInt {
     }
 
     /// Creates a new large `ApInt` from the given `BitWidth` and `Digit`.
-    /// 
+    ///
     /// Large `ApInt` instances allocate their digits on the heap.
-    /// 
+    ///
     /// **Note:** This operation is unsafe since the buffer length behind the
     ///           given `ext_ptr` must be trusted.
-    /// 
+    ///
     /// # Panics
-    /// 
+    ///
     /// - If the given `width` represents a `BitWidth` smaller than
     ///   or equal to `64` bits.
-    pub(in apint) unsafe fn new_ext(width: BitWidth, ext_ptr: *mut Digit) -> ApInt {
+    pub(in crate::apint) unsafe fn new_ext(width: BitWidth, ext_ptr: *mut Digit) -> ApInt {
         assert_eq!(width.storage(), Storage::Ext);
         ApInt{
             len: width,
@@ -76,7 +76,7 @@ impl ApInt {
     }
 
     /// Creates a new `ApInt` from the given `Bit` value with a bit width of `1`.
-    /// 
+    ///
     /// This function is generic over types that are convertible to `Bit` such as `bool`.
     pub fn from_bit<B>(bit: B) -> ApInt
         where B: Into<Bit>
@@ -146,21 +146,21 @@ impl ApInt {
     }
 
     /// Creates a new `ApInt` from the given iterator over `Digit`s.
-    /// 
+    ///
     /// This results in `ApInt` instances with bitwidths that are a multiple
     /// of a `Digit`s bitwidth (e.g. 64 bit).
-    /// 
+    ///
     /// Users of this API may truncate, extend or simply resize the resulting
     /// `ApInt` afterwards to obtain the desired bitwidth. This may be very cheap
     /// depending on the difference between the actual and target bitwidths.
     /// For example, `move_truncate`ing a `128` bitwidth `ApInt` to `100` is
     /// relatively cheap and won't allocate memory since both `ApInt` instances can use
     /// the same amount of `Digit`s.
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// - If the iterator yields no elements.
-    pub(in apint) fn from_iter<I>(digits: I) -> Result<ApInt>
+    pub(in crate::apint) fn from_iter<I>(digits: I) -> Result<ApInt>
         where I: IntoIterator<Item=Digit>,
     {
         let mut buffer = digits.into_iter().collect::<SmallVec<[Digit; 1]>>();
@@ -191,6 +191,7 @@ impl ApInt {
     }
 
     // TODO: convert this to take from a slice or IntoIterator<u64>
+    #[cfg(test)]
     pub(crate) fn from_vec_u64(val: Vec<u64>) -> Option<ApInt> {
         if val.len() == 0 {
             None
@@ -205,10 +206,10 @@ impl ApInt {
 
     /// Creates a new `ApInt` that represents the repetition of the given digit
     /// up to the given target bitwidth.
-    /// 
+    ///
     /// Note: The last digit in the generated sequence is truncated to make the `ApInt`'s
     ///       value representation fit the given bit-width.
-    pub(in apint) fn repeat_digit<D>(target_width: BitWidth, digit: D) -> ApInt
+    pub(in crate::apint) fn repeat_digit<D>(target_width: BitWidth, digit: D) -> ApInt
         where D: Into<Digit>
     {
         use std::iter;
@@ -238,7 +239,7 @@ impl ApInt {
     }
 
     /// Creates a new `ApInt` with the given bit width that has all bits unset.
-    /// 
+    ///
     /// **Note:** This is equal to calling `ApInt::zero` with the given `width`.
     pub fn all_unset(width: BitWidth) -> ApInt {
         ApInt::zero(width)
@@ -596,7 +597,7 @@ mod tests {
 
     #[test]
     fn from_w128() {
-        use digit::{Digit, DigitRepr};
+        use crate::digit::{Digit, DigitRepr};
         for val in test_values_u128() {
             let explicit_u128 = ApInt::from_u128(val);
             let explicit_i128 = ApInt::from_i128(val as i128);

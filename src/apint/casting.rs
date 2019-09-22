@@ -1,12 +1,12 @@
 
-use apint::{ApInt};
-use errors::{Error, Result};
+use crate::apint::{ApInt};
+use crate::errors::{Error, Result};
 
-use bitwidth::{BitWidth};
-use storage::{Storage};
-use digit::{Bit};
-use traits::Width;
-use utils::{try_forward_bin_mut_impl, forward_bin_mut_impl};
+use crate::bitwidth::{BitWidth};
+use crate::storage::{Storage};
+use crate::digit::{Bit};
+use crate::traits::Width;
+use crate::utils::{try_forward_bin_mut_impl, forward_bin_mut_impl};
 
 impl Clone for ApInt {
     fn clone(&self) -> Self {
@@ -269,7 +269,7 @@ impl ApInt {
             // must allocate a new buffer that fits for the required amount of digits
             // for the target width. Also we need to `memcpy` the digits of the
             // extended `ApInt` to the newly allocated buffer.
-            use digit;
+            use crate::digit;
             use std::iter;
             assert!(target_req_digits > actual_req_digits);
             let additional_digits = target_req_digits - actual_req_digits;
@@ -367,7 +367,7 @@ impl ApInt {
             // must allocate a new buffer that fits for the required amount of digits
             // for the target width. Also we need to `memcpy` the digits of the
             // extended `ApInt` to the newly allocated buffer.
-            use digit;
+            use crate::digit;
             use std::iter;
             assert!(target_req_digits > actual_req_digits);
             let additional_digits = target_req_digits - actual_req_digits;

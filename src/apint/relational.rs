@@ -1,11 +1,11 @@
-use apint::{ApInt};
-use apint::utils::{
+use crate::apint::{ApInt};
+use crate::apint::utils::{
     ZipDataAccess
 };
-use errors::{Result};
-use traits::Width;
-use digit;
-use digit::{Bit};
+use crate::errors::{Result};
+use crate::traits::Width;
+use crate::digit;
+use crate::digit::{Bit};
 
 use std::cmp::Ordering;
 use std::ops::Not;

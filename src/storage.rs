@@ -1,5 +1,5 @@
-use digit;
-use bitwidth::BitWidth;
+use crate::digit;
+use crate::bitwidth::BitWidth;
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 pub(crate) enum Storage { Inl, Ext }

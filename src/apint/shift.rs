@@ -1,11 +1,11 @@
-use apint::{ApInt};
-use apint::utils::{DataAccessMut};
-use errors::{Result};
-use checks;
-use digit;
-use digit::{Bit, Digit};
-use traits::{Width};
-use utils::{try_forward_bin_mut_impl};
+use crate::apint::{ApInt};
+use crate::apint::utils::{DataAccessMut};
+use crate::errors::{Result};
+use crate::checks;
+use crate::digit;
+use crate::digit::{Bit, Digit};
+use crate::traits::{Width};
+use crate::utils::{try_forward_bin_mut_impl};
 
 /// Represents an amount of bits to shift an `ApInt`.
 /// 
@@ -31,7 +31,7 @@ impl ShiftAmount {
     /// - `ShiftAmount(100)` leaps over 1 digit.
     /// - `ShiftAmount(150)` leaps over 2 digits.
     #[inline]
-    pub(in apint) fn digit_steps(self) -> usize {
+    pub(in crate::apint) fn digit_steps(self) -> usize {
         self.to_usize() / digit::BITS
     }
 
@@ -49,7 +49,7 @@ impl ShiftAmount {
     /// - `ShiftAmount(100)` leaps over `28` bits.
     /// - `ShiftAmount(150)` leaps over `22` bits.
     #[inline]
-    pub(in apint) fn bit_steps(self) -> usize {
+    pub(in crate::apint) fn bit_steps(self) -> usize {
         self.to_usize() % digit::BITS
     }
 }
@@ -331,7 +331,7 @@ mod tests {
 
         #[test]
         fn assign_xtra_large_ok() {
-            use digit;
+            use crate::digit;
             let d0 = 0xFEDC_BA98_7654_3210;
             let d1 = 0x5555_5555_4444_4444;
             let d2 = 0xAAAA_AAAA_CCCC_CCCC;

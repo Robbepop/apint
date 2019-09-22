@@ -1,9 +1,9 @@
-use apint::{ApInt};
-use digit;
-use digit::{Digit};
-use bitwidth::{BitWidth};
-use errors::{Result, Error};
-use traits::{Width};
+use crate::apint::{ApInt};
+use crate::digit;
+use crate::digit::{Digit};
+use crate::bitwidth::{BitWidth};
+use crate::errors::{Result, Error};
+use crate::traits::{Width};
 
 /// Represents a primitive data type.
 /// 
@@ -853,7 +853,7 @@ mod tests {
         }
     }
 
-    mod try {
+    mod r#try {
         use super::*;
 
         #[test]

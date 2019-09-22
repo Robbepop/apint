@@ -1,8 +1,8 @@
-use bitwidth::BitWidth;
-use bitpos::BitPos;
-use radix::Radix;
-use apint::{ApInt, ShiftAmount};
-use apint::{PrimitiveTy};
+use crate::bitwidth::BitWidth;
+use crate::bitpos::BitPos;
+use crate::radix::Radix;
+use crate::apint::{ApInt, ShiftAmount};
+use crate::apint::{PrimitiveTy};
 
 use std::result;
 use std::error;

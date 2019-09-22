@@ -1,15 +1,15 @@
-use apint::{ApInt};
-use digit::{Bit};
-use digit;
-use errors::{Result};
-use apint::utils::{
+use crate::apint::{ApInt};
+use crate::digit::{Bit};
+use crate::digit;
+use crate::errors::{Result};
+use crate::apint::utils::{
     DataAccess,
     DataAccessMut
 };
-use bitpos::{BitPos};
-use traits::{Width};
-use checks;
-use utils::{try_forward_bin_mut_impl, forward_mut_impl};
+use crate::bitpos::{BitPos};
+use crate::traits::{Width};
+use crate::checks;
+use crate::utils::{try_forward_bin_mut_impl, forward_mut_impl};
 
 use std::ops::{
     Not,
@@ -432,7 +432,7 @@ impl<'a> BitXorAssign<&'a ApInt> for ApInt {
 mod tests {
     use super::*;
 
-    use bitwidth::{BitWidth};
+    use crate::bitwidth::{BitWidth};
 
     #[test]
     fn count_ones() {
