@@ -13,12 +13,13 @@ use crate::{
         Error,
         Result,
     },
+    mem::vec::Vec,
     storage::Storage,
 };
 
 use smallvec::SmallVec;
 
-use std::ptr::NonNull;
+use core::ptr::NonNull;
 
 impl ApInt {
     /// Deallocates memory that may be allocated by this `ApInt`.
@@ -188,7 +189,7 @@ impl ApInt {
                 Ok(ApInt::new_inl(BitWidth::w64(), first_and_only))
             }
             n => {
-                use std::mem;
+                use core::mem;
                 let bitwidth = BitWidth::new(n * digit::BITS)
                     .expect("We have already asserted that the number of items the given Iterator \
                              iterates over is greater than `1` and thus non-zero and thus a valid `BitWidth`.");
@@ -223,7 +224,7 @@ impl ApInt {
     where
         D: Into<Digit>,
     {
-        use std::iter;
+        use core::iter;
         let digit = digit.into();
         let req_digits = target_width.required_digits();
         ApInt::from_iter(iter::repeat(digit).take(req_digits))
@@ -375,7 +376,7 @@ macro_rules! impl_from_array_for_apint {
         impl From<[i64; $n]> for ApInt {
             fn from(val: [i64; $n]) -> ApInt {
                 <Self as From<[u64; $n]>>::from(unsafe {
-                    ::std::mem::transmute::<[i64; $n], [u64; $n]>(val)
+                    ::core::mem::transmute::<[i64; $n], [u64; $n]>(val)
                 })
             }
         }
@@ -412,7 +413,7 @@ impl_from_array_for_apint!(32); // 2048 bits
 mod tests {
     use super::*;
 
-    use std::ops::Range;
+    use core::ops::Range;
 
     fn powers() -> impl Iterator<Item = u128> {
         (0..128).map(|p| 1 << p)
@@ -778,7 +779,7 @@ mod tests {
             )
         }
         {
-            use std::i128;
+            use core::i128;
             assert_eq!(
                 ApInt::signed_min_value(BitWidth::w128()),
                 ApInt::from(i128::MIN)

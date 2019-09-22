@@ -1,14 +1,12 @@
 use crate::{
     apint::ApInt,
+    bitwidth::BitWidth,
+    digit::Bit,
     errors::{
         Error,
         Result,
     },
-};
-
-use crate::{
-    bitwidth::BitWidth,
-    digit::Bit,
+    mem::format,
     storage::Storage,
     traits::Width,
     utils::{
@@ -22,7 +20,7 @@ impl Clone for ApInt {
         match self.storage() {
             Storage::Inl => ApInt::new_inl(self.len, unsafe { self.data.inl }),
             Storage::Ext => {
-                use std::mem;
+                use core::mem;
                 let req_digits = self.len_digits();
                 let mut buffer = self.as_digit_slice().to_vec().into_boxed_slice();
                 assert_eq!(buffer.len(), req_digits);
@@ -72,7 +70,7 @@ impl ApInt {
                     // need to expensively clone its buffer and feed it to `self`.
                     let cloned = rhs.clone();
                     self.data.ext = unsafe { cloned.data.ext };
-                    use std::mem;
+                    use core::mem;
                     mem::forget(cloned);
                 }
             }
@@ -284,7 +282,7 @@ impl ApInt {
             // for the target width. Also we need to `memcpy` the digits of the
             // extended `ApInt` to the newly allocated buffer.
             use crate::digit;
-            use std::iter;
+            use core::iter;
             assert!(target_req_digits > actual_req_digits);
             let additional_digits = target_req_digits - actual_req_digits;
             let extended_clone = ApInt::from_iter(
@@ -383,7 +381,7 @@ impl ApInt {
             // for the target width. Also we need to `memcpy` the digits of the
             // extended `ApInt` to the newly allocated buffer.
             use crate::digit;
-            use std::iter;
+            use core::iter;
             assert!(target_req_digits > actual_req_digits);
             let additional_digits = target_req_digits - actual_req_digits;
 
@@ -741,7 +739,7 @@ mod tests {
 
         #[test]
         fn regression_issue15() {
-            use std::{
+            use core::{
                 i128,
                 i64,
             };

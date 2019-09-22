@@ -22,7 +22,7 @@ use crate::{
 pub use self::shift::ShiftAmount;
 pub(crate) use self::to_primitive::PrimitiveTy;
 
-use std::ptr::NonNull;
+use core::ptr::NonNull;
 
 /// An arbitrary precision integer with modulo arithmetics similar to machine integers.
 pub struct ApInt {

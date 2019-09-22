@@ -58,6 +58,7 @@ impl Serialize for ApInt {
     }
 }
 
+use core::fmt;
 use serde::{
     de,
     de::{
@@ -68,7 +69,6 @@ use serde::{
     Deserialize,
     Deserializer,
 };
-use std::fmt;
 
 impl<'de> Deserialize<'de> for BitWidth {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>

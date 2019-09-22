@@ -20,14 +20,17 @@ use crate::{
         Error,
         Result,
     },
+    mem::{
+        vec,
+        vec::Vec,
+    },
     traits::Width,
     utils::{
         forward_mut_impl,
         try_forward_bin_mut_impl,
     },
 };
-
-use std::ops::{
+use core::ops::{
     Add,
     AddAssign,
     Mul,
@@ -1708,7 +1711,7 @@ impl ApInt {
 ///  **Note:** These ops will panic if their corresponding functions return an
 ///  error. They may also allocate memory.
 ///
-///  `ApInt` implements some `std::ops` traits for improved usability.
+///  `ApInt` implements some `core::ops` traits for improved usability.
 ///  Only traits for operations that do not depend on the signedness
 ///  interpretation of the specific `ApInt` instance are actually implemented.
 ///  Operations like `div` and `rem` are not expected to have an
@@ -1812,7 +1815,7 @@ mod tests {
 
     mod inc {
         use super::*;
-        use std::u64;
+        use core::u64;
 
         #[test]
         fn test() {
@@ -1882,7 +1885,7 @@ mod tests {
     mod mul {
         use super::*;
         use crate::bitwidth::BitWidth;
-        use std::{
+        use core::{
             u64,
             u8,
         };
@@ -2034,7 +2037,7 @@ mod tests {
     mod div_rem {
         use super::*;
         use crate::bitwidth::BitWidth;
-        use std::u64;
+        use core::u64;
 
         // TODO: add division by zero testing after error refactoring is finished
         // use errors::ErrorKind;
@@ -2446,8 +2449,8 @@ mod tests {
     mod megafuzz {
         use super::*;
         use crate::bitwidth::BitWidth;
+        use core::u64;
         use rand::random;
-        use std::u64;
 
         #[test]
         fn pull_request_35_regression() {

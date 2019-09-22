@@ -19,7 +19,7 @@ use crate::{
 #[cfg(feature = "rand_support")]
 use rand;
 
-use std::{
+use core::{
     cmp::Ordering,
     ops::{
         Add,
@@ -573,7 +573,7 @@ impl UInt {
     }
 }
 
-use std::ops::{
+use core::ops::{
     Shl,
     ShlAssign,
     Shr,
@@ -1244,7 +1244,7 @@ impl UInt {
 }
 
 // ============================================================================
-//  Add and Add-Assign: `std::ops::Add` and `std::ops::AddAssign`
+//  Add and Add-Assign: `core::ops::Add` and `core::ops::AddAssign`
 // ============================================================================
 
 impl<'a> Add<&'a UInt> for UInt {
@@ -1270,7 +1270,7 @@ impl<'a> AddAssign<&'a UInt> for UInt {
 }
 
 // ============================================================================
-//  Sub and Sub-Assign: `std::ops::Sub` and `std::ops::SubAssign`
+//  Sub and Sub-Assign: `core::ops::Sub` and `core::ops::SubAssign`
 // ============================================================================
 
 impl<'a> Sub<&'a UInt> for UInt {
@@ -1296,7 +1296,7 @@ impl<'a> SubAssign<&'a UInt> for UInt {
 }
 
 // ============================================================================
-//  Mul and Mul-Assign: `std::ops::Mul` and `std::ops::MulAssign`
+//  Mul and Mul-Assign: `core::ops::Mul` and `core::ops::MulAssign`
 // ============================================================================
 
 impl<'a> Mul<&'a UInt> for UInt {
@@ -1322,7 +1322,7 @@ impl<'a> MulAssign<&'a UInt> for UInt {
 }
 
 // ============================================================================
-//  Div and Div-Assign: `std::ops::Div` and `std::ops::DivAssign`
+//  Div and Div-Assign: `core::ops::Div` and `core::ops::DivAssign`
 // ============================================================================
 
 impl<'a> Div<&'a UInt> for UInt {
@@ -1348,7 +1348,7 @@ impl<'a> DivAssign<&'a UInt> for UInt {
 }
 
 // ============================================================================
-//  Rem and Rem-Assign: `std::ops::Rem` and `std::ops::RemAssign`
+//  Rem and Rem-Assign: `core::ops::Rem` and `core::ops::RemAssign`
 // ============================================================================
 
 impl<'a> Rem<&'a UInt> for UInt {
@@ -1377,7 +1377,7 @@ impl<'a> RemAssign<&'a UInt> for UInt {
 //  Binary, Oct, LowerHex and UpperHex implementations
 // ============================================================================
 
-use std::fmt;
+use core::fmt;
 
 impl fmt::Binary for UInt {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
