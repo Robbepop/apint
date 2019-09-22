@@ -1,12 +1,17 @@
-use crate::apint::{ApInt};
-use crate::digit;
-use crate::digit::{Digit};
-use crate::bitwidth::{BitWidth};
-use crate::errors::{Result, Error};
-use crate::traits::{Width};
+use crate::{
+    apint::ApInt,
+    bitwidth::BitWidth,
+    digit,
+    digit::Digit,
+    errors::{
+        Error,
+        Result,
+    },
+    traits::Width,
+};
 
 /// Represents a primitive data type.
-/// 
+///
 /// Used by the `to_primitive` module for an improved
 /// error reporting.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
@@ -32,15 +37,15 @@ pub enum PrimitiveTy {
     /// Represents Rust's `i128`.
     I128,
     /// Represents Rust's `u128`.
-    U128
+    U128,
 }
 
 impl PrimitiveTy {
     /// Returns `true` if the given `value` is a valid representation
     /// for this `PrimitiveTy`.
-    /// 
+    ///
     /// # Example
-    /// 
+    ///
     /// If this `PrimitiveTy` was `U8` then `200` is a valid representation
     /// but `256` is not since it is not representable by `8` bits. Only
     /// unsigned values are considered in this regard.
@@ -48,39 +53,37 @@ impl PrimitiveTy {
     pub(crate) fn is_valid_repr(self, value: u64) -> bool {
         use self::PrimitiveTy::*;
         match self {
-            Bool      => (value == 0) || (value == 1),
-            I8  | U8  => value < (0x1 << 8),
+            Bool => (value == 0) || (value == 1),
+            I8 | U8 => value < (0x1 << 8),
             I16 | U16 => value < (0x1 << 16),
             I32 | U32 => value < (0x1 << 32),
-            I64 | U64 | I128 | U128 => {
-                true
-            }
+            I64 | U64 | I128 | U128 => true,
         }
     }
 
     /// Returns `true` if the given `value` is a valid double-digit
     /// representation for this `PrimitiveTy`.
-    /// 
+    ///
     /// # Example
-    /// 
+    ///
     /// If this `PrimitiveTy` was `U8` then `200` is a valid representation
     /// but `256` is not since it is not representable by `8` bits. Only
     /// unsigned values are considered in this regard.
-    /// 
+    ///
     /// # Note
-    /// 
+    ///
     /// This functionality is currently only used by local unit tests.
     #[inline]
     #[cfg(test)]
     pub(crate) fn is_valid_dd(self, value: u128) -> bool {
         use self::PrimitiveTy::*;
         match self {
-            Bool        => (value == 0) || (value == 1),
-            I8  | U8    => value < (0x1 << 8),
-            I16 | U16   => value < (0x1 << 16),
-            I32 | U32   => value < (0x1 << 32),
-            I64 | U64   => value < (0x1 << 64),
-            I128 | U128 => true
+            Bool => (value == 0) || (value == 1),
+            I8 | U8 => value < (0x1 << 8),
+            I16 | U16 => value < (0x1 << 16),
+            I32 | U32 => value < (0x1 << 32),
+            I64 | U64 => value < (0x1 << 64),
+            I128 | U128 => true,
         }
     }
 
@@ -89,19 +92,15 @@ impl PrimitiveTy {
     pub(crate) fn is_signed(self) -> bool {
         use self::PrimitiveTy::*;
         match self {
-            I8   |
-            I16  |
-            I32  |
-            I64  |
-            I128 => true,
-            _    => false
+            I8 | I16 | I32 | I64 | I128 => true,
+            _ => false,
         }
     }
 
     /// Returns the associated `BitWidth` to this `PrimitiveTy`.
-    /// 
+    ///
     /// # Example
-    /// 
+    ///
     /// For `i32` the associated `BitWidth` is `32 bits` and for
     /// `u64` it is `64 bits`.
     #[inline]
@@ -120,13 +119,12 @@ impl PrimitiveTy {
 
 /// # Operations to lossful cast to primitive number types.
 impl ApInt {
-
     /// Resizes the given `ApInt` to the given `PrimitiveTy`.
-    /// 
+    ///
     /// This will truncate the bits of the `ApInt` if it has a greater bit
     /// width than the target bit width or will sign-extend the bits of the
     /// `ApInt` if its bit width is less than the target bit width.
-    /// 
+    ///
     /// This operation cannot fail and is the generic foundation for the
     /// greater part of the `ApInt::resize_to_*` methods.
     fn resize_to_primitive_ty(&self, prim_ty: PrimitiveTy) -> Digit {
@@ -137,41 +135,43 @@ impl ApInt {
         let target_width = prim_ty.associated_width();
         if prim_ty.is_signed() {
             if actual_width < target_width {
-                lsd.sign_extend_from(actual_width)
-                   .expect("We already asserted that `actual_width` < `target_width` \
-                            and since `target_width` is always less than or equal to \
-                            `64` bits calling `Digit::sign_extend_from` is safe for it.");
+                lsd.sign_extend_from(actual_width).expect(
+                    "We already asserted that `actual_width` < `target_width` \
+                     and since `target_width` is always less than or equal to \
+                     `64` bits calling `Digit::sign_extend_from` is safe for it.",
+                );
             }
         }
         if target_width < BitWidth::w64() {
-            lsd.truncate_to(target_width)
-                .expect("Since `target_width` is always less than or equal to \
-                        `64` bits calling `Digit::sign_extend_from` is safe for it.");
+            lsd.truncate_to(target_width).expect(
+                "Since `target_width` is always less than or equal to \
+                 `64` bits calling `Digit::sign_extend_from` is safe for it.",
+            );
         }
         lsd
     }
 
     /// Resizes this `ApInt` to a `bool` primitive type.
-    /// 
+    ///
     /// Bits in this `ApInt` that are not within the bounds
     /// of the `bool` are being ignored.
-    /// 
+    ///
     /// # Note
-    /// 
+    ///
     /// - Basically this returns `true` if the least significant
     ///   bit of this `ApInt` is `1` and `false` otherwise.
     pub fn resize_to_bool(&self) -> bool {
         match self.resize_to_primitive_ty(PrimitiveTy::Bool) {
             Digit(0) => false,
             Digit(1) => true,
-            _ => unreachable!()
+            _ => unreachable!(),
         }
     }
 
     /// Resizes this `ApInt` to a `i8` primitive type.
-    /// 
+    ///
     /// # Note
-    /// 
+    ///
     /// - This operation will conserve the signedness of the
     ///   value. This means that for `ApInt` instances with
     ///   a `BitWidth` less than `8` bits the value is
@@ -184,9 +184,9 @@ impl ApInt {
     }
 
     /// Resizes this `ApInt` to a `u8` primitive type.
-    /// 
+    ///
     /// # Note
-    /// 
+    ///
     /// - All bits but the least significant `8` bits are
     ///   being ignored by this operation to construct the
     ///   result.
@@ -195,9 +195,9 @@ impl ApInt {
     }
 
     /// Resizes this `ApInt` to a `i16` primitive type.
-    /// 
+    ///
     /// # Note
-    /// 
+    ///
     /// - This operation will conserve the signedness of the
     ///   value. This means that for `ApInt` instances with
     ///   a `BitWidth` less than `16` bits the value is
@@ -210,9 +210,9 @@ impl ApInt {
     }
 
     /// Resizes this `ApInt` to a `u16` primitive type.
-    /// 
+    ///
     /// # Note
-    /// 
+    ///
     /// - All bits but the least significant `16` bits are
     ///   being ignored by this operation to construct the
     ///   result.
@@ -221,9 +221,9 @@ impl ApInt {
     }
 
     /// Resizes this `ApInt` to a `i32` primitive type.
-    /// 
+    ///
     /// # Note
-    /// 
+    ///
     /// - This operation will conserve the signedness of the
     ///   value. This means that for `ApInt` instances with
     ///   a `BitWidth` less than `32` bits the value is
@@ -236,9 +236,9 @@ impl ApInt {
     }
 
     /// Resizes this `ApInt` to a `u32` primitive type.
-    /// 
+    ///
     /// # Note
-    /// 
+    ///
     /// - All bits but the least significant `32` bits are
     ///   being ignored by this operation to construct the
     ///   result.
@@ -247,9 +247,9 @@ impl ApInt {
     }
 
     /// Resizes this `ApInt` to a `i64` primitive type.
-    /// 
+    ///
     /// # Note
-    /// 
+    ///
     /// - This operation will conserve the signedness of the
     ///   value. This means that for `ApInt` instances with
     ///   a `BitWidth` less than `64` bits the value is
@@ -262,9 +262,9 @@ impl ApInt {
     }
 
     /// Resizes this `ApInt` to a `u64` primitive type.
-    /// 
+    ///
     /// # Note
-    /// 
+    ///
     /// - All bits but the least significant `64` bits are
     ///   being ignored by this operation to construct the
     ///   result.
@@ -273,9 +273,9 @@ impl ApInt {
     }
 
     /// Resizes this `ApInt` to a `i128` primitive type.
-    /// 
+    ///
     /// # Note
-    /// 
+    ///
     /// - This operation will conserve the signedness of the
     ///   value. This means that for `ApInt` instances with
     ///   a `BitWidth` less than `128` bits the value is
@@ -284,7 +284,7 @@ impl ApInt {
     ///   being ignored by this operation to construct the
     ///   result.
     pub fn resize_to_i128(&self) -> i128 {
-        let ( lsd_0, rest) = self.split_least_significant_digit();
+        let (lsd_0, rest) = self.split_least_significant_digit();
         let (&lsd_1, _) = rest.split_first().unwrap_or((&Digit(0), &[]));
         let mut result: i128 =
             (i128::from(lsd_1.repr()) << digit::BITS) + i128::from(lsd_0.repr());
@@ -292,25 +292,25 @@ impl ApInt {
         let target_width = BitWidth::w128();
 
         if actual_width < target_width {
-            // Sign extend the `i128`. Fill up with `1` up to `128` bits 
+            // Sign extend the `i128`. Fill up with `1` up to `128` bits
             // starting from the sign bit position.
             let b = actual_width.to_usize(); // Number of bits representing the number in x.
-            let m: i128 = 1 << (b - 1);      // Mask can be pre-computed if b is fixed.
-            result = (result ^ m) - m;       // Resulting sign-extended number.
+            let m: i128 = 1 << (b - 1); // Mask can be pre-computed if b is fixed.
+            result = (result ^ m) - m; // Resulting sign-extended number.
         }
 
         result
     }
 
     /// Resizes this `ApInt` to a `u128` primitive type.
-    /// 
+    ///
     /// # Note
-    /// 
+    ///
     /// - All bits but the least significant `128` bits are
     ///   being ignored by this operation to construct the
     ///   result.
     pub fn resize_to_u128(&self) -> u128 {
-        let ( lsd_0, rest) = self.split_least_significant_digit();
+        let (lsd_0, rest) = self.split_least_significant_digit();
         let (&lsd_1, _) = rest.split_first().unwrap_or((&Digit(0), &[]));
         let result: u128 =
             (u128::from(lsd_1.repr()) << digit::BITS) + u128::from(lsd_0.repr());
@@ -323,39 +323,38 @@ impl ApInt {
     /// Verifies if this `ApInt` can be casted into the given primitive type
     /// without loss of information and returns the least significant `Digit`
     /// of this `ApInt` upon success.
-    /// 
+    ///
     /// # Note
-    /// 
-    /// If the given `PrimitiveTy` represents a signed integer type the 
-    /// returned `Digit` is also sign extended accordingly. 
+    ///
+    /// If the given `PrimitiveTy` represents a signed integer type the
+    /// returned `Digit` is also sign extended accordingly.
     /// This sign extension behaves equal to how in Rust a negative signed
     /// `i32` is extended to an `i64` and correctly preserves the negative value.
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// If it is not possible to cast this `ApInt` without loss of information.
     fn try_cast_to_primitive_ty(&self, prim_ty: PrimitiveTy) -> Result<Digit> {
         debug_assert_ne!(prim_ty, PrimitiveTy::U128);
         debug_assert_ne!(prim_ty, PrimitiveTy::I128);
         let (mut lsd, rest) = self.split_least_significant_digit();
-        if !prim_ty.is_valid_repr(lsd.repr())
-           || rest.into_iter().any(|d| d.repr() != 0)
-        {
-            return Error::encountered_unrepresentable_value(
-                self.clone(), prim_ty).into()
+        if !prim_ty.is_valid_repr(lsd.repr()) || rest.into_iter().any(|d| d.repr() != 0) {
+            return Error::encountered_unrepresentable_value(self.clone(), prim_ty).into()
         }
         if prim_ty.is_signed() {
             let actual_width = self.width();
             let target_width = prim_ty.associated_width();
             if actual_width < target_width {
-                lsd.sign_extend_from(actual_width)
-                   .expect("We already asserted that `actual_width` < `target_width` \
-                            and since `target_width` is always less than or equal to \
-                            `64` bits calling `Digit::sign_extend_from` is safe for it.");
+                lsd.sign_extend_from(actual_width).expect(
+                    "We already asserted that `actual_width` < `target_width` \
+                     and since `target_width` is always less than or equal to \
+                     `64` bits calling `Digit::sign_extend_from` is safe for it.",
+                );
                 if target_width < BitWidth::w64() {
-                    lsd.truncate_to(target_width)
-                        .expect("Since `target_width` is always less than or equal to \
-                                `64` bits calling `Digit::sign_extend_from` is safe for it.");
+                    lsd.truncate_to(target_width).expect(
+                        "Since `target_width` is always less than or equal to \
+                         `64` bits calling `Digit::sign_extend_from` is safe for it.",
+                    );
                 }
             }
         }
@@ -363,182 +362,193 @@ impl ApInt {
     }
 
     /// Tries to represent the value of this `ApInt` as a `bool`.
-    /// 
+    ///
     /// # Note
-    /// 
+    ///
     /// This returns `true` if the value represented by this `ApInt`
     /// is `1`, returns `false` if the value represented by this
     /// `ApInt` is `0` and returns an error otherwise.
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// - If the value represented by this `ApInt` can not be
     ///   represented by a `bool`.
     pub fn try_to_bool(&self) -> Result<bool> {
         match self.try_cast_to_primitive_ty(PrimitiveTy::Bool)? {
             Digit(0) => Ok(false),
             Digit(1) => Ok(true),
-           _ => unreachable!()
+            _ => unreachable!(),
         }
     }
 
     /// Tries to represent the value of this `ApInt` as a `i8`.
-    /// 
+    ///
     /// # Note
-    /// 
+    ///
     /// - This operation will conserve the signedness of the
     ///   value. This means that for `ApInt` instances with
     ///   a `BitWidth` less than `8` bits the value is
     ///   sign extended to the target bit width.
     /// - This conversion is possible as long as the value represented
     ///   by this `ApInt` does not exceed the maximum value of `u8`.
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// - If the value represented by this `ApInt` can not be
     ///   represented by a `i8`.
     pub fn try_to_i8(&self) -> Result<i8> {
-        self.try_cast_to_primitive_ty(PrimitiveTy::I8).map(|d| d.repr() as i8)
+        self.try_cast_to_primitive_ty(PrimitiveTy::I8)
+            .map(|d| d.repr() as i8)
     }
 
     /// Tries to represent the value of this `ApInt` as a `u8`.
-    /// 
+    ///
     /// # Note
-    /// 
+    ///
     /// - This conversion is possible as long as the value represented
     ///   by this `ApInt` does not exceed the maximum value of `u8`.
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// - If the value represented by this `ApInt` can not be
     ///   represented by a `u8`.
     pub fn try_to_u8(&self) -> Result<u8> {
-        self.try_cast_to_primitive_ty(PrimitiveTy::U8).map(|d| d.repr() as u8)
+        self.try_cast_to_primitive_ty(PrimitiveTy::U8)
+            .map(|d| d.repr() as u8)
     }
 
     /// Tries to represent the value of this `ApInt` as a `i16`.
-    /// 
+    ///
     /// # Note
-    /// 
+    ///
     /// - This operation will conserve the signedness of the
     ///   value. This means that for `ApInt` instances with
     ///   a `BitWidth` less than `16` bits the value is
     ///   sign extended to the target bit width.
     /// - This conversion is possible as long as the value represented
     ///   by this `ApInt` does not exceed the maximum value of `u16`.
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// - If the value represented by this `ApInt` can not be
     ///   represented by a `i16`.
     pub fn try_to_i16(&self) -> Result<i16> {
-        self.try_cast_to_primitive_ty(PrimitiveTy::I16).map(|d| d.repr() as i16)
+        self.try_cast_to_primitive_ty(PrimitiveTy::I16)
+            .map(|d| d.repr() as i16)
     }
 
     /// Tries to represent the value of this `ApInt` as a `u16`.
-    /// 
+    ///
     /// # Note
-    /// 
+    ///
     /// - This conversion is possible as long as the value represented
     ///   by this `ApInt` does not exceed the maximum value of `u16`.
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// - If the value represented by this `ApInt` can not be
     ///   represented by a `u16`.
     pub fn try_to_u16(&self) -> Result<u16> {
-        self.try_cast_to_primitive_ty(PrimitiveTy::U16).map(|d| d.repr() as u16)
+        self.try_cast_to_primitive_ty(PrimitiveTy::U16)
+            .map(|d| d.repr() as u16)
     }
 
     /// Tries to represent the value of this `ApInt` as a `i32`.
-    /// 
+    ///
     /// # Note
-    /// 
+    ///
     /// - This operation will conserve the signedness of the
     ///   value. This means that for `ApInt` instances with
     ///   a `BitWidth` less than `32` bits the value is
     ///   sign extended to the target bit width.
     /// - This conversion is possible as long as the value represented
     ///   by this `ApInt` does not exceed the maximum value of `u32`.
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// - If the value represented by this `ApInt` can not be
     ///   represented by a `i32`.
     pub fn try_to_i32(&self) -> Result<i32> {
-        self.try_cast_to_primitive_ty(PrimitiveTy::I32).map(|d| d.repr() as i32)
+        self.try_cast_to_primitive_ty(PrimitiveTy::I32)
+            .map(|d| d.repr() as i32)
     }
 
     /// Tries to represent the value of this `ApInt` as a `u32`.
-    /// 
+    ///
     /// # Note
-    /// 
+    ///
     /// - This conversion is possible as long as the value represented
     ///   by this `ApInt` does not exceed the maximum value of `u32`.
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// - If the value represented by this `ApInt` can not be
     ///   represented by a `u32`.
     pub fn try_to_u32(&self) -> Result<u32> {
-        self.try_cast_to_primitive_ty(PrimitiveTy::U32).map(|d| d.repr() as u32)
+        self.try_cast_to_primitive_ty(PrimitiveTy::U32)
+            .map(|d| d.repr() as u32)
     }
 
     /// Tries to represent the value of this `ApInt` as a `i64`.
-    /// 
+    ///
     /// # Note
-    /// 
+    ///
     /// - This operation will conserve the signedness of the
     ///   value. This means that for `ApInt` instances with
     ///   a `BitWidth` less than `64` bits the value is
     ///   sign extended to the target bit width.
     /// - This conversion is possible as long as the value represented
     ///   by this `ApInt` does not exceed the maximum value of `u64`.
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// - If the value represented by this `ApInt` can not be
     ///   represented by a `i64`.
     pub fn try_to_i64(&self) -> Result<i64> {
-        self.try_cast_to_primitive_ty(PrimitiveTy::I64).map(|d| d.repr() as i64)
+        self.try_cast_to_primitive_ty(PrimitiveTy::I64)
+            .map(|d| d.repr() as i64)
     }
 
     /// Tries to represent the value of this `ApInt` as a `u64`.
-    /// 
+    ///
     /// # Note
-    /// 
+    ///
     /// - This conversion is possible as long as the value represented
     ///   by this `ApInt` does not exceed the maximum value of `u64`.
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// - If the value represented by this `ApInt` can not be
     ///   represented by a `u64`.
     pub fn try_to_u64(&self) -> Result<u64> {
-        self.try_cast_to_primitive_ty(PrimitiveTy::U64).map(|d| d.repr() as u64)
+        self.try_cast_to_primitive_ty(PrimitiveTy::U64)
+            .map(|d| d.repr() as u64)
     }
 
     /// Tries to represent the value of this `ApInt` as a `i128`.
-    /// 
+    ///
     /// # Note
-    /// 
+    ///
     /// - This operation will conserve the signedness of the
     ///   value. This means that for `ApInt` instances with
     ///   a `BitWidth` less than `128` bits the value is
     ///   sign extended to the target bit width.
     /// - This conversion is possible as long as the value represented
     ///   by this `ApInt` does not exceed the maximum value of `u128`.
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// - If the value represented by this `ApInt` can not be
     ///   represented by a `i128`.
     pub fn try_to_i128(&self) -> Result<i128> {
-        let ( lsd_0, rest) = self.split_least_significant_digit();
+        let (lsd_0, rest) = self.split_least_significant_digit();
         let (&lsd_1, rest) = rest.split_first().unwrap_or((&Digit(0), &[]));
         if rest.into_iter().any(|d| d.repr() != 0) {
             return Error::encountered_unrepresentable_value(
-                self.clone(), PrimitiveTy::I128).into()
+                self.clone(),
+                PrimitiveTy::I128,
+            )
+            .into()
         }
         let mut result: i128 =
             (i128::from(lsd_1.repr()) << digit::BITS) + i128::from(lsd_0.repr());
@@ -546,37 +556,40 @@ impl ApInt {
         let actual_width = self.width();
         let target_width = BitWidth::w128();
         if actual_width < target_width {
-            // Sign extend the `i128`. Fill up with `1` up to `128` bits 
+            // Sign extend the `i128`. Fill up with `1` up to `128` bits
             // starting from the sign bit position.
             let b = actual_width.to_usize(); // Number of bits representing the number in x.
-            let m: i128 = 1 << (b - 1);      // Mask can be pre-computed if b is fixed.
-            result = (result ^ m).wrapping_sub(m);       // Resulting sign-extended number.
+            let m: i128 = 1 << (b - 1); // Mask can be pre-computed if b is fixed.
+            result = (result ^ m).wrapping_sub(m); // Resulting sign-extended number.
         }
 
         Ok(result)
     }
 
     /// Tries to represent the value of this `ApInt` as a `u128`.
-    /// 
+    ///
     /// # Note
-    /// 
+    ///
     /// - This conversion is possible as long as the value represented
     ///   by this `ApInt` does not exceed the maximum value of `u128`.
-    /// 
+    ///
     /// # Complexity
-    /// 
+    ///
     /// - 𝒪(n) where n is the number of digits of this `ApInt`.
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// - If the value represented by this `ApInt` can not be
     ///   represented by a `u128`.
     pub fn try_to_u128(&self) -> Result<u128> {
-        let ( lsd_0, rest) = self.split_least_significant_digit();
+        let (lsd_0, rest) = self.split_least_significant_digit();
         let (&lsd_1, rest) = rest.split_first().unwrap_or((&Digit(0), &[]));
         if rest.into_iter().any(|d| d.repr() != 0) {
             return Error::encountered_unrepresentable_value(
-                self.clone(), PrimitiveTy::U128).into()
+                self.clone(),
+                PrimitiveTy::U128,
+            )
+            .into()
         }
         let result: u128 =
             (u128::from(lsd_1.repr()) << digit::BITS) + u128::from(lsd_0.repr());
@@ -594,15 +607,45 @@ mod tests {
     /// `to_primitive` method tests.
     fn unsigned_test_values() -> impl Iterator<Item = i64> {
         vec![
-            0_u64, 1, 2, 3, 5, 7, 10, 11, 13, 42, 63, 64, 65,
-            100, 127, 128, 129, 254, 255, 256, 257,
-            1337, 2047, 2048, 2049, 8001, 9999,
-            0xFEDC_BA98_7654_3210, 0xF0F0_F0F0_F0F0_F0F0,
-            0x8000_0000_0000_0000, 0x1010_1010_1010_1010,
-            0xFFFF_FFFF_0000_0000, 0x0000_FFFF_FFFF_0000,
-            0xFFFF_0000_0000_FFFF, 0xFFFF_0000_FFFF_0000,
-            0x0000_FFFF_0000_FFFF
-        ].into_iter().map(|v| v as i64)
+            0_u64,
+            1,
+            2,
+            3,
+            5,
+            7,
+            10,
+            11,
+            13,
+            42,
+            63,
+            64,
+            65,
+            100,
+            127,
+            128,
+            129,
+            254,
+            255,
+            256,
+            257,
+            1337,
+            2047,
+            2048,
+            2049,
+            8001,
+            9999,
+            0xFEDC_BA98_7654_3210,
+            0xF0F0_F0F0_F0F0_F0F0,
+            0x8000_0000_0000_0000,
+            0x1010_1010_1010_1010,
+            0xFFFF_FFFF_0000_0000,
+            0x0000_FFFF_FFFF_0000,
+            0xFFFF_0000_0000_FFFF,
+            0xFFFF_0000_FFFF_0000,
+            0x0000_FFFF_0000_FFFF,
+        ]
+        .into_iter()
+        .map(|v| v as i64)
     }
 
     /// Returns negated mirror values of `unsigned_test_values` thus doubeling
@@ -620,19 +663,7 @@ mod tests {
     /// if no problems occure.
     fn test_primitive_tys() -> impl Iterator<Item = PrimitiveTy> + Clone {
         use self::PrimitiveTy::*;
-        vec![
-            Bool,
-            I8,
-            U8,
-            I16,
-            U16,
-            I32,
-            U32,
-            I64,
-            U64,
-            I128,
-            U128
-        ].into_iter()
+        vec![Bool, I8, U8, I16, U16, I32, U32, I64, U64, I128, U128].into_iter()
     }
 
     /// Uses `test_values` to iterate over already constructed `ApInt` instances.
@@ -727,8 +758,7 @@ mod tests {
                     digit.sign_extend_from(actual_width).unwrap();
                     digit.truncate_to(target_width).unwrap();
                     assert_eq!(apint.resize_to_i8(), digit.repr() as i8);
-                }
-                else {
+                } else {
                     assert_eq!(apint.resize_to_i8(), val as i8)
                 }
             }
@@ -751,8 +781,7 @@ mod tests {
                     digit.sign_extend_from(actual_width).unwrap();
                     digit.truncate_to(target_width).unwrap();
                     assert_eq!(apint.resize_to_i16(), digit.repr() as i16);
-                }
-                else {
+                } else {
                     assert_eq!(apint.resize_to_i16(), val as i16)
                 }
             }
@@ -775,8 +804,7 @@ mod tests {
                     digit.sign_extend_from(actual_width).unwrap();
                     digit.truncate_to(target_width).unwrap();
                     assert_eq!(apint.resize_to_i32(), digit.repr() as i32);
-                }
-                else {
+                } else {
                     assert_eq!(apint.resize_to_i32(), val as i32)
                 }
             }
@@ -798,8 +826,7 @@ mod tests {
                     let mut digit = Digit(val as u64);
                     digit.sign_extend_from(actual_width).unwrap();
                     assert_eq!(apint.resize_to_i64(), digit.repr() as i64);
-                }
-                else {
+                } else {
                     assert_eq!(apint.resize_to_i64(), val as i64)
                 }
             }
@@ -821,8 +848,7 @@ mod tests {
                     let mut digit = Digit(val as u64);
                     digit.sign_extend_from(actual_width).unwrap();
                     assert_eq!(apint.resize_to_i128(), digit.repr() as i64 as i128);
-                }
-                else {
+                } else {
                     assert_eq!(apint.resize_to_i128(), val as i128)
                 }
             }
@@ -884,8 +910,7 @@ mod tests {
             assert!(ApInt::from(1337_u64).try_to_bool().is_err());
             assert!(ApInt::from(0xFFFF_FFFF_FFFF_FFFF_FFFF_FFFF_FFFF_u128)
                 .try_to_bool()
-                .is_err()
-            );
+                .is_err());
         }
 
         #[test]
@@ -899,12 +924,10 @@ mod tests {
                         digit.sign_extend_from(actual_width).unwrap();
                         digit.truncate_to(target_width).unwrap();
                         assert_eq!(apint.try_to_i8(), Ok(digit.repr() as i8));
-                    }
-                    else {
+                    } else {
                         assert_eq!(apint.try_to_i8(), Ok(val as i8))
                     }
-                }
-                else {
+                } else {
                     assert!(apint.try_to_i8().is_err())
                 }
             }
@@ -921,12 +944,10 @@ mod tests {
                         digit.sign_extend_from(actual_width).unwrap();
                         digit.truncate_to(target_width).unwrap();
                         assert_eq!(apint.try_to_i16(), Ok(digit.repr() as i16));
-                    }
-                    else {
+                    } else {
                         assert_eq!(apint.try_to_i16(), Ok(val as i16))
                     }
-                }
-                else {
+                } else {
                     assert!(apint.try_to_i16().is_err())
                 }
             }
@@ -943,12 +964,10 @@ mod tests {
                         digit.sign_extend_from(actual_width).unwrap();
                         digit.truncate_to(target_width).unwrap();
                         assert_eq!(apint.try_to_i32(), Ok(digit.repr() as i32));
-                    }
-                    else {
+                    } else {
                         assert_eq!(apint.try_to_i32(), Ok(val as i32))
                     }
-                }
-                else {
+                } else {
                     assert!(apint.try_to_i32().is_err())
                 }
             }
@@ -964,12 +983,10 @@ mod tests {
                         let mut digit = Digit(val as u64);
                         digit.sign_extend_from(actual_width).unwrap();
                         assert_eq!(apint.try_to_i64(), Ok(digit.repr() as i64));
-                    }
-                    else {
+                    } else {
                         assert_eq!(apint.try_to_i64(), Ok(val as i64))
                     }
-                }
-                else {
+                } else {
                     assert!(apint.try_to_i64().is_err())
                 }
             }
@@ -979,20 +996,18 @@ mod tests {
         fn to_i128() {
             for (val, apint) in test_vals_and_apints() {
                 if PrimitiveTy::I128.is_valid_dd(val) {
-
                     let actual_width = apint.width();
                     let target_width = BitWidth::w128();
                     let mut result: i128 = val as i128;
                     if actual_width < target_width {
-                        // Sign extend the `i128`. Fill up with `1` up to `128` bits 
+                        // Sign extend the `i128`. Fill up with `1` up to `128` bits
                         // starting from the sign bit position.
-                        let b = actual_width.to_usize();       // Number of bits representing the number in x.
-                        let m: i128 = 1 << (b - 1);            // Mask can be pre-computed if b is fixed.
+                        let b = actual_width.to_usize(); // Number of bits representing the number in x.
+                        let m: i128 = 1 << (b - 1); // Mask can be pre-computed if b is fixed.
                         result = (result ^ m).wrapping_sub(m); // Resulting sign-extended number.
                     }
                     assert_eq!(apint.try_to_i128(), Ok(result))
-                }
-                else {
+                } else {
                     assert!(apint.try_to_i128().is_err())
                 }
             }
@@ -1004,8 +1019,7 @@ mod tests {
                 let result = apint.try_to_u8();
                 if PrimitiveTy::U8.is_valid_dd(val) {
                     assert_eq!(result, Ok(val as u8))
-                }
-                else {
+                } else {
                     assert!(result.is_err())
                 }
             }
@@ -1017,8 +1031,7 @@ mod tests {
                 let result = apint.try_to_u16();
                 if PrimitiveTy::U16.is_valid_dd(val) {
                     assert_eq!(result, Ok(val as u16))
-                }
-                else {
+                } else {
                     assert!(result.is_err())
                 }
             }
@@ -1030,8 +1043,7 @@ mod tests {
                 let result = apint.try_to_u32();
                 if PrimitiveTy::U32.is_valid_dd(val) {
                     assert_eq!(result, Ok(val as u32))
-                }
-                else {
+                } else {
                     assert!(result.is_err())
                 }
             }
@@ -1043,8 +1055,7 @@ mod tests {
                 let result = apint.try_to_u64();
                 if PrimitiveTy::U64.is_valid_dd(val) {
                     assert_eq!(result, Ok(val as u64))
-                }
-                else {
+                } else {
                     assert!(result.is_err())
                 }
             }
@@ -1056,8 +1067,7 @@ mod tests {
                 let result = apint.try_to_u128();
                 if PrimitiveTy::U128.is_valid_dd(val) {
                     assert_eq!(result, Ok(val as u128))
-                }
-                else {
+                } else {
                     assert!(result.is_err())
                 }
             }

@@ -1,40 +1,50 @@
-use crate::apint::ApInt;
-use crate::traits::Width;
-use crate::digit::Bit;
-use crate::bitwidth::BitWidth;
-use crate::errors::Result;
-use crate::apint::{ShiftAmount};
-use crate::bitpos::{BitPos};
-use crate::uint::UInt;
-use crate::utils::{try_forward_bin_mut_impl, forward_mut_impl, forward_bin_mut_impl};
+use crate::{
+    apint::{
+        ApInt,
+        ShiftAmount,
+    },
+    bitpos::BitPos,
+    bitwidth::BitWidth,
+    digit::Bit,
+    errors::Result,
+    traits::Width,
+    uint::UInt,
+    utils::{
+        forward_bin_mut_impl,
+        forward_mut_impl,
+        try_forward_bin_mut_impl,
+    },
+};
 
 #[cfg(feature = "rand_support")]
 use rand;
 
-use std::cmp::Ordering;
-use std::ops::{
-    Not,
-    BitAnd,
-    BitOr,
-    BitXor,
-    BitAndAssign,
-    BitOrAssign,
-    BitXorAssign,
-    Neg,
-    Add,
-    Sub,
-    Mul,
-    Div,
-    Rem,
-    AddAssign,
-    SubAssign,
-    MulAssign,
-    DivAssign,
-    RemAssign,
-    Shl,
-    ShlAssign,
-    Shr,
-    ShrAssign
+use std::{
+    cmp::Ordering,
+    ops::{
+        Add,
+        AddAssign,
+        BitAnd,
+        BitAndAssign,
+        BitOr,
+        BitOrAssign,
+        BitXor,
+        BitXorAssign,
+        Div,
+        DivAssign,
+        Mul,
+        MulAssign,
+        Neg,
+        Not,
+        Rem,
+        RemAssign,
+        Shl,
+        ShlAssign,
+        Shr,
+        ShrAssign,
+        Sub,
+        SubAssign,
+    },
 };
 
 /// Signed machine integer with arbitrary bitwidths and modulo arithmetics.
@@ -147,7 +157,8 @@ impl Int {
 }
 
 impl<B> From<B> for Int
-    where B: Into<Bit>
+where
+    B: Into<Bit>,
 {
     #[inline]
     fn from(bit: B) -> Int {
@@ -192,7 +203,7 @@ macro_rules! impl_from_array_for_Int {
                 Int::from(ApInt::from(val))
             }
         }
-    }
+    };
 }
 
 impl_from_array_for_Int!(2); // 128 bits
@@ -355,13 +366,13 @@ impl Int {
 impl PartialOrd for Int {
     fn partial_cmp(&self, rhs: &Int) -> Option<Ordering> {
         if self.value.width() != rhs.value.width() {
-            return None;
+            return None
         }
         if self.checked_lt(rhs).unwrap() {
-            return Some(Ordering::Less);
+            return Some(Ordering::Less)
         }
         if self.value == rhs.value {
-            return Some(Ordering::Equal);
+            return Some(Ordering::Equal)
         }
         Some(Ordering::Greater)
     }
@@ -562,7 +573,8 @@ impl Int {
     ///
     /// - If the given `shift_amount` is invalid for the bit width of this `Int`.
     pub fn wrapping_shl_assign<S>(&mut self, shift_amount: S) -> Result<()>
-        where S: Into<ShiftAmount>
+    where
+        S: Into<ShiftAmount>,
     {
         self.value.wrapping_shl_assign(shift_amount)
     }
@@ -575,7 +587,8 @@ impl Int {
     ///
     /// - If the given `shift_amount` is invalid for the bit width of this `Int`.
     pub fn into_wrapping_shl<S>(self, shift_amount: S) -> Result<Int>
-        where S: Into<ShiftAmount>
+    where
+        S: Into<ShiftAmount>,
     {
         self.value.into_wrapping_shl(shift_amount).map(Int::from)
     }
@@ -588,7 +601,8 @@ impl Int {
     ///
     /// - If the given `shift_amount` is invalid for the bit width of this `Int`.
     pub fn wrapping_shr_assign<S>(&mut self, shift_amount: S) -> Result<()>
-        where S: Into<ShiftAmount>
+    where
+        S: Into<ShiftAmount>,
     {
         self.value.wrapping_ashr_assign(shift_amount)
     }
@@ -602,14 +616,16 @@ impl Int {
     ///
     /// - If the given `shift_amount` is invalid for the bit width of this `Int`.
     pub fn into_wrapping_shr<S>(self, shift_amount: S) -> Result<Int>
-        where S: Into<ShiftAmount>
+    where
+        S: Into<ShiftAmount>,
     {
         self.value.into_wrapping_ashr(shift_amount).map(Int::from)
     }
 }
 
 impl<S> Shl<S> for Int
-    where S: Into<ShiftAmount>
+where
+    S: Into<ShiftAmount>,
 {
     type Output = Int;
 
@@ -619,7 +635,8 @@ impl<S> Shl<S> for Int
 }
 
 impl<S> Shr<S> for Int
-    where S: Into<ShiftAmount>
+where
+    S: Into<ShiftAmount>,
 {
     type Output = Int;
 
@@ -629,7 +646,8 @@ impl<S> Shr<S> for Int
 }
 
 impl<S> ShlAssign<S> for Int
-    where S: Into<ShiftAmount>
+where
+    S: Into<ShiftAmount>,
 {
     fn shl_assign(&mut self, shift_amount: S) {
         self.wrapping_shl_assign(shift_amount).unwrap()
@@ -637,7 +655,8 @@ impl<S> ShlAssign<S> for Int
 }
 
 impl<S> ShrAssign<S> for Int
-    where S: Into<ShiftAmount>
+where
+    S: Into<ShiftAmount>,
 {
     fn shr_assign(&mut self, shift_amount: S) {
         self.wrapping_shr_assign(shift_amount).unwrap()
@@ -657,7 +676,8 @@ impl Int {
     ///
     /// **Note:** This is useful for cryptographic or testing purposes.
     pub fn random_with_width_using<R>(width: BitWidth, rng: &mut R) -> Int
-        where R: rand::Rng
+    where
+        R: rand::Rng,
     {
         Int::from(ApInt::random_with_width_using(width, rng))
     }
@@ -674,7 +694,8 @@ impl Int {
     ///
     /// This won't change its `BitWidth`.
     pub fn randomize_using<R>(&mut self, rng: &mut R)
-        where R: rand::Rng
+    where
+        R: rand::Rng,
     {
         self.value.randomize_using(rng)
     }
@@ -722,7 +743,8 @@ impl Int {
     ///
     /// - If the `target_width` is greater than the current width.
     pub fn into_truncate<W>(self, target_width: W) -> Result<Int>
-        where W: Into<BitWidth>
+    where
+        W: Into<BitWidth>,
     {
         try_forward_bin_mut_impl(self, target_width, Int::truncate)
     }
@@ -739,7 +761,8 @@ impl Int {
     ///
     /// - If the `target_width` is greater than the current width.
     pub fn truncate<W>(&mut self, target_width: W) -> Result<()>
-        where W: Into<BitWidth>
+    where
+        W: Into<BitWidth>,
     {
         self.value.truncate(target_width)
     }
@@ -759,7 +782,8 @@ impl Int {
     ///
     /// - If the `target_width` is less than the current width.
     pub fn into_extend<W>(self, target_width: W) -> Result<Int>
-        where W: Into<BitWidth>
+    where
+        W: Into<BitWidth>,
     {
         try_forward_bin_mut_impl(self, target_width, Int::extend)
     }
@@ -776,7 +800,8 @@ impl Int {
     ///
     /// - If the `target_width` is less than the current width.
     pub fn extend<W>(&mut self, target_width: W) -> Result<()>
-        where W: Into<BitWidth>
+    where
+        W: Into<BitWidth>,
     {
         self.value.sign_extend(target_width)
     }
@@ -792,7 +817,8 @@ impl Int {
     /// - For more details look into
     ///   [`resize`](struct.Int.html#method.resize).
     pub fn into_resize<W>(self, target_width: W) -> Int
-        where W: Into<BitWidth>
+    where
+        W: Into<BitWidth>,
     {
         forward_bin_mut_impl(self, target_width, Int::resize)
     }
@@ -809,7 +835,8 @@ impl Int {
     /// - [`extend`](struct.Int.html#method.extend)
     ///   otherwise
     pub fn resize<W>(&mut self, target_width: W)
-        where W: Into<BitWidth>
+    where
+        W: Into<BitWidth>,
     {
         self.value.sign_resize(target_width)
     }
@@ -904,7 +931,8 @@ impl Int {
     ///
     /// - If `pos` is not a valid bit position for the width of this `Int`.
     pub fn get_bit_at<P>(&self, pos: P) -> Result<Bit>
-        where P: Into<BitPos>
+    where
+        P: Into<BitPos>,
     {
         self.value.get_bit_at(pos)
     }
@@ -915,7 +943,8 @@ impl Int {
     ///
     /// - If `pos` is not a valid bit position for the width of this `Int`.
     pub fn set_bit_at<P>(&mut self, pos: P) -> Result<()>
-        where P: Into<BitPos>
+    where
+        P: Into<BitPos>,
     {
         self.value.set_bit_at(pos)
     }
@@ -926,7 +955,8 @@ impl Int {
     ///
     /// - If `pos` is not a valid bit position for the width of this `Int`.
     pub fn unset_bit_at<P>(&mut self, pos: P) -> Result<()>
-        where P: Into<BitPos>
+    where
+        P: Into<BitPos>,
     {
         self.value.unset_bit_at(pos)
     }
@@ -942,7 +972,8 @@ impl Int {
     ///
     /// - If `pos` is not a valid bit position for the width of this `Int`.
     pub fn flip_bit_at<P>(&mut self, pos: P) -> Result<()>
-        where P: Into<BitPos>
+    where
+        P: Into<BitPos>,
     {
         self.value.flip_bit_at(pos)
     }

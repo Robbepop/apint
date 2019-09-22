@@ -1,15 +1,22 @@
-use crate::bitwidth::BitWidth;
-use crate::bitpos::BitPos;
-use crate::radix::Radix;
-use crate::apint::{ApInt, ShiftAmount};
-use crate::apint::{PrimitiveTy};
+use crate::{
+    apint::{
+        ApInt,
+        PrimitiveTy,
+        ShiftAmount,
+    },
+    bitpos::BitPos,
+    bitwidth::BitWidth,
+    radix::Radix,
+};
 
-use std::result;
-use std::error;
-use std::fmt;
+use std::{
+    error,
+    fmt,
+    result,
+};
 
 /// Represents the kind of an `Error`.
-/// 
+///
 /// This also stores the unique information tied to the error report.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum ErrorKind {
@@ -17,38 +24,38 @@ pub enum ErrorKind {
     InvalidRadix(u8),
 
     /// Returned whenever trying to parse an invalid string representation for an `ApInt`.
-    InvalidStringRepr{
+    InvalidStringRepr {
         /// The string storing the invalid representation of the int for the given radix.
         input: String,
         /// The radix that was used.
         radix: Radix,
         /// An optional index and character when encountering an invalid character.
-        pos_char: Option<(usize, char)>
+        pos_char: Option<(usize, char)>,
     },
 
     /// Returned on trying to access an invalid bit position.
-    InvalidBitAccess{
+    InvalidBitAccess {
         /// The invalid bit position that was tried to access.
         pos: BitPos,
         /// The upper bound for valid bit positions in this context.
-        width: BitWidth
+        width: BitWidth,
     },
 
     /// Returned on trying to shift with an invalid shift amount.
-    InvalidShiftAmount{
+    InvalidShiftAmount {
         /// The invalid shift amount.
         shift_amount: ShiftAmount,
         /// The bit width for which this shift amount of invalid.
-        width: BitWidth
+        width: BitWidth,
     },
 
     /// Returns on trying to cast an `ApInt` to a primitive type
     /// that can not represent the value represented by the `ApInt`.
-    ValueUnrepresentable{
+    ValueUnrepresentable {
         /// The `ApInt` that the user wanted to represent as the given `PrimitiveTy`.
         value: ApInt,
         /// The `PrimitiveTy` that the user wanted for representing the given `ApInt`.
-        destination_ty: PrimitiveTy
+        destination_ty: PrimitiveTy,
     },
 
     /// Returned on violation of matching bitwidth constraints of operations.
@@ -58,19 +65,19 @@ pub enum ErrorKind {
     InvalidBitWidth(usize),
 
     /// Returned on truncating an `ApInt` with a bitwidth greater than the current one.
-    TruncationBitWidthTooLarge{
+    TruncationBitWidthTooLarge {
         /// The target bit width.
         target: BitWidth,
         /// The current actual bit width.
-        current: BitWidth
+        current: BitWidth,
     },
 
     /// Returned on extending an `ApInt` with a bitwidth less than the current one.
-    ExtensionBitWidthTooSmall{
+    ExtensionBitWidthTooSmall {
         /// The target bit width.
         target: BitWidth,
         /// The current actual bit width.
-        current: BitWidth
+        current: BitWidth,
     },
 
     /// Returned on division by zero.
@@ -78,7 +85,7 @@ pub enum ErrorKind {
         /// The exact division operation.
         op: DivOp,
         /// The left-hand side of the division.
-        lhs: ApInt
+        lhs: ApInt,
     },
 
     /// Returned on constructing an `ApInt` from an empty iterator of `Digit`s.
@@ -107,14 +114,14 @@ pub enum DivOp {
 }
 
 /// Represents an error that may occure upon using the `ApInt` library.
-/// 
+///
 /// All errors have a unique kind which also stores extra information for error reporting.
 /// Besides that an `Error` also stores a message and an optional additional annotation.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Error {
-    kind      : ErrorKind,
-    message   : String,
-    annotation: Option<String>
+    kind: ErrorKind,
+    message: String,
+    annotation: Option<String>,
 }
 
 //  ===========================================================================
@@ -138,7 +145,7 @@ impl Error {
     pub fn annotation(&self) -> Option<&str> {
         match self.annotation {
             Some(ref ann) => Some(ann.as_str()),
-            None          => None
+            None => None,
         }
     }
 }
@@ -149,7 +156,8 @@ impl Error {
 impl Error {
     #[inline]
     pub(crate) fn with_annotation<A>(mut self, annotation: A) -> Error
-        where A: Into<String>
+    where
+        A: Into<String>,
     {
         self.annotation = Some(annotation.into());
         self
@@ -161,15 +169,16 @@ impl Error {
 /// ===========================================================================
 impl Error {
     pub(crate) fn invalid_radix(val: u8) -> Error {
-        Error{
+        Error {
             kind: ErrorKind::InvalidRadix(val),
             message: format!("Encountered an invalid parsing radix of {:?}.", val),
-            annotation: None
+            annotation: None,
         }
     }
 
     pub(crate) fn invalid_string_repr<S>(input: S, radix: Radix) -> Error
-        where S: Into<String>
+    where
+        S: Into<String>,
     {
         let input = input.into();
         Error{
@@ -179,8 +188,14 @@ impl Error {
         }
     }
 
-    pub(crate) fn invalid_char_in_string_repr<S>(input: S, radix: Radix, pos: usize, ch: char) -> Error
-        where S: Into<String>
+    pub(crate) fn invalid_char_in_string_repr<S>(
+        input: S,
+        radix: Radix,
+        pos: usize,
+        ch: char,
+    ) -> Error
+    where
+        S: Into<String>,
     {
         let input = input.into();
         Error{
@@ -192,10 +207,10 @@ impl Error {
     }
 
     pub(crate) fn invalid_bitwidth(val: usize) -> Error {
-        Error{
+        Error {
             kind: ErrorKind::InvalidBitWidth(val),
             message: format!("Encountered invalid bitwidth of {:?}.", val),
-            annotation: None
+            annotation: None,
         }
     }
 
@@ -204,8 +219,9 @@ impl Error {
     }
 
     pub(crate) fn extension_bitwidth_too_small<W1, W2>(target: W1, current: W2) -> Error
-        where W1: Into<BitWidth>,
-              W2: Into<BitWidth>
+    where
+        W1: Into<BitWidth>,
+        W2: Into<BitWidth>,
     {
         let target = target.into();
         let current = current.into();
@@ -217,8 +233,9 @@ impl Error {
     }
 
     pub(crate) fn truncation_bitwidth_too_large<W1, W2>(target: W1, current: W2) -> Error
-        where W1: Into<BitWidth>,
-              W2: Into<BitWidth>
+    where
+        W1: Into<BitWidth>,
+        W2: Into<BitWidth>,
     {
         let target = target.into();
         let current = current.into();
@@ -230,8 +247,9 @@ impl Error {
     }
 
     pub(crate) fn unmatching_bitwidths<W1, W2>(lhs: W1, rhs: W2) -> Error
-        where W1: Into<BitWidth>,
-              W2: Into<BitWidth>
+    where
+        W1: Into<BitWidth>,
+        W2: Into<BitWidth>,
     {
         let lhs = lhs.into();
         let rhs = rhs.into();
@@ -243,21 +261,29 @@ impl Error {
     }
 
     pub(crate) fn invalid_shift_amount<S, W>(shift_amount: S, width: W) -> Error
-        where S: Into<ShiftAmount>,
-              W: Into<BitWidth>
+    where
+        S: Into<ShiftAmount>,
+        W: Into<BitWidth>,
     {
         let shift_amount = shift_amount.into();
         let width = width.into();
-        Error{
-            kind: ErrorKind::InvalidShiftAmount{shift_amount, width},
-            message: format!("Encountered invalid shift amount of {:?} on bit-width with {:?} bits.", shift_amount, width),
-            annotation: None
+        Error {
+            kind: ErrorKind::InvalidShiftAmount {
+                shift_amount,
+                width,
+            },
+            message: format!(
+                "Encountered invalid shift amount of {:?} on bit-width with {:?} bits.",
+                shift_amount, width
+            ),
+            annotation: None,
         }
     }
 
     pub(crate) fn invalid_bit_access<P, W>(pos: P, width: W) -> Error
-        where P: Into<BitPos>,
-              W: Into<BitWidth>
+    where
+        P: Into<BitPos>,
+        W: Into<BitWidth>,
     {
         let pos = pos.into();
         let width = width.into();
@@ -278,17 +304,20 @@ impl Error {
 
     pub(crate) fn encountered_unrepresentable_value(
         value: ApInt,
-        destination_ty: PrimitiveTy
-    )
-        -> Error
-    {
+        destination_ty: PrimitiveTy,
+    ) -> Error {
         let message = format!(
             "Encountered a value ({:?}) that is unrepresentable \
-             by the destination type {:?}.", value, destination_ty);
-        Error{
-            kind: ErrorKind::ValueUnrepresentable{value, destination_ty},
+             by the destination type {:?}.",
+            value, destination_ty
+        );
+        Error {
+            kind: ErrorKind::ValueUnrepresentable {
+                value,
+                destination_ty,
+            },
             message,
-            annotation: None
+            annotation: None,
         }
     }
 
@@ -297,20 +326,20 @@ impl Error {
             "Encountered a division-by-zero for operation (= {:?}) with the left hand-side value: (= {:?})",
             op, lhs
         );
-        Error{
-            kind: ErrorKind::DivisionByZero{op, lhs},
+        Error {
+            kind: ErrorKind::DivisionByZero { op, lhs },
             message,
-            annotation: None
+            annotation: None,
         }
     }
 }
 
 impl<T> Into<Result<T>> for Error {
     /// Converts an `Error` into a `Result<T, Error>`.
-    /// 
+    ///
     /// This might be useful to prevent some parentheses spams
     /// because it replaces `Err(my_error)` with `my_error.into()`.
-    /// 
+    ///
     /// On the other hand it might be an abuse of the trait ...
     fn into(self) -> Result<T> {
         Err(self)

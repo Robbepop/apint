@@ -1,45 +1,49 @@
-use crate::bitpos::BitPos;
-use crate::bitwidth::BitWidth;
-use crate::errors::{Error, Result};
-use crate::traits::{Width};
-use crate::checks;
+use crate::{
+    bitpos::BitPos,
+    bitwidth::BitWidth,
+    checks,
+    errors::{
+        Error,
+        Result,
+    },
+    traits::Width,
+};
 
 use std::ops::{
+    Add,
     BitAnd,
-    BitOr,
-    BitXor,
     BitAndAssign,
+    BitOr,
     BitOrAssign,
+    BitXor,
     BitXorAssign,
-
+    Div,
+    Mul,
+    Not,
+    Rem,
     Shl,
     Shr,
-    Not,
-    Add,
     Sub,
-    Mul,
-    Div,
-    Rem,
 };
 
 /// The type for the internal `Digit` representation.
-/// 
+///
 /// Must be exactly half the size of `DoubleDigitRepr`.
 pub(crate) type DigitRepr = u64;
 
 /// The type for the internal `DoubleDigit` representation.
-/// 
+///
 /// Must be exactly double the size of `DigitRepr`.
 pub(crate) type DoubleDigitRepr = u128;
 
 /// The amount of bits within a single `Digit`.
 pub(crate) const BITS: usize = 64;
 
-const REPR_ONE : DigitRepr = 0x1;
+const REPR_ONE: DigitRepr = 0x1;
 const REPR_ZERO: DigitRepr = 0x0;
 const REPR_ONES: DigitRepr = !REPR_ZERO;
 
-pub(crate) const ONE : Digit = Digit(REPR_ONE);
+pub(crate) const ONE: Digit = Digit(REPR_ONE);
 pub(crate) const ZERO: Digit = Digit(REPR_ZERO);
 pub(crate) const ONES: Digit = Digit(REPR_ONES);
 
@@ -49,19 +53,19 @@ pub enum Bit {
     /// Unset, or `false` or `off` state.
     Unset = 0,
     /// Set, or `true` or `on` state.
-    Set = 1
+    Set = 1,
 }
 
 impl Bit {
     /// Converts this `Bit` into a `bool`.
-    /// 
+    ///
     /// - `Unset` to `false`
     /// - `Set` to `true`
     #[inline]
     pub fn to_bool(self) -> bool {
         match self {
             Bit::Unset => false,
-            Bit::Set   => true
+            Bit::Set => true,
         }
     }
 }
@@ -69,7 +73,11 @@ impl Bit {
 impl From<bool> for Bit {
     #[inline]
     fn from(flag: bool) -> Bit {
-        if flag { Bit::Set } else { Bit::Unset }
+        if flag {
+            Bit::Set
+        } else {
+            Bit::Unset
+        }
     }
 }
 
@@ -81,7 +89,7 @@ impl From<Bit> for bool {
 }
 
 /// A (big) digit within an `ApInt` or similar representations.
-/// 
+///
 /// It uses the `DoubleDigit` as computation unit.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub(crate) struct Digit(pub DigitRepr);
@@ -113,10 +121,10 @@ impl fmt::UpperHex for Digit {
 }
 
 /// A doubled digit.
-/// 
+///
 /// This is used as a compute unit for `Digit`'s since many `Digit` arithmetic operations
 /// may overflow or have carries this is required in order to not lose those overflow- and underflow values.
-/// 
+///
 /// Has wrapping arithmetics for better machine emulation and improved performance.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub(crate) struct DoubleDigit(pub DoubleDigitRepr);
@@ -226,7 +234,9 @@ impl DoubleDigit {
 
     /// Returns a `DoubleDigit` from the given lo and hi raw `Digit` parts.
     pub(crate) fn from_lo_hi(lo: Digit, hi: Digit) -> DoubleDigit {
-        DoubleDigit(DoubleDigitRepr::from(lo.repr()) | (DoubleDigitRepr::from(hi.repr()) << BITS))
+        DoubleDigit(
+            DoubleDigitRepr::from(lo.repr()) | (DoubleDigitRepr::from(hi.repr()) << BITS),
+        )
     }
 
     pub(crate) fn wrapping_add(self, other: DoubleDigit) -> Self {
@@ -242,41 +252,59 @@ impl DoubleDigit {
     }
 
     #[cfg(not(feature = "specialized_div_rem"))]
-    pub(crate) fn wrapping_divrem(self,other: DoubleDigit) -> (DoubleDigit,DoubleDigit) {
+    pub(crate) fn wrapping_divrem(
+        self,
+        other: DoubleDigit,
+    ) -> (DoubleDigit, DoubleDigit) {
         (
             DoubleDigit(self.repr().wrapping_div(other.repr())),
-            DoubleDigit(self.repr().wrapping_rem(other.repr()))
+            DoubleDigit(self.repr().wrapping_rem(other.repr())),
         )
     }
 
     #[cfg(feature = "specialized_div_rem")]
-    pub(crate) fn wrapping_divrem(self,other: DoubleDigit) -> (DoubleDigit,DoubleDigit) {
-        let temp = specialized_div_rem::u128_div_rem(self.repr(),other.repr());
-        (DoubleDigit(temp.0),DoubleDigit(temp.1))
+    pub(crate) fn wrapping_divrem(
+        self,
+        other: DoubleDigit,
+    ) -> (DoubleDigit, DoubleDigit) {
+        let temp = specialized_div_rem::u128_div_rem(self.repr(), other.repr());
+        (DoubleDigit(temp.0), DoubleDigit(temp.1))
     }
 }
 
 /// # Constructors
 impl Digit {
     /// Creates a digit that represents the value `0`.
-    /// 
+    ///
     /// **Note:** In twos-complement this means that all bits are `0`.
-    pub fn zero() -> Digit { ZERO }
+    pub fn zero() -> Digit {
+        ZERO
+    }
 
     /// Creates a digit that represents the value `1`.
-    pub fn one() -> Digit { ONE	}
+    pub fn one() -> Digit {
+        ONE
+    }
 
     /// Returns `true` if this `Digit` is zero (`0`).
-    pub fn is_zero(self) -> bool { self == ZERO }
+    pub fn is_zero(self) -> bool {
+        self == ZERO
+    }
 
     /// Returns `true` if this `Digit` is one (`1`).
-    pub fn is_one(self) -> bool { self == ONE }
+    pub fn is_one(self) -> bool {
+        self == ONE
+    }
 
     /// Returns `true` if this `Digit` has all bits set.
-    pub fn is_all_set(self) -> bool { self == ONES }
+    pub fn is_all_set(self) -> bool {
+        self == ONES
+    }
 
     /// Creates a digit where all bits are initialized to `1`.
-    pub fn all_set() -> Digit { ONES }
+    pub fn all_set() -> Digit {
+        ONES
+    }
 }
 
 /// # Utility & helper methods.
@@ -306,24 +334,24 @@ impl Digit {
     }
 
     pub(crate) fn carrying_add(self, other: Digit) -> (Digit, Digit) {
-        //this is to make sure that the assembly compiles down to the `adc` function
+        // this is to make sure that the assembly compiles down to the `adc` function
         match self.repr().overflowing_add(other.repr()) {
-            (x,false) => (Digit(x),Digit::zero()),
-            (x,true) => (Digit(x),Digit::one()),
+            (x, false) => (Digit(x), Digit::zero()),
+            (x, true) => (Digit(x), Digit::one()),
         }
     }
 
     pub(crate) fn overflowing_add(self, other: Digit) -> (Digit, bool) {
         match self.repr().overflowing_add(other.repr()) {
-            (x,false) => (Digit(x),false),
-            (x,true) => (Digit(x),true),
+            (x, false) => (Digit(x), false),
+            (x, true) => (Digit(x), true),
         }
     }
 
     pub(crate) fn overflowing_sub(self, other: Digit) -> (Digit, bool) {
         match self.repr().overflowing_sub(other.repr()) {
-            (x,false) => (Digit(x),false),
-            (x,true) => (Digit(x),true),
+            (x, false) => (Digit(x), false),
+            (x, true) => (Digit(x), true),
         }
     }
 
@@ -335,7 +363,7 @@ impl Digit {
         Digit(self.repr().wrapping_mul(other.repr()))
     }
 
-    //TODO if and when `carrying_mul` (rust-lang rfc #2417) is stabilized, this function and others in this crate should use `carrying_mul` as the operation
+    // TODO if and when `carrying_mul` (rust-lang rfc #2417) is stabilized, this function and others in this crate should use `carrying_mul` as the operation
     pub(crate) fn carrying_mul(self, other: Digit) -> (Digit, Digit) {
         let temp = self.dd().wrapping_mul(other.dd());
         (temp.lo(), temp.hi())
@@ -354,8 +382,8 @@ impl Digit {
         (temp.lo(), temp.hi())
     }
 
-    pub(crate) fn wrapping_divrem(self,other: Digit) -> (Digit,Digit) {
-        (self.wrapping_div(other),self.wrapping_rem(other))
+    pub(crate) fn wrapping_divrem(self, other: Digit) -> (Digit, Digit) {
+        (self.wrapping_div(other), self.wrapping_rem(other))
     }
 
     pub(crate) fn wrapping_div(self, other: Digit) -> Self {
@@ -371,31 +399,36 @@ impl Digit {
     /// Validates the given `BitWidth` for `Digit` instances and returns
     /// an appropriate error if the given `BitWidth` is invalid.
     fn verify_valid_bitwidth<W>(self, width: W) -> Result<()>
-        where W: Into<BitWidth>
+    where
+        W: Into<BitWidth>,
     {
         let width = width.into();
         if width.to_usize() > BITS {
-            return Err(Error::invalid_bitwidth(width.to_usize())
-                .with_annotation(format!("Encountered invalid `BitWidth` for operating \
-                                          on a `Digit`.")))
+            return Err(Error::invalid_bitwidth(width.to_usize()).with_annotation(
+                format!(
+                    "Encountered invalid `BitWidth` for operating \
+                     on a `Digit`."
+                ),
+            ))
         }
         Ok(())
     }
 
     /// Truncates this `Digit` to the given `BitWidth`.
-    /// 
-    /// This operation just zeros out any bits on this `Digit` 
+    ///
+    /// This operation just zeros out any bits on this `Digit`
     /// with bit positions above the given `BitWidth`.
-    /// 
+    ///
     /// # Note
-    /// 
+    ///
     /// This is equal to calling `Digit::retain_last_n`.
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// - If the given `BitWidth` is invalid for `Digit` instances.
     pub(crate) fn truncate_to<W>(&mut self, to: W) -> Result<()>
-        where W: Into<BitWidth>
+    where
+        W: Into<BitWidth>,
     {
         let to = to.into();
         self.verify_valid_bitwidth(to)?;
@@ -404,30 +437,31 @@ impl Digit {
     }
 
     /// Sign extends this `Digit` from a given `BitWidth` to `64` bits.
-    /// 
+    ///
     /// # Note
-    /// 
+    ///
     /// - This can be truncated again to a real target `BitWidth` afterwards if
     ///   the users wishes to.
-    /// 
+    ///
     /// - Implementation inspired by
     ///   [Bit Twiddling Hacks](https://graphics.stanford.edu/~seander/bithacks.html#VariableSignExtend).
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// - If the given `BitWidth` is invalid for `Digit` instances.
     pub(crate) fn sign_extend_from<W>(&mut self, from: W) -> Result<()>
-        where W: Into<BitWidth>,
+    where
+        W: Into<BitWidth>,
     {
         let from = from.into();
         self.verify_valid_bitwidth(from)?;
 
-        let b = from.to_usize();    // number of bits representing the number in x
+        let b = from.to_usize(); // number of bits representing the number in x
         let x = self.repr() as i64; // sign extend this b-bit number to r
-        let m: i64 = 1 << (b - 1);       // mask can be pre-computed if b is fixed
-        // x = x & ((1 << b) - 1);  // (Skip this if bits in x above position b are already zero.)
-                                    // We don't need this step since this condition is an invariant of `Digit`.
-        let r: i64 = (x ^ m).wrapping_sub(m);   // resulting sign-extended number
+        let m: i64 = 1 << (b - 1); // mask can be pre-computed if b is fixed
+                                   // x = x & ((1 << b) - 1);  // (Skip this if bits in x above position b are already zero.)
+                                   // We don't need this step since this condition is an invariant of `Digit`.
+        let r: i64 = (x ^ m).wrapping_sub(m); // resulting sign-extended number
         self.0 = r as u64;
         Ok(())
     }
@@ -448,7 +482,7 @@ impl Width for DoubleDigit {
 /// # Bitwise access
 impl Digit {
     /// Returns the least significant `Bit` of this `Digit`.
-    /// 
+    ///
     /// Note: This may be useful to determine if a `Digit`
     ///       represents an even or an uneven number for example.
     #[inline]
@@ -457,13 +491,14 @@ impl Digit {
     }
 
     /// Returns `true` if the `n`th bit is set to `1`, else returns `false`.
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// If the given `n` is greater than the digit size.
     #[inline]
     pub fn get<P>(self, pos: P) -> Result<Bit>
-        where P: Into<BitPos>
+    where
+        P: Into<BitPos>,
     {
         let pos = pos.into();
         checks::verify_bit_access(&self, pos)?;
@@ -471,13 +506,14 @@ impl Digit {
     }
 
     /// Sets the bit at position `pos` to `1`.
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// If the given `n` is greater than the digit size.
     #[inline]
     pub fn set<P>(&mut self, pos: P) -> Result<()>
-        where P: Into<BitPos>
+    where
+        P: Into<BitPos>,
     {
         let pos = pos.into();
         checks::verify_bit_access(self, pos)?;
@@ -485,13 +521,14 @@ impl Digit {
     }
 
     /// Sets the bit at position `pos` to `0`.
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// If the given `n` is greater than the digit size.
     #[inline]
     pub fn unset<P>(&mut self, pos: P) -> Result<()>
-        where P: Into<BitPos>
+    where
+        P: Into<BitPos>,
     {
         let pos = pos.into();
         checks::verify_bit_access(self, pos)?;
@@ -499,13 +536,14 @@ impl Digit {
     }
 
     /// Flips the bit at position `pos`.
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// If the given `n` is greater than the digit size.
     #[inline]
     pub fn flip<P>(&mut self, pos: P) -> Result<()>
-        where P: Into<BitPos>
+    where
+        P: Into<BitPos>,
     {
         let pos = pos.into();
         checks::verify_bit_access(self, pos)?;
@@ -531,13 +569,13 @@ impl Digit {
     }
 
     /// Unsets all bits but the last `n` ones.
-    /// 
+    ///
     /// # Note
-    /// 
+    ///
     /// This is equal to calling `Digit::truncate_to`.
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// If the given `n` is greater than the digit size.
     #[inline]
     pub fn retain_last_n(&mut self, n: usize) -> Result<()> {
@@ -630,13 +668,13 @@ mod tests {
 
         #[test]
         fn from_bool() {
-            assert_eq!(Bit::from(true) , Bit::Set);
+            assert_eq!(Bit::from(true), Bit::Set);
             assert_eq!(Bit::from(false), Bit::Unset);
         }
 
         #[test]
         fn from_bit() {
-            assert_eq!(bool::from(Bit::Set)  , true);
+            assert_eq!(bool::from(Bit::Set), true);
             assert_eq!(bool::from(Bit::Unset), false);
         }
     }
@@ -750,15 +788,24 @@ mod tests {
                 assert_eq!(DoubleDigit(input).hi(), Digit(expected))
             }
             let test_values = &[
-                (0,0),
-                (1,0),
+                (0, 0),
+                (1, 0),
                 (0x0000_0000_0000_0001_0000_0000_0000_0000, 1),
-                (0xFFFF_FFFF_FFFF_FFFF_FFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF),
+                (
+                    0xFFFF_FFFF_FFFF_FFFF_FFFF_FFFF_FFFF_FFFF,
+                    0xFFFF_FFFF_FFFF_FFFF,
+                ),
                 (0x0000_0000_0000_0000_FFFF_FFFF_FFFF_FFFF, 0),
                 (0x0000_0000_FFFF_FFFF_FFFF_FFFF_0000_0000, 0xFFFF_FFFF),
-                (0xFFFF_FFFF_FFFF_FFFF_0000_0000_0000_0000, 0xFFFF_FFFF_FFFF_FFFF),
-                (0x0123_4567_8910_ABCD_EF00_0000_0000_0000, 0x0123_4567_8910_ABCD),
-                (0x0000_0000_0000_00FE_DCBA_0198_7654_3210, 0xFE)
+                (
+                    0xFFFF_FFFF_FFFF_FFFF_0000_0000_0000_0000,
+                    0xFFFF_FFFF_FFFF_FFFF,
+                ),
+                (
+                    0x0123_4567_8910_ABCD_EF00_0000_0000_0000,
+                    0x0123_4567_8910_ABCD,
+                ),
+                (0x0000_0000_0000_00FE_DCBA_0198_7654_3210, 0xFE),
             ];
             for &(input, expected) in test_values {
                 assert_for(input, expected)
@@ -771,15 +818,30 @@ mod tests {
                 assert_eq!(DoubleDigit(input).lo(), Digit(expected))
             }
             let test_values = &[
-                (0,0),
-                (1,1),
+                (0, 0),
+                (1, 1),
                 (0x0000_0000_0000_0001_0000_0000_0000_0000, 0),
-                (0xFFFF_FFFF_FFFF_FFFF_FFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF),
-                (0x0000_0000_0000_0000_FFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF),
-                (0x0000_0000_FFFF_FFFF_FFFF_FFFF_0000_0000, 0xFFFF_FFFF_0000_0000),
+                (
+                    0xFFFF_FFFF_FFFF_FFFF_FFFF_FFFF_FFFF_FFFF,
+                    0xFFFF_FFFF_FFFF_FFFF,
+                ),
+                (
+                    0x0000_0000_0000_0000_FFFF_FFFF_FFFF_FFFF,
+                    0xFFFF_FFFF_FFFF_FFFF,
+                ),
+                (
+                    0x0000_0000_FFFF_FFFF_FFFF_FFFF_0000_0000,
+                    0xFFFF_FFFF_0000_0000,
+                ),
                 (0xFFFF_FFFF_FFFF_FFFF_0000_0000_0000_0000, 0),
-                (0x0123_4567_8910_ABCD_EF00_0000_0000_0000, 0xEF00_0000_0000_0000),
-                (0x0000_0000_0000_00FE_DCBA_0198_7654_3210, 0xDCBA_0198_7654_3210)
+                (
+                    0x0123_4567_8910_ABCD_EF00_0000_0000_0000,
+                    0xEF00_0000_0000_0000,
+                ),
+                (
+                    0x0000_0000_0000_00FE_DCBA_0198_7654_3210,
+                    0xDCBA_0198_7654_3210,
+                ),
             ];
             for &(input, expected) in test_values {
                 assert_for(input, expected)
@@ -788,19 +850,44 @@ mod tests {
 
         #[test]
         fn lo_hi() {
-            fn assert_for(input: DoubleDigitRepr, expected_hi: DigitRepr, expected_lo: DigitRepr) {
-                assert_eq!(DoubleDigit(input).lo_hi(), (Digit(expected_lo), Digit(expected_hi)))
+            fn assert_for(
+                input: DoubleDigitRepr,
+                expected_hi: DigitRepr,
+                expected_lo: DigitRepr,
+            ) {
+                assert_eq!(
+                    DoubleDigit(input).lo_hi(),
+                    (Digit(expected_lo), Digit(expected_hi))
+                )
             }
             let test_values = &[
                 (0, (0, 0)),
                 (1, (0, 1)),
                 (0x0000_0000_0000_0001_0000_0000_0000_0000, (1, 0)),
-                (0xFFFF_FFFF_FFFF_FFFF_FFFF_FFFF_FFFF_FFFF, (0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF)),
-                (0x0000_0000_0000_0000_FFFF_FFFF_FFFF_FFFF, (0, 0xFFFF_FFFF_FFFF_FFFF)),
-                (0x0000_0000_FFFF_FFFF_FFFF_FFFF_0000_0000, (0xFFFF_FFFF, 0xFFFF_FFFF_0000_0000)),
-                (0xFFFF_FFFF_FFFF_FFFF_0000_0000_0000_0000, (0xFFFF_FFFF_FFFF_FFFF, 0)),
-                (0x0123_4567_8910_ABCD_EF00_0000_0000_0000, (0x0123_4567_8910_ABCD, 0xEF00_0000_0000_0000)),
-                (0x0000_0000_0000_00FE_DCBA_0198_7654_3210, (0x0000_0000_0000_00FE, 0xDCBA_0198_7654_3210))
+                (
+                    0xFFFF_FFFF_FFFF_FFFF_FFFF_FFFF_FFFF_FFFF,
+                    (0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF),
+                ),
+                (
+                    0x0000_0000_0000_0000_FFFF_FFFF_FFFF_FFFF,
+                    (0, 0xFFFF_FFFF_FFFF_FFFF),
+                ),
+                (
+                    0x0000_0000_FFFF_FFFF_FFFF_FFFF_0000_0000,
+                    (0xFFFF_FFFF, 0xFFFF_FFFF_0000_0000),
+                ),
+                (
+                    0xFFFF_FFFF_FFFF_FFFF_0000_0000_0000_0000,
+                    (0xFFFF_FFFF_FFFF_FFFF, 0),
+                ),
+                (
+                    0x0123_4567_8910_ABCD_EF00_0000_0000_0000,
+                    (0x0123_4567_8910_ABCD, 0xEF00_0000_0000_0000),
+                ),
+                (
+                    0x0000_0000_0000_00FE_DCBA_0198_7654_3210,
+                    (0x0000_0000_0000_00FE, 0xDCBA_0198_7654_3210),
+                ),
             ];
             for &(input, (expected_hi, expected_lo)) in test_values {
                 assert_for(input, expected_hi, expected_lo)
@@ -810,18 +897,39 @@ mod tests {
         #[test]
         fn from_lo_hi() {
             fn assert_for(hi: DigitRepr, lo: DigitRepr, expected: DoubleDigitRepr) {
-                assert_eq!(DoubleDigit::from_lo_hi(Digit(lo), Digit(hi)), DoubleDigit(expected))
+                assert_eq!(
+                    DoubleDigit::from_lo_hi(Digit(lo), Digit(hi)),
+                    DoubleDigit(expected)
+                )
             }
             let test_values = &[
                 (0, (0, 0)),
                 (1, (0, 1)),
                 (0x0000_0000_0000_0001_0000_0000_0000_0000, (1, 0)),
-                (0xFFFF_FFFF_FFFF_FFFF_FFFF_FFFF_FFFF_FFFF, (0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF)),
-                (0x0000_0000_0000_0000_FFFF_FFFF_FFFF_FFFF, (0, 0xFFFF_FFFF_FFFF_FFFF)),
-                (0x0000_0000_FFFF_FFFF_FFFF_FFFF_0000_0000, (0xFFFF_FFFF, 0xFFFF_FFFF_0000_0000)),
-                (0xFFFF_FFFF_FFFF_FFFF_0000_0000_0000_0000, (0xFFFF_FFFF_FFFF_FFFF, 0)),
-                (0x0123_4567_8910_ABCD_EF00_0000_0000_0000, (0x0123_4567_8910_ABCD, 0xEF00_0000_0000_0000)),
-                (0x0000_0000_0000_00FE_DCBA_0198_7654_3210, (0x0000_0000_0000_00FE, 0xDCBA_0198_7654_3210))
+                (
+                    0xFFFF_FFFF_FFFF_FFFF_FFFF_FFFF_FFFF_FFFF,
+                    (0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF),
+                ),
+                (
+                    0x0000_0000_0000_0000_FFFF_FFFF_FFFF_FFFF,
+                    (0, 0xFFFF_FFFF_FFFF_FFFF),
+                ),
+                (
+                    0x0000_0000_FFFF_FFFF_FFFF_FFFF_0000_0000,
+                    (0xFFFF_FFFF, 0xFFFF_FFFF_0000_0000),
+                ),
+                (
+                    0xFFFF_FFFF_FFFF_FFFF_0000_0000_0000_0000,
+                    (0xFFFF_FFFF_FFFF_FFFF, 0),
+                ),
+                (
+                    0x0123_4567_8910_ABCD_EF00_0000_0000_0000,
+                    (0x0123_4567_8910_ABCD, 0xEF00_0000_0000_0000),
+                ),
+                (
+                    0x0000_0000_0000_00FE_DCBA_0198_7654_3210,
+                    (0x0000_0000_0000_00FE, 0xDCBA_0198_7654_3210),
+                ),
             ];
             for &(expected, (hi, lo)) in test_values {
                 assert_for(hi, lo, expected)
@@ -834,13 +942,9 @@ mod tests {
 
         use std::usize;
 
-        static VALID_TEST_POS_VALUES: &[usize] = &[
-            0, 1, 2, 3, 10, 32, 42, 48, 63
-        ];
+        static VALID_TEST_POS_VALUES: &[usize] = &[0, 1, 2, 3, 10, 32, 42, 48, 63];
 
-        static INVALID_TEST_POS_VALUES: &[usize] = &[
-            64, 65, 100, 1337, usize::MAX
-        ];
+        static INVALID_TEST_POS_VALUES: &[usize] = &[64, 65, 100, 1337, usize::MAX];
 
         static TEST_DIGIT_REPRS: &[DigitRepr] = &[
             digit::REPR_ZERO,
@@ -850,18 +954,18 @@ mod tests {
             0xAAAA_AAAA_AAAA_AAAA,
             0xFFFF_FFFF_0000_0000,
             0x0000_FFFF_FFFF_0000,
-            0x0000_0000_FFFF_FFFF
+            0x0000_0000_FFFF_FFFF,
         ];
 
         /// Returns a digit that has every even bit set, starting at index 0.
-        /// 
+        ///
         /// E.g.: `0x....010101`
         fn even_digit() -> Digit {
             Digit(0x5555_5555_5555_5555)
         }
 
         /// Returns a digit that has every odd bit set, starting at index 0.
-        /// 
+        ///
         /// E.g.: `0x....101010`
         fn odd_digit() -> Digit {
             Digit(0xAAAA_AAAA_AAAA_AAAA)
@@ -894,8 +998,14 @@ mod tests {
             for &pos in VALID_TEST_POS_VALUES {
                 assert_eq!(digit::ONES.get(pos), Ok(Bit::Set));
                 assert_eq!(digit::ZERO.get(pos), Ok(Bit::Unset));
-                assert_eq!(even_digit().get(pos), Ok(if pos % 2 == 0 { Bit::Set } else { Bit::Unset }));
-                assert_eq!(odd_digit().get(pos), Ok(if pos % 2 == 1 { Bit::Set } else { Bit::Unset }));
+                assert_eq!(
+                    even_digit().get(pos),
+                    Ok(if pos % 2 == 0 { Bit::Set } else { Bit::Unset })
+                );
+                assert_eq!(
+                    odd_digit().get(pos),
+                    Ok(if pos % 2 == 1 { Bit::Set } else { Bit::Unset })
+                );
             }
         }
 

@@ -1,8 +1,10 @@
-use crate::errors::{Result};
-use crate::digit;
+use crate::{
+    digit,
+    errors::Result,
+};
 
 /// Represents a bit position within an `ApInt`.
-/// 
+///
 /// This utility might become useful later, for example
 /// when we reduce the range of valid bit widths for some
 /// optimization oportunities.
@@ -21,9 +23,9 @@ impl BitPos {
     }
 
     /// Returns a `BitPos` representing the given bit position.
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// - This operation cannot fail but may do so in future version of this library.
     #[inline]
     pub fn new(pos: usize) -> Result<BitPos> {

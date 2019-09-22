@@ -1,35 +1,45 @@
-use crate::apint::ApInt;
-use crate::traits::Width;
-use crate::digit::Bit;
-use crate::bitwidth::BitWidth;
-use crate::errors::Result;
-use crate::apint::{ShiftAmount};
-use crate::bitpos::{BitPos};
-use crate::int::Int;
-use crate::utils::{try_forward_bin_mut_impl, forward_mut_impl, forward_bin_mut_impl};
+use crate::{
+    apint::{
+        ApInt,
+        ShiftAmount,
+    },
+    bitpos::BitPos,
+    bitwidth::BitWidth,
+    digit::Bit,
+    errors::Result,
+    int::Int,
+    traits::Width,
+    utils::{
+        forward_bin_mut_impl,
+        forward_mut_impl,
+        try_forward_bin_mut_impl,
+    },
+};
 
 #[cfg(feature = "rand_support")]
 use rand;
 
-use std::cmp::Ordering;
-use std::ops::{
-    Not,
-    BitAnd,
-    BitOr,
-    BitXor,
-    BitAndAssign,
-    BitOrAssign,
-    BitXorAssign,
-    Add,
-    Sub,
-    Mul,
-    Div,
-    Rem,
-    AddAssign,
-    SubAssign,
-    MulAssign,
-    DivAssign,
-    RemAssign
+use std::{
+    cmp::Ordering,
+    ops::{
+        Add,
+        AddAssign,
+        BitAnd,
+        BitAndAssign,
+        BitOr,
+        BitOrAssign,
+        BitXor,
+        BitXorAssign,
+        Div,
+        DivAssign,
+        Mul,
+        MulAssign,
+        Not,
+        Rem,
+        RemAssign,
+        Sub,
+        SubAssign,
+    },
 };
 
 /// Unsigned machine integer with arbitrary bitwidths and modulo arithmetics.
@@ -142,7 +152,8 @@ impl UInt {
 }
 
 impl<B> From<B> for UInt
-    where B: Into<Bit>
+where
+    B: Into<Bit>,
 {
     #[inline]
     fn from(bit: B) -> UInt {
@@ -187,7 +198,7 @@ macro_rules! impl_from_array_for_uint {
                 UInt::from(ApInt::from(val))
             }
         }
-    }
+    };
 }
 
 impl_from_array_for_uint!(2); // 128 bits
@@ -236,7 +247,6 @@ impl UInt {
 }
 
 impl UInt {
-
     /// Less-than (`lt`) comparison between `self` and `rhs`.
     ///
     /// # Note
@@ -306,13 +316,13 @@ impl UInt {
 impl PartialOrd for UInt {
     fn partial_cmp(&self, rhs: &UInt) -> Option<Ordering> {
         if self.value.width() != rhs.value.width() {
-            return None;
+            return None
         }
         if self.checked_lt(rhs).unwrap() {
-            return Some(Ordering::Less);
+            return Some(Ordering::Less)
         }
         if self.value == rhs.value {
-            return Some(Ordering::Equal);
+            return Some(Ordering::Equal)
         }
         Some(Ordering::Greater)
     }
@@ -505,7 +515,7 @@ impl UInt {
 
 /// # Shifts
 impl UInt {
-       /// Shift this `UInt` left by the given `shift_amount` bits.
+    /// Shift this `UInt` left by the given `shift_amount` bits.
     ///
     /// This operation is inplace and will **not** allocate memory.
     ///
@@ -513,7 +523,8 @@ impl UInt {
     ///
     /// - If the given `shift_amount` is invalid for the bit width of this `UInt`.
     pub fn wrapping_shl_assign<S>(&mut self, shift_amount: S) -> Result<()>
-        where S: Into<ShiftAmount>
+    where
+        S: Into<ShiftAmount>,
     {
         self.value.wrapping_shl_assign(shift_amount)
     }
@@ -526,7 +537,8 @@ impl UInt {
     ///
     /// - If the given `shift_amount` is invalid for the bit width of this `UInt`.
     pub fn into_wrapping_shl<S>(self, shift_amount: S) -> Result<UInt>
-        where S: Into<ShiftAmount>
+    where
+        S: Into<ShiftAmount>,
     {
         self.value.into_wrapping_shl(shift_amount).map(UInt::from)
     }
@@ -539,7 +551,8 @@ impl UInt {
     ///
     /// - If the given `shift_amount` is invalid for the bit width of this `UInt`.
     pub fn wrapping_shr_assign<S>(&mut self, shift_amount: S) -> Result<()>
-        where S: Into<ShiftAmount>
+    where
+        S: Into<ShiftAmount>,
     {
         self.value.wrapping_lshr_assign(shift_amount)
     }
@@ -553,16 +566,23 @@ impl UInt {
     ///
     /// - If the given `shift_amount` is invalid for the bit width of this `UInt`.
     pub fn into_wrapping_shr<S>(self, shift_amount: S) -> Result<UInt>
-        where S: Into<ShiftAmount>
+    where
+        S: Into<ShiftAmount>,
     {
         self.value.into_wrapping_lshr(shift_amount).map(UInt::from)
     }
 }
 
-use std::ops::{Shl, ShlAssign, Shr, ShrAssign};
+use std::ops::{
+    Shl,
+    ShlAssign,
+    Shr,
+    ShrAssign,
+};
 
 impl<S> Shl<S> for UInt
-    where S: Into<ShiftAmount>
+where
+    S: Into<ShiftAmount>,
 {
     type Output = UInt;
 
@@ -572,7 +592,8 @@ impl<S> Shl<S> for UInt
 }
 
 impl<S> Shr<S> for UInt
-    where S: Into<ShiftAmount>
+where
+    S: Into<ShiftAmount>,
 {
     type Output = UInt;
 
@@ -582,7 +603,8 @@ impl<S> Shr<S> for UInt
 }
 
 impl<S> ShlAssign<S> for UInt
-    where S: Into<ShiftAmount>
+where
+    S: Into<ShiftAmount>,
 {
     fn shl_assign(&mut self, shift_amount: S) {
         self.wrapping_shl_assign(shift_amount).unwrap()
@@ -590,7 +612,8 @@ impl<S> ShlAssign<S> for UInt
 }
 
 impl<S> ShrAssign<S> for UInt
-    where S: Into<ShiftAmount>
+where
+    S: Into<ShiftAmount>,
 {
     fn shr_assign(&mut self, shift_amount: S) {
         self.wrapping_shr_assign(shift_amount).unwrap()
@@ -610,7 +633,8 @@ impl UInt {
     ///
     /// **Note:** This is useful for cryptographic or testing purposes.
     pub fn random_with_width_using<R>(width: BitWidth, rng: &mut R) -> UInt
-        where R: rand::Rng
+    where
+        R: rand::Rng,
     {
         UInt::from(ApInt::random_with_width_using(width, rng))
     }
@@ -627,7 +651,8 @@ impl UInt {
     ///
     /// This won't change its `BitWidth`.
     pub fn randomize_using<R>(&mut self, rng: &mut R)
-        where R: rand::Rng
+    where
+        R: rand::Rng,
     {
         self.value.randomize_using(rng)
     }
@@ -675,7 +700,8 @@ impl UInt {
     ///
     /// - If the `target_width` is greater than the current width.
     pub fn into_truncate<W>(self, target_width: W) -> Result<UInt>
-        where W: Into<BitWidth>
+    where
+        W: Into<BitWidth>,
     {
         try_forward_bin_mut_impl(self, target_width, UInt::truncate)
     }
@@ -692,7 +718,8 @@ impl UInt {
     ///
     /// - If the `target_width` is greater than the current width.
     pub fn truncate<W>(&mut self, target_width: W) -> Result<()>
-        where W: Into<BitWidth>
+    where
+        W: Into<BitWidth>,
     {
         self.value.truncate(target_width)
     }
@@ -712,7 +739,8 @@ impl UInt {
     ///
     /// - If the `target_width` is less than the current width.
     pub fn into_extend<W>(self, target_width: W) -> Result<UInt>
-        where W: Into<BitWidth>
+    where
+        W: Into<BitWidth>,
     {
         try_forward_bin_mut_impl(self, target_width, UInt::extend)
     }
@@ -729,7 +757,8 @@ impl UInt {
     ///
     /// - If the `target_width` is less than the current width.
     pub fn extend<W>(&mut self, target_width: W) -> Result<()>
-        where W: Into<BitWidth>
+    where
+        W: Into<BitWidth>,
     {
         self.value.zero_extend(target_width)
     }
@@ -745,7 +774,8 @@ impl UInt {
     /// - For more details look into
     ///   [`resize`](struct.UInt.html#method.resize).
     pub fn into_resize<W>(self, target_width: W) -> UInt
-        where W: Into<BitWidth>
+    where
+        W: Into<BitWidth>,
     {
         forward_bin_mut_impl(self, target_width, UInt::resize)
     }
@@ -762,7 +792,8 @@ impl UInt {
     /// - [`extend`](struct.UInt.html#method.extend)
     ///   otherwise
     pub fn resize<W>(&mut self, target_width: W)
-        where W: Into<BitWidth>
+    where
+        W: Into<BitWidth>,
     {
         self.value.zero_resize(target_width)
     }
@@ -857,7 +888,8 @@ impl UInt {
     ///
     /// - If `pos` is not a valid bit position for the width of this `UInt`.
     pub fn get_bit_at<P>(&self, pos: P) -> Result<Bit>
-        where P: Into<BitPos>
+    where
+        P: Into<BitPos>,
     {
         self.value.get_bit_at(pos)
     }
@@ -868,7 +900,8 @@ impl UInt {
     ///
     /// - If `pos` is not a valid bit position for the width of this `UInt`.
     pub fn set_bit_at<P>(&mut self, pos: P) -> Result<()>
-        where P: Into<BitPos>
+    where
+        P: Into<BitPos>,
     {
         self.value.set_bit_at(pos)
     }
@@ -879,7 +912,8 @@ impl UInt {
     ///
     /// - If `pos` is not a valid bit position for the width of this `UInt`.
     pub fn unset_bit_at<P>(&mut self, pos: P) -> Result<()>
-        where P: Into<BitPos>
+    where
+        P: Into<BitPos>,
     {
         self.value.unset_bit_at(pos)
     }
@@ -895,7 +929,8 @@ impl UInt {
     ///
     /// - If `pos` is not a valid bit position for the width of this `UInt`.
     pub fn flip_bit_at<P>(&mut self, pos: P) -> Result<()>
-        where P: Into<BitPos>
+    where
+        P: Into<BitPos>,
     {
         self.value.flip_bit_at(pos)
     }

@@ -1,4 +1,4 @@
-use crate::bitwidth::{BitWidth};
+use crate::bitwidth::BitWidth;
 
 /// Types that have an associated bit width may implement `Width`.
 pub trait Width {

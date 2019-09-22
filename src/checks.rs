@@ -1,12 +1,18 @@
-use crate::errors::{Error, Result};
-use crate::traits::{Width};
-use crate::bitpos::{BitPos};
-use crate::apint::{ShiftAmount};
+use crate::{
+    apint::ShiftAmount,
+    bitpos::BitPos,
+    errors::{
+        Error,
+        Result,
+    },
+    traits::Width,
+};
 
 #[inline]
 pub(crate) fn verify_bit_access<T, P>(a: &T, pos: P) -> Result<()>
-    where T: Width,
-          P: Into<BitPos>
+where
+    T: Width,
+    P: Into<BitPos>,
 {
     let pos = pos.into();
     let width = a.width();
@@ -18,8 +24,9 @@ pub(crate) fn verify_bit_access<T, P>(a: &T, pos: P) -> Result<()>
 
 #[inline]
 pub(crate) fn verify_shift_amount<W, S>(a: &W, shift_amount: S) -> Result<()>
-    where W: Width,
-          S: Into<ShiftAmount>
+where
+    W: Width,
+    S: Into<ShiftAmount>,
 {
     let shift_amount = shift_amount.into();
     let width = a.width();

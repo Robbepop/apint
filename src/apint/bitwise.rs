@@ -1,24 +1,31 @@
-use crate::apint::{ApInt};
-use crate::digit::{Bit};
-use crate::digit;
-use crate::errors::{Result};
-use crate::apint::utils::{
-    DataAccess,
-    DataAccessMut
+use crate::{
+    apint::{
+        utils::{
+            DataAccess,
+            DataAccessMut,
+        },
+        ApInt,
+    },
+    bitpos::BitPos,
+    checks,
+    digit,
+    digit::Bit,
+    errors::Result,
+    traits::Width,
+    utils::{
+        forward_mut_impl,
+        try_forward_bin_mut_impl,
+    },
 };
-use crate::bitpos::{BitPos};
-use crate::traits::{Width};
-use crate::checks;
-use crate::utils::{try_forward_bin_mut_impl, forward_mut_impl};
 
 use std::ops::{
-    Not,
     BitAnd,
-    BitOr,
-    BitXor,
     BitAndAssign,
+    BitOr,
     BitOrAssign,
-    BitXorAssign
+    BitXor,
+    BitXorAssign,
+    Not,
 };
 
 /// # Bitwise Operations
@@ -36,20 +43,20 @@ impl ApInt {
 
     /// Tries to bit-and assign this `ApInt` inplace to `rhs`
     /// and returns the result.
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// If `self` and `rhs` have unmatching bit widths.
     pub fn into_bitand(self, rhs: &ApInt) -> Result<ApInt> {
         try_forward_bin_mut_impl(self, rhs, ApInt::bitand_assign)
     }
 
     /// Bit-and assigns all bits of this `ApInt` with the bits of `rhs`.
-    /// 
+    ///
     /// **Note:** This operation is inplace of `self` and won't allocate memory.
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// If `self` and `rhs` have unmatching bit widths.
     pub fn bitand_assign(&mut self, rhs: &ApInt) -> Result<()> {
         self.modify_zipped_digits(rhs, |l, r| *l &= r)
@@ -57,20 +64,20 @@ impl ApInt {
 
     /// Tries to bit-and assign this `ApInt` inplace to `rhs`
     /// and returns the result.
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// If `self` and `rhs` have unmatching bit widths.
     pub fn into_bitor(self, rhs: &ApInt) -> Result<ApInt> {
         try_forward_bin_mut_impl(self, rhs, ApInt::bitor_assign)
     }
 
     /// Bit-or assigns all bits of this `ApInt` with the bits of `rhs`.
-    /// 
+    ///
     /// **Note:** This operation is inplace of `self` and won't allocate memory.
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// If `self` and `rhs` have unmatching bit widths.
     pub fn bitor_assign(&mut self, rhs: &ApInt) -> Result<()> {
         self.modify_zipped_digits(rhs, |l, r| *l |= r)
@@ -78,20 +85,20 @@ impl ApInt {
 
     /// Tries to bit-xor assign this `ApInt` inplace to `rhs`
     /// and returns the result.
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// If `self` and `rhs` have unmatching bit widths.
     pub fn into_bitxor(self, rhs: &ApInt) -> Result<ApInt> {
         try_forward_bin_mut_impl(self, rhs, ApInt::bitxor_assign)
     }
 
     /// Bit-xor assigns all bits of this `ApInt` with the bits of `rhs`.
-    /// 
+    ///
     /// **Note:** This operation is inplace of `self` and won't allocate memory.
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// If `self` and `rhs` have unmatching bit widths.
     pub fn bitxor_assign(&mut self, rhs: &ApInt) -> Result<()> {
         self.modify_zipped_digits(rhs, |l, r| *l ^= r)
@@ -101,17 +108,18 @@ impl ApInt {
 /// # Bitwise Access
 impl ApInt {
     /// Returns the bit at the given bit position `pos`.
-    /// 
+    ///
     /// This returns
-    /// 
+    ///
     /// - `Bit::Set` if the bit at `pos` is `1`
     /// - `Bit::Unset` otherwise
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// - If `pos` is not a valid bit position for the width of this `ApInt`.
     pub fn get_bit_at<P>(&self, pos: P) -> Result<Bit>
-        where P: Into<BitPos>
+    where
+        P: Into<BitPos>,
     {
         let pos = pos.into();
         checks::verify_bit_access(self, pos)?;
@@ -125,12 +133,13 @@ impl ApInt {
     }
 
     /// Sets the bit at the given bit position `pos` to one (`1`).
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// - If `pos` is not a valid bit position for the width of this `ApInt`.
     pub fn set_bit_at<P>(&mut self, pos: P) -> Result<()>
-        where P: Into<BitPos>
+    where
+        P: Into<BitPos>,
     {
         let pos = pos.into();
         checks::verify_bit_access(self, pos)?;
@@ -144,12 +153,13 @@ impl ApInt {
     }
 
     /// Sets the bit at the given bit position `pos` to zero (`0`).
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// - If `pos` is not a valid bit position for the width of this `ApInt`.
     pub fn unset_bit_at<P>(&mut self, pos: P) -> Result<()>
-        where P: Into<BitPos>
+    where
+        P: Into<BitPos>,
     {
         let pos = pos.into();
         checks::verify_bit_access(self, pos)?;
@@ -163,17 +173,18 @@ impl ApInt {
     }
 
     /// Flips the bit at the given bit position `pos`.
-    /// 
+    ///
     /// # Note
-    /// 
+    ///
     /// - If the bit at the given position was `0` it will be `1`
     ///   after this operation and vice versa.
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// - If `pos` is not a valid bit position for the width of this `ApInt`.
     pub fn flip_bit_at<P>(&mut self, pos: P) -> Result<()>
-        where P: Into<BitPos>
+    where
+        P: Into<BitPos>,
     {
         let pos = pos.into();
         checks::verify_bit_access(self, pos)?;
@@ -221,7 +232,7 @@ impl ApInt {
     }
 
     /// Returns the sign bit of this `ApInt`.
-    /// 
+    ///
     /// **Note:** This is equal to the most significant bit of this `ApInt`.
     pub fn sign_bit(&self) -> Bit {
         self.most_significant_bit()
@@ -230,31 +241,34 @@ impl ApInt {
     /// Sets the sign bit of this `ApInt` to one (`1`).
     pub fn set_sign_bit(&mut self) {
         let sign_bit_pos = self.width().sign_bit_pos();
-        self.set_bit_at(sign_bit_pos)
-            .expect("`BitWidth::sign_bit_pos` always returns a valid `BitPos`
-                     for usage in the associated `ApInt` for operating on bits.")
+        self.set_bit_at(sign_bit_pos).expect(
+            "`BitWidth::sign_bit_pos` always returns a valid `BitPos`
+                     for usage in the associated `ApInt` for operating on bits.",
+        )
     }
 
     /// Sets the sign bit of this `ApInt` to zero (`0`).
     pub fn unset_sign_bit(&mut self) {
         let sign_bit_pos = self.width().sign_bit_pos();
-        self.unset_bit_at(sign_bit_pos)
-            .expect("`BitWidth::sign_bit_pos` always returns a valid `BitPos`
-                     for usage in the associated `ApInt` for operating on bits.")
+        self.unset_bit_at(sign_bit_pos).expect(
+            "`BitWidth::sign_bit_pos` always returns a valid `BitPos`
+                     for usage in the associated `ApInt` for operating on bits.",
+        )
     }
 
     /// Flips the sign bit of this `ApInt`.
-    /// 
+    ///
     /// # Note
-    /// 
+    ///
     /// - If the sign bit was `0` it will be `1` after this operation and vice versa.
     /// - Depending on the interpretation of the `ApInt` this
     ///   operation changes its signedness.
     pub fn flip_sign_bit(&mut self) {
         let sign_bit_pos = self.width().sign_bit_pos();
-        self.flip_bit_at(sign_bit_pos)
-            .expect("`BitWidth::sign_bit_pos` always returns a valid `BitPos`
-                     for usage in the associated `ApInt` for operating on bits.")
+        self.flip_bit_at(sign_bit_pos).expect(
+            "`BitWidth::sign_bit_pos` always returns a valid `BitPos`
+                     for usage in the associated `ApInt` for operating on bits.",
+        )
     }
 }
 
@@ -270,7 +284,8 @@ impl ApInt {
 
     /// Returns the number of zeros in the binary representation of this `ApInt`.
     pub fn count_zeros(&self) -> usize {
-        let zeros = self.as_digit_slice()
+        let zeros = self
+            .as_digit_slice()
             .into_iter()
             .map(|d| d.repr().count_zeros() as usize)
             .sum::<usize>();
@@ -287,7 +302,7 @@ impl ApInt {
             let leading_zeros = d.repr().leading_zeros() as usize;
             zeros += leading_zeros;
             if leading_zeros != digit::BITS {
-                break;
+                break
             }
         }
         zeros - (digit::BITS - self.width().excess_bits().unwrap_or(digit::BITS))
@@ -300,7 +315,7 @@ impl ApInt {
             let trailing_zeros = d.repr().trailing_zeros() as usize;
             zeros += trailing_zeros;
             if trailing_zeros != digit::BITS {
-                break;
+                break
             }
         }
         if zeros >= self.width().to_usize() {
@@ -432,7 +447,7 @@ impl<'a> BitXorAssign<&'a ApInt> for ApInt {
 mod tests {
     use super::*;
 
-    use crate::bitwidth::{BitWidth};
+    use crate::bitwidth::BitWidth;
 
     #[test]
     fn count_ones() {
@@ -459,10 +474,22 @@ mod tests {
 
         assert_eq!(ApInt::signed_max_value(BitWidth::w1()).count_ones(), 0);
         assert_eq!(ApInt::signed_max_value(BitWidth::w8()).count_ones(), 8 - 1);
-        assert_eq!(ApInt::signed_max_value(BitWidth::w16()).count_ones(), 16 - 1);
-        assert_eq!(ApInt::signed_max_value(BitWidth::w32()).count_ones(), 32 - 1);
-        assert_eq!(ApInt::signed_max_value(BitWidth::w64()).count_ones(), 64 - 1);
-        assert_eq!(ApInt::signed_max_value(BitWidth::w128()).count_ones(), 128 - 1);
+        assert_eq!(
+            ApInt::signed_max_value(BitWidth::w16()).count_ones(),
+            16 - 1
+        );
+        assert_eq!(
+            ApInt::signed_max_value(BitWidth::w32()).count_ones(),
+            32 - 1
+        );
+        assert_eq!(
+            ApInt::signed_max_value(BitWidth::w64()).count_ones(),
+            64 - 1
+        );
+        assert_eq!(
+            ApInt::signed_max_value(BitWidth::w128()).count_ones(),
+            128 - 1
+        );
     }
 
     #[test]
@@ -483,10 +510,22 @@ mod tests {
 
         assert_eq!(ApInt::signed_min_value(BitWidth::w1()).count_zeros(), 0);
         assert_eq!(ApInt::signed_min_value(BitWidth::w8()).count_zeros(), 8 - 1);
-        assert_eq!(ApInt::signed_min_value(BitWidth::w16()).count_zeros(), 16 - 1);
-        assert_eq!(ApInt::signed_min_value(BitWidth::w32()).count_zeros(), 32 - 1);
-        assert_eq!(ApInt::signed_min_value(BitWidth::w64()).count_zeros(), 64 - 1);
-        assert_eq!(ApInt::signed_min_value(BitWidth::w128()).count_zeros(), 128 - 1);
+        assert_eq!(
+            ApInt::signed_min_value(BitWidth::w16()).count_zeros(),
+            16 - 1
+        );
+        assert_eq!(
+            ApInt::signed_min_value(BitWidth::w32()).count_zeros(),
+            32 - 1
+        );
+        assert_eq!(
+            ApInt::signed_min_value(BitWidth::w64()).count_zeros(),
+            64 - 1
+        );
+        assert_eq!(
+            ApInt::signed_min_value(BitWidth::w128()).count_zeros(),
+            128 - 1
+        );
 
         assert_eq!(ApInt::signed_max_value(BitWidth::w1()).count_zeros(), 1);
         assert_eq!(ApInt::signed_max_value(BitWidth::w8()).count_zeros(), 1);
@@ -544,18 +583,36 @@ mod tests {
         assert_eq!(ApInt::one(BitWidth::w128()).trailing_zeros(), 0);
 
         assert_eq!(ApInt::signed_min_value(BitWidth::w1()).trailing_zeros(), 0);
-        assert_eq!(ApInt::signed_min_value(BitWidth::w8()).trailing_zeros(), 8 - 1);
-        assert_eq!(ApInt::signed_min_value(BitWidth::w16()).trailing_zeros(), 16 - 1);
-        assert_eq!(ApInt::signed_min_value(BitWidth::w32()).trailing_zeros(), 32 - 1);
-        assert_eq!(ApInt::signed_min_value(BitWidth::w64()).trailing_zeros(), 64 - 1);
-        assert_eq!(ApInt::signed_min_value(BitWidth::w128()).trailing_zeros(), 128 - 1);
+        assert_eq!(
+            ApInt::signed_min_value(BitWidth::w8()).trailing_zeros(),
+            8 - 1
+        );
+        assert_eq!(
+            ApInt::signed_min_value(BitWidth::w16()).trailing_zeros(),
+            16 - 1
+        );
+        assert_eq!(
+            ApInt::signed_min_value(BitWidth::w32()).trailing_zeros(),
+            32 - 1
+        );
+        assert_eq!(
+            ApInt::signed_min_value(BitWidth::w64()).trailing_zeros(),
+            64 - 1
+        );
+        assert_eq!(
+            ApInt::signed_min_value(BitWidth::w128()).trailing_zeros(),
+            128 - 1
+        );
 
         assert_eq!(ApInt::signed_max_value(BitWidth::w1()).trailing_zeros(), 1);
         assert_eq!(ApInt::signed_max_value(BitWidth::w8()).trailing_zeros(), 0);
         assert_eq!(ApInt::signed_max_value(BitWidth::w16()).trailing_zeros(), 0);
         assert_eq!(ApInt::signed_max_value(BitWidth::w32()).trailing_zeros(), 0);
         assert_eq!(ApInt::signed_max_value(BitWidth::w64()).trailing_zeros(), 0);
-        assert_eq!(ApInt::signed_max_value(BitWidth::w128()).trailing_zeros(), 0);
+        assert_eq!(
+            ApInt::signed_max_value(BitWidth::w128()).trailing_zeros(),
+            0
+        );
     }
 
     mod is_all_set {

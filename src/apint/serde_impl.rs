@@ -1,18 +1,19 @@
-use crate::apint::{ApInt};
-use crate::digit::{Digit};
-use crate::bitwidth::{BitWidth};
+use crate::{
+    apint::ApInt,
+    bitwidth::BitWidth,
+    digit::Digit,
+};
 
 use serde::{
+    ser::SerializeTupleStruct,
     Serialize,
-    Serializer
-};
-use serde::ser::{
-    SerializeTupleStruct
+    Serializer,
 };
 
 impl Serialize for Digit {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-        where S: Serializer
+    where
+        S: Serializer,
     {
         serializer.serialize_u64(self.repr())
     }
@@ -20,14 +21,14 @@ impl Serialize for Digit {
 
 impl Serialize for BitWidth {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-        where S: Serializer
+    where
+        S: Serializer,
     {
         if serializer.is_human_readable() {
             let mut s = serializer.serialize_tuple_struct("BitWidth", 1)?;
             s.serialize_field(&(self.to_usize() as u64))?;
             s.end()
-        }
-        else {
+        } else {
             serializer.serialize_u64(self.to_usize() as u64)
         }
     }
@@ -35,17 +36,20 @@ impl Serialize for BitWidth {
 
 impl Serialize for ApInt {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-        where S: Serializer
+    where
+        S: Serializer,
     {
-        use serde::ser::{SerializeStruct, SerializeTuple};
+        use serde::ser::{
+            SerializeStruct,
+            SerializeTuple,
+        };
 
         if serializer.is_human_readable() {
             let mut s = serializer.serialize_struct("ApInt", 2)?;
             s.serialize_field("width", &self.len)?;
             s.serialize_field("digits", self.as_digit_slice())?;
             s.end()
-        }
-        else {
+        } else {
             let mut s = serializer.serialize_tuple(2)?;
             s.serialize_element(&self.len)?;
             s.serialize_element(&self.as_digit_slice())?;
@@ -55,32 +59,34 @@ impl Serialize for ApInt {
 }
 
 use serde::{
+    de,
+    de::{
+        MapAccess,
+        SeqAccess,
+        Visitor,
+    },
     Deserialize,
-    Deserializer
+    Deserializer,
 };
-use serde::de::{
-    Visitor,
-    SeqAccess,
-    MapAccess
-};
-use serde::de;
 use std::fmt;
 
 impl<'de> Deserialize<'de> for BitWidth {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-        where D: Deserializer<'de>
+    where
+        D: Deserializer<'de>,
     {
         struct HumanReadableBitWidthVisitor;
-    
+
         fn try_new_bitwidth<E>(width: usize) -> Result<BitWidth, E>
-            where E: de::Error
+        where
+            E: de::Error,
         {
-            BitWidth::new(width as usize)
-                .map_err(|_| de::Error::invalid_value(
-                        de::Unexpected::Unsigned(width as u64),
-                        &"a valid `u64` `BitWidth` representation"
-                    )
+            BitWidth::new(width as usize).map_err(|_| {
+                de::Error::invalid_value(
+                    de::Unexpected::Unsigned(width as u64),
+                    &"a valid `u64` `BitWidth` representation",
                 )
+            })
         }
 
         impl<'de> Visitor<'de> for HumanReadableBitWidthVisitor {
@@ -91,12 +97,14 @@ impl<'de> Deserialize<'de> for BitWidth {
             }
 
             fn visit_seq<V>(self, mut seq: V) -> Result<Self::Value, V::Error>
-                where V: SeqAccess<'de>
+            where
+                V: SeqAccess<'de>,
             {
-                let width_repr: u64 = seq.next_element()?
-                                         .ok_or_else(|| de::Error::invalid_length(0, &self))?;
+                let width_repr: u64 = seq
+                    .next_element()?
+                    .ok_or_else(|| de::Error::invalid_length(0, &self))?;
                 try_new_bitwidth(width_repr as usize)
-             }
+            }
         }
 
         struct CompactBitWidthVisitor;
@@ -109,16 +117,20 @@ impl<'de> Deserialize<'de> for BitWidth {
             }
 
             fn visit_u64<E>(self, v: u64) -> Result<Self::Value, E>
-                where E: de::Error
+            where
+                E: de::Error,
             {
                 try_new_bitwidth(v as usize)
             }
         }
 
         if deserializer.is_human_readable() {
-            deserializer.deserialize_tuple_struct("BitWidth", 1, HumanReadableBitWidthVisitor)
-        }
-        else {
+            deserializer.deserialize_tuple_struct(
+                "BitWidth",
+                1,
+                HumanReadableBitWidthVisitor,
+            )
+        } else {
             deserializer.deserialize_u64(CompactBitWidthVisitor)
         }
     }
@@ -126,7 +138,8 @@ impl<'de> Deserialize<'de> for BitWidth {
 
 impl<'de> Deserialize<'de> for Digit {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-        where D: Deserializer<'de>
+    where
+        D: Deserializer<'de>,
     {
         struct DigitVisitor;
 
@@ -138,7 +151,8 @@ impl<'de> Deserialize<'de> for Digit {
             }
 
             fn visit_u64<E>(self, v: u64) -> Result<Self::Value, E>
-                where E: de::Error
+            where
+                E: de::Error,
             {
                 Ok(Digit(v))
             }
@@ -150,14 +164,19 @@ impl<'de> Deserialize<'de> for Digit {
 
 impl<'de> Deserialize<'de> for ApInt {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-        where D: Deserializer<'de>
+    where
+        D: Deserializer<'de>,
     {
-        enum Field { Width, Digits }
+        enum Field {
+            Width,
+            Digits,
+        }
         const FIELDS: &[&str] = &["width", "digits"];
 
         impl<'de> Deserialize<'de> for Field {
             fn deserialize<D>(deserializer: D) -> Result<Field, D::Error>
-                where D: Deserializer<'de>
+            where
+                D: Deserializer<'de>,
             {
                 struct FieldVisitor;
 
@@ -169,12 +188,13 @@ impl<'de> Deserialize<'de> for ApInt {
                     }
 
                     fn visit_str<E>(self, value: &str) -> Result<Field, E>
-                        where E: de::Error
+                    where
+                        E: de::Error,
                     {
                         match value {
                             "width" => Ok(Field::Width),
                             "digits" => Ok(Field::Digits),
-                            _ => Err(de::Error::unknown_field(value, FIELDS))
+                            _ => Err(de::Error::unknown_field(value, FIELDS)),
                         }
                     }
                 }
@@ -193,21 +213,22 @@ impl<'de> Deserialize<'de> for ApInt {
             }
 
             fn visit_map<V>(self, mut map: V) -> Result<ApInt, V::Error>
-                where V: MapAccess<'de>
+            where
+                V: MapAccess<'de>,
             {
-                let mut width : Option<BitWidth>   = None;
+                let mut width: Option<BitWidth> = None;
                 let mut digits: Option<Vec<Digit>> = None;
                 while let Some(key) = map.next_key()? {
                     match key {
                         Field::Width => {
                             if width.is_some() {
-                                return Err(de::Error::duplicate_field("width"));
+                                return Err(de::Error::duplicate_field("width"))
                             }
                             width = Some(map.next_value()?);
                         }
                         Field::Digits => {
                             if digits.is_some() {
-                                return Err(de::Error::duplicate_field("digits"));
+                                return Err(de::Error::duplicate_field("digits"))
                             }
                             digits = Some(map.next_value()?);
                         }
@@ -219,7 +240,8 @@ impl<'de> Deserialize<'de> for ApInt {
                 if width.required_digits() != digits.len() {
                     return Err(de::Error::invalid_value(
                         de::Unexpected::Unsigned(digits.len() as u64),
-                        &"require `width` to be compatible with `digits.len()`"))
+                        &"require `width` to be compatible with `digits.len()`",
+                    ))
                 }
 
                 Ok(ApInt::from_iter(digits)
@@ -242,15 +264,19 @@ impl<'de> Deserialize<'de> for ApInt {
             }
 
             fn visit_seq<V>(self, mut seq: V) -> Result<ApInt, V::Error>
-                where V: SeqAccess<'de>
+            where
+                V: SeqAccess<'de>,
             {
                 let width: BitWidth = seq.next_element()?.unwrap();
-                let digits: Vec<Digit> = seq.next_element()?
-                                            .ok_or_else(|| de::Error::invalid_length(1, &self))?;
+                let digits: Vec<Digit> = seq
+                    .next_element()?
+                    .ok_or_else(|| de::Error::invalid_length(1, &self))?;
 
                 if width.required_digits() != digits.len() {
                     return Err(de::Error::invalid_value(
-                        de::Unexpected::Seq, &"unexpected number of digits found"))
+                        de::Unexpected::Seq,
+                        &"unexpected number of digits found",
+                    ))
                 }
 
                 Ok(ApInt::from_iter(digits)
@@ -265,8 +291,7 @@ impl<'de> Deserialize<'de> for ApInt {
 
         if deserializer.is_human_readable() {
             deserializer.deserialize_struct("ApInt", FIELDS, HumanReadableApIntVisitor)
-        }
-        else {
+        } else {
             deserializer.deserialize_tuple(2, CompactApIntVisitor)
         }
     }
@@ -277,42 +302,39 @@ mod tests {
     use super::*;
 
     use serde_test::{
+        assert_tokens,
         Token,
-        assert_tokens
     };
 
     mod compact {
         use super::*;
-        use serde_test::{
-            Configure,
-        };
+        use serde_test::Configure;
 
         #[test]
         fn test_small() {
             let x = ApInt::from_u64(0xFEDC_BA98_7654_3210);
             let expected = &[
-                Token::Tuple{ len: 2 },
+                Token::Tuple { len: 2 },
                 Token::U64(64),
-                Token::Seq{ len: Some(1) },
+                Token::Seq { len: Some(1) },
                 Token::U64(0xFEDC_BA98_7654_3210),
                 Token::SeqEnd,
-                Token::TupleEnd
+                Token::TupleEnd,
             ];
             assert_tokens(&x.compact(), expected)
         }
 
         #[test]
         fn test_large() {
-            let x = ApInt::from_u128(
-                0xFEDC_BA98_7654_3210__0101_1010_0110_1001);
+            let x = ApInt::from_u128(0xFEDC_BA98_7654_3210__0101_1010_0110_1001);
             let expected = &[
-                Token::Tuple{ len: 2 },
+                Token::Tuple { len: 2 },
                 Token::U64(128),
-                Token::Seq{ len: Some(2) },
+                Token::Seq { len: Some(2) },
                 Token::U64(0x0101_1010_0110_1001),
                 Token::U64(0xFEDC_BA98_7654_3210),
                 Token::SeqEnd,
-                Token::TupleEnd
+                Token::TupleEnd,
             ];
             assert_tokens(&x.compact(), expected)
         }
@@ -320,27 +342,28 @@ mod tests {
 
     mod human_readable {
         use super::*;
-        use serde_test::{
-            Configure,
-        };
+        use serde_test::Configure;
 
         #[test]
         fn test_small() {
             let x = ApInt::from_u64(42);
             let expected = &[
-                Token::Struct{
+                Token::Struct {
                     name: "ApInt",
-                    len: 2
+                    len: 2,
                 },
                 Token::Str("width"),
-                Token::TupleStruct{ name: "BitWidth", len: 1 },
+                Token::TupleStruct {
+                    name: "BitWidth",
+                    len: 1,
+                },
                 Token::U64(64),
                 Token::TupleStructEnd,
                 Token::Str("digits"),
-                Token::Seq{ len: Some(1) },
+                Token::Seq { len: Some(1) },
                 Token::U64(42),
                 Token::SeqEnd,
-                Token::StructEnd
+                Token::StructEnd,
             ];
             assert_tokens(&x.clone().readable(), expected);
         }
@@ -349,20 +372,23 @@ mod tests {
         fn test_large() {
             let x = ApInt::from_u128(1337);
             let expected = &[
-                Token::Struct{
+                Token::Struct {
                     name: "ApInt",
-                    len: 2
+                    len: 2,
                 },
                 Token::Str("width"),
-                Token::TupleStruct{ name: "BitWidth", len: 1 },
+                Token::TupleStruct {
+                    name: "BitWidth",
+                    len: 1,
+                },
                 Token::U64(128),
                 Token::TupleStructEnd,
                 Token::Str("digits"),
-                Token::Seq{ len: Some(2) },
+                Token::Seq { len: Some(2) },
                 Token::U64(1337),
                 Token::U64(0),
                 Token::SeqEnd,
-                Token::StructEnd
+                Token::StructEnd,
             ];
             assert_tokens(&x.clone().readable(), expected);
         }

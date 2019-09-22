@@ -1,14 +1,18 @@
-use crate::apint::{ApInt};
-use crate::apint::utils::{
-    ZipDataAccess
+use crate::{
+    apint::{
+        utils::ZipDataAccess,
+        ApInt,
+    },
+    digit,
+    digit::Bit,
+    errors::Result,
+    traits::Width,
 };
-use crate::errors::{Result};
-use crate::traits::Width;
-use crate::digit;
-use crate::digit::{Bit};
 
-use std::cmp::Ordering;
-use std::ops::Not;
+use std::{
+    cmp::Ordering,
+    ops::Not,
+};
 
 /// If `self` and `other` have unmatching bit widths, `false` will be returned.
 impl PartialEq for ApInt {
@@ -24,17 +28,16 @@ impl Eq for ApInt {}
 
 /// # Comparison Operations
 impl ApInt {
-
     /// Unsigned less-than (`ult`) comparison between `self` and `rhs`.
-    /// 
+    ///
     /// # Note
-    /// 
+    ///
     /// - `checked_` for this function means that it checks the bit widths
     /// - Returns `Ok(true)` if `self < rhs`.
     /// - Interprets both `ApInt` instances as **unsigned** values.
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// - If `self` and `rhs` have unmatching bit widths.
     pub fn checked_ult(&self, rhs: &ApInt) -> Result<bool> {
         match self
@@ -65,15 +68,15 @@ impl ApInt {
     }
 
     /// Unsigned less-equals (`ule`) comparison between `self` and `rhs`.
-    /// 
+    ///
     /// # Note
-    /// 
+    ///
     /// - `checked_` for this function means that it checks the bit widths
     /// - Returns `Ok(true)` if `self <= rhs`.
     /// - Interprets both `ApInt` instances as **unsigned** values.
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// - If `self` and `rhs` have unmatching bit widths.
     #[inline]
     pub fn checked_ule(&self, rhs: &ApInt) -> Result<bool> {
@@ -87,15 +90,15 @@ impl ApInt {
     }
 
     /// Unsigned greater-than (`ugt`) comparison between `self` and `rhs`.
-    /// 
+    ///
     /// # Note
-    /// 
+    ///
     /// - `checked_` for this function means that it checks the bit widths
     /// - Returns `Ok(true)` if `self > rhs`.
     /// - Interprets both `ApInt` instances as **unsigned** values.
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// - If `self` and `rhs` have unmatching bit widths.
     #[inline]
     pub fn checked_ugt(&self, rhs: &ApInt) -> Result<bool> {
@@ -109,15 +112,15 @@ impl ApInt {
     }
 
     /// Unsigned greater-equals (`uge`) comparison between `self` and `rhs`.
-    /// 
+    ///
     /// # Note
-    /// 
+    ///
     /// - `checked_` for this function means that it checks the bit widths
     /// - Returns `Ok(true)` if `self >= rhs`.
     /// - Interprets both `ApInt` instances as **unsigned** values.
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// - If `self` and `rhs` have unmatching bit widths.
     #[inline]
     pub fn checked_uge(&self, rhs: &ApInt) -> Result<bool> {
@@ -131,54 +134,56 @@ impl ApInt {
     }
 
     /// Signed less-than (`slt`) comparison between `self` and `rhs`.
-    /// 
+    ///
     /// # Note
-    /// 
+    ///
     /// - `checked_` for this function means that it checks the bit widths
     /// - Returns `Ok(true)` if `self < rhs`.
     /// - Interprets both `ApInt` instances as **signed** values.
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// - If `self` and `rhs` have unmatching bit widths.
     pub fn checked_slt(&self, rhs: &ApInt) -> Result<bool> {
         let lhs = self;
-        lhs.zip_access_data(rhs).and_then(|zipped| {
-            match zipped {
-                ZipDataAccess::Inl(lhs, rhs) => {
-                    let infate_abs = digit::BITS - self.width().to_usize();
-                    let lhs = (lhs.repr() << infate_abs) as i64;
-                    let rhs = (rhs.repr() << infate_abs) as i64;
-                    Ok(lhs < rhs)
-                }
-                ZipDataAccess::Ext(_, _) => {
-                    match (lhs.sign_bit(), rhs.sign_bit()) {
-                        (Bit::Unset, Bit::Unset) => lhs.checked_ult(rhs),
-                        (Bit::Unset, Bit::Set  ) => Ok(false),
-                        (Bit::Set  , Bit::Unset) => Ok(true),
-                        (Bit::Set  , Bit::Set  ) => rhs.checked_ugt(lhs)
+        lhs.zip_access_data(rhs)
+            .and_then(|zipped| {
+                match zipped {
+                    ZipDataAccess::Inl(lhs, rhs) => {
+                        let infate_abs = digit::BITS - self.width().to_usize();
+                        let lhs = (lhs.repr() << infate_abs) as i64;
+                        let rhs = (rhs.repr() << infate_abs) as i64;
+                        Ok(lhs < rhs)
+                    }
+                    ZipDataAccess::Ext(_, _) => {
+                        match (lhs.sign_bit(), rhs.sign_bit()) {
+                            (Bit::Unset, Bit::Unset) => lhs.checked_ult(rhs),
+                            (Bit::Unset, Bit::Set) => Ok(false),
+                            (Bit::Set, Bit::Unset) => Ok(true),
+                            (Bit::Set, Bit::Set) => rhs.checked_ugt(lhs),
+                        }
                     }
                 }
-            }
-        })
-        .map_err(|err| err.with_annotation(format!(
+            })
+            .map_err(|err| {
+                err.with_annotation(format!(
             "Error occured on signed less-than (slt) comparison with `lhs < rhs` where \
                 \n\tlhs = {:?}\
                 \n\trhs = {:?}",
-            self, rhs)
-        ))
+            self, rhs))
+            })
     }
 
     /// Signed less-equals (`sle`) comparison between `self` and `rhs`.
-    /// 
+    ///
     /// # Note
-    /// 
+    ///
     /// - `checked_` for this function means that it checks the bit widths
     /// - Returns `Ok(true)` if `self <= rhs`.
     /// - Interprets both `ApInt` instances as **signed** values.
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// - If `self` and `rhs` have unmatching bit widths.
     #[inline]
     pub fn checked_sle(&self, rhs: &ApInt) -> Result<bool> {
@@ -192,15 +197,15 @@ impl ApInt {
     }
 
     /// Signed greater-than (`sgt`) comparison between `self` and `rhs`.
-    /// 
+    ///
     /// # Note
-    /// 
+    ///
     /// - `checked_` for this function means that it checks the bit widths
     /// - Returns `Ok(true)` if `self > rhs`.
     /// - Interprets both `ApInt` instances as **signed** values.
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// - If `self` and `rhs` have unmatching bit widths.
     #[inline]
     pub fn checked_sgt(&self, rhs: &ApInt) -> Result<bool> {
@@ -214,15 +219,15 @@ impl ApInt {
     }
 
     /// Signed greater-equals (`sge`) comparison between `self` and `rhs`.
-    /// 
+    ///
     /// # Note
-    /// 
+    ///
     /// - `checked_` for this function means that it checks the bit widths
     /// - Returns `Ok(true)` if `self >= rhs`.
     /// - Interprets both `ApInt` instances as **signed** values.
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// - If `self` and `rhs` have unmatching bit widths.
     #[inline]
     pub fn checked_sge(&self, rhs: &ApInt) -> Result<bool> {
@@ -234,7 +239,6 @@ impl ApInt {
                 self, rhs)
             ))
     }
-
 }
 
 #[cfg(test)]

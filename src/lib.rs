@@ -39,45 +39,47 @@ extern crate serde_test;
 #[cfg(test)]
 extern crate itertools;
 
-mod errors;
-mod traits;
-mod digit;
-mod bitwidth;
-mod bitpos;
-mod storage;
-mod radix;
 mod apint;
-mod digit_seq;
+mod bitpos;
+mod bitwidth;
 mod checks;
-mod uint;
+mod digit;
+mod digit_seq;
+mod errors;
 mod int;
+mod radix;
+mod storage;
+mod traits;
+mod uint;
 mod utils;
 
-pub use crate::apint::{
-    ApInt,
-    ShiftAmount
+pub use crate::{
+    apint::{
+        ApInt,
+        ShiftAmount,
+    },
+    bitpos::BitPos,
+    bitwidth::BitWidth,
+    digit::Bit,
+    errors::{
+        Error,
+        ErrorKind,
+        Result,
+    },
+    int::Int,
+    radix::Radix,
+    traits::Width,
+    uint::UInt,
 };
-pub use crate::errors::{
-    Result,
-    Error,
-    ErrorKind
-};
-pub use crate::bitwidth::BitWidth;
-pub use crate::digit::{Bit};
-pub use crate::radix::{Radix};
-pub use crate::bitpos::{BitPos};
-pub use crate::traits::{Width};
-pub use crate::uint::{UInt};
-pub use crate::int::{Int};
 
 /// Re-exports some commonly used items of this crate.
 pub mod prelude {
     #[doc(no_inline)]
     pub use super::{
         ApInt,
+        BitWidth,
         Int,
         UInt,
-        BitWidth,
-        Width
+        Width,
     };
 }
