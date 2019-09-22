@@ -151,7 +151,7 @@ impl BitWidth {
     ///
     /// *Note:* Maybe we should move this method somewhere else?
     #[inline]
-    pub(crate) fn required_digits(&self) -> usize {
+    pub(crate) fn required_digits(self) -> usize {
         ((self.to_usize() - 1) / digit::BITS) + 1
     }
 }

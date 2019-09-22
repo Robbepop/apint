@@ -53,8 +53,8 @@ impl ApInt {
                 Ok(lhs.repr() < rhs.repr())
             }
             ZipDataAccess::Ext(lhs, rhs) => {
-                for (l, r) in lhs.into_iter().rev()
-                                 .zip(rhs.into_iter().rev())
+                for (l, r) in lhs.iter().rev()
+                                 .zip(rhs.iter().rev())
                 {
                     match l.cmp(r) {
                         Ordering::Less    => return Ok(true),

@@ -261,7 +261,7 @@ impl ApInt {
         match self.zip_access_data_mut_self(rhs)? {
             Inl(lhs, rhs) => f(lhs, rhs),
             Ext(lhs, rhs) => {
-                for (l, &r) in lhs.into_iter().zip(rhs) {
+                for (l, &r) in lhs.iter_mut().zip(rhs) {
                     f(l, r)
                 }
             }
@@ -374,7 +374,7 @@ impl ApInt {
     pub fn is_zero(&self) -> bool {
         match self.access_data() {
             DataAccess::Inl(digit) => digit.is_zero(),
-            DataAccess::Ext(digits) => digits.into_iter().all(|digit| digit.is_zero()),
+            DataAccess::Ext(digits) => digits.iter().all(|digit| digit.is_zero()),
         }
     }
 
@@ -391,7 +391,7 @@ impl ApInt {
             DataAccess::Inl(digit) => digit == Digit::one(),
             DataAccess::Ext(digits) => {
                 let (last, rest) = digits.split_last().unwrap_or_else(|| unreachable!());
-                last.is_one() && rest.into_iter().all(|digit| digit.is_zero())
+                last.is_one() && rest.iter().all(|digit| digit.is_zero())
             }
         }
     }

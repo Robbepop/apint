@@ -15,7 +15,7 @@ impl fmt::Binary for ApInt {
         if self.is_zero() {
             return write!(f, "0")
         }
-        let mut ds = self.as_digit_slice().into_iter().rev();
+        let mut ds = self.as_digit_slice().iter().rev();
         while let Some(digit) = ds.next() {
             if digit.is_zero() {
                 continue
@@ -45,7 +45,7 @@ impl fmt::LowerHex for ApInt {
         if self.is_zero() {
             return write!(f, "0")
         }
-        let mut ds = self.as_digit_slice().into_iter().rev();
+        let mut ds = self.as_digit_slice().iter().rev();
         while let Some(digit) = ds.next() {
             if digit.is_zero() {
                 continue
@@ -65,7 +65,7 @@ impl fmt::UpperHex for ApInt {
         if self.is_zero() {
             return write!(f, "0")
         }
-        let mut ds = self.as_digit_slice().into_iter().rev();
+        let mut ds = self.as_digit_slice().iter().rev();
         while let Some(digit) = ds.next() {
             if digit.is_zero() {
                 continue

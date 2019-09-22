@@ -133,14 +133,12 @@ impl ApInt {
         let mut lsd = self.least_significant_digit();
         let actual_width = self.width();
         let target_width = prim_ty.associated_width();
-        if prim_ty.is_signed() {
-            if actual_width < target_width {
-                lsd.sign_extend_from(actual_width).expect(
-                    "We already asserted that `actual_width` < `target_width` \
-                     and since `target_width` is always less than or equal to \
-                     `64` bits calling `Digit::sign_extend_from` is safe for it.",
-                );
-            }
+        if prim_ty.is_signed() && actual_width < target_width {
+            lsd.sign_extend_from(actual_width).expect(
+                "We already asserted that `actual_width` < `target_width` \
+                    and since `target_width` is always less than or equal to \
+                    `64` bits calling `Digit::sign_extend_from` is safe for it.",
+            );
         }
         if target_width < BitWidth::w64() {
             lsd.truncate_to(target_width).expect(
@@ -338,7 +336,7 @@ impl ApInt {
         debug_assert_ne!(prim_ty, PrimitiveTy::U128);
         debug_assert_ne!(prim_ty, PrimitiveTy::I128);
         let (mut lsd, rest) = self.split_least_significant_digit();
-        if !prim_ty.is_valid_repr(lsd.repr()) || rest.into_iter().any(|d| d.repr() != 0) {
+        if !prim_ty.is_valid_repr(lsd.repr()) || rest.iter().any(|d| d.repr() != 0) {
             return Error::encountered_unrepresentable_value(self.clone(), prim_ty).into()
         }
         if prim_ty.is_signed() {
@@ -543,7 +541,7 @@ impl ApInt {
     pub fn try_to_i128(&self) -> Result<i128> {
         let (lsd_0, rest) = self.split_least_significant_digit();
         let (&lsd_1, rest) = rest.split_first().unwrap_or((&Digit(0), &[]));
-        if rest.into_iter().any(|d| d.repr() != 0) {
+        if rest.iter().any(|d| d.repr() != 0) {
             return Error::encountered_unrepresentable_value(
                 self.clone(),
                 PrimitiveTy::I128,
@@ -584,7 +582,7 @@ impl ApInt {
     pub fn try_to_u128(&self) -> Result<u128> {
         let (lsd_0, rest) = self.split_least_significant_digit();
         let (&lsd_1, rest) = rest.split_first().unwrap_or((&Digit(0), &[]));
-        if rest.into_iter().any(|d| d.repr() != 0) {
+        if rest.iter().any(|d| d.repr() != 0) {
             return Error::encountered_unrepresentable_value(
                 self.clone(),
                 PrimitiveTy::U128,

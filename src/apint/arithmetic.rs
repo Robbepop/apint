@@ -167,7 +167,7 @@ impl ApInt {
                         let temp = lhs.wrapping_add(rhs);
                         *lhs = temp & mask;
                         // excess bits are cleared by the mask
-                        return Ok((temp & mask) != temp)
+                        Ok((temp & mask) != temp)
                     }
                     Ext(lhs, rhs) => {
                         let (temp, mut carry) = lhs[0].carrying_add(rhs[0]);
@@ -185,7 +185,7 @@ impl ApInt {
                             .wrapping_add(carry);
                         lhs[lhs.len() - 1] = temp & mask;
                         // excess bits are cleared by the mask
-                        return Ok((temp & mask) != temp)
+                        Ok((temp & mask) != temp)
                     }
                 }
             }
@@ -195,7 +195,7 @@ impl ApInt {
                         let temp = lhs.overflowing_add(rhs);
                         *lhs = temp.0;
                         // no excess bits to clear
-                        return Ok(temp.1)
+                        Ok(temp.1)
                     }
                     Ext(lhs, rhs) => {
                         let (temp, mut carry) = lhs[0].carrying_add(rhs[0]);
@@ -209,7 +209,7 @@ impl ApInt {
                             carry = temp.hi();
                         }
                         // no excess bits to clear
-                        return Ok(carry != Digit::zero())
+                        Ok(carry != Digit::zero())
                     }
                 }
             }
@@ -680,7 +680,7 @@ impl ApInt {
                 rem_lo = lo(temp_lo.1);
                 duo[duo_sd_sub1] = from_lo_hi(quo_lo, quo_hi);
             }
-            div[0] = Digit(rem_lo as u64);
+            div[0] = Digit(u64::from(rem_lo));
         }
 
         // modifies the `$array` to be the two's complement of itself, all the way up to a `$len`
@@ -1306,9 +1306,7 @@ impl ApInt {
                     carry = temp.hi();
                     for i0 in 2..len {
                         if carry == Digit::zero() {
-                            for i1 in i0..len {
-                                duo[i1] = quo[i1];
-                            }
+                            duo[i0..len].clone_from_slice(&quo[i0..len]);
                             break
                         }
                         let temp = quo[i0].carrying_add(carry);
@@ -1361,27 +1359,27 @@ impl ApInt {
                             return true
                         }
                         large_div_by_large(duo.len(), duo, ini_duo_sd, div, div_sd);
-                        return true
+                        true
                     }
                     (true, false) => unreachable!(),
                     (false, true) => {
                         if div[0].leading_zeros() >= 32 {
                             large_div_by_u32(duo, ini_duo_sd, div);
-                            return true
+                            true
                         } else {
                             large_div_by_small(duo, ini_duo_sd, div);
-                            return true
+                            true
                         }
                     }
                     (true, true) => {
                         let temp = duo[0].wrapping_divrem(div[0]);
                         duo[0] = temp.0;
                         div[0] = temp.1;
-                        return true
+                        true
                     }
                 }
             }
-            None => return false,
+            None => false,
         }
     }
 
@@ -1432,7 +1430,7 @@ impl ApInt {
         // Note that the typical places `Err` `Ok` are returned is switched. This is because
         //`rhs.is_zero()` is found as part of finding `duo_sd` inside `aarons_algorithm_divrem`,
         // and `lhs.clone()` cannot be performed inside the match statement
-        return Err(Error::division_by_zero(DivOp::UnsignedDivRem, lhs.clone()))
+        Err(Error::division_by_zero(DivOp::UnsignedDivRem, lhs.clone()))
     }
 
     /// Divides `lhs` by `rhs` using **unsigned** interpretation and sets `lhs` equal to the
@@ -1458,7 +1456,7 @@ impl ApInt {
                 }
             }
         }
-        return Err(Error::division_by_zero(DivOp::UnsignedRemDiv, lhs.clone()))
+        Err(Error::division_by_zero(DivOp::UnsignedRemDiv, lhs.clone()))
     }
 
     /// Quotient-assigns `lhs` by `rhs` inplace using **unsigned** interpretation.
@@ -1482,7 +1480,7 @@ impl ApInt {
                 }
             }
         }
-        return Err(Error::division_by_zero(DivOp::UnsignedDiv, self.clone()))
+        Err(Error::division_by_zero(DivOp::UnsignedDiv, self.clone()))
     }
 
     /// Divides `lhs` by `rhs` using **unsigned** interpretation and returns the quotient.
@@ -1517,7 +1515,7 @@ impl ApInt {
                 }
             }
         }
-        return Err(Error::division_by_zero(DivOp::UnsignedRem, self.clone()))
+        Err(Error::division_by_zero(DivOp::UnsignedRem, self.clone()))
     }
 
     /// Divides `lhs` by `rhs` using **unsigned** interpretation and returns the remainder.
@@ -1567,7 +1565,7 @@ impl ApInt {
             rhs.wrapping_neg()
         }
         // clearing unused bits is handled by `wrapping_neg()`
-        return Ok(())
+        Ok(())
     }
 
     /// Divides `lhs` by `rhs` using **signed** interpretation and sets `lhs` equal to the
@@ -1606,7 +1604,7 @@ impl ApInt {
             rhs.wrapping_neg()
         }
         // clearing unused bits is handled by `wrapping_neg()`
-        return Ok(())
+        Ok(())
     }
 
     /// Quotient-assigns `lhs` by `rhs` inplace using **signed** interpretation.

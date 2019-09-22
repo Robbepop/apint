@@ -325,7 +325,7 @@ impl Digit {
         DoubleDigit(DoubleDigitRepr::from(self.repr()))
     }
 
-    pub(crate) fn leading_zeros(&self) -> u32 {
+    pub(crate) fn leading_zeros(self) -> u32 {
         self.repr().leading_zeros()
     }
 
@@ -405,10 +405,7 @@ impl Digit {
         let width = width.into();
         if width.to_usize() > BITS {
             return Err(Error::invalid_bitwidth(width.to_usize()).with_annotation(
-                format!(
-                    "Encountered invalid `BitWidth` for operating \
-                     on a `Digit`."
-                ),
+                "Encountered invalid `BitWidth` for operating on a `Digit`."
             ))
         }
         Ok(())
@@ -517,7 +514,8 @@ impl Digit {
     {
         let pos = pos.into();
         checks::verify_bit_access(self, pos)?;
-        Ok(self.0 |= 0x01 << pos.to_usize())
+        self.0 |= 0x01 << pos.to_usize();
+        Ok(())
     }
 
     /// Sets the bit at position `pos` to `0`.
@@ -532,7 +530,8 @@ impl Digit {
     {
         let pos = pos.into();
         checks::verify_bit_access(self, pos)?;
-        Ok(self.0 &= !(0x01 << pos.to_usize()))
+        self.0 &= !(0x01 << pos.to_usize());
+        Ok(())
     }
 
     /// Flips the bit at position `pos`.
@@ -547,7 +546,8 @@ impl Digit {
     {
         let pos = pos.into();
         checks::verify_bit_access(self, pos)?;
-        Ok(self.0 ^= 0x01 << pos.to_usize())
+        self.0 ^= 0x01 << pos.to_usize();
+        Ok(())
     }
 
     /// Sets all bits in this digit to `1`.
@@ -580,7 +580,8 @@ impl Digit {
     #[inline]
     pub fn retain_last_n(&mut self, n: usize) -> Result<()> {
         checks::verify_bit_access(self, n)?;
-        Ok(self.0 &= !(REPR_ONES << n))
+        self.0 &= !(REPR_ONES << n);
+        Ok(())
     }
 }
 

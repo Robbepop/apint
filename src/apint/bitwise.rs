@@ -277,7 +277,7 @@ impl ApInt {
     /// Returns the number of ones in the binary representation of this `ApInt`.
     pub fn count_ones(&self) -> usize {
         self.as_digit_slice()
-            .into_iter()
+            .iter()
             .map(|d| d.repr().count_ones() as usize)
             .sum::<usize>()
     }
@@ -286,7 +286,7 @@ impl ApInt {
     pub fn count_zeros(&self) -> usize {
         let zeros = self
             .as_digit_slice()
-            .into_iter()
+            .iter()
             .map(|d| d.repr().count_zeros() as usize)
             .sum::<usize>();
         // Since `ApInt` instances with width's that are no powers of two
@@ -298,7 +298,7 @@ impl ApInt {
     /// Returns the number of leading zeros in the binary representation of this `ApInt`.
     pub fn leading_zeros(&self) -> usize {
         let mut zeros = 0;
-        for d in self.as_digit_slice().into_iter().rev() {
+        for d in self.as_digit_slice().iter().rev() {
             let leading_zeros = d.repr().leading_zeros() as usize;
             zeros += leading_zeros;
             if leading_zeros != digit::BITS {

@@ -96,7 +96,7 @@ impl ApInt {
                         use std::ptr;
                         let src_ptr = digits.as_mut_ptr();
                         unsafe {
-                            let dst_ptr = src_ptr.offset(digit_steps as isize);
+                            let dst_ptr = src_ptr.add(digit_steps);
                             ptr::copy(src_ptr, dst_ptr, digits_len - digit_steps)
                         }
                     }

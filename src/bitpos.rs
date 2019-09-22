@@ -43,7 +43,7 @@ impl BitPos {
     /// into the associated `Digit` offset and its `Digit`-relative bit position.
     #[inline]
     pub(crate) fn to_digit_and_bit_pos(self) -> (DigitPos, BitPos) {
-        let digit_pos = DigitPos::from(self.0 / digit::BITS);
+        let digit_pos = self.0 / digit::BITS;
         let bit_pos = BitPos::from(self.0 % digit::BITS);
         (digit_pos, bit_pos)
     }
