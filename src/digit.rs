@@ -405,7 +405,7 @@ impl Digit {
         let width = width.into();
         if width.to_usize() > BITS {
             return Err(Error::invalid_bitwidth(width.to_usize()).with_annotation(
-                "Encountered invalid `BitWidth` for operating on a `Digit`."
+                "Encountered invalid `BitWidth` for operating on a `Digit`.",
             ))
         }
         Ok(())
