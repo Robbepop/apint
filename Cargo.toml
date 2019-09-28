@@ -14,8 +14,7 @@ description = """Arbitrary precision integers library."""
 categories = ["data-structures"]
 
 [dependencies]
-smallvec = { version = "0.6.5", default-features = false }
-specialized-div-rem = { version = "0.0.2", optional = true }
+smallvec = { version = "0.6", default-features = false }
 rand = { version = "0.5.5", default-features = false, optional = true }
 specialized-div-rem = { version = "0.0.5", optional = true }
 serde = { version = "1.0", default-features = false, optional = true, features = ["derive"] }
@@ -23,7 +22,7 @@ serde = { version = "1.0", default-features = false, optional = true, features =
 libm = { version = "0.1", default-features = false }
 
 [dev-dependencies]
-serde_test = "1.0.75"
+serde_test = "1.0"
 itertools = "0.8"
 
 [features]
