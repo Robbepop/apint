@@ -259,6 +259,7 @@ impl ApInt {
             Digit,
             DigitRepr,
         };
+        use libm::F64Ext as _;
 
         debug_assert!(!v.is_empty() && !radix.is_power_of_two());
         debug_assert!(v.iter().all(|&c| radix.is_valid_byte(c)));
