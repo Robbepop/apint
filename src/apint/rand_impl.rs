@@ -3,10 +3,12 @@ use crate::{
     bitwidth::BitWidth,
     digit::Digit,
 };
-
 use rand::{
     self,
     FromEntropy,
+};
+use rand_xorshift::{
+    XorShiftRng,
 };
 
 impl rand::distributions::Distribution<Digit> for rand::distributions::Standard {
@@ -78,8 +80,8 @@ mod tests {
 
     #[test]
     fn random_with_width_using() {
-        let default_seed = <rand::XorShiftRng as rand::SeedableRng>::Seed::default();
-        let mut rng = rand::XorShiftRng::from_seed(default_seed);
+        let default_seed = <XorShiftRng as rand::SeedableRng>::Seed::default();
+        let mut rng = XorShiftRng::from_seed(default_seed);
         let r = &mut rng;
         assert_eq!(
             ApInt::random_with_width_using(BitWidth::w1(), r),
@@ -109,9 +111,9 @@ mod tests {
 
     #[test]
     fn randomize_using() {
-        let default_seed = <rand::XorShiftRng as rand::SeedableRng>::Seed::default();
-        let mut rng1 = rand::XorShiftRng::from_seed(default_seed);
-        let mut rng2 = rand::XorShiftRng::from_seed(default_seed);
+        let default_seed = <XorShiftRng as rand::SeedableRng>::Seed::default();
+        let mut rng1 = XorShiftRng::from_seed(default_seed);
+        let mut rng2 = XorShiftRng::from_seed(default_seed);
         let r1 = &mut rng1;
         let r2 = &mut rng2;
 
