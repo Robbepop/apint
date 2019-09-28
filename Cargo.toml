@@ -23,7 +23,7 @@ libm = { version = "0.1", default-features = false }
 
 [dev-dependencies]
 serde_test = "1.0.75"
-itertools = "0.7.8"
+itertools = "0.8"
 
 [features]
 default = ["rand_support", "serde_support", "specialized-div-rem", "std"]
