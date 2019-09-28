@@ -16,8 +16,8 @@ categories = ["data-structures"]
 [dependencies]
 smallvec = { version = "0.6", default-features = false }
 specialized-div-rem = { version = "0.0.5", optional = true }
-rand = { version = "0.6", default-features = false, optional = true }
-rand_xorshift = { version = "0.1", default-features = false, optional = true }
+rand = { version = "0.7", default-features = false, optional = true }
+rand_xorshift = { version = "0.2", default-features = false, optional = true }
 serde = { version = "1.0", default-features = false, optional = true, features = ["derive"] }
 # Currently needed because of: https://github.com/rust-lang/rfcs/issues/2505
 libm = { version = "0.1", default-features = false }
@@ -31,9 +31,16 @@ default = ["rand_support", "serde_support", "specialized-div-rem", "std"]
 std = [
     "smallvec/std",
     "rand/std",
+    # "rand_xorshift/std",
     "serde/std",
 ]
-rand_support = ["rand", "rand_xorshift"]
+rand_support = [
+    "rand",
+    "rand/small_rng",
+    "rand/getrandom",
+    "rand_xorshift",
+    # "rand_xorshift/getrandom",
+]
 serde_support = ["serde"]
 
 [badges]
