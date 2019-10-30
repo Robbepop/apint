@@ -384,7 +384,7 @@ macro_rules! impl_from_array_for_apint {
         impl From<[u64; $n]> for ApInt {
             fn from(val: [u64; $n]) -> ApInt {
                 let buffer = val
-                    .into_iter()
+                    .iter()
                     .rev()
                     .cloned()
                     .map(Digit)
@@ -464,7 +464,7 @@ mod tests {
     fn test_values_u8() -> impl Iterator<Item = u8> {
         powers_from_to(0..8)
             .map(|v| v as u8)
-            .chain([u8::max_value(), 10, 42, 99, 123].into_iter().map(|v| *v))
+            .chain([u8::max_value(), 10, 42, 99, 123].iter().map(|v| *v))
     }
 
     #[test]
@@ -511,7 +511,7 @@ mod tests {
             .chain(powers_from_to(8..16).map(|v| v as u16))
             .chain(
                 [u16::max_value(), 500, 1000, 1337, 7777, 42_000]
-                    .into_iter()
+                    .iter()
                     .map(|v| *v),
             )
     }
@@ -542,7 +542,7 @@ mod tests {
             .chain(powers_from_to(16..32).map(|v| v as u32))
             .chain(
                 [u32::max_value(), 1_000_000, 999_999_999, 1_234_567_890]
-                    .into_iter()
+                    .iter()
                     .map(|v| *v),
             )
     }
@@ -578,7 +578,7 @@ mod tests {
                     999_999_999_999_999_999,
                     0x0123_4567_89AB_CDEF,
                 ]
-                .into_iter()
+                .iter()
                 .map(|v| *v),
             )
     }
@@ -614,7 +614,7 @@ mod tests {
                     999_999_999_999_999_999_999_999_999,
                     0x0123_4567_89AB_CDEF_FEDC_BA98_7654_3210,
                 ]
-                .into_iter()
+                .iter()
                 .map(|v| *v),
             )
     }
@@ -683,7 +683,7 @@ mod tests {
         let test_widths = [
             1_usize, 2, 4, 8, 10, 16, 32, 50, 64, 100, 128, 150, 200, 250, 255, 256,
         ]
-        .into_iter()
+        .iter()
         .map(|&w| BitWidth::new(w).unwrap());
         for width in test_widths {
             assert_eq!(ApInt::zero(width), ApInt::all_unset(width));
@@ -725,7 +725,7 @@ mod tests {
         let test_widths = [
             1_usize, 2, 4, 8, 10, 16, 32, 50, 64, 100, 128, 150, 200, 250, 255, 256,
         ]
-        .into_iter()
+        .iter()
         .map(|&w| BitWidth::new(w).unwrap());
         for width in test_widths {
             assert_eq!(ApInt::zero(width), ApInt::unsigned_min_value(width));
@@ -737,7 +737,7 @@ mod tests {
         let test_widths = [
             1_usize, 2, 4, 8, 10, 16, 32, 50, 64, 100, 128, 150, 200, 250, 255, 256,
         ]
-        .into_iter()
+        .iter()
         .map(|&w| BitWidth::new(w).unwrap());
         for width in test_widths {
             assert_eq!(ApInt::all_set(width), ApInt::unsigned_max_value(width));

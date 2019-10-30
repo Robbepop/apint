@@ -462,7 +462,7 @@ mod tests {
 
         fn test_radices() -> impl Iterator<Item = Radix> {
             [2, 4, 8, 16, 32, 7, 10, 36]
-                .into_iter()
+                .iter()
                 .map(|&r| Radix::new(r).unwrap())
         }
 
