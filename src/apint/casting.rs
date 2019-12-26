@@ -540,35 +540,6 @@ mod tests {
             ApInt::from_u128(0x0000_0000_FFFF_FFFF_FFFF_FFFF_0000_0000),
             ApInt::from_u128(0x0000_0000_0000_0000_FFFF_FFFF_FFFF_FFFF),
             ApInt::all_set(BitWidth::w128()),
-            /* ApInt::zero(width_256),
-             * ApInt::one(width_256),
-             * ApInt::repeat_digit(width_256, Digit(1)),
-             * ApInt::repeat_digit(width_256, Digit(42)),
-             * ApInt::repeat_digit(width_256, Digit(1337)),
-             * ApInt::repeat_digit(width_256, 0xFFFF_FFFF_0000_0000),
-             * ApInt::repeat_digit(width_256, 0x0000_FFFF_FFFF_0000),
-             * ApInt::repeat_digit(width_256, 0x0000_0000_FFFF_FFFF),
-             * ApInt::all_set(width_256), */
-
-            /* ApInt::zero(width_500),
-             * ApInt::one(width_500),
-             * ApInt::repeat_digit(width_500, Digit(1)),
-             * ApInt::repeat_digit(width_500, Digit(42)),
-             * ApInt::repeat_digit(width_500, Digit(1337)),
-             * ApInt::repeat_digit(width_500, 0xFFFF_FFFF_0000_0000),
-             * ApInt::repeat_digit(width_500, 0x0000_FFFF_FFFF_0000),
-             * ApInt::repeat_digit(width_500, 0x0000_0000_FFFF_FFFF),
-             * ApInt::all_set(width_500), */
-
-            /* ApInt::zero(width_512),
-             * ApInt::one(width_512),
-             * ApInt::repeat_digit(width_512, Digit(1)),
-             * ApInt::repeat_digit(width_512, Digit(42)),
-             * ApInt::repeat_digit(width_512, Digit(1337)),
-             * ApInt::repeat_digit(width_512, 0xFFFF_FFFF_0000_0000),
-             * ApInt::repeat_digit(width_512, 0x0000_FFFF_FFFF_0000),
-             * ApInt::repeat_digit(width_512, 0x0000_0000_FFFF_FFFF),
-             * ApInt::all_set(width_512), */
         ]
         .into_iter()
     }

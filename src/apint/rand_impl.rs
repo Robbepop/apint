@@ -37,12 +37,17 @@ impl ApInt {
             Standard,
         };
         let random_digits = Standard.sample_iter(rng).take(required_digits);
+        // The truncation will be cheap always!
         ApInt::from_iter(random_digits)
-            .expect("We asserted that `required_digits` is at least `1` or greater
-                     so it is safe to assume that `ApInt::from_iter` won't fail.")
-            .into_truncate(width) // This truncation will be cheap always!
-            .expect("`BitWidth::required_digits` returns an upper bound for the
-                     number of required digits, so it is safe to truncate.")
+            .expect(
+                "We asserted that `required_digits` is at least `1` or greater
+                     so it is safe to assume that `ApInt::from_iter` won't fail.",
+            )
+            .into_truncate(width)
+            .expect(
+                "`BitWidth::required_digits` returns an upper bound for the
+                     number of required digits, so it is safe to truncate.",
+            )
     }
 
     /// Randomizes the digits of this `ApInt` inplace.

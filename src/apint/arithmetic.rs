@@ -845,19 +845,19 @@ impl ApInt {
         // assigns `$sum + $sub` to `$target`,
         // and assigns `$val + $add` to `$sum`
         macro_rules! special1 {
-            ($len:expr, $sum:ident, $sub:ident, $target:ident, $val:expr, $add:ident) => {{
+            ($len:expr, $sum:ident, $sub:ident, $targ:ident, $val:expr, $add:ident) => {{
                 // subtraction (`sub` is the two's complement of some value)
                 let (temp, mut carry) = $sum[0].carrying_add($sub[0]);
-                $target[0] = temp;
+                $targ[0] = temp;
                 for i in 1..($len - 1) {
                     let temp = $sum[i]
                         .dd()
                         .wrapping_add($sub[i].dd())
                         .wrapping_add(carry.dd());
-                    $target[i] = temp.lo();
+                    $targ[i] = temp.lo();
                     carry = temp.hi();
                 }
-                $target[$len - 1] = $sum[$len - 1]
+                $targ[$len - 1] = $sum[$len - 1]
                     .wrapping_add($sub[$len - 1])
                     .wrapping_add(carry);
                 let (temp, mut carry) = $add[0].carrying_add($val);
@@ -2689,6 +2689,7 @@ mod tests {
                     if temp0 != (lhs.clone() & &anti_overflow_mask) {
                         panic!(
                             "wrong div\nlhs:{:?}\nactual:{:?}\nrhs:{:?}\nthird:{:?}\\
+                             \
                              nrem:{:?}\nmul:{:?}\nmul_plus_rem:{:?}\ntemp0:{:?}\ntemp1:\
                              {:?}",
                             lhs,
@@ -2705,6 +2706,7 @@ mod tests {
                     if temp1 != rem {
                         panic!(
                             "wrong rem\nlhs:{:?}\nactual:{:?}\nrhs:{:?}\nthird:{:?}\\
+                             \
                              nrem:{:?}\nmul:{:?}\nmul_plus_rem:{:?}\ntemp0:{:?}\ntemp1:\
                              {:?}",
                             lhs,

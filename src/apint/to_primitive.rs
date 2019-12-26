@@ -278,9 +278,13 @@ impl ApInt {
         if actual_width < target_width {
             // Sign extend the `i128`. Fill up with `1` up to `128` bits
             // starting from the sign bit position.
-            let b = actual_width.to_usize(); // Number of bits representing the number in x.
-            let m: i128 = 1 << (b - 1); // Mask can be pre-computed if b is fixed.
-            result = (result ^ m) - m; // Resulting sign-extended number.
+
+            // Number of bits representing the number in x.
+            let b = actual_width.to_usize();
+            // Mask can be pre-computed if b is fixed.
+            let m: i128 = 1 << (b - 1);
+            // Resulting sign-extended number.
+            result = (result ^ m) - m;
         }
 
         result
@@ -537,9 +541,13 @@ impl ApInt {
         if actual_width < target_width {
             // Sign extend the `i128`. Fill up with `1` up to `128` bits
             // starting from the sign bit position.
-            let b = actual_width.to_usize(); // Number of bits representing the number in x.
-            let m: i128 = 1 << (b - 1); // Mask can be pre-computed if b is fixed.
-            result = (result ^ m).wrapping_sub(m); // Resulting sign-extended number.
+
+            // Number of bits representing the number in x.
+            let b = actual_width.to_usize();
+            // Mask can be pre-computed if b is fixed.
+            let m: i128 = 1 << (b - 1);
+            // Resulting sign-extended number.
+            result = (result ^ m).wrapping_sub(m);
         }
 
         Ok(result)
@@ -984,9 +992,13 @@ mod tests {
                     if actual_width < target_width {
                         // Sign extend the `i128`. Fill up with `1` up to `128` bits
                         // starting from the sign bit position.
-                        let b = actual_width.to_usize(); // Number of bits representing the number in x.
-                        let m: i128 = 1 << (b - 1); // Mask can be pre-computed if b is fixed.
-                        result = (result ^ m).wrapping_sub(m); // Resulting sign-extended number.
+
+                        // Number of bits representing the number in x.
+                        let b = actual_width.to_usize();
+                        // Mask can be pre-computed if b is fixed.
+                        let m: i128 = 1 << (b - 1);
+                        // Resulting sign-extended number.
+                        result = (result ^ m).wrapping_sub(m);
                     }
                     assert_eq!(apint.try_to_i128(), Ok(result))
                 } else {
