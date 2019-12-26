@@ -32,7 +32,10 @@ impl ApInt {
     {
         let required_digits = width.required_digits();
         assert!(required_digits >= 1);
-        use rand::distributions::{Standard, Distribution};
+        use rand::distributions::{
+            Distribution,
+            Standard,
+        };
         let random_digits = Standard.sample_iter(rng).take(required_digits);
         ApInt::from_iter(random_digits)
             .expect("We asserted that `required_digits` is at least `1` or greater
@@ -57,11 +60,12 @@ impl ApInt {
     where
         R: rand::Rng,
     {
-        use rand::distributions::{Standard, Distribution};
+        use rand::distributions::{
+            Distribution,
+            Standard,
+        };
         let std_dist = Standard.sample_iter(rng);
-        self.digits_mut()
-            .zip(std_dist)
-            .for_each(|(d, r)| *d = r);
+        self.digits_mut().zip(std_dist).for_each(|(d, r)| *d = r);
         self.clear_unused_bits();
     }
 }
@@ -70,9 +74,7 @@ impl ApInt {
 mod tests {
     use super::*;
     use rand::SeedableRng;
-    use rand_xorshift::{
-        XorShiftRng,
-    };
+    use rand_xorshift::XorShiftRng;
 
     #[test]
     fn random_with_width_using() {

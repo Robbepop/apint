@@ -128,7 +128,8 @@ impl ApInt {
         }
     }
 
-    /// Mutably accesses the internal `Digit` data of this `ApInt` in a safe way.
+    /// Mutably accesses the internal `Digit` data of this `ApInt` in a safe
+    /// way.
     #[inline]
     pub(in crate::apint) fn access_data_mut(&mut self) -> DataAccessMut {
         match self.storage() {
@@ -137,7 +138,8 @@ impl ApInt {
         }
     }
 
-    /// Zips both given `ApInt` instances and tries to access their data in a safe way.
+    /// Zips both given `ApInt` instances and tries to access their data in a
+    /// safe way.
     ///
     /// # Errors
     ///
@@ -160,8 +162,8 @@ impl ApInt {
         })
     }
 
-    /// Zips both given `ApInt` instances and tries to mutably access `self` data and immutably
-    /// access `other` data in a safe way.
+    /// Zips both given `ApInt` instances and tries to mutably access `self`
+    /// data and immutably access `other` data in a safe way.
     ///
     /// # Errors
     ///
@@ -189,8 +191,8 @@ impl ApInt {
         })
     }
 
-    /// Zips both given `ApInt` instances and tries to mutably access `lhs` and `rhs` data
-    /// in a safe way.
+    /// Zips both given `ApInt` instances and tries to mutably access `lhs` and
+    /// `rhs` data in a safe way.
     ///
     /// # Errors
     ///
@@ -269,7 +271,8 @@ impl ApInt {
         Ok(())
     }
 
-    /// Returns a slice over the `Digit`s of this `ApInt` in little-endian order.
+    /// Returns a slice over the `Digit`s of this `ApInt` in little-endian
+    /// order.
     #[inline]
     pub(in crate::apint) fn as_digit_slice(&self) -> &[Digit] {
         use core::slice;
@@ -281,7 +284,8 @@ impl ApInt {
         }
     }
 
-    /// Returns a mutable slice over the `Digit`s of this `ApInt` in little-endian order.
+    /// Returns a mutable slice over the `Digit`s of this `ApInt` in
+    /// little-endian order.
     #[inline]
     pub(in crate::apint) fn as_digit_slice_mut(&mut self) -> &mut [Digit] {
         use core::slice;
@@ -302,7 +306,8 @@ impl ApInt {
         }
     }
 
-    /// Returns a mutable reference to the most significant `Digit` of this `ApInt`.
+    /// Returns a mutable reference to the most significant `Digit` of this
+    /// `ApInt`.
     #[inline]
     pub(in crate::apint) fn most_significant_digit_mut(&mut self) -> &mut Digit {
         match self.access_data_mut() {
@@ -368,8 +373,8 @@ impl ApInt {
     /// # Note
     ///
     /// - Zero (`0`) is also called the additive neutral element.
-    /// - This operation is more efficient than comparing two instances
-    ///   of `ApInt` for the same reason.
+    /// - This operation is more efficient than comparing two instances of
+    ///   `ApInt` for the same reason.
     #[inline]
     pub fn is_zero(&self) -> bool {
         match self.access_data() {
@@ -383,8 +388,8 @@ impl ApInt {
     /// # Note
     ///
     /// - One (`1`) is also called the multiplicative neutral element.
-    /// - This operation is more efficient than comparing two instances
-    ///   of `ApInt` for the same reason.
+    /// - This operation is more efficient than comparing two instances of
+    ///   `ApInt` for the same reason.
     #[inline]
     pub fn is_one(&self) -> bool {
         match self.access_data() {
@@ -410,15 +415,15 @@ impl ApInt {
         self.least_significant_bit() == Bit::Set
     }
 
-    /// Returns `true` if the **signed** representation of this `ApInt` is positive.
-    /// Equivalent to testing if the most significant bit is zero.
+    /// Returns `true` if the **signed** representation of this `ApInt` is
+    /// positive. Equivalent to testing if the most significant bit is zero.
     #[inline]
     pub fn is_positive(&self) -> bool {
         self.most_significant_bit() == Bit::Unset
     }
 
-    /// Returns `true` if the **signed** representation of this `ApInt` is negative.
-    /// Equivalent to testing if the most significant bit is one.
+    /// Returns `true` if the **signed** representation of this `ApInt` is
+    /// negative. Equivalent to testing if the most significant bit is one.
     #[inline]
     pub fn is_negative(&self) -> bool {
         self.most_significant_bit() == Bit::Set

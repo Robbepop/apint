@@ -155,7 +155,7 @@ impl ApInt {
                         let rhs = (rhs.repr() << infate_abs) as i64;
                         Ok(lhs < rhs)
                     }
-                    ZipDataAccess::Ext(_, _) => {
+                    ZipDataAccess::Ext(..) => {
                         match (lhs.sign_bit(), rhs.sign_bit()) {
                             (Bit::Unset, Bit::Unset) => lhs.checked_ult(rhs),
                             (Bit::Unset, Bit::Set) => Ok(false),

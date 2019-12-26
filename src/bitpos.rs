@@ -26,21 +26,23 @@ impl BitPos {
     ///
     /// # Errors
     ///
-    /// - This operation cannot fail but may do so in future version of this library.
+    /// - This operation cannot fail but may do so in future version of this
+    ///   library.
     #[inline]
     pub fn new(pos: usize) -> Result<BitPos> {
         Ok(BitPos(pos))
     }
 
-    /// Converts this `BitPos` into its associated `BitPos` that is usable to operate
-    /// on `Digit` instances.
+    /// Converts this `BitPos` into its associated `BitPos` that is usable to
+    /// operate on `Digit` instances.
     #[inline]
     pub(crate) fn to_pos_within_digit(self) -> BitPos {
         BitPos(self.0 % digit::BITS)
     }
 
-    /// Splits this `BitPos` that may range over several `Digit`s within an `ApInt`
-    /// into the associated `Digit` offset and its `Digit`-relative bit position.
+    /// Splits this `BitPos` that may range over several `Digit`s within an
+    /// `ApInt` into the associated `Digit` offset and its `Digit`-relative
+    /// bit position.
     #[inline]
     pub(crate) fn to_digit_and_bit_pos(self) -> (DigitPos, BitPos) {
         let digit_pos = self.0 / digit::BITS;

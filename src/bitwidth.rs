@@ -86,7 +86,8 @@ impl BitWidth {
         shift_amount.into().to_usize() < self.0
     }
 
-    /// Returns the `BitPos` for the sign bit of an `ApInt` with this `BitWidth`.
+    /// Returns the `BitPos` for the sign bit of an `ApInt` with this
+    /// `BitWidth`.
     #[inline]
     pub(crate) fn sign_bit_pos(self) -> BitPos {
         BitPos::from(self.to_usize() - 1)
@@ -136,8 +137,8 @@ impl BitWidth {
     }
 
     /// Returns a storage specifier that tells the caller if `ApInt`'s
-    /// associated with this bitwidth require an external memory (`Ext`) to store
-    /// their digits or may use inplace memory (`Inl`).
+    /// associated with this bitwidth require an external memory (`Ext`) to
+    /// store their digits or may use inplace memory (`Inl`).
     ///
     /// *Note:* Maybe this method should be removed. A constructor for
     ///         `Storage` fits better for this purpose.

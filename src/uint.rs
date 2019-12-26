@@ -44,10 +44,12 @@ use core::{
 
 /// Unsigned machine integer with arbitrary bitwidths and modulo arithmetics.
 ///
-/// Thin convenience wrapper around `ApInt` for static unsigned interpretation of the value.
+/// Thin convenience wrapper around `ApInt` for static unsigned interpretation
+/// of the value.
 ///
-/// This very cheaply transformes to and from `ApInt` and `Int` instances and together with
-/// `Int` offers a more elegant and higher-level abstraction interface to the lower-level `ApInt`.
+/// This very cheaply transformes to and from `ApInt` and `Int` instances and
+/// together with `Int` offers a more elegant and higher-level abstraction
+/// interface to the lower-level `ApInt`.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 #[cfg_attr(serde_support, Serialize)]
 #[cfg_attr(serde_support, Deserialize)]
@@ -77,7 +79,8 @@ impl UInt {
 impl UInt {
     /// Creates a new `UInt` from the given `Bit` value with a bit width of `1`.
     ///
-    /// This function is generic over types that are convertible to `Bit` such as `bool`.
+    /// This function is generic over types that are convertible to `Bit` such
+    /// as `bool`.
     pub fn from_bit<B>(bit: B) -> UInt
     where
         B: Into<Bit>,
@@ -140,12 +143,14 @@ impl UInt {
         UInt::from(ApInt::all_set(width))
     }
 
-    /// Returns the smallest `UInt` that can be represented by the given `BitWidth`.
+    /// Returns the smallest `UInt` that can be represented by the given
+    /// `BitWidth`.
     pub fn min_value(width: BitWidth) -> UInt {
         UInt::from(ApInt::unsigned_min_value(width))
     }
 
-    /// Returns the largest `UInt` that can be represented by the given `BitWidth`.
+    /// Returns the largest `UInt` that can be represented by the given
+    /// `BitWidth`.
     pub fn max_value(width: BitWidth) -> UInt {
         UInt::from(ApInt::unsigned_max_value(width))
     }
@@ -218,8 +223,8 @@ impl UInt {
     /// # Note
     ///
     /// - Zero (`0`) is also called the additive neutral element.
-    /// - This operation is more efficient than comparing two instances
-    ///   of `UInt` for the same reason.
+    /// - This operation is more efficient than comparing two instances of
+    ///   `UInt` for the same reason.
     pub fn is_zero(&self) -> bool {
         self.value.is_zero()
     }
@@ -229,8 +234,8 @@ impl UInt {
     /// # Note
     ///
     /// - One (`1`) is also called the multiplicative neutral element.
-    /// - This operation is more efficient than comparing two instances
-    ///   of `UInt` for the same reason.
+    /// - This operation is more efficient than comparing two instances of
+    ///   `UInt` for the same reason.
     pub fn is_one(&self) -> bool {
         self.value.is_one()
     }
@@ -311,8 +316,9 @@ impl UInt {
     }
 }
 
-/// If `self` and `rhs` have unmatching bit widths, `None` will be returned for `partial_cmp`
-/// and `false` will be returned for the rest of the `PartialOrd` methods.
+/// If `self` and `rhs` have unmatching bit widths, `None` will be returned for
+/// `partial_cmp` and `false` will be returned for the rest of the `PartialOrd`
+/// methods.
 impl PartialOrd for UInt {
     fn partial_cmp(&self, rhs: &UInt) -> Option<Ordering> {
         if self.value.width() != rhs.value.width() {
@@ -353,8 +359,8 @@ impl UInt {
     ///
     /// # Note
     ///
-    /// - Basically this returns `true` if the least significant
-    ///   bit of this `UInt` is `1` and `false` otherwise.
+    /// - Basically this returns `true` if the least significant bit of this
+    ///   `UInt` is `1` and `false` otherwise.
     pub fn resize_to_bool(&self) -> bool {
         self.value.resize_to_bool()
     }
@@ -363,9 +369,8 @@ impl UInt {
     ///
     /// # Note
     ///
-    /// - All bits but the least significant `8` bits are
-    ///   being ignored by this operation to construct the
-    ///   result.
+    /// - All bits but the least significant `8` bits are being ignored by this
+    ///   operation to construct the result.
     pub fn resize_to_u8(&self) -> u8 {
         self.value.resize_to_u8()
     }
@@ -374,9 +379,8 @@ impl UInt {
     ///
     /// # Note
     ///
-    /// - All bits but the least significant `16` bits are
-    ///   being ignored by this operation to construct the
-    ///   result.
+    /// - All bits but the least significant `16` bits are being ignored by this
+    ///   operation to construct the result.
     pub fn resize_to_u16(&self) -> u16 {
         self.value.resize_to_u16()
     }
@@ -385,9 +389,8 @@ impl UInt {
     ///
     /// # Note
     ///
-    /// - All bits but the least significant `32` bits are
-    ///   being ignored by this operation to construct the
-    ///   result.
+    /// - All bits but the least significant `32` bits are being ignored by this
+    ///   operation to construct the result.
     pub fn resize_to_u32(&self) -> u32 {
         self.value.resize_to_u32()
     }
@@ -396,9 +399,8 @@ impl UInt {
     ///
     /// # Note
     ///
-    /// - All bits but the least significant `64` bits are
-    ///   being ignored by this operation to construct the
-    ///   result.
+    /// - All bits but the least significant `64` bits are being ignored by this
+    ///   operation to construct the result.
     pub fn resize_to_u64(&self) -> u64 {
         self.value.resize_to_u64()
     }
@@ -407,9 +409,8 @@ impl UInt {
     ///
     /// # Note
     ///
-    /// - All bits but the least significant `128` bits are
-    ///   being ignored by this operation to construct the
-    ///   result.
+    /// - All bits but the least significant `128` bits are being ignored by
+    ///   this operation to construct the result.
     pub fn resize_to_u128(&self) -> u128 {
         self.value.resize_to_u128()
     }
@@ -427,8 +428,8 @@ impl UInt {
     ///
     /// # Errors
     ///
-    /// - If the value represented by this `UInt` can not be
-    ///   represented by a `bool`.
+    /// - If the value represented by this `UInt` can not be represented by a
+    ///   `bool`.
     pub fn try_to_bool(&self) -> Result<bool> {
         self.value.try_to_bool()
     }
@@ -437,13 +438,13 @@ impl UInt {
     ///
     /// # Note
     ///
-    /// - This conversion is possible as long as the value represented
-    ///   by this `UInt` does not exceed the maximum value of `u8`.
+    /// - This conversion is possible as long as the value represented by this
+    ///   `UInt` does not exceed the maximum value of `u8`.
     ///
     /// # Errors
     ///
-    /// - If the value represented by this `UInt` can not be
-    ///   represented by a `u8`.
+    /// - If the value represented by this `UInt` can not be represented by a
+    ///   `u8`.
     pub fn try_to_u8(&self) -> Result<u8> {
         self.value.try_to_u8()
     }
@@ -452,13 +453,13 @@ impl UInt {
     ///
     /// # Note
     ///
-    /// - This conversion is possible as long as the value represented
-    ///   by this `UInt` does not exceed the maximum value of `u16`.
+    /// - This conversion is possible as long as the value represented by this
+    ///   `UInt` does not exceed the maximum value of `u16`.
     ///
     /// # Errors
     ///
-    /// - If the value represented by this `UInt` can not be
-    ///   represented by a `u16`.
+    /// - If the value represented by this `UInt` can not be represented by a
+    ///   `u16`.
     pub fn try_to_u16(&self) -> Result<u16> {
         self.value.try_to_u16()
     }
@@ -467,13 +468,13 @@ impl UInt {
     ///
     /// # Note
     ///
-    /// - This conversion is possible as long as the value represented
-    ///   by this `UInt` does not exceed the maximum value of `u32`.
+    /// - This conversion is possible as long as the value represented by this
+    ///   `UInt` does not exceed the maximum value of `u32`.
     ///
     /// # Errors
     ///
-    /// - If the value represented by this `UInt` can not be
-    ///   represented by a `u32`.
+    /// - If the value represented by this `UInt` can not be represented by a
+    ///   `u32`.
     pub fn try_to_u32(&self) -> Result<u32> {
         self.value.try_to_u32()
     }
@@ -482,13 +483,13 @@ impl UInt {
     ///
     /// # Note
     ///
-    /// - This conversion is possible as long as the value represented
-    ///   by this `UInt` does not exceed the maximum value of `u64`.
+    /// - This conversion is possible as long as the value represented by this
+    ///   `UInt` does not exceed the maximum value of `u64`.
     ///
     /// # Errors
     ///
-    /// - If the value represented by this `UInt` can not be
-    ///   represented by a `u64`.
+    /// - If the value represented by this `UInt` can not be represented by a
+    ///   `u64`.
     pub fn try_to_u64(&self) -> Result<u64> {
         self.value.try_to_u64()
     }
@@ -497,8 +498,8 @@ impl UInt {
     ///
     /// # Note
     ///
-    /// - This conversion is possible as long as the value represented
-    ///   by this `UInt` does not exceed the maximum value of `u128`.
+    /// - This conversion is possible as long as the value represented by this
+    ///   `UInt` does not exceed the maximum value of `u128`.
     ///
     /// # Complexity
     ///
@@ -506,8 +507,8 @@ impl UInt {
     ///
     /// # Errors
     ///
-    /// - If the value represented by this `UInt` can not be
-    ///   represented by a `u128`.
+    /// - If the value represented by this `UInt` can not be represented by a
+    ///   `u128`.
     pub fn try_to_u128(&self) -> Result<u128> {
         self.value.try_to_u128()
     }
@@ -521,7 +522,8 @@ impl UInt {
     ///
     /// # Errors
     ///
-    /// - If the given `shift_amount` is invalid for the bit width of this `UInt`.
+    /// - If the given `shift_amount` is invalid for the bit width of this
+    ///   `UInt`.
     pub fn wrapping_shl_assign<S>(&mut self, shift_amount: S) -> Result<()>
     where
         S: Into<ShiftAmount>,
@@ -529,13 +531,15 @@ impl UInt {
         self.value.wrapping_shl_assign(shift_amount)
     }
 
-    /// Shift this `UInt` left by the given `shift_amount` bits and returns the result.
+    /// Shift this `UInt` left by the given `shift_amount` bits and returns the
+    /// result.
     ///
     /// This operation is inplace and will **not** allocate memory.
     ///
     /// # Errors
     ///
-    /// - If the given `shift_amount` is invalid for the bit width of this `UInt`.
+    /// - If the given `shift_amount` is invalid for the bit width of this
+    ///   `UInt`.
     pub fn into_wrapping_shl<S>(self, shift_amount: S) -> Result<UInt>
     where
         S: Into<ShiftAmount>,
@@ -549,7 +553,8 @@ impl UInt {
     ///
     /// # Errors
     ///
-    /// - If the given `shift_amount` is invalid for the bit width of this `UInt`.
+    /// - If the given `shift_amount` is invalid for the bit width of this
+    ///   `UInt`.
     pub fn wrapping_shr_assign<S>(&mut self, shift_amount: S) -> Result<()>
     where
         S: Into<ShiftAmount>,
@@ -564,7 +569,8 @@ impl UInt {
     ///
     /// # Errors
     ///
-    /// - If the given `shift_amount` is invalid for the bit width of this `UInt`.
+    /// - If the given `shift_amount` is invalid for the bit width of this
+    ///   `UInt`.
     pub fn into_wrapping_shr<S>(self, shift_amount: S) -> Result<UInt>
     where
         S: Into<ShiftAmount>,
@@ -732,8 +738,7 @@ impl UInt {
     /// # Note
     ///
     /// - This is useful for method chaining.
-    /// - For more details look into
-    ///   [`extend`](struct.UInt.html#method.extend).
+    /// - For more details look into [`extend`](struct.UInt.html#method.extend).
     ///
     /// # Errors
     ///
@@ -771,8 +776,7 @@ impl UInt {
     /// # Note
     ///
     /// - This is useful for method chaining.
-    /// - For more details look into
-    ///   [`resize`](struct.UInt.html#method.resize).
+    /// - For more details look into [`resize`](struct.UInt.html#method.resize).
     pub fn into_resize<W>(self, target_width: W) -> UInt
     where
         W: Into<BitWidth>,
@@ -786,11 +790,9 @@ impl UInt {
     ///
     /// This operation will forward to
     ///
-    /// - [`truncate`](struct.UInt.html#method.truncate)
-    ///   if `target_width` is less than or equal to the width of
-    ///   the given `UInt`
-    /// - [`extend`](struct.UInt.html#method.extend)
-    ///   otherwise
+    /// - [`truncate`](struct.UInt.html#method.truncate) if `target_width` is
+    ///   less than or equal to the width of the given `UInt`
+    /// - [`extend`](struct.UInt.html#method.extend) otherwise
     pub fn resize<W>(&mut self, target_width: W)
     where
         W: Into<BitWidth>,
@@ -922,8 +924,8 @@ impl UInt {
     ///
     /// # Note
     ///
-    /// - If the bit at the given position was `0` it will be `1`
-    ///   after this operation and vice versa.
+    /// - If the bit at the given position was `0` it will be `1` after this
+    ///   operation and vice versa.
     ///
     /// # Errors
     ///
@@ -973,12 +975,14 @@ impl UInt {
         self.value.count_zeros()
     }
 
-    /// Returns the number of leading zeros in the binary representation of this `UInt`.
+    /// Returns the number of leading zeros in the binary representation of this
+    /// `UInt`.
     pub fn leading_zeros(&self) -> usize {
         self.value.leading_zeros()
     }
 
-    /// Returns the number of trailing zeros in the binary representation of this `UInt`.
+    /// Returns the number of trailing zeros in the binary representation of
+    /// this `UInt`.
     pub fn trailing_zeros(&self) -> usize {
         self.value.trailing_zeros()
     }
@@ -1130,8 +1134,9 @@ impl UInt {
     ///
     /// # Note
     ///
-    /// In the low-level bit-wise representation there is no difference between signed
-    /// and unsigned subtraction of fixed bit-width integers. (Cite: LLVM)
+    /// In the low-level bit-wise representation there is no difference between
+    /// signed and unsigned subtraction of fixed bit-width integers. (Cite:
+    /// LLVM)
     ///
     /// # Errors
     ///
@@ -1144,8 +1149,9 @@ impl UInt {
     ///
     /// # Note
     ///
-    /// In the low-level bit-wise representation there is no difference between signed
-    /// and unsigned subtraction of fixed bit-width integers. (Cite: LLVM)
+    /// In the low-level bit-wise representation there is no difference between
+    /// signed and unsigned subtraction of fixed bit-width integers. (Cite:
+    /// LLVM)
     ///
     /// # Errors
     ///
@@ -1158,8 +1164,9 @@ impl UInt {
     ///
     /// # Note
     ///
-    /// In the low-level bit-wise representation there is no difference between signed
-    /// and unsigned multiplication of fixed bit-width integers. (Cite: LLVM)
+    /// In the low-level bit-wise representation there is no difference between
+    /// signed and unsigned multiplication of fixed bit-width integers.
+    /// (Cite: LLVM)
     ///
     /// # Errors
     ///
@@ -1172,8 +1179,9 @@ impl UInt {
     ///
     /// # Note
     ///
-    /// In the low-level bit-wise representation there is no difference between signed
-    /// and unsigned multiplication of fixed bit-width integers. (Cite: LLVM)
+    /// In the low-level bit-wise representation there is no difference between
+    /// signed and unsigned multiplication of fixed bit-width integers.
+    /// (Cite: LLVM)
     ///
     /// # Errors
     ///
@@ -1186,9 +1194,10 @@ impl UInt {
     ///
     /// # Note
     ///
-    /// - This operation will **not** allocate memory and computes inplace of `self`.
-    /// - In the low-level machine abstraction signed division and unsigned division
-    ///   are two different operations.
+    /// - This operation will **not** allocate memory and computes inplace of
+    ///   `self`.
+    /// - In the low-level machine abstraction signed division and unsigned
+    ///   division are two different operations.
     ///
     /// # Errors
     ///
@@ -1201,9 +1210,10 @@ impl UInt {
     ///
     /// # Note
     ///
-    /// - This operation will **not** allocate memory and computes inplace of `self`.
-    /// - In the low-level machine abstraction signed division and unsigned division
-    ///   are two different operations.
+    /// - This operation will **not** allocate memory and computes inplace of
+    ///   `self`.
+    /// - In the low-level machine abstraction signed division and unsigned
+    ///   division are two different operations.
     ///
     /// # Errors
     ///
@@ -1212,13 +1222,15 @@ impl UInt {
         self.value.wrapping_udiv_assign(&rhs.value)
     }
 
-    /// Calculates the **unsigned** remainder of `self` by `rhs` and returns the result.
+    /// Calculates the **unsigned** remainder of `self` by `rhs` and returns the
+    /// result.
     ///
     /// # Note
     ///
-    /// - This operation will **not** allocate memory and computes inplace of `self`.
-    /// - In the low-level machine abstraction signed division and unsigned division
-    ///   are two different operations.
+    /// - This operation will **not** allocate memory and computes inplace of
+    ///   `self`.
+    /// - In the low-level machine abstraction signed division and unsigned
+    ///   division are two different operations.
     ///
     /// # Errors
     ///
@@ -1231,9 +1243,10 @@ impl UInt {
     ///
     /// # Note
     ///
-    /// - This operation will **not** allocate memory and computes inplace of `self`.
-    /// - In the low-level machine abstraction signed division and unsigned division
-    ///   are two different operations.
+    /// - This operation will **not** allocate memory and computes inplace of
+    ///   `self`.
+    /// - In the low-level machine abstraction signed division and unsigned
+    ///   division are two different operations.
     ///
     /// # Errors
     ///

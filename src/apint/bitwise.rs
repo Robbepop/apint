@@ -176,8 +176,8 @@ impl ApInt {
     ///
     /// # Note
     ///
-    /// - If the bit at the given position was `0` it will be `1`
-    ///   after this operation and vice versa.
+    /// - If the bit at the given position was `0` it will be `1` after this
+    ///   operation and vice versa.
     ///
     /// # Errors
     ///
@@ -260,9 +260,10 @@ impl ApInt {
     ///
     /// # Note
     ///
-    /// - If the sign bit was `0` it will be `1` after this operation and vice versa.
-    /// - Depending on the interpretation of the `ApInt` this
-    ///   operation changes its signedness.
+    /// - If the sign bit was `0` it will be `1` after this operation and vice
+    ///   versa.
+    /// - Depending on the interpretation of the `ApInt` this operation changes
+    ///   its signedness.
     pub fn flip_sign_bit(&mut self) {
         let sign_bit_pos = self.width().sign_bit_pos();
         self.flip_bit_at(sign_bit_pos).expect(
@@ -282,7 +283,8 @@ impl ApInt {
             .sum::<usize>()
     }
 
-    /// Returns the number of zeros in the binary representation of this `ApInt`.
+    /// Returns the number of zeros in the binary representation of this
+    /// `ApInt`.
     pub fn count_zeros(&self) -> usize {
         let zeros = self
             .as_digit_slice()
@@ -295,7 +297,8 @@ impl ApInt {
         zeros - (digit::BITS - self.width().excess_bits().unwrap_or(digit::BITS))
     }
 
-    /// Returns the number of leading zeros in the binary representation of this `ApInt`.
+    /// Returns the number of leading zeros in the binary representation of this
+    /// `ApInt`.
     pub fn leading_zeros(&self) -> usize {
         let mut zeros = 0;
         for d in self.as_digit_slice().iter().rev() {
@@ -308,7 +311,8 @@ impl ApInt {
         zeros - (digit::BITS - self.width().excess_bits().unwrap_or(digit::BITS))
     }
 
-    /// Returns the number of trailing zeros in the binary representation of this `ApInt`.
+    /// Returns the number of trailing zeros in the binary representation of
+    /// this `ApInt`.
     pub fn trailing_zeros(&self) -> usize {
         let mut zeros = 0;
         for d in self.as_digit_slice() {

@@ -77,7 +77,8 @@ impl ApInt {
     ///
     /// # Errors
     ///
-    /// - If the given `shift_amount` is invalid for the bit width of this `ApInt`.
+    /// - If the given `shift_amount` is invalid for the bit width of this
+    ///   `ApInt`.
     pub fn wrapping_shl_assign<S>(&mut self, shift_amount: S) -> Result<()>
     where
         S: Into<ShiftAmount>,
@@ -121,13 +122,15 @@ impl ApInt {
         Ok(())
     }
 
-    /// Shift this `ApInt` left by the given `shift_amount` bits and returns the result.
+    /// Shift this `ApInt` left by the given `shift_amount` bits and returns the
+    /// result.
     ///
     /// This operation is inplace and will **not** allocate memory.
     ///
     /// # Errors
     ///
-    /// - If the given `shift_amount` is invalid for the bit width of this `ApInt`.
+    /// - If the given `shift_amount` is invalid for the bit width of this
+    ///   `ApInt`.
     pub fn into_wrapping_shl<S>(self, shift_amount: S) -> Result<ApInt>
     where
         S: Into<ShiftAmount>,
@@ -141,7 +144,8 @@ impl ApInt {
     ///
     /// # Errors
     ///
-    /// - If the given `shift_amount` is invalid for the bit width of this `ApInt`.
+    /// - If the given `shift_amount` is invalid for the bit width of this
+    ///   `ApInt`.
     pub fn wrapping_lshr_assign<S>(&mut self, shift_amount: S) -> Result<()>
     where
         S: Into<ShiftAmount>,
@@ -184,7 +188,8 @@ impl ApInt {
     ///
     /// # Errors
     ///
-    /// - If the given `shift_amount` is invalid for the bit width of this `ApInt`.
+    /// - If the given `shift_amount` is invalid for the bit width of this
+    ///   `ApInt`.
     pub fn into_wrapping_lshr<S>(self, shift_amount: S) -> Result<ApInt>
     where
         S: Into<ShiftAmount>,
@@ -192,17 +197,20 @@ impl ApInt {
         try_forward_bin_mut_impl(self, shift_amount, ApInt::wrapping_lshr_assign)
     }
 
-    /// Arithmetically right-shifts this `ApInt` by the given `shift_amount` bits.
+    /// Arithmetically right-shifts this `ApInt` by the given `shift_amount`
+    /// bits.
     ///
     /// This operation is inplace and will **not** allocate memory.
     ///
     /// # Note
     ///
-    /// Arithmetic shifting copies the sign bit instead of filling up with zeros.
+    /// Arithmetic shifting copies the sign bit instead of filling up with
+    /// zeros.
     ///
     /// # Errors
     ///
-    /// - If the given `shift_amount` is invalid for the bit width of this `ApInt`.
+    /// - If the given `shift_amount` is invalid for the bit width of this
+    ///   `ApInt`.
     pub fn wrapping_ashr_assign<S>(&mut self, shift_amount: S) -> Result<()>
     where
         S: Into<ShiftAmount>,
@@ -260,18 +268,20 @@ impl ApInt {
         Ok(())
     }
 
-    /// Arithmetically right-shifts this `ApInt` by the given `shift_amount` bits
-    /// and returns the result.
+    /// Arithmetically right-shifts this `ApInt` by the given `shift_amount`
+    /// bits and returns the result.
     ///
     /// This operation is inplace and will **not** allocate memory.
     ///
     /// # Note
     ///
-    /// Arithmetic shifting copies the sign bit instead of filling up with zeros.
+    /// Arithmetic shifting copies the sign bit instead of filling up with
+    /// zeros.
     ///
     /// # Errors
     ///
-    /// - If the given `shift_amount` is invalid for the bit width of this `ApInt`.
+    /// - If the given `shift_amount` is invalid for the bit width of this
+    ///   `ApInt`.
     pub fn into_wrapping_ashr<S>(self, shift_amount: S) -> Result<ApInt>
     where
         S: Into<ShiftAmount>,

@@ -74,8 +74,8 @@ impl ApInt {
     ///
     /// # Panics
     ///
-    /// - If the given `width` represents a `BitWidth` smaller than
-    ///   or equal to `64` bits.
+    /// - If the given `width` represents a `BitWidth` smaller than or equal to
+    ///   `64` bits.
     pub(in crate::apint) unsafe fn new_ext(
         width: BitWidth,
         ext_ptr: *mut Digit,
@@ -89,9 +89,11 @@ impl ApInt {
         }
     }
 
-    /// Creates a new `ApInt` from the given `Bit` value with a bit width of `1`.
+    /// Creates a new `ApInt` from the given `Bit` value with a bit width of
+    /// `1`.
     ///
-    /// This function is generic over types that are convertible to `Bit` such as `bool`.
+    /// This function is generic over types that are convertible to `Bit` such
+    /// as `bool`.
     pub fn from_bit<B>(bit: B) -> ApInt
     where
         B: Into<Bit>,
@@ -166,11 +168,11 @@ impl ApInt {
     /// of a `Digit`s bitwidth (e.g. 64 bit).
     ///
     /// Users of this API may truncate, extend or simply resize the resulting
-    /// `ApInt` afterwards to obtain the desired bitwidth. This may be very cheap
-    /// depending on the difference between the actual and target bitwidths.
-    /// For example, `move_truncate`ing a `128` bitwidth `ApInt` to `100` is
-    /// relatively cheap and won't allocate memory since both `ApInt` instances can use
-    /// the same amount of `Digit`s.
+    /// `ApInt` afterwards to obtain the desired bitwidth. This may be very
+    /// cheap depending on the difference between the actual and target
+    /// bitwidths. For example, `move_truncate`ing a `128` bitwidth `ApInt`
+    /// to `100` is relatively cheap and won't allocate memory since both
+    /// `ApInt` instances can use the same amount of `Digit`s.
     ///
     /// # Errors
     ///
@@ -218,8 +220,8 @@ impl ApInt {
     /// Creates a new `ApInt` that represents the repetition of the given digit
     /// up to the given target bitwidth.
     ///
-    /// Note: The last digit in the generated sequence is truncated to make the `ApInt`'s
-    ///       value representation fit the given bit-width.
+    /// Note: The last digit in the generated sequence is truncated to make the
+    /// `ApInt`'s       value representation fit the given bit-width.
     pub(in crate::apint) fn repeat_digit<D>(target_width: BitWidth, digit: D) -> ApInt
     where
         D: Into<Digit>,
@@ -266,24 +268,28 @@ impl ApInt {
         ApInt::repeat_digit(width, digit::ONES)
     }
 
-    /// Returns the smallest unsigned `ApInt` that can be represented by the given `BitWidth`.
+    /// Returns the smallest unsigned `ApInt` that can be represented by the
+    /// given `BitWidth`.
     pub fn unsigned_min_value(width: BitWidth) -> ApInt {
         ApInt::zero(width)
     }
 
-    /// Returns the largest unsigned `ApInt` that can be represented by the given `BitWidth`.
+    /// Returns the largest unsigned `ApInt` that can be represented by the
+    /// given `BitWidth`.
     pub fn unsigned_max_value(width: BitWidth) -> ApInt {
         ApInt::all_set(width)
     }
 
-    /// Returns the smallest signed `ApInt` that can be represented by the given `BitWidth`.
+    /// Returns the smallest signed `ApInt` that can be represented by the given
+    /// `BitWidth`.
     pub fn signed_min_value(width: BitWidth) -> ApInt {
         let mut result = ApInt::zero(width);
         result.set_sign_bit();
         result
     }
 
-    /// Returns the largest signed `ApInt` that can be represented by the given `BitWidth`.
+    /// Returns the largest signed `ApInt` that can be represented by the given
+    /// `BitWidth`.
     pub fn signed_max_value(width: BitWidth) -> ApInt {
         let mut result = ApInt::all_set(width);
         result.unset_sign_bit();
@@ -383,12 +389,7 @@ macro_rules! impl_from_array_for_apint {
 
         impl From<[u64; $n]> for ApInt {
             fn from(val: [u64; $n]) -> ApInt {
-                let buffer = val
-                    .iter()
-                    .rev()
-                    .cloned()
-                    .map(Digit)
-                    .collect::<Vec<Digit>>();
+                let buffer = val.iter().rev().cloned().map(Digit).collect::<Vec<Digit>>();
                 assert_eq!(buffer.len(), $n);
                 ApInt::from_iter(buffer).expect(
                     "We asserted that `buffer.len()` is exactly `$n` \

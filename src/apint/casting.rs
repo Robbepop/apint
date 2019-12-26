@@ -385,7 +385,8 @@ impl ApInt {
             assert!(target_req_digits > actual_req_digits);
             let additional_digits = target_req_digits - actual_req_digits;
 
-            // Fill most-significant-digit of `self` with `1` starting from its most-significant bit.
+            // Fill most-significant-digit of `self` with `1` starting from its
+            // most-significant bit.
             if let Some(excess_width) = actual_width.excess_width() {
                 self.most_significant_digit_mut()
                     .sign_extend_from(excess_width)?;
@@ -442,11 +443,9 @@ impl ApInt {
     ///
     /// This operation will forward to
     ///
-    /// - [`truncate`](struct.ApInt.html#method.truncate)
-    ///   if `target_width` is less than or equal to the width of
-    ///   the given `ApInt`
-    /// - [`zero_extend`](struct.ApInt.html#method.zero_extend)
-    ///   otherwise
+    /// - [`truncate`](struct.ApInt.html#method.truncate) if `target_width` is
+    ///   less than or equal to the width of the given `ApInt`
+    /// - [`zero_extend`](struct.ApInt.html#method.zero_extend) otherwise
     pub fn zero_resize<W>(&mut self, target_width: W)
     where
         W: Into<BitWidth>,
@@ -473,11 +472,9 @@ impl ApInt {
     ///
     /// This operation will forward to
     ///
-    /// - [`truncate`](struct.ApInt.html#method.truncate)
-    ///   if `target_width` is less than or equal to the width of
-    ///   the given `ApInt`
-    /// - [`sign_extend`](struct.ApInt.html#method.sign_extend)
-    ///   otherwise
+    /// - [`truncate`](struct.ApInt.html#method.truncate) if `target_width` is
+    ///   less than or equal to the width of the given `ApInt`
+    /// - [`sign_extend`](struct.ApInt.html#method.sign_extend) otherwise
     pub fn sign_resize<W>(&mut self, target_width: W)
     where
         W: Into<BitWidth>,
@@ -581,14 +578,16 @@ mod tests {
 
         /// Test Clone impl of `ApInt`.
         ///
-        /// Invariants between the origin `ApInt` `o` and for the cloned `c` are:
+        /// Invariants between the origin `ApInt` `o` and for the cloned `c`
+        /// are:
         ///
         /// - `o` and `c` have same bit widths
-        /// - If `o` is heap-allocated then `c` is, too and vice versa for stack.
+        /// - If `o` is heap-allocated then `c` is, too and vice versa for
+        ///   stack.
         /// - `o` and `c` have an equal amount of digits and the values of their
         ///   digits is equal and in the same order.
-        /// - Memory addresses of `c` and `o` won't overlap. (No aliasing!)
-        ///   This is enforced by safe Rust.
+        /// - Memory addresses of `c` and `o` won't overlap. (No aliasing!) This
+        ///   is enforced by safe Rust.
         #[test]
         fn clone() {
             for apint in test_apints() {

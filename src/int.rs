@@ -49,10 +49,12 @@ use core::{
 
 /// Signed machine integer with arbitrary bitwidths and modulo arithmetics.
 ///
-/// Thin convenience wrapper around `ApInt` for static signed interpretation of the value.
+/// Thin convenience wrapper around `ApInt` for static signed interpretation of
+/// the value.
 ///
-/// This very cheaply transformes to and from `ApInt` and `UInt` instances and together with
-/// `UInt` offers a more elegant and higher-level abstraction interface to the lower-level `ApInt`.
+/// This very cheaply transformes to and from `ApInt` and `UInt` instances and
+/// together with `UInt` offers a more elegant and higher-level abstraction
+/// interface to the lower-level `ApInt`.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 #[cfg_attr(serde_support, Serialize)]
 #[cfg_attr(serde_support, Deserialize)]
@@ -82,7 +84,8 @@ impl Int {
 impl Int {
     /// Creates a new `Int` from the given `Bit` value with a bit width of `1`.
     ///
-    /// This function is generic over types that are convertible to `Bit` such as `bool`.
+    /// This function is generic over types that are convertible to `Bit` such
+    /// as `bool`.
     pub fn from_bit<B>(bit: B) -> Int
     where
         B: Into<Bit>,
@@ -145,12 +148,14 @@ impl Int {
         Int::from(ApInt::all_set(width))
     }
 
-    /// Returns the smallest `Int` that can be represented by the given `BitWidth`.
+    /// Returns the smallest `Int` that can be represented by the given
+    /// `BitWidth`.
     pub fn min_value(width: BitWidth) -> Int {
         Int::from(ApInt::signed_min_value(width))
     }
 
-    /// Returns the largest `Int` that can be represented by the given `BitWidth`.
+    /// Returns the largest `Int` that can be represented by the given
+    /// `BitWidth`.
     pub fn max_value(width: BitWidth) -> Int {
         Int::from(ApInt::signed_max_value(width))
     }
@@ -223,8 +228,8 @@ impl Int {
     /// # Note
     ///
     /// - Zero (`0`) is also called the additive neutral element.
-    /// - This operation is more efficient than comparing two instances
-    ///   of `Int` for the same reason.
+    /// - This operation is more efficient than comparing two instances of `Int`
+    ///   for the same reason.
     pub fn is_zero(&self) -> bool {
         self.value.is_zero()
     }
@@ -234,8 +239,8 @@ impl Int {
     /// # Note
     ///
     /// - One (`1`) is also called the multiplicative neutral element.
-    /// - This operation is more efficient than comparing two instances
-    ///   of `Int` for the same reason.
+    /// - This operation is more efficient than comparing two instances of `Int`
+    ///   for the same reason.
     pub fn is_one(&self) -> bool {
         self.value.is_one()
     }
@@ -361,8 +366,9 @@ impl Int {
     }
 }
 
-/// If `self` and `rhs` have unmatching bit widths, `None` will be returned for `partial_cmp`
-/// and `false` will be returned for the rest of the `PartialOrd` methods.
+/// If `self` and `rhs` have unmatching bit widths, `None` will be returned for
+/// `partial_cmp` and `false` will be returned for the rest of the `PartialOrd`
+/// methods.
 impl PartialOrd for Int {
     fn partial_cmp(&self, rhs: &Int) -> Option<Ordering> {
         if self.value.width() != rhs.value.width() {
@@ -403,8 +409,8 @@ impl Int {
     ///
     /// # Note
     ///
-    /// - Basically this returns `true` if the least significant
-    ///   bit of this `Int` is `1` and `false` otherwise.
+    /// - Basically this returns `true` if the least significant bit of this
+    ///   `Int` is `1` and `false` otherwise.
     pub fn resize_to_bool(&self) -> bool {
         self.value.resize_to_bool()
     }
@@ -413,9 +419,8 @@ impl Int {
     ///
     /// # Note
     ///
-    /// - All bits but the least significant `8` bits are
-    ///   being ignored by this operation to construct the
-    ///   result.
+    /// - All bits but the least significant `8` bits are being ignored by this
+    ///   operation to construct the result.
     pub fn resize_to_i8(&self) -> i8 {
         self.value.resize_to_i8()
     }
@@ -424,9 +429,8 @@ impl Int {
     ///
     /// # Note
     ///
-    /// - All bits but the least significant `16` bits are
-    ///   being ignored by this operation to construct the
-    ///   result.
+    /// - All bits but the least significant `16` bits are being ignored by this
+    ///   operation to construct the result.
     pub fn resize_to_i16(&self) -> i16 {
         self.value.resize_to_i16()
     }
@@ -435,9 +439,8 @@ impl Int {
     ///
     /// # Note
     ///
-    /// - All bits but the least significant `32` bits are
-    ///   being ignored by this operation to construct the
-    ///   result.
+    /// - All bits but the least significant `32` bits are being ignored by this
+    ///   operation to construct the result.
     pub fn resize_to_i32(&self) -> i32 {
         self.value.resize_to_i32()
     }
@@ -446,9 +449,8 @@ impl Int {
     ///
     /// # Note
     ///
-    /// - All bits but the least significant `64` bits are
-    ///   being ignored by this operation to construct the
-    ///   result.
+    /// - All bits but the least significant `64` bits are being ignored by this
+    ///   operation to construct the result.
     pub fn resize_to_i64(&self) -> i64 {
         self.value.resize_to_i64()
     }
@@ -457,9 +459,8 @@ impl Int {
     ///
     /// # Note
     ///
-    /// - All bits but the least significant `128` bits are
-    ///   being ignored by this operation to construct the
-    ///   result.
+    /// - All bits but the least significant `128` bits are being ignored by
+    ///   this operation to construct the result.
     pub fn resize_to_i128(&self) -> i128 {
         self.value.resize_to_i128()
     }
@@ -477,8 +478,8 @@ impl Int {
     ///
     /// # Errors
     ///
-    /// - If the value represented by this `Int` can not be
-    ///   represented by a `bool`.
+    /// - If the value represented by this `Int` can not be represented by a
+    ///   `bool`.
     pub fn try_to_bool(&self) -> Result<bool> {
         self.value.try_to_bool()
     }
@@ -487,13 +488,13 @@ impl Int {
     ///
     /// # Note
     ///
-    /// - This conversion is possible as long as the value represented
-    ///   by this `Int` does not exceed the maximum value of `i8`.
+    /// - This conversion is possible as long as the value represented by this
+    ///   `Int` does not exceed the maximum value of `i8`.
     ///
     /// # Errors
     ///
-    /// - If the value represented by this `Int` can not be
-    ///   represented by a `u8`.
+    /// - If the value represented by this `Int` can not be represented by a
+    ///   `u8`.
     pub fn try_to_i8(&self) -> Result<i8> {
         self.value.try_to_i8()
     }
@@ -502,13 +503,13 @@ impl Int {
     ///
     /// # Note
     ///
-    /// - This conversion is possible as long as the value represented
-    ///   by this `Int` does not exceed the maximum value of `i16`.
+    /// - This conversion is possible as long as the value represented by this
+    ///   `Int` does not exceed the maximum value of `i16`.
     ///
     /// # Errors
     ///
-    /// - If the value represented by this `Int` can not be
-    ///   represented by a `i16`.
+    /// - If the value represented by this `Int` can not be represented by a
+    ///   `i16`.
     pub fn try_to_i16(&self) -> Result<i16> {
         self.value.try_to_i16()
     }
@@ -517,13 +518,13 @@ impl Int {
     ///
     /// # Note
     ///
-    /// - This conversion is possible as long as the value represented
-    ///   by this `Int` does not exceed the maximum value of `i32`.
+    /// - This conversion is possible as long as the value represented by this
+    ///   `Int` does not exceed the maximum value of `i32`.
     ///
     /// # Errors
     ///
-    /// - If the value represented by this `Int` can not be
-    ///   represented by a `i32`.
+    /// - If the value represented by this `Int` can not be represented by a
+    ///   `i32`.
     pub fn try_to_i32(&self) -> Result<i32> {
         self.value.try_to_i32()
     }
@@ -532,13 +533,13 @@ impl Int {
     ///
     /// # Note
     ///
-    /// - This conversion is possible as long as the value represented
-    ///   by this `Int` does not exceed the maximum value of `i64`.
+    /// - This conversion is possible as long as the value represented by this
+    ///   `Int` does not exceed the maximum value of `i64`.
     ///
     /// # Errors
     ///
-    /// - If the value represented by this `Int` can not be
-    ///   represented by a `i64`.
+    /// - If the value represented by this `Int` can not be represented by a
+    ///   `i64`.
     pub fn try_to_i64(&self) -> Result<i64> {
         self.value.try_to_i64()
     }
@@ -547,8 +548,8 @@ impl Int {
     ///
     /// # Note
     ///
-    /// - This conversion is possible as long as the value represented
-    ///   by this `Int` does not exceed the maximum value of `i128`.
+    /// - This conversion is possible as long as the value represented by this
+    ///   `Int` does not exceed the maximum value of `i128`.
     ///
     /// # Complexity
     ///
@@ -556,8 +557,8 @@ impl Int {
     ///
     /// # Errors
     ///
-    /// - If the value represented by this `Int` can not be
-    ///   represented by a `i128`.
+    /// - If the value represented by this `Int` can not be represented by a
+    ///   `i128`.
     pub fn try_to_i128(&self) -> Result<i128> {
         self.value.try_to_i128()
     }
@@ -571,7 +572,8 @@ impl Int {
     ///
     /// # Errors
     ///
-    /// - If the given `shift_amount` is invalid for the bit width of this `Int`.
+    /// - If the given `shift_amount` is invalid for the bit width of this
+    ///   `Int`.
     pub fn wrapping_shl_assign<S>(&mut self, shift_amount: S) -> Result<()>
     where
         S: Into<ShiftAmount>,
@@ -579,13 +581,15 @@ impl Int {
         self.value.wrapping_shl_assign(shift_amount)
     }
 
-    /// Shift this `Int` left by the given `shift_amount` bits and returns the result.
+    /// Shift this `Int` left by the given `shift_amount` bits and returns the
+    /// result.
     ///
     /// This operation is inplace and will **not** allocate memory.
     ///
     /// # Errors
     ///
-    /// - If the given `shift_amount` is invalid for the bit width of this `Int`.
+    /// - If the given `shift_amount` is invalid for the bit width of this
+    ///   `Int`.
     pub fn into_wrapping_shl<S>(self, shift_amount: S) -> Result<Int>
     where
         S: Into<ShiftAmount>,
@@ -599,7 +603,8 @@ impl Int {
     ///
     /// # Errors
     ///
-    /// - If the given `shift_amount` is invalid for the bit width of this `Int`.
+    /// - If the given `shift_amount` is invalid for the bit width of this
+    ///   `Int`.
     pub fn wrapping_shr_assign<S>(&mut self, shift_amount: S) -> Result<()>
     where
         S: Into<ShiftAmount>,
@@ -614,7 +619,8 @@ impl Int {
     ///
     /// # Errors
     ///
-    /// - If the given `shift_amount` is invalid for the bit width of this `Int`.
+    /// - If the given `shift_amount` is invalid for the bit width of this
+    ///   `Int`.
     pub fn into_wrapping_shr<S>(self, shift_amount: S) -> Result<Int>
     where
         S: Into<ShiftAmount>,
@@ -775,8 +781,7 @@ impl Int {
     /// # Note
     ///
     /// - This is useful for method chaining.
-    /// - For more details look into
-    ///   [`extend`](struct.Int.html#method.extend).
+    /// - For more details look into [`extend`](struct.Int.html#method.extend).
     ///
     /// # Errors
     ///
@@ -814,8 +819,7 @@ impl Int {
     /// # Note
     ///
     /// - This is useful for method chaining.
-    /// - For more details look into
-    ///   [`resize`](struct.Int.html#method.resize).
+    /// - For more details look into [`resize`](struct.Int.html#method.resize).
     pub fn into_resize<W>(self, target_width: W) -> Int
     where
         W: Into<BitWidth>,
@@ -829,11 +833,9 @@ impl Int {
     ///
     /// This operation will forward to
     ///
-    /// - [`truncate`](struct.Int.html#method.truncate)
-    ///   if `target_width` is less than or equal to the width of
-    ///   the given `Int`
-    /// - [`extend`](struct.Int.html#method.extend)
-    ///   otherwise
+    /// - [`truncate`](struct.Int.html#method.truncate) if `target_width` is
+    ///   less than or equal to the width of the given `Int`
+    /// - [`extend`](struct.Int.html#method.extend) otherwise
     pub fn resize<W>(&mut self, target_width: W)
     where
         W: Into<BitWidth>,
@@ -965,8 +967,8 @@ impl Int {
     ///
     /// # Note
     ///
-    /// - If the bit at the given position was `0` it will be `1`
-    ///   after this operation and vice versa.
+    /// - If the bit at the given position was `0` it will be `1` after this
+    ///   operation and vice versa.
     ///
     /// # Errors
     ///
@@ -1024,9 +1026,10 @@ impl Int {
     ///
     /// # Note
     ///
-    /// - If the sign bit was `0` it will be `1` after this operation and vice versa.
-    /// - Depending on the interpretation of the `Int` this
-    ///   operation changes its signedness.
+    /// - If the sign bit was `0` it will be `1` after this operation and vice
+    ///   versa.
+    /// - Depending on the interpretation of the `Int` this operation changes
+    ///   its signedness.
     pub fn flip_sign_bit(&mut self) {
         self.value.flip_sign_bit()
     }
@@ -1044,12 +1047,14 @@ impl Int {
         self.value.count_zeros()
     }
 
-    /// Returns the number of leading zeros in the binary representation of this `Int`.
+    /// Returns the number of leading zeros in the binary representation of this
+    /// `Int`.
     pub fn leading_zeros(&self) -> usize {
         self.value.leading_zeros()
     }
 
-    /// Returns the number of trailing zeros in the binary representation of this `Int`.
+    /// Returns the number of trailing zeros in the binary representation of
+    /// this `Int`.
     pub fn trailing_zeros(&self) -> usize {
         self.value.trailing_zeros()
     }
@@ -1215,8 +1220,9 @@ impl Int {
     ///
     /// # Note
     ///
-    /// In the low-level bit-wise representation there is no difference between signed
-    /// and unsigned subtraction of fixed bit-width integers. (Cite: LLVM)
+    /// In the low-level bit-wise representation there is no difference between
+    /// signed and unsigned subtraction of fixed bit-width integers. (Cite:
+    /// LLVM)
     ///
     /// # Errors
     ///
@@ -1229,8 +1235,9 @@ impl Int {
     ///
     /// # Note
     ///
-    /// In the low-level bit-wise representation there is no difference between signed
-    /// and unsigned subtraction of fixed bit-width integers. (Cite: LLVM)
+    /// In the low-level bit-wise representation there is no difference between
+    /// signed and unsigned subtraction of fixed bit-width integers. (Cite:
+    /// LLVM)
     ///
     /// # Errors
     ///
@@ -1243,8 +1250,9 @@ impl Int {
     ///
     /// # Note
     ///
-    /// In the low-level bit-wise representation there is no difference between signed
-    /// and unsigned multiplication of fixed bit-width integers. (Cite: LLVM)
+    /// In the low-level bit-wise representation there is no difference between
+    /// signed and unsigned multiplication of fixed bit-width integers.
+    /// (Cite: LLVM)
     ///
     /// # Errors
     ///
@@ -1257,8 +1265,9 @@ impl Int {
     ///
     /// # Note
     ///
-    /// In the low-level bit-wise representation there is no difference between signed
-    /// and unsigned multiplication of fixed bit-width integers. (Cite: LLVM)
+    /// In the low-level bit-wise representation there is no difference between
+    /// signed and unsigned multiplication of fixed bit-width integers.
+    /// (Cite: LLVM)
     ///
     /// # Errors
     ///
@@ -1271,9 +1280,10 @@ impl Int {
     ///
     /// # Note
     ///
-    /// - This operation will **not** allocate memory and computes inplace of `self`.
-    /// - In the low-level machine abstraction signed division and unsigned division
-    ///   are two different operations.
+    /// - This operation will **not** allocate memory and computes inplace of
+    ///   `self`.
+    /// - In the low-level machine abstraction signed division and unsigned
+    ///   division are two different operations.
     ///
     /// # Errors
     ///
@@ -1286,9 +1296,10 @@ impl Int {
     ///
     /// # Note
     ///
-    /// - This operation will **not** allocate memory and computes inplace of `self`.
-    /// - In the low-level machine abstraction signed division and unsigned division
-    ///   are two different operations.
+    /// - This operation will **not** allocate memory and computes inplace of
+    ///   `self`.
+    /// - In the low-level machine abstraction signed division and unsigned
+    ///   division are two different operations.
     ///
     /// # Errors
     ///
@@ -1297,13 +1308,15 @@ impl Int {
         self.value.wrapping_sdiv_assign(&rhs.value)
     }
 
-    /// Calculates the **unsigned** remainder of `self` by `rhs` and returns the result.
+    /// Calculates the **unsigned** remainder of `self` by `rhs` and returns the
+    /// result.
     ///
     /// # Note
     ///
-    /// - This operation will **not** allocate memory and computes inplace of `self`.
-    /// - In the low-level machine abstraction signed division and unsigned division
-    ///   are two different operations.
+    /// - This operation will **not** allocate memory and computes inplace of
+    ///   `self`.
+    /// - In the low-level machine abstraction signed division and unsigned
+    ///   division are two different operations.
     ///
     /// # Errors
     ///
@@ -1316,9 +1329,10 @@ impl Int {
     ///
     /// # Note
     ///
-    /// - This operation will **not** allocate memory and computes inplace of `self`.
-    /// - In the low-level machine abstraction signed division and unsigned division
-    ///   are two different operations.
+    /// - This operation will **not** allocate memory and computes inplace of
+    ///   `self`.
+    /// - In the low-level machine abstraction signed division and unsigned
+    ///   division are two different operations.
     ///
     /// # Errors
     ///

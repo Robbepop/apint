@@ -73,11 +73,7 @@ impl Bit {
 impl From<bool> for Bit {
     #[inline]
     fn from(flag: bool) -> Bit {
-        if flag {
-            Bit::Set
-        } else {
-            Bit::Unset
-        }
+        if flag { Bit::Set } else { Bit::Unset }
     }
 }
 
@@ -122,10 +118,12 @@ impl fmt::UpperHex for Digit {
 
 /// A doubled digit.
 ///
-/// This is used as a compute unit for `Digit`'s since many `Digit` arithmetic operations
-/// may overflow or have carries this is required in order to not lose those overflow- and underflow values.
+/// This is used as a compute unit for `Digit`'s since many `Digit` arithmetic
+/// operations may overflow or have carries this is required in order to not
+/// lose those overflow- and underflow values.
 ///
-/// Has wrapping arithmetics for better machine emulation and improved performance.
+/// Has wrapping arithmetics for better machine emulation and improved
+/// performance.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub(crate) struct DoubleDigit(pub DoubleDigitRepr);
 
@@ -363,7 +361,8 @@ impl Digit {
         Digit(self.repr().wrapping_mul(other.repr()))
     }
 
-    // TODO if and when `carrying_mul` (rust-lang rfc #2417) is stabilized, this function and others in this crate should use `carrying_mul` as the operation
+    // TODO if and when `carrying_mul` (rust-lang rfc #2417) is stabilized, this
+    // function and others in this crate should use `carrying_mul` as the operation
     pub(crate) fn carrying_mul(self, other: Digit) -> (Digit, Digit) {
         let temp = self.dd().wrapping_mul(other.dd());
         (temp.lo(), temp.hi())
@@ -440,8 +439,9 @@ impl Digit {
     /// - This can be truncated again to a real target `BitWidth` afterwards if
     ///   the users wishes to.
     ///
-    /// - Implementation inspired by
-    ///   [Bit Twiddling Hacks](https://graphics.stanford.edu/~seander/bithacks.html#VariableSignExtend).
+    /// - Implementation inspired by [Bit Twiddling
+    ///   Hacks](https://graphics.stanford.edu/~seander/bithacks.html#
+    ///   VariableSignExtend).
     ///
     /// # Errors
     ///
@@ -456,8 +456,9 @@ impl Digit {
         let b = from.to_usize(); // number of bits representing the number in x
         let x = self.repr() as i64; // sign extend this b-bit number to r
         let m: i64 = 1 << (b - 1); // mask can be pre-computed if b is fixed
-                                   // x = x & ((1 << b) - 1);  // (Skip this if bits in x above position b are already zero.)
-                                   // We don't need this step since this condition is an invariant of `Digit`.
+        // x = x & ((1 << b) - 1);  // (Skip this if bits in x above position b are
+        // already zero.) We don't need this step since this condition is an
+        // invariant of `Digit`.
         let r: i64 = (x ^ m).wrapping_sub(m); // resulting sign-extended number
         self.0 = r as u64;
         Ok(())
