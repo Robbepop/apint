@@ -135,15 +135,15 @@ impl ApInt {
         let target_width = prim_ty.associated_width();
         if prim_ty.is_signed() && actual_width < target_width {
             lsd.sign_extend_from(actual_width).expect(
-                "We already asserted that `actual_width` < `target_width` \
-                 and since `target_width` is always less than or equal to \
-                 `64` bits calling `Digit::sign_extend_from` is safe for it.",
+                "We already asserted that `actual_width` < `target_width` and since \
+                 `target_width` is always less than or equal to `64` bits calling \
+                 `Digit::sign_extend_from` is safe for it.",
             );
         }
         if target_width < BitWidth::w64() {
             lsd.truncate_to(target_width).expect(
-                "Since `target_width` is always less than or equal to \
-                 `64` bits calling `Digit::sign_extend_from` is safe for it.",
+                "Since `target_width` is always less than or equal to `64` bits calling \
+                 `Digit::sign_extend_from` is safe for it.",
             );
         }
         lsd
@@ -330,14 +330,14 @@ impl ApInt {
             let target_width = prim_ty.associated_width();
             if actual_width < target_width {
                 lsd.sign_extend_from(actual_width).expect(
-                    "We already asserted that `actual_width` < `target_width` \
-                     and since `target_width` is always less than or equal to \
-                     `64` bits calling `Digit::sign_extend_from` is safe for it.",
+                    "We already asserted that `actual_width` < `target_width` and since \
+                     `target_width` is always less than or equal to `64` bits calling \
+                     `Digit::sign_extend_from` is safe for it.",
                 );
                 if target_width < BitWidth::w64() {
                     lsd.truncate_to(target_width).expect(
-                        "Since `target_width` is always less than or equal to \
-                         `64` bits calling `Digit::sign_extend_from` is safe for it.",
+                        "Since `target_width` is always less than or equal to `64` bits \
+                         calling `Digit::sign_extend_from` is safe for it.",
                     );
                 }
             }

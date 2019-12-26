@@ -333,9 +333,8 @@ impl ApInt {
         self.most_significant_digit()
             .get(sign_bit_pos.to_pos_within_digit())
             .expect(
-                "`BitWidth::excess_bits` returns a number that \
-                 is always a valid `BitPos` for a `Digit` so this \
-                 operation cannot fail.",
+                "`BitWidth::excess_bits` returns a number that is always a valid \
+                 `BitPos` for a `Digit` so this operation cannot fail.",
             )
     }
 
@@ -362,8 +361,8 @@ impl ApInt {
             self.most_significant_digit_mut()
                 .retain_last_n(bits)
                 .expect(
-                    "`BitWidth::excess_bits` always returns a number of \
-                     bits that can safely forwarded to `Digit::retain_last_n`.",
+                    "`BitWidth::excess_bits` always returns a number of bits that can \
+                     safely forwarded to `Digit::retain_last_n`.",
                 );
         }
     }
@@ -437,9 +436,8 @@ impl ApInt {
             DataAccess::Inl(digit) => (digit, &[]),
             DataAccess::Ext(digits) => {
                 let (lsd, rest) = digits.split_first().expect(
-                    "An `ApInt` always has at least one digit so calling \
-                     `split_first` on a slice of its digits will never \
-                     return `None`.",
+                    "An `ApInt` always has at least one digit so calling `split_first` \
+                     on a slice of its digits will never return `None`.",
                 );
                 (*lsd, rest)
             }
@@ -454,9 +452,8 @@ impl ApInt {
             DataAccess::Inl(digit) => (digit, &[]),
             DataAccess::Ext(digits) => {
                 let (lsd, rest) = digits.split_last().expect(
-                    "An `ApInt` always has at least one digit so calling \
-                     `split_last` on a slice of its digits will never \
-                     return `None`.",
+                    "An `ApInt` always has at least one digit so calling `split_last` \
+                     on a slice of its digits will never return `None`.",
                 );
                 (*lsd, rest)
             }

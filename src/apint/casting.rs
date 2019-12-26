@@ -153,8 +153,8 @@ impl ApInt {
             return Error::truncation_bitwidth_too_large(target_width, actual_width)
                 .with_annotation(format!(
                     "Cannot truncate `ApInt` with a width of {:?}
-                         to an `ApInt` with a width of {:?} bits. \
-                         Do you mean to extend the instance instead?",
+                         to an `ApInt` with a width of {:?} bits. Do you mean to extend \
+                     the instance instead?",
                     actual_width.to_usize(),
                     target_width.to_usize()
                 ))
@@ -174,8 +174,8 @@ impl ApInt {
             // The same applies to all bit widths that require the same
             // amount of digits for their representation.
             let excess_width = target_width.excess_bits().expect(
-                "We already filtered cases where `excess_bits` may return `None` \
-                 by requiring that `self.width() > target_width`.",
+                "We already filtered cases where `excess_bits` may return `None` by \
+                 requiring that `self.width() > target_width`.",
             );
             self.most_significant_digit_mut()
                 .truncate_to(excess_width)
@@ -255,8 +255,8 @@ impl ApInt {
         if target_width < actual_width {
             return Error::extension_bitwidth_too_small(target_width, actual_width)
                 .with_annotation(format!(
-                    "Cannot zero-extend bit-width of {:?} to {:?} bits. \
-                     Do you mean to truncate the instance instead?",
+                    "Cannot zero-extend bit-width of {:?} to {:?} bits. Do you mean to \
+                     truncate the instance instead?",
                     actual_width, target_width
                 ))
                 .into()
@@ -341,8 +341,8 @@ impl ApInt {
         if target_width < actual_width {
             return Error::extension_bitwidth_too_small(target_width, actual_width)
                 .with_annotation(format!(
-                    "Cannot sign-extend bit-width of {:?} to {:?} bits. \
-                     Do you mean to truncate the instance instead?",
+                    "Cannot sign-extend bit-width of {:?} to {:?} bits. Do you mean to \
+                     truncate the instance instead?",
                     actual_width, target_width
                 ))
                 .into()
@@ -455,13 +455,13 @@ impl ApInt {
 
         if target_width <= actual_width {
             self.truncate(target_width).expect(
-                "It was asserted that `target_width` is \
-                 a valid truncation `BitWidth` in this context.",
+                "It was asserted that `target_width` is a valid truncation `BitWidth` \
+                 in this context.",
             )
         } else {
             self.zero_extend(target_width).expect(
-                "It was asserted that `target_width` is \
-                 a valid zero-extension `BitWidth` in this context.",
+                "It was asserted that `target_width` is a valid zero-extension \
+                 `BitWidth` in this context.",
             )
         }
     }
@@ -484,13 +484,13 @@ impl ApInt {
 
         if target_width <= actual_width {
             self.truncate(target_width).expect(
-                "It was asserted that `target_width` is \
-                 a valid truncation `BitWidth` in this context.",
+                "It was asserted that `target_width` is a valid truncation `BitWidth` \
+                 in this context.",
             )
         } else {
             self.sign_extend(target_width).expect(
-                "It was asserted that `target_width` is \
-                 a valid sign-extension `BitWidth` in this context.",
+                "It was asserted that `target_width` is a valid sign-extension \
+                 `BitWidth` in this context.",
             )
         }
     }

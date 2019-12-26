@@ -739,12 +739,14 @@ impl ApInt {
         // respectively), and runs `$ge_branch` if true and `$ln_branch`
         // otherwise
         macro_rules! uge {
-            ($lhs_len:expr,
-            $lhs:ident,
-            $rhs_len:expr,
-            $rhs:ident,
-            $ge_branch:block,
-            $ln_branch:block) => {
+            (
+                $lhs_len:expr,
+                $lhs:ident,
+                $rhs_len:expr,
+                $rhs:ident,
+                $ge_branch:block,
+                $ln_branch:block
+            ) => {
                 let mut b0 = false;
                 // allows lhs.len() to be smaller than rhs.len()
                 for i in ($lhs_len..$rhs_len).rev() {
@@ -779,12 +781,14 @@ impl ApInt {
         // respectively), and runs `$gt_branch` if true and `$le_branch`
         // otherwise
         macro_rules! ugt {
-            ($lhs_len:expr,
-            $lhs:ident,
-            $rhs_len:expr,
-            $rhs:ident,
-            $gt_branch:block,
-            $le_branch:block) => {
+            (
+                $lhs_len:expr,
+                $lhs:ident,
+                $rhs_len:expr,
+                $rhs:ident,
+                $gt_branch:block,
+                $le_branch:block
+            ) => {
                 let mut b0 = false;
                 // allows lhs.len() to be smaller than rhs.len()
                 for i in ($lhs_len..$rhs_len).rev() {
@@ -817,7 +821,7 @@ impl ApInt {
         // assigns `$sum + $sub` to `$target`,
         // and zeros out `$sum` except for it sets `$sum[0]` to `$val`
         macro_rules! special0 {
-            ($len:expr,$sum:ident,$sub:ident,$target:ident,$val:expr) => {{
+            ($len:expr, $sum:ident, $sub:ident, $target:ident, $val:expr) => {{
                 // subtraction (`sub` is the two's complement of some value)
                 let (sum, mut carry) = $sum[0].carrying_add($sub[0]);
                 $target[0] = sum;
@@ -841,7 +845,7 @@ impl ApInt {
         // assigns `$sum + $sub` to `$target`,
         // and assigns `$val + $add` to `$sum`
         macro_rules! special1 {
-            ($len:expr,$sum:ident,$sub:ident,$target:ident,$val:expr,$add:ident) => {{
+            ($len:expr, $sum:ident, $sub:ident, $target:ident, $val:expr, $add:ident) => {{
                 // subtraction (`sub` is the two's complement of some value)
                 let (temp, mut carry) = $sum[0].carrying_add($sub[0]);
                 $target[0] = temp;
@@ -874,7 +878,7 @@ impl ApInt {
 
         // assigns `$sum + $add` to `$sum`
         macro_rules! add {
-            ($len:expr,$sum:ident,$add:ident) => {{
+            ($len:expr, $sum:ident, $add:ident) => {{
                 let (sum, mut carry) = $sum[0].carrying_add($add[0]);
                 $sum[0] = sum;
                 for i in 1..($len - 1) {
@@ -2106,7 +2110,15 @@ mod tests {
             /// - `$r1`, `$r2`, `$r3`: 80 by -7, -80 by 7, -80 by -7. These can
             ///   be 0 if `$signed` is false.
             macro_rules! s {
-                ($signed:expr,$fun_assign:ident,$fun_into:ident,$r0:expr,$r1:expr,$r2:expr,$r3:expr/*,$div_op:ident*/) => {
+                (
+                    $signed:expr,
+                    $fun_assign:ident,
+                    $fun_into:ident,
+                    $r0:expr,
+                    $r1:expr,
+                    $r2:expr,
+                    $r3:expr
+                ) => {
                     // match $fun_assign
                     // match ApInt::from(123u8).$fun_into(&ApInt::from(0u8)) {
                     // Err(Error{kind: ErrorKind::DivisionByZero{op: DivOp::$div_op, lhs:
@@ -2150,7 +2162,7 @@ mod tests {
                         }
                     }
                 };
-                ($signed:expr,$fun:ident,$r0:expr,$r1:expr,$r2:expr,$r3:expr/*,$div_op:ident*/) => {{
+                ($signed:expr, $fun:ident, $r0:expr, $r1:expr, $r2:expr, $r3:expr) => {{
                     let mut lhs = ApInt::from(80i8);
                     let mut rhs = ApInt::from(7i8);
                     ApInt::$fun(&mut lhs, &mut rhs).unwrap();
@@ -2464,7 +2476,8 @@ mod tests {
                 let temp = product.clone().into_wrapping_udiv(&lhs).unwrap();
                 if temp != rhs {
                     panic!(
-                        "lhs_shl:{:?}\nrhs_shl:{:?}\nlhs:{:?}\nrhs:{:?}\n={:?}\ntemp:{:?}",
+                        "lhs_shl:{:?}\nrhs_shl:{:?}\nlhs:{:?}\nrhs:{:?}\n={:?}\ntemp:{:?\
+                         }",
                         lhs_shl[i], rhs_shl[i], lhs, rhs, product, temp
                     );
                 }
@@ -2675,7 +2688,9 @@ mod tests {
                     ApInt::wrapping_udivrem_assign(&mut temp0, &mut temp1).unwrap();
                     if temp0 != (lhs.clone() & &anti_overflow_mask) {
                         panic!(
-                            "wrong div\nlhs:{:?}\nactual:{:?}\nrhs:{:?}\nthird:{:?}\nrem:{:?}\nmul:{:?}\nmul_plus_rem:{:?}\ntemp0:{:?}\ntemp1:{:?}",
+                            "wrong div\nlhs:{:?}\nactual:{:?}\nrhs:{:?}\nthird:{:?}\\
+                             nrem:{:?}\nmul:{:?}\nmul_plus_rem:{:?}\ntemp0:{:?}\ntemp1:\
+                             {:?}",
                             lhs,
                             (lhs.clone() & &anti_overflow_mask),
                             rhs,
@@ -2689,7 +2704,9 @@ mod tests {
                     }
                     if temp1 != rem {
                         panic!(
-                            "wrong rem\nlhs:{:?}\nactual:{:?}\nrhs:{:?}\nthird:{:?}\nrem:{:?}\nmul:{:?}\nmul_plus_rem:{:?}\ntemp0:{:?}\ntemp1:{:?}",
+                            "wrong rem\nlhs:{:?}\nactual:{:?}\nrhs:{:?}\nthird:{:?}\\
+                             nrem:{:?}\nmul:{:?}\nmul_plus_rem:{:?}\ntemp0:{:?}\ntemp1:\
+                             {:?}",
                             lhs,
                             (lhs.clone() & &anti_overflow_mask),
                             rhs,

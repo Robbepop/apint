@@ -185,16 +185,19 @@ impl ApInt {
         match buffer.len() {
             0 => Err(Error::expected_non_empty_digits()),
             1 => {
-                let first_and_only = *buffer
-                    .first()
-                    .expect("We have already asserted that `digits.len()` must be at exactly `1`.");
+                let first_and_only = *buffer.first().expect(
+                    "We have already asserted that `digits.len()` must be at exactly \
+                     `1`.",
+                );
                 Ok(ApInt::new_inl(BitWidth::w64(), first_and_only))
             }
             n => {
                 use core::mem;
-                let bitwidth = BitWidth::new(n * digit::BITS)
-                    .expect("We have already asserted that the number of items the given Iterator \
-                             iterates over is greater than `1` and thus non-zero and thus a valid `BitWidth`.");
+                let bitwidth = BitWidth::new(n * digit::BITS).expect(
+                    "We have already asserted that the number of items the given \
+                     Iterator iterates over is greater than `1` and thus non-zero and \
+                     thus a valid `BitWidth`.",
+                );
                 let req_digits = bitwidth.required_digits();
                 buffer.shrink_to_fit();
                 assert_eq!(buffer.capacity(), req_digits);
@@ -231,18 +234,16 @@ impl ApInt {
         let req_digits = target_width.required_digits();
         ApInt::from_iter(iter::repeat(digit).take(req_digits))
             .expect(
-                "Since `required_digits` always returns `1` or more \
-                 required digits we can safely assume that this operation \
-                 never fails.",
+                "Since `required_digits` always returns `1` or more required digits we \
+                 can safely assume that this operation never fails.",
             )
             .into_truncate(target_width)
             .expect(
-                "Since `BitWidth::required_digits` always returns the upper bound \
-                 for the number of digits required to represent the given `BitWidth` \
-                 and `ApInt::from_iter` will use exactly this upper bound \
-                 we can safely assume that `target_width` is always equal or \
-                 less than what `ApInt::from_iter` returns and thus truncation will \
-                 never fail.",
+                "Since `BitWidth::required_digits` always returns the upper bound for \
+                 the number of digits required to represent the given `BitWidth` and \
+                 `ApInt::from_iter` will use exactly this upper bound we can safely \
+                 assume that `target_width` is always equal or less than what \
+                 `ApInt::from_iter` returns and thus truncation will never fail.",
             )
     }
 
@@ -392,8 +393,8 @@ macro_rules! impl_from_array_for_apint {
                 let buffer = val.iter().rev().cloned().map(Digit).collect::<Vec<Digit>>();
                 assert_eq!(buffer.len(), $n);
                 ApInt::from_iter(buffer).expect(
-                    "We asserted that `buffer.len()` is exactly `$n` \
-                     so we can expect `ApInt::from_iter` to be successful.",
+                    "We asserted that `buffer.len()` is exactly `$n` so we can expect \
+                     `ApInt::from_iter` to be successful.",
                 )
             }
         }

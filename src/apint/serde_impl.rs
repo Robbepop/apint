@@ -245,12 +245,17 @@ impl<'de> Deserialize<'de> for ApInt {
                 }
 
                 Ok(ApInt::from_iter(digits)
-                    .expect("We already asserted that we deserialized the lower-bound \
-                             of `required_digits` so `ApInt::from_iter` is fail free.")
+                    .expect(
+                        "We already asserted that we deserialized the lower-bound of \
+                         `required_digits` so `ApInt::from_iter` is fail free.",
+                    )
                     .into_truncate(width)
-                    .expect("An `into_truncate` call to `width` cannot fail since `digits`
-                             contains exactly `required_digits` digits and `ApInt::from_iter \
-                             always creates an `ApInt` with an upper bound bit width."))
+                    .expect(
+                        "An `into_truncate` call to `width` cannot fail since `digits`
+                             contains exactly `required_digits` digits and \
+                         `ApInt::from_iter always creates an `ApInt` with an upper \
+                         bound bit width.",
+                    ))
             }
         }
 
@@ -280,12 +285,17 @@ impl<'de> Deserialize<'de> for ApInt {
                 }
 
                 Ok(ApInt::from_iter(digits)
-                    .expect("We already asserted that we deserialized the lower-bound \
-                             of `required_digits` so `ApInt::from_iter` is fail free.")
+                    .expect(
+                        "We already asserted that we deserialized the lower-bound of \
+                         `required_digits` so `ApInt::from_iter` is fail free.",
+                    )
                     .into_truncate(width)
-                    .expect("An `into_truncate` call to `width` cannot fail since `digits`
-                             contains exactly `required_digits` digits and `ApInt::from_iter \
-                             always creates an `ApInt` with an upper bound bit width."))
+                    .expect(
+                        "An `into_truncate` call to `width` cannot fail since `digits` \
+                         contains exactly `required_digits` digits and \
+                         `ApInt::from_iter always creates an `ApInt` with an upper \
+                         bound bit width.",
+                    ))
             }
         }
 

@@ -122,15 +122,15 @@ impl Radix {
 
         // To generate this table:
         // ```
-        //    for radix in 2u64..37 {
-        //        let mut power = digit::BITS / find_last_bit_set(radix.to_u8() as u64);
-        //        let mut base  = (radix.to_u8() as u32).pow(power as u32);
-        //        while let Some(b) = base.checked_mul(radix) {
-        //            base   = b;
-        //            power += 1;
-        //        }
-        //        println!("({:20}, {:2}), // {:2}", base, power, radix);
-        //    }
+        // for radix in 2u64..37 {
+        //     let mut power = digit::BITS / find_last_bit_set(radix.to_u8() as u64);
+        //     let mut base = (radix.to_u8() as u32).pow(power as u32);
+        //     while let Some(b) = base.checked_mul(radix) {
+        //         base = b;
+        //         power += 1;
+        //     }
+        //     println!("({:20}, {:2}), // {:2}", base, power, radix);
+        // }
         // ```
         const BASES: [(DigitRepr, usize); 37] = [
             (0, 0),                         //  0 (invalid Radix!)

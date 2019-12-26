@@ -40,26 +40,20 @@ impl ApInt {
     ///
     /// - If `self` and `rhs` have unmatching bit widths.
     pub fn checked_ult(&self, rhs: &ApInt) -> Result<bool> {
-        match self
-            .zip_access_data(rhs)
-            .map_err(|err| err.with_annotation(format!(
-                "Error occured on unsigned less-than (slt) comparison with `lhs < rhs` where \
-                 \n\tlhs = {:?}\
-                 \n\trhs = {:?}",
-                self, rhs)
-            ))?
-        {
-            ZipDataAccess::Inl(lhs, rhs) => {
-                Ok(lhs.repr() < rhs.repr())
-            }
+        match self.zip_access_data(rhs).map_err(|err| {
+            err.with_annotation(format!(
+                "Error occured on unsigned less-than (slt) comparison with `lhs < rhs` \
+                 where \n\tlhs = {:?}\n\trhs = {:?}",
+                self, rhs
+            ))
+        })? {
+            ZipDataAccess::Inl(lhs, rhs) => Ok(lhs.repr() < rhs.repr()),
             ZipDataAccess::Ext(lhs, rhs) => {
-                for (l, r) in lhs.iter().rev()
-                                 .zip(rhs.iter().rev())
-                {
+                for (l, r) in lhs.iter().rev().zip(rhs.iter().rev()) {
                     match l.cmp(r) {
-                        Ordering::Less    => return Ok(true),
+                        Ordering::Less => return Ok(true),
                         Ordering::Greater => return Ok(false),
-                        Ordering::Equal   => ()
+                        Ordering::Equal => (),
                     }
                 }
                 Ok(false)
@@ -80,13 +74,13 @@ impl ApInt {
     /// - If `self` and `rhs` have unmatching bit widths.
     #[inline]
     pub fn checked_ule(&self, rhs: &ApInt) -> Result<bool> {
-        rhs.checked_ult(self).map(Not::not)
-            .map_err(|err| err.with_annotation(format!(
-                "Error occured on unsigned less-than or equals (ule) comparison with `lhs <= rhs` where \
-                 \n\tlhs = {:?}\
-                 \n\trhs = {:?}",
-                self, rhs)
+        rhs.checked_ult(self).map(Not::not).map_err(|err| {
+            err.with_annotation(format!(
+                "Error occured on unsigned less-than or equals (ule) comparison with \
+                 `lhs <= rhs` where \n\tlhs = {:?}\n\trhs = {:?}",
+                self, rhs
             ))
+        })
     }
 
     /// Unsigned greater-than (`ugt`) comparison between `self` and `rhs`.
@@ -102,13 +96,13 @@ impl ApInt {
     /// - If `self` and `rhs` have unmatching bit widths.
     #[inline]
     pub fn checked_ugt(&self, rhs: &ApInt) -> Result<bool> {
-        rhs.checked_ult(self)
-            .map_err(|err| err.with_annotation(format!(
-                "Error occured on unsigned greater-than (ugt) comparison with `lhs > rhs` where \
-                 \n\tlhs = {:?}\
-                 \n\trhs = {:?}",
-                self, rhs)
+        rhs.checked_ult(self).map_err(|err| {
+            err.with_annotation(format!(
+                "Error occured on unsigned greater-than (ugt) comparison with `lhs > \
+                 rhs` where \n\tlhs = {:?}\n\trhs = {:?}",
+                self, rhs
             ))
+        })
     }
 
     /// Unsigned greater-equals (`uge`) comparison between `self` and `rhs`.
@@ -124,13 +118,13 @@ impl ApInt {
     /// - If `self` and `rhs` have unmatching bit widths.
     #[inline]
     pub fn checked_uge(&self, rhs: &ApInt) -> Result<bool> {
-        self.checked_ult(rhs).map(Not::not)
-            .map_err(|err| err.with_annotation(format!(
-                "Error occured on unsigned greater-than or equals (ule) comparison with `lhs >= rhs` where \
-                 \n\tlhs = {:?}\
-                 \n\trhs = {:?}",
-                self, rhs)
+        self.checked_ult(rhs).map(Not::not).map_err(|err| {
+            err.with_annotation(format!(
+                "Error occured on unsigned greater-than or equals (ule) comparison with \
+                 `lhs >= rhs` where \n\tlhs = {:?}\n\trhs = {:?}",
+                self, rhs
             ))
+        })
     }
 
     /// Signed less-than (`slt`) comparison between `self` and `rhs`.
@@ -167,10 +161,10 @@ impl ApInt {
             })
             .map_err(|err| {
                 err.with_annotation(format!(
-            "Error occured on signed less-than (slt) comparison with `lhs < rhs` where \
-                \n\tlhs = {:?}\
-                \n\trhs = {:?}",
-            self, rhs))
+                    "Error occured on signed less-than (slt) comparison with `lhs < \
+                     rhs` where \n\tlhs = {:?}\n\trhs = {:?}",
+                    self, rhs
+                ))
             })
     }
 
@@ -187,13 +181,13 @@ impl ApInt {
     /// - If `self` and `rhs` have unmatching bit widths.
     #[inline]
     pub fn checked_sle(&self, rhs: &ApInt) -> Result<bool> {
-        rhs.checked_slt(self).map(Not::not)
-            .map_err(|err| err.with_annotation(format!(
-                "Error occured on signed less-than or equals (ule) comparison with `lhs <= rhs` where \
-                 \n\tlhs = {:?}\
-                 \n\trhs = {:?}",
-                self, rhs)
+        rhs.checked_slt(self).map(Not::not).map_err(|err| {
+            err.with_annotation(format!(
+                "Error occured on signed less-than or equals (ule) comparison with `lhs \
+                 <= rhs` where \n\tlhs = {:?}\n\trhs = {:?}",
+                self, rhs
             ))
+        })
     }
 
     /// Signed greater-than (`sgt`) comparison between `self` and `rhs`.
@@ -209,13 +203,13 @@ impl ApInt {
     /// - If `self` and `rhs` have unmatching bit widths.
     #[inline]
     pub fn checked_sgt(&self, rhs: &ApInt) -> Result<bool> {
-        rhs.checked_slt(self)
-            .map_err(|err| err.with_annotation(format!(
-                "Error occured on signed greater-than (ugt) comparison with `lhs > rhs` where \
-                 \n\tlhs = {:?}\
-                 \n\trhs = {:?}",
-                self, rhs)
+        rhs.checked_slt(self).map_err(|err| {
+            err.with_annotation(format!(
+                "Error occured on signed greater-than (ugt) comparison with `lhs > rhs` \
+                 where \n\tlhs = {:?}\n\trhs = {:?}",
+                self, rhs
             ))
+        })
     }
 
     /// Signed greater-equals (`sge`) comparison between `self` and `rhs`.
@@ -231,13 +225,13 @@ impl ApInt {
     /// - If `self` and `rhs` have unmatching bit widths.
     #[inline]
     pub fn checked_sge(&self, rhs: &ApInt) -> Result<bool> {
-        self.checked_slt(rhs).map(Not::not)
-            .map_err(|err| err.with_annotation(format!(
-                "Error occured on signed greater-than or equals (ule) comparison with `lhs >= rhs` where \
-                 \n\tlhs = {:?}\
-                 \n\trhs = {:?}",
-                self, rhs)
+        self.checked_slt(rhs).map(Not::not).map_err(|err| {
+            err.with_annotation(format!(
+                "Error occured on signed greater-than or equals (ule) comparison with \
+                 `lhs >= rhs` where \n\tlhs = {:?}\n\trhs = {:?}",
+                self, rhs
             ))
+        })
     }
 }
 

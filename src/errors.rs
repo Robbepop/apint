@@ -204,7 +204,8 @@ impl Error {
                 pos_char: None,
             },
             message: format!(
-                "Encountered an invalid string representation for the given radix (= {:?}).",
+                "Encountered an invalid string representation for the given radix (= \
+                 {:?}).",
                 radix
             ),
             annotation: None,
@@ -228,8 +229,8 @@ impl Error {
                 pos_char: None,
             },
             message: format!(
-                "Encountered an invalid character (= '{:?}') at position {:?} within the given string \
-                 representation for the given radix (= {:?}).",
+                "Encountered an invalid character (= '{:?}') at position {:?} within \
+                 the given string representation for the given radix (= {:?}).",
                 ch, pos, radix
             ),
             annotation: None,
@@ -258,7 +259,8 @@ impl Error {
         Error {
             kind: ErrorKind::ExtensionBitWidthTooSmall { target, current },
             message: format!(
-                "Tried to extend an `ApInt` with a width of {:?} to a smaller target width of {:?}",
+                "Tried to extend an `ApInt` with a width of {:?} to a smaller target \
+                 width of {:?}",
                 current, target
             ),
             annotation: None,
@@ -275,7 +277,8 @@ impl Error {
         Error {
             kind: ErrorKind::TruncationBitWidthTooLarge { target, current },
             message: format!(
-                "Tried to truncate an `ApInt` with a width of {:?} to a larger target width of {:?}",
+                "Tried to truncate an `ApInt` with a width of {:?} to a larger target \
+                 width of {:?}",
                 current, target
             ),
             annotation: None,
@@ -292,7 +295,8 @@ impl Error {
         Error {
             kind: ErrorKind::UnmatchingBitwidth(lhs, rhs),
             message: format!(
-                "Encountered invalid operation on entities with non-matching bit-widths of {:?} and {:?}.",
+                "Encountered invalid operation on entities with non-matching bit-widths \
+                 of {:?} and {:?}.",
                 lhs, rhs
             ),
             annotation: None,
@@ -329,7 +333,8 @@ impl Error {
         Error {
             kind: ErrorKind::InvalidBitAccess { pos, width },
             message: format!(
-                "Encountered invalid bit access at position {:?} with a total bit-width of {:?}.",
+                "Encountered invalid bit access at position {:?} with a total bit-width \
+                 of {:?}.",
                 pos, width
             ),
             annotation: None,
@@ -337,10 +342,12 @@ impl Error {
     }
 
     pub(crate) fn expected_non_empty_digits() -> Error {
-        Error{
+        Error {
             kind: ErrorKind::ExpectedNonEmptyDigits,
-            message: "Encountered an empty iterator upon construction of an `ApInt` from a digit iterator.".to_owned(),
-            annotation: None
+            message: "Encountered an empty iterator upon construction of an `ApInt` \
+                      from a digit iterator."
+                .to_owned(),
+            annotation: None,
         }
     }
 
@@ -349,8 +356,8 @@ impl Error {
         destination_ty: PrimitiveTy,
     ) -> Error {
         let message = format!(
-            "Encountered a value ({:?}) that is unrepresentable \
-             by the destination type {:?}.",
+            "Encountered a value ({:?}) that is unrepresentable by the destination type \
+             {:?}.",
             value, destination_ty
         );
         Error {
@@ -365,7 +372,8 @@ impl Error {
 
     pub(crate) fn division_by_zero(op: DivOp, lhs: ApInt) -> Error {
         let message = format!(
-            "Encountered a division-by-zero for operation (= {:?}) with the left hand-side value: (= {:?})",
+            "Encountered a division-by-zero for operation (= {:?}) with the left \
+             hand-side value: (= {:?})",
             op, lhs
         );
         Error {

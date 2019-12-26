@@ -409,26 +409,10 @@ mod tests {
         fn small() {
             assert_hex(ApInt::zero(BitWidth::w32()), "0");
             assert_hex(ApInt::one(BitWidth::w32()), "1");
-            assert_hex(
-                ApInt::from(0xFEDC_BA98_u32),
-                "FEDC\
-                 BA98",
-            );
-            assert_hex(
-                ApInt::all_set(BitWidth::w32()),
-                "FFFF\
-                 FFFF",
-            );
-            assert_hex(
-                ApInt::signed_min_value(BitWidth::w32()),
-                "8000\
-                 0000",
-            );
-            assert_hex(
-                ApInt::signed_max_value(BitWidth::w32()),
-                "7FFF\
-                 FFFF",
-            );
+            assert_hex(ApInt::from(0xFEDC_BA98_u32), "FEDCBA98");
+            assert_hex(ApInt::all_set(BitWidth::w32()), "FFFFFFFF");
+            assert_hex(ApInt::signed_min_value(BitWidth::w32()), "80000000");
+            assert_hex(ApInt::signed_max_value(BitWidth::w32()), "7FFFFFFF");
         }
 
         #[test]
@@ -437,33 +421,19 @@ mod tests {
             assert_hex(ApInt::one(BitWidth::w128()), "1");
             assert_hex(
                 ApInt::from(0xFEDC_BA98_0A1B_7654_ABCD_0123_u128),
-                "FEDC\
-                 BA98\
-                 0A1B\
-                 7654\
-                 ABCD\
-                 0123",
+                "FEDCBA980A1B7654ABCD0123",
             );
             assert_hex(
                 ApInt::all_set(BitWidth::w128()),
-                "FFFFFFFF\
-                 FFFFFFFF\
-                 FFFFFFFF\
-                 FFFFFFFF",
+                "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF",
             );
             assert_hex(
                 ApInt::signed_min_value(BitWidth::w128()),
-                "80000000\
-                 00000000\
-                 00000000\
-                 00000000",
+                "80000000000000000000000000000000",
             );
             assert_hex(
                 ApInt::signed_max_value(BitWidth::w128()),
-                "7FFFFFFF\
-                 FFFFFFFF\
-                 FFFFFFFF\
-                 FFFFFFFF",
+                "7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF",
             );
         }
     }
@@ -495,9 +465,11 @@ mod tests {
                 for &input in &["_0", "_123", "__", "_1_0"] {
                     assert_eq!(
                         ApInt::from_str_radix(radix, input),
-                        Err(Error::invalid_string_repr(input, radix)
-                            .with_annotation("The input string starts with an underscore ('_') instead of a number. \
-                                              The use of underscores is explicitely for separation of digits."))
+                        Err(Error::invalid_string_repr(input, radix).with_annotation(
+                            "The input string starts with an underscore ('_') instead \
+                             of a number. The use of underscores is explicitely for \
+                             separation of digits."
+                        ))
                     )
                 }
             }
@@ -509,9 +481,11 @@ mod tests {
                 for &input in &["0_", "123_", "1_0_"] {
                     assert_eq!(
                         ApInt::from_str_radix(radix, input),
-                        Err(Error::invalid_string_repr(input, radix)
-                            .with_annotation("The input string ends with an underscore ('_') instead of a number. \
-                                              The use of underscores is explicitely for separation of digits."))
+                        Err(Error::invalid_string_repr(input, radix).with_annotation(
+                            "The input string ends with an underscore ('_') instead of \
+                             a number. The use of underscores is explicitely for \
+                             separation of digits."
+                        ))
                     )
                 }
             }
