@@ -32,14 +32,22 @@ impl ApInt {
     {
         let required_digits = width.required_digits();
         assert!(required_digits >= 1);
-        use rand::distributions::{Standard, Distribution};
+        use rand::distributions::{
+            Distribution,
+            Standard,
+        };
         let random_digits = Standard.sample_iter(rng).take(required_digits);
+        // The truncation will be cheap always!
         ApInt::from_iter(random_digits)
-            .expect("We asserted that `required_digits` is at least `1` or greater
-                     so it is safe to assume that `ApInt::from_iter` won't fail.")
-            .into_truncate(width) // This truncation will be cheap always!
-            .expect("`BitWidth::required_digits` returns an upper bound for the
-                     number of required digits, so it is safe to truncate.")
+            .expect(
+                "We asserted that `required_digits` is at least `1` or greater
+                     so it is safe to assume that `ApInt::from_iter` won't fail.",
+            )
+            .into_truncate(width)
+            .expect(
+                "`BitWidth::required_digits` returns an upper bound for the
+                     number of required digits, so it is safe to truncate.",
+            )
     }
 
     /// Randomizes the digits of this `ApInt` inplace.
@@ -57,11 +65,12 @@ impl ApInt {
     where
         R: rand::Rng,
     {
-        use rand::distributions::{Standard, Distribution};
+        use rand::distributions::{
+            Distribution,
+            Standard,
+        };
         let std_dist = Standard.sample_iter(rng);
-        self.digits_mut()
-            .zip(std_dist)
-            .for_each(|(d, r)| *d = r);
+        self.digits_mut().zip(std_dist).for_each(|(d, r)| *d = r);
         self.clear_unused_bits();
     }
 }
@@ -70,9 +79,7 @@ impl ApInt {
 mod tests {
     use super::*;
     use rand::SeedableRng;
-    use rand_xorshift::{
-        XorShiftRng,
-    };
+    use rand_xorshift::XorShiftRng;
 
     #[test]
     fn random_with_width_using() {

@@ -25,10 +25,12 @@ where
 }
 
 impl Storage {
-    /// Returns `true` if the given `BitWidth` is small enough to be stored inline.
+    /// Returns `true` if the given `BitWidth` is small enough to be stored
+    /// inline.
     ///
-    /// Note: Inline storage in the context of `ApInt` means that it is space-optimized
-    ///       similar to the well-known small-string optimization.
+    /// Note: Inline storage in the context of `ApInt` means that it is
+    /// space-optimized       similar to the well-known small-string
+    /// optimization.
     #[inline]
     fn is_inline(width: BitWidth) -> bool {
         width.to_usize() <= digit::BITS

@@ -30,7 +30,8 @@ impl<'a> Iterator for ContiguousDigitSeq<'a> {
 
 /// A sequence of mutable digits.
 ///
-/// This is a very efficient `DigitSeqMut` since its data is contiguous in memory.
+/// This is a very efficient `DigitSeqMut` since its data is contiguous in
+/// memory.
 #[derive(Debug)]
 pub(crate) struct ContiguousDigitSeqMut<'a> {
     digits: slice::IterMut<'a, Digit>,

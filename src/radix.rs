@@ -21,15 +21,18 @@ use crate::{
 ///
 /// - The binary 2-radix supports only `0` and `1` as input.
 /// - The decimal 10-radix supports `0`..=`9` as input characters.
-/// - The hex-dec 16-radix supports inputs characters within `0`..=`9` and `a`..=`f`.
+/// - The hex-dec 16-radix supports inputs characters within `0`..=`9` and
+///   `a`..=`f`.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 pub struct Radix(u8);
 
 impl Radix {
-    /// The minimum supported radix is the binary that has only `0` and `1` in its alphabet.
-    const MIN: u8 = 2;
-    /// The maximum supported radix is the 36-ary that has an alphabet containing `0..9` and `a..z`.
+    /// The maximum supported radix is the 36-ary that has an alphabet
+    /// containing `0..9` and `a..z`.
     const MAX: u8 = 36;
+    /// The minimum supported radix is the binary that has only `0` and `1` in
+    /// its alphabet.
+    const MIN: u8 = 2;
 
     /// Create a new `Radix` from the given `u8`.
     ///
@@ -50,28 +53,29 @@ impl Radix {
         self.0
     }
 
-    /// Returns `true` if the given byte is a valid ascii representation for this `Radix`
-    /// and `false` otherwise.
+    /// Returns `true` if the given byte is a valid ascii representation for
+    /// this `Radix` and `false` otherwise.
     #[inline]
     pub(crate) fn is_valid_byte(self, byte: u8) -> bool {
         byte < self.to_u8()
     }
 
-    /// Returns `true` if the number represenatation of this `Radix` is a power of two
-    /// and `false` otherwise.
+    /// Returns `true` if the number represenatation of this `Radix` is a power
+    /// of two and `false` otherwise.
     #[inline]
     pub(crate) fn is_power_of_two(self) -> bool {
         self.to_u8().is_power_of_two()
     }
 
-    /// Returns the number of bits required to store a single digit with this `Radix`.
+    /// Returns the number of bits required to store a single digit with this
+    /// `Radix`.
     ///
     /// This is equivalent to the logarithm of base 2 for this `Radix`.
     ///
     /// # Example
     ///
-    /// For binary `Radix` (`= 2`) there are only digits `0` and `1` which can be
-    /// stored in `1` bit each.
+    /// For binary `Radix` (`= 2`) there are only digits `0` and `1` which can
+    /// be stored in `1` bit each.
     /// For a hexdec `Radix` (`= 16`) digits are `0`..=`9`,`A`..=`F` and a digit
     /// requires `4` bits to be stored.
     ///
@@ -91,8 +95,8 @@ impl Radix {
     ///
     /// # Example
     ///
-    /// For binary `Radix` (`= 2`) there are only digits `0` and `1` which can be
-    /// stored in `1` bit each.
+    /// For binary `Radix` (`= 2`) there are only digits `0` and `1` which can
+    /// be stored in `1` bit each.
     /// For a hexdec `Radix` (`= 16`) digits are `0`..=`9`,`A`..=`F` and a digit
     /// requires `4` bits to be stored.
     /// For a decimal `Radix` (`= 10`) digits `None` is returned.
@@ -110,22 +114,23 @@ impl Radix {
 
     /// Returns the greatest power of the radix <= digit::BASE.
     ///
-    /// Note: This operation is only valid for `Radix` instances that are not a power-of-two.
+    /// Note: This operation is only valid for `Radix` instances that are not a
+    /// power-of-two.
     #[inline]
     pub(crate) fn get_radix_base(self) -> (Digit, usize) {
         assert!(!self.is_power_of_two());
 
         // To generate this table:
         // ```
-        //    for radix in 2u64..37 {
-        //        let mut power = digit::BITS / find_last_bit_set(radix.to_u8() as u64);
-        //        let mut base  = (radix.to_u8() as u32).pow(power as u32);
-        //        while let Some(b) = base.checked_mul(radix) {
-        //            base   = b;
-        //            power += 1;
-        //        }
-        //        println!("({:20}, {:2}), // {:2}", base, power, radix);
-        //    }
+        // for radix in 2u64..37 {
+        //     let mut power = digit::BITS / find_last_bit_set(radix.to_u8() as u64);
+        //     let mut base = (radix.to_u8() as u32).pow(power as u32);
+        //     while let Some(b) = base.checked_mul(radix) {
+        //         base = b;
+        //         power += 1;
+        //     }
+        //     println!("({:20}, {:2}), // {:2}", base, power, radix);
+        // }
         // ```
         const BASES: [(DigitRepr, usize); 37] = [
             (0, 0),                         //  0 (invalid Radix!)

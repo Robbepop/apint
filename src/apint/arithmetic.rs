@@ -45,7 +45,10 @@ use core::ops::{
 /// **Note**: unless otherwise noted in the function specific documentation,
 ///
 /// - The functions do **not** allocate memory.
-/// - The function works for both signed and unsigned interpretations of an `ApInt`. In other words, in the low-level bit-wise representation there is no difference between a signed and unsigned operation by a certain function on fixed bit-width integers. (Cite: LLVM)
+/// - The function works for both signed and unsigned interpretations of an
+///   `ApInt`. In other words, in the low-level bit-wise representation there is
+///   no difference between a signed and unsigned operation by a certain
+///   function on fixed bit-width integers. (Cite: LLVM)
 impl ApInt {
     /// Increments this `ApInt` by one inplace.
     pub fn wrapping_inc(&mut self) {
@@ -61,7 +64,8 @@ impl ApInt {
                             break
                         }
                         (v, true) => {
-                            // if the ApInt was relatively random this should rarely happen
+                            // if the ApInt was relatively random this should rarely
+                            // happen
                             x[i] = v;
                         }
                     }
@@ -90,7 +94,8 @@ impl ApInt {
                             break
                         }
                         (v, true) => {
-                            // if the ApInt was relatively random this should rarely happen
+                            // if the ApInt was relatively random this should rarely
+                            // happen
                             x[i] = v;
                         }
                     }
@@ -153,8 +158,9 @@ impl ApInt {
         try_forward_bin_mut_impl(self, rhs, ApInt::wrapping_add_assign)
     }
 
-    /// Add-assigns `rhs` to `self` inplace, and returns a boolean indicating if overflow occured,
-    /// according to the **unsigned** interpretation of overflow.
+    /// Add-assigns `rhs` to `self` inplace, and returns a boolean indicating if
+    /// overflow occured, according to the **unsigned** interpretation of
+    /// overflow.
     ///
     /// # Errors
     ///
@@ -219,8 +225,9 @@ impl ApInt {
         }
     }
 
-    /// Add-assigns `rhs` to `self` inplace, and returns a boolean indicating if overflow occured,
-    /// according to the **signed** interpretation of overflow.
+    /// Add-assigns `rhs` to `self` inplace, and returns a boolean indicating if
+    /// overflow occured, according to the **signed** interpretation of
+    /// overflow.
     ///
     /// # Errors
     ///
@@ -274,7 +281,8 @@ impl ApInt {
         try_forward_bin_mut_impl(self, rhs, ApInt::wrapping_sub_assign)
     }
 
-    /// Multiply-assigns `rhs` to `self` inplace. This function **may** allocate memory.
+    /// Multiply-assigns `rhs` to `self` inplace. This function **may** allocate
+    /// memory.
     ///
     /// # Errors
     ///
@@ -282,31 +290,34 @@ impl ApInt {
     ///
     /// # Performance
     ///
-    /// If the function detects a large number of leading zeros in front of the most significant
-    /// 1 bit, it will apply optimizations so that wasted multiplications and additions of zero are
-    /// avoided. This function is designed to efficiently handle 5 common kinds of multiplication.
-    /// Small here means both small ApInt `BitWidth` and/or small **unsigned** numerical
-    /// significance. (Signed multiplication works, but two's complement negative numbers may have a
-    /// large number of leading ones, leading to potential inefficiency.)
+    /// If the function detects a large number of leading zeros in front of the
+    /// most significant 1 bit, it will apply optimizations so that wasted
+    /// multiplications and additions of zero are avoided. This function is
+    /// designed to efficiently handle 5 common kinds of multiplication.
+    /// Small here means both small ApInt `BitWidth` and/or small **unsigned**
+    /// numerical significance. (Signed multiplication works, but two's
+    /// complement negative numbers may have a large number of leading ones,
+    /// leading to potential inefficiency.)
     ///
     /// - multiplication of zero by any size integer (no allocation)
     /// - multiplication of small (<= 1 `Digit`) integers (no allocation)
     /// - wrapping multiplication of medium size (<= 512 bits) integers
     /// - multiplication of medium size integers that will not overflow
-    /// - multiplication of small integers by large integers (or large integers multiplied by small
-    ///     integers) (no allocation)
+    /// - multiplication of small integers by large integers (or large integers
+    ///   multiplied by small integers) (no allocation)
     ///
-    /// Currently, Karatsuba multiplication is not implemented, so large integer multiplication
-    /// may be very slow compared to other algorithms. According to Wikipedia, Karatsuba algorithms
-    /// outperform 𝒪(n^2) algorithms, starting around 320-640 bits.
+    /// Currently, Karatsuba multiplication is not implemented, so large integer
+    /// multiplication may be very slow compared to other algorithms.
+    /// According to Wikipedia, Karatsuba algorithms outperform 𝒪(n^2)
+    /// algorithms, starting around 320-640 bits.
     pub fn wrapping_mul_assign(&mut self, rhs: &ApInt) -> Result<()> {
         match self.zip_access_data_mut_self(rhs)? {
             Inl(lhs, rhs) => {
                 *lhs = lhs.wrapping_mul(rhs);
             }
             Ext(lhs, rhs) => {
-                // finds the most significant nonzero digit (for later optimizations) and handles
-                // early return of multiplication by zero.
+                // finds the most significant nonzero digit (for later optimizations) and
+                // handles early return of multiplication by zero.
                 let rhs_sig_nonzero: usize =
                     match rhs.iter().rposition(|x| x != &Digit::zero()) {
                         Some(x) => x,
@@ -327,12 +338,14 @@ impl ApInt {
                             return Ok(())
                         }
                     };
-                // for several routines below there was a nested loop that had its first and last
-                // iterations unrolled (and the unrolled loops had their first and last iterations
-                // unrolled), and then some if statements are added for digit overflow checks.
-                // This is done because the compiler probably cannot properly unroll the carry
-                // system, overflow system, and figure out that only `Digit` multiplications were
-                // needed instead of `DoubleDigit` multiplications in some places.
+                // for several routines below there was a nested loop that had its first
+                // and last iterations unrolled (and the unrolled loops
+                // had their first and last iterations unrolled), and then
+                // some if statements are added for digit overflow checks.
+                // This is done because the compiler probably cannot properly unroll the
+                // carry system, overflow system, and figure out that only
+                // `Digit` multiplications were needed instead of
+                // `DoubleDigit` multiplications in some places.
                 match (lhs_sig_nonzero == 0, rhs_sig_nonzero == 0) {
                     (false, false) => {
                         let lhs_sig_bits = (lhs_sig_nonzero * digit::BITS)
@@ -343,15 +356,16 @@ impl ApInt {
                                 - (rhs[rhs_sig_nonzero].leading_zeros() as usize));
                         let tot_sig_bits = lhs_sig_bits + rhs_sig_bits;
                         if tot_sig_bits <= (lhs.len() * digit::BITS) {
-                            // No possibility of `Digit` wise overflow. Note that end bits still
-                            // have to be trimmed for `ApInt`s with a width that is not a multiple of
+                            // No possibility of `Digit` wise overflow. Note that end bits
+                            // still have to be trimmed for
+                            // `ApInt`s with a width that is not a multiple of
                             //`Digit`s.
                             // first digit of first row
                             let mult = lhs[0];
                             let temp = mult.carrying_mul(rhs[0]);
                             // middle digits of first row
-                            // the goal here with `sum` is to allocate and initialize it only once
-                            // here.
+                            // the goal here with `sum` is to allocate and initialize it
+                            // only once here.
                             let mut sum =
                                 Vec::with_capacity(lhs_sig_nonzero + rhs_sig_nonzero + 2);
                             sum.push(temp.0);
@@ -437,8 +451,8 @@ impl ApInt {
                             let sig_nonzero = lhs.len() - 1;
                             // first digit done and carry
                             let temp = lhs[0].carrying_mul(rhs[0]);
-                            // the goal here with `sum` is to allocate and initialize it only once
-                            // here.
+                            // the goal here with `sum` is to allocate and initialize it
+                            // only once here.
                             // first row
                             let mut sum = Vec::with_capacity(lhs.len());
                             sum.push(temp.0);
@@ -461,7 +475,8 @@ impl ApInt {
                                 // sum[lhs_i] does not need to be used again
                                 sum[lhs_i] = temp1.0;
                                 let mut add_carry = temp1.1;
-                                // as we get to the higher lhs digits, the higher rhs digits do not
+                                // as we get to the higher lhs digits, the higher rhs
+                                // digits do not
                                 // need to be considered
                                 let rhs_i_upper = sig_nonzero.wrapping_sub(lhs_i);
                                 // middle digits of this row
@@ -548,8 +563,9 @@ impl ApInt {
         Ok(())
     }
 
-    /// Multiplies `rhs` with `self` and returns the result. This function **may** allocate memory.
-    /// Note: see `wrapping_mul_assign` for more information.
+    /// Multiplies `rhs` with `self` and returns the result. This function
+    /// **may** allocate memory. Note: see `wrapping_mul_assign` for more
+    /// information.
     ///
     /// # Errors
     ///
@@ -564,59 +580,69 @@ impl ApInt {
 /// **Note**: unless otherwise noted in the function specific documentation,
 ///
 /// - The functions do **not** allocate memory.
-/// - The function works for both signed and unsigned interpretations of an `ApInt`. In other words,
-///     in the low-level bit-wise representation there is no difference between a signed and
-///     unsigned operation by the function on fixed bit-width integers. (Cite: LLVM)
+/// - The function works for both signed and unsigned interpretations of an
+///   `ApInt`. In other words, in the low-level bit-wise representation there is
+///   no difference between a signed and unsigned operation by the function on
+///   fixed bit-width integers. (Cite: LLVM)
 ///
-/// In almost all integer division algorithms where "just" the quotient is calculated, the remainder
-/// is also produced and actually exists in memory (or at least is only one O(n) operation away)
-/// prior to being dropped or overwritten, and vice versa for remainder only calculations. Note here
-/// that functions with `div` in their names (e.g. `wrapping_div`) should really be called `quo`
-/// (quotient) functions, because the division process produces both the quotient and remainder.
-/// However, to stay with Rust's naming scheme we have kept `div` naming. The instruction for
-/// division on many CPUs sets registers to both results of the division process, and compilers will
-/// detect if code uses both results and only use one division instruction. There is no such
-/// detection for `ApInt`s, and thus the `divrem` and `remdiv` type instructions exist to explicitly
-/// use just one division function for both results.
+/// In almost all integer division algorithms where "just" the quotient is
+/// calculated, the remainder is also produced and actually exists in memory (or
+/// at least is only one O(n) operation away) prior to being dropped or
+/// overwritten, and vice versa for remainder only calculations. Note here
+/// that functions with `div` in their names (e.g. `wrapping_div`) should really
+/// be called `quo` (quotient) functions, because the division process produces
+/// both the quotient and remainder. However, to stay with Rust's naming scheme
+/// we have kept `div` naming. The instruction for division on many CPUs sets
+/// registers to both results of the division process, and compilers will detect
+/// if code uses both results and only use one division instruction. There is no
+/// such detection for `ApInt`s, and thus the `divrem` and `remdiv` type
+/// instructions exist to explicitly use just one division function for both
+/// results.
 ///
 /// ## Performance
 ///
-/// All of the division functions in this `impl` quickly check for various edge cases and use an
-/// efficient algorithm for these cases.
-/// Small here means both small ApInt `BitWidth` and/or small **unsigned** numerical significance.
-/// (Signed division works, but two's complement negative numbers may have a large number of
-/// leading ones, leading to potential inefficiency.)
+/// All of the division functions in this `impl` quickly check for various edge
+/// cases and use an efficient algorithm for these cases.
+/// Small here means both small ApInt `BitWidth` and/or small **unsigned**
+/// numerical significance. (Signed division works, but two's complement
+/// negative numbers may have a large number of leading ones, leading to
+/// potential inefficiency.)
 ///
 /// - division of zero by any size integer (no allocation)
 /// - division of small (1 `Digit`) integers (no allocation)
-/// - any division that will lead to the quotient being zero or one (no allocation)
-/// - division of any integer by small (1 `Digit`) very small (0.5 `Digit`) integers (no allocation)
-/// - division where the number of leading zeros of both arguments are within one `Digit` (less
-///     allocation than what long division normally requires)
-/// - during long division, the algorithm may encounter a case from above and will use that instead
+/// - any division that will lead to the quotient being zero or one (no
+///   allocation)
+/// - division of any integer by small (1 `Digit`) very small (0.5 `Digit`)
+///   integers (no allocation)
+/// - division where the number of leading zeros of both arguments are within
+///   one `Digit` (less allocation than what long division normally requires)
+/// - during long division, the algorithm may encounter a case from above and
+///   will use that instead
 /// - division of medium size (<= 512 bits) integers
 ///
-/// Currently, algorithms faster than 𝒪(n^2) are not implemented, so large integer division may be
-/// very slow compared to other algorithms.
+/// Currently, algorithms faster than 𝒪(n^2) are not implemented, so large
+/// integer division may be very slow compared to other algorithms.
 impl ApInt {
-    // Note: the invariant of `ApInt`s where unused bits beyond the bit width must be all zero is
-    // used heavily here, so that no `clear_unused_bits` needs to be used.
+    // Note: the invariant of `ApInt`s where unused bits beyond the bit width must
+    // be all zero is used heavily here, so that no `clear_unused_bits` needs to
+    // be used.
 
-    /// This function is intended to be inlined into all of the unsigned quotient and remainder
-    /// functions for optimal assembly.
-    /// `duo` is divided by `div`, and the quotient is assigned to `duo` and remainder assigned
-    /// to `div`
-    /// `false` is returned if division by zero happened. Nothing is modified in the case of
-    /// division by zero.
+    /// This function is intended to be inlined into all of the unsigned
+    /// quotient and remainder functions for optimal assembly.
+    /// `duo` is divided by `div`, and the quotient is assigned to `duo` and
+    /// remainder assigned to `div`
+    /// `false` is returned if division by zero happened. Nothing is modified in
+    /// the case of division by zero.
     #[inline]
     pub(crate) fn aarons_algorithm_divrem(duo: &mut [Digit], div: &mut [Digit]) -> bool {
-        // Some parts were put into their own functions and macros because indentation levels were
-        // getting too high, even for me.
+        // Some parts were put into their own functions and macros because indentation
+        // levels were getting too high, even for me.
 
         // The algorithm here is just like the algorithm in
         // https://github.com/AaronKutch/specialized-div-rem,
-        // except that there are more branches and preconditions. There are comments in this function
-        // such as  `//quotient is 0 or 1 check` which correspond to comments in that function.
+        // except that there are more branches and preconditions. There are comments in
+        // this function such as  `//quotient is 0 or 1 check` which correspond
+        // to comments in that function.
 
         // assumptions:
         //  *ini_duo_sd > 0
@@ -686,8 +712,8 @@ impl ApInt {
             div[0] = Digit(u64::from(rem_lo));
         }
 
-        // modifies the `$array` to be the two's complement of itself, all the way up to a `$len`
-        // number of digits.
+        // modifies the `$array` to be the two's complement of itself, all the way up to
+        // a `$len` number of digits.
         macro_rules! twos_complement {
             ($len:expr, $array:ident) => {
                 for i0 in 0..$len {
@@ -709,15 +735,18 @@ impl ApInt {
         }
 
         // uge stands for "unsigned greater or equal to"
-        // This checks for `$lhs >= $rhs` (checking only up to $lhs_len and $rhs_len respectively),
-        // and runs `$ge_branch` if true and `$ln_branch` otherwise
+        // This checks for `$lhs >= $rhs` (checking only up to $lhs_len and $rhs_len
+        // respectively), and runs `$ge_branch` if true and `$ln_branch`
+        // otherwise
         macro_rules! uge {
-            ($lhs_len:expr,
-            $lhs:ident,
-            $rhs_len:expr,
-            $rhs:ident,
-            $ge_branch:block,
-            $ln_branch:block) => {
+            (
+                $lhs_len:expr,
+                $lhs:ident,
+                $rhs_len:expr,
+                $rhs:ident,
+                $ge_branch:block,
+                $ln_branch:block
+            ) => {
                 let mut b0 = false;
                 // allows lhs.len() to be smaller than rhs.len()
                 for i in ($lhs_len..$rhs_len).rev() {
@@ -748,15 +777,18 @@ impl ApInt {
         }
 
         // ugt stands for "unsigned greater than"
-        // This checks for `$lhs > $rhs` (checking only up to $lhs_len and $rhs_len respectively),
-        // and runs `$gt_branch` if true and `$le_branch` otherwise
+        // This checks for `$lhs > $rhs` (checking only up to $lhs_len and $rhs_len
+        // respectively), and runs `$gt_branch` if true and `$le_branch`
+        // otherwise
         macro_rules! ugt {
-            ($lhs_len:expr,
-            $lhs:ident,
-            $rhs_len:expr,
-            $rhs:ident,
-            $gt_branch:block,
-            $le_branch:block) => {
+            (
+                $lhs_len:expr,
+                $lhs:ident,
+                $rhs_len:expr,
+                $rhs:ident,
+                $gt_branch:block,
+                $le_branch:block
+            ) => {
                 let mut b0 = false;
                 // allows lhs.len() to be smaller than rhs.len()
                 for i in ($lhs_len..$rhs_len).rev() {
@@ -789,7 +821,7 @@ impl ApInt {
         // assigns `$sum + $sub` to `$target`,
         // and zeros out `$sum` except for it sets `$sum[0]` to `$val`
         macro_rules! special0 {
-            ($len:expr,$sum:ident,$sub:ident,$target:ident,$val:expr) => {{
+            ($len:expr, $sum:ident, $sub:ident, $target:ident, $val:expr) => {{
                 // subtraction (`sub` is the two's complement of some value)
                 let (sum, mut carry) = $sum[0].carrying_add($sub[0]);
                 $target[0] = sum;
@@ -813,19 +845,19 @@ impl ApInt {
         // assigns `$sum + $sub` to `$target`,
         // and assigns `$val + $add` to `$sum`
         macro_rules! special1 {
-            ($len:expr,$sum:ident,$sub:ident,$target:ident,$val:expr,$add:ident) => {{
+            ($len:expr, $sum:ident, $sub:ident, $targ:ident, $val:expr, $add:ident) => {{
                 // subtraction (`sub` is the two's complement of some value)
                 let (temp, mut carry) = $sum[0].carrying_add($sub[0]);
-                $target[0] = temp;
+                $targ[0] = temp;
                 for i in 1..($len - 1) {
                     let temp = $sum[i]
                         .dd()
                         .wrapping_add($sub[i].dd())
                         .wrapping_add(carry.dd());
-                    $target[i] = temp.lo();
+                    $targ[i] = temp.lo();
                     carry = temp.hi();
                 }
-                $target[$len - 1] = $sum[$len - 1]
+                $targ[$len - 1] = $sum[$len - 1]
                     .wrapping_add($sub[$len - 1])
                     .wrapping_add(carry);
                 let (temp, mut carry) = $add[0].carrying_add($val);
@@ -846,7 +878,7 @@ impl ApInt {
 
         // assigns `$sum + $add` to `$sum`
         macro_rules! add {
-            ($len:expr,$sum:ident,$add:ident) => {{
+            ($len:expr, $sum:ident, $add:ident) => {{
                 let (sum, mut carry) = $sum[0].carrying_add($add[0]);
                 $sum[0] = sum;
                 for i in 1..($len - 1) {
@@ -938,7 +970,8 @@ impl ApInt {
                     )
                 };
                 let mul = duo_sig_dd.wrapping_div(div_sig_dd).lo();
-                // Allocation could be avoided but it would involve more long division to recover
+                // Allocation could be avoided but it would involve more long division to
+                // recover
                 //`div`.
                 // this will become `-(div * mul)`
                 let mut sub: Vec<Digit> = Vec::with_capacity(len);
@@ -952,7 +985,8 @@ impl ApInt {
                     sub.push(temp.0);
                     carry = temp.1;
                 }
-                // final digit, test for `div * mul > duo`, and then form the two's complement
+                // final digit, test for `div * mul > duo`, and then form the two's
+                // complement
                 if div_sd == len - 1 {
                     let temp = mul.carrying_mul_add(div[div_sd], carry);
                     sub.push(temp.0);
@@ -978,7 +1012,8 @@ impl ApInt {
                             return
                         },
                         {
-                            // the quotient is `mult` and remainder is `duo - (div * mult)`
+                            // the quotient is `mult` and remainder is `duo - (div *
+                            // mult)`
                             twos_complement!(len, sub);
                             special0!(len, duo, sub, div, mul);
                             return
@@ -1004,7 +1039,8 @@ impl ApInt {
                             return
                         },
                         {
-                            // the quotient is `mult` and remainder is `duo - (div * mult)`
+                            // the quotient is `mult` and remainder is `duo - (div *
+                            // mult)`
                             twos_complement!(len, sub);
                             special0!(len, duo, sub, div, mul);
                             return
@@ -1044,19 +1080,22 @@ impl ApInt {
                 };
                 if duo_lesser_bits >= div_lesser_bits {
                     let bits = duo_lesser_bits - div_lesser_bits;
-                    // bits_ll is the number of lesser bits in the digit that contains lesser and
-                    // greater bits
+                    // bits_ll is the number of lesser bits in the digit that contains
+                    // lesser and greater bits
                     let (digits, bits_ll) = (bits / digit::BITS, bits % digit::BITS);
-                    // Unfortunately, `mul` here can be up to (2^2n - 1)/(2^(n-1)), where `n`
-                    // is the number of bits in a `Digit`. This means that an `n+1` bit
-                    // integer is needed to store mul. Because only one extra higher bit is involved,
-                    // the algebraic simplification `(mul + 2^n)*div` to `mul*div + div*2^n` can be
-                    // used when that highest bit is set. This just requires faster and simpler
-                    // addition inlining hell instead of long multiplication inlining hell.
+                    // Unfortunately, `mul` here can be up to (2^2n - 1)/(2^(n-1)), where
+                    // `n` is the number of bits in a `Digit`. This
+                    // means that an `n+1` bit integer is needed to
+                    // store mul. Because only one extra higher bit is involved,
+                    // the algebraic simplification `(mul + 2^n)*div` to `mul*div +
+                    // div*2^n` can be used when that highest bit is
+                    // set. This just requires faster and simpler
+                    // addition inlining hell instead of long multiplication inlining
+                    // hell.
                     let mul = duo_sig_dd.wrapping_div(div_sig_d_add1);
                     // add `mul << bits` to `quo`
-                    // no inlining hell here because `bits_ll < n` and it takes a shift of `n`
-                    // to overflow
+                    // no inlining hell here because `bits_ll < n` and it takes a shift of
+                    // `n` to overflow
                     let split_mul = mul << bits_ll;
                     let (temp, mut carry) = split_mul.lo().carrying_add(quo[digits]);
                     quo[digits] = temp;
@@ -1076,13 +1115,15 @@ impl ApInt {
                         carry = temp.1;
                     }
                     // special long division algorithm core.
-                    // Note that nearly all branches before this are not just wanted for performance
-                    // reasons but are actually required in order to not break this.
-                    // these blocks subtract `(mul * div) << bits` from `duo`
-                    // check for highest bit set
+                    // Note that nearly all branches before this are not just wanted for
+                    // performance reasons but are actually required
+                    // in order to not break this. these blocks
+                    // subtract `(mul * div) << bits` from `duo` check
+                    // for highest bit set
                     if mul.hi() == Digit::zero() {
                         let mul = mul.lo();
-                        // carry for bits that wrap across digit boundaries when `<< bits_ll` applied
+                        // carry for bits that wrap across digit boundaries when `<<
+                        // bits_ll` applied
                         let (temp0, mut wrap_carry) = (div[0].dd() << bits_ll).lo_hi();
                         // the regular multiplication carry
                         let (temp1, mut mul_carry) =
@@ -1126,14 +1167,16 @@ impl ApInt {
                         //+______
                         // 103831 <- temp1
                         //
-                        // subtract duo by temp1 negated (with the carry from the two's complement
-                        // being put into `wrap_carry`) and shifted (with `wrap_carry`)
+                        // subtract duo by temp1 negated (with the carry from the two's
+                        // complement being put into `wrap_carry`)
+                        // and shifted (with `wrap_carry`)
 
                         let mul = mul.lo();
                         let (temp0, mut mul_carry) = mul.carrying_mul(div[0]);
                         let temp1 = temp0;
                         let mut add0_carry = Digit::zero();
-                        // the increment from the two's complement can be stored in `wrap_carry`
+                        // the increment from the two's complement can be stored in
+                        // `wrap_carry`
                         let (temp2, mut wrap_carry) =
                             ((!temp1).dd().wrapping_add(Digit::one().dd()) << bits_ll)
                                 .lo_hi();
@@ -1174,10 +1217,12 @@ impl ApInt {
                             | (div[duo_sd - 2].dd() >> (digit::BITS - duo_lz))
                     };
                     let mul = duo_sig_dd.wrapping_div(div_sig_dd).lo();
-                    // I could avoid allocation but it would involve more long division to recover
+                    // I could avoid allocation but it would involve more long division to
+                    // recover
                     //`div`, followed by a second long multiplication with `mul - 1`.
                     // this will become `-(div * mul)`
-                    // note: div_sd != len - 1 because it would be caught by the first `mul` or
+                    // note: div_sd != len - 1 because it would be caught by the first
+                    // `mul` or
                     //`mul-1` algorithm
                     let mut sub: Vec<Digit> = Vec::with_capacity(len);
                     // first digit done and carry
@@ -1217,7 +1262,8 @@ impl ApInt {
                             return
                         },
                         {
-                            // the quotient is `quo + mult` and remainder is `duo - (div * mult)`
+                            // the quotient is `quo + mult` and remainder is `duo - (div *
+                            // mult)`
                             twos_complement!(sub_len, sub);
                             special1!(sub_len, duo, sub, div, mul, quo);
                             return
@@ -1250,7 +1296,8 @@ impl ApInt {
                         len,
                         div,
                         {
-                            // the quotient should be `quo + 1` and remainder should be `duo - div`
+                            // the quotient should be `quo + 1` and remainder should be
+                            // `duo - div`
                             twos_complement!(len, div);
                             add!(len, div, duo);
                             for i0 in 0..len {
@@ -1321,10 +1368,10 @@ impl ApInt {
             }
         }
 
-        // Note: Special cases are aggressively taken care of throughout this function, both because
-        // the core long division algorithm does not work on many edges, and because of optimization.
-        // find the most significant non zeroes, check for `duo` < `div`, and check for division by
-        // zero
+        // Note: Special cases are aggressively taken care of throughout this function,
+        // both because the core long division algorithm does not work on many
+        // edges, and because of optimization. find the most significant non
+        // zeroes, check for `duo` < `div`, and check for division by zero
         match div.iter().rposition(|x| x != &Digit::zero()) {
             Some(div_sd) => {
                 // the initial most significant nonzero duo digit
@@ -1386,12 +1433,12 @@ impl ApInt {
         }
     }
 
-    /// This function is intended to be inlined into all of the unsigned quotient and remainder
-    /// functions for optimal assembly.
-    /// `duo` is divided by `div`, and the remainder is assigned to `duo` and quotient assigned
-    /// to `div`
-    /// `false` is returned if division by zero happened. Nothing is modified in the case of
-    /// division by zero.
+    /// This function is intended to be inlined into all of the unsigned
+    /// quotient and remainder functions for optimal assembly.
+    /// `duo` is divided by `div`, and the remainder is assigned to `duo` and
+    /// quotient assigned to `div`
+    /// `false` is returned if division by zero happened. Nothing is modified in
+    /// the case of division by zero.
     #[inline]
     pub(crate) fn aarons_algorithm_remdiv(duo: &mut [Digit], div: &mut [Digit]) -> bool {
         if ApInt::aarons_algorithm_divrem(duo, div) {
@@ -1407,8 +1454,9 @@ impl ApInt {
         }
     }
 
-    /// Divides `lhs` by `rhs` using **unsigned** interpretation and sets `lhs` equal to the
-    /// quotient and `rhs` equal to the remainder. This function **may** allocate memory.
+    /// Divides `lhs` by `rhs` using **unsigned** interpretation and sets `lhs`
+    /// equal to the quotient and `rhs` equal to the remainder. This
+    /// function **may** allocate memory.
     ///
     /// # Errors
     ///
@@ -1430,14 +1478,17 @@ impl ApInt {
                 }
             }
         }
-        // Note that the typical places `Err` `Ok` are returned is switched. This is because
-        //`rhs.is_zero()` is found as part of finding `duo_sd` inside `aarons_algorithm_divrem`,
+        // Note that the typical places `Err` `Ok` are returned is switched. This is
+        // because
+        //`rhs.is_zero()` is found as part of finding `duo_sd` inside
+        //`rhs.is_zero()` `aarons_algorithm_divrem`,
         // and `lhs.clone()` cannot be performed inside the match statement
         Err(Error::division_by_zero(DivOp::UnsignedDivRem, lhs.clone()))
     }
 
-    /// Divides `lhs` by `rhs` using **unsigned** interpretation and sets `lhs` equal to the
-    /// remainder and `rhs` equal to the quotient. This function **may** allocate memory.
+    /// Divides `lhs` by `rhs` using **unsigned** interpretation and sets `lhs`
+    /// equal to the remainder and `rhs` equal to the quotient. This
+    /// function **may** allocate memory.
     ///
     /// # Errors
     ///
@@ -1462,8 +1513,8 @@ impl ApInt {
         Err(Error::division_by_zero(DivOp::UnsignedRemDiv, lhs.clone()))
     }
 
-    /// Quotient-assigns `lhs` by `rhs` inplace using **unsigned** interpretation.
-    /// This function **may** allocate memory.
+    /// Quotient-assigns `lhs` by `rhs` inplace using **unsigned**
+    /// interpretation. This function **may** allocate memory.
     ///
     /// # Errors
     ///
@@ -1486,8 +1537,8 @@ impl ApInt {
         Err(Error::division_by_zero(DivOp::UnsignedDiv, self.clone()))
     }
 
-    /// Divides `lhs` by `rhs` using **unsigned** interpretation and returns the quotient.
-    /// This function **may** allocate memory.
+    /// Divides `lhs` by `rhs` using **unsigned** interpretation and returns the
+    /// quotient. This function **may** allocate memory.
     ///
     /// # Errors
     ///
@@ -1497,8 +1548,8 @@ impl ApInt {
         try_forward_bin_mut_impl(self, rhs, ApInt::wrapping_udiv_assign)
     }
 
-    /// Remainder-assigns `lhs` by `rhs` inplace using **unsigned** interpretation.
-    /// This function **may** allocate memory.
+    /// Remainder-assigns `lhs` by `rhs` inplace using **unsigned**
+    /// interpretation. This function **may** allocate memory.
     ///
     /// # Errors
     ///
@@ -1521,8 +1572,8 @@ impl ApInt {
         Err(Error::division_by_zero(DivOp::UnsignedRem, self.clone()))
     }
 
-    /// Divides `lhs` by `rhs` using **unsigned** interpretation and returns the remainder.
-    /// This function **may** allocate memory.
+    /// Divides `lhs` by `rhs` using **unsigned** interpretation and returns the
+    /// remainder. This function **may** allocate memory.
     ///
     /// # Errors
     ///
@@ -1532,8 +1583,9 @@ impl ApInt {
         try_forward_bin_mut_impl(self, rhs, ApInt::wrapping_urem_assign)
     }
 
-    /// Divides `lhs` by `rhs` using **signed** interpretation and sets `lhs` equal to the
-    /// quotient and `rhs` equal to the remainder. This function **may** allocate memory.
+    /// Divides `lhs` by `rhs` using **signed** interpretation and sets `lhs`
+    /// equal to the quotient and `rhs` equal to the remainder. This
+    /// function **may** allocate memory.
     ///
     /// # Errors
     ///
@@ -1571,8 +1623,9 @@ impl ApInt {
         Ok(())
     }
 
-    /// Divides `lhs` by `rhs` using **signed** interpretation and sets `lhs` equal to the
-    /// remainder and `rhs` equal to the quotient. This function **may** allocate memory.
+    /// Divides `lhs` by `rhs` using **signed** interpretation and sets `lhs`
+    /// equal to the remainder and `rhs` equal to the quotient. This
+    /// function **may** allocate memory.
     ///
     /// # Errors
     ///
@@ -1646,8 +1699,8 @@ impl ApInt {
         Ok(())
     }
 
-    /// Divides `self` by `rhs` using **signed** interpretation and returns the quotient.
-    /// This function **may** allocate memory.
+    /// Divides `self` by `rhs` using **signed** interpretation and returns the
+    /// quotient. This function **may** allocate memory.
     ///
     /// # Errors
     ///
@@ -1657,8 +1710,8 @@ impl ApInt {
         try_forward_bin_mut_impl(self, rhs, ApInt::wrapping_sdiv_assign)
     }
 
-    /// Remainder-assigns `lhs` by `rhs` inplace using **signed** interpretation.
-    /// This function **may** allocate memory.
+    /// Remainder-assigns `lhs` by `rhs` inplace using **signed**
+    /// interpretation. This function **may** allocate memory.
     ///
     /// # Errors
     ///
@@ -1693,8 +1746,8 @@ impl ApInt {
         Ok(())
     }
 
-    /// Divides `self` by `rhs` using **signed** interpretation and returns the remainder.
-    /// This function **may** allocate memory.
+    /// Divides `self` by `rhs` using **signed** interpretation and returns the
+    /// remainder. This function **may** allocate memory.
     ///
     /// # Errors
     ///
@@ -1892,11 +1945,11 @@ mod tests {
 
         #[test]
         fn rigorous() {
-            // there are many special case and size optimization paths, so this test must be very
-            // rigorous.
+            // there are many special case and size optimization paths, so this test must
+            // be very rigorous.
 
-            // multiplication of apints composed of only u8::MAX in their least significant digits
-            // only works for num_u8 > 1
+            // multiplication of apints composed of only u8::MAX in their least
+            // significant digits only works for num_u8 > 1
             fn nine_test(num_u8: usize) {
                 let mut lhs;
                 let mut rhs =
@@ -1913,8 +1966,9 @@ mod tests {
                         lhs |= &nine;
                         // imagine multiplying a string of base 10 nines together.
                         // It will produce things like 998001, 8991, 98901, 9989001.
-                        // this uses a formula for the number of nines, eights, and zeros except here
-                        // nine is u8::MAX, eight is u8::MAX - 1, and zero is 0u8
+                        // this uses a formula for the number of nines, eights, and zeros
+                        // except here nine is u8::MAX, eight is
+                        // u8::MAX - 1, and zero is 0u8
                         let zeros_after_one = if lhs_nine < rhs_nine {
                             lhs_nine
                         } else {
@@ -2045,24 +2099,34 @@ mod tests {
         fn simple() {
             /// does all of the simple division tests
             /// - `$signed`: if the functions are signed divisions or not
-            /// - `$fun_assign`: a division function such as `wrapping_udiv_assign` with that
-            ///     signature
-            /// - `$fun_into`: a division function such as `into_wrapping_udiv` with that signature
-            /// - `$fun`: a division function such as `wrapping_udivrem_assign` with that signature
-            /// - `$r0`: the quotient or remainder or both of 80 by 7, depending on division
-            ///     function type
-            /// - `$r1`, `$r2`, `$r3`: 80 by -7, -80 by 7, -80 by -7. These can be 0 if `$signed` is
-            ///     false.
+            /// - `$fun_assign`: a division function such as
+            ///   `wrapping_udiv_assign` with that signature
+            /// - `$fun_into`: a division function such as `into_wrapping_udiv`
+            ///   with that signature
+            /// - `$fun`: a division function such as `wrapping_udivrem_assign`
+            ///   with that signature
+            /// - `$r0`: the quotient or remainder or both of 80 by 7, depending
+            ///   on division function type
+            /// - `$r1`, `$r2`, `$r3`: 80 by -7, -80 by 7, -80 by -7. These can
+            ///   be 0 if `$signed` is false.
             macro_rules! s {
-                ($signed:expr,$fun_assign:ident,$fun_into:ident,$r0:expr,$r1:expr,$r2:expr,$r3:expr/*,$div_op:ident*/) => {
-                    /*match $fun_assign
-                    match ApInt::from(123u8).$fun_into(&ApInt::from(0u8)) {
-                        Err(Error{kind: ErrorKind::DivisionByZero{op: DivOp::$div_op, lhs: x}, message: _, annotation: _}) => {
-                            assert_eq!(x,ApInt::from(123u8));
-                        },
-                        _ => unreachable!(),
-                    }
-                    match ApInt::from(12345678912345689123456789123456789u128).*/
+                (
+                    $signed:expr,
+                    $fun_assign:ident,
+                    $fun_into:ident,
+                    $r0:expr,
+                    $r1:expr,
+                    $r2:expr,
+                    $r3:expr
+                ) => {
+                    // match $fun_assign
+                    // match ApInt::from(123u8).$fun_into(&ApInt::from(0u8)) {
+                    // Err(Error{kind: ErrorKind::DivisionByZero{op: DivOp::$div_op, lhs:
+                    // x}, message: _, annotation: _}) => { assert_eq!(x,ApInt::
+                    // from(123u8)); },
+                    // _ => unreachable!(),
+                    // }
+                    // match ApInt::from(12345678912345689123456789123456789u128).
                     {
                         let lhs = ApInt::from(80i8);
                         let rhs = ApInt::from(7i8);
@@ -2098,38 +2162,36 @@ mod tests {
                         }
                     }
                 };
-                ($signed:expr,$fun:ident,$r0:expr,$r1:expr,$r2:expr,$r3:expr/*,$div_op:ident*/) => {
+                ($signed:expr, $fun:ident, $r0:expr, $r1:expr, $r2:expr, $r3:expr) => {{
+                    let mut lhs = ApInt::from(80i8);
+                    let mut rhs = ApInt::from(7i8);
+                    ApInt::$fun(&mut lhs, &mut rhs).unwrap();
+                    assert_eq!(lhs, ApInt::from($r0.0));
+                    assert_eq!(rhs, ApInt::from($r0.1));
+                }
+                if $signed {
                     {
                         let mut lhs = ApInt::from(80i8);
+                        let mut rhs = ApInt::from(-7i8);
+                        ApInt::$fun(&mut lhs, &mut rhs).unwrap();
+                        assert_eq!(lhs, ApInt::from($r1.0));
+                        assert_eq!(rhs, ApInt::from($r1.1));
+                    }
+                    {
+                        let mut lhs = ApInt::from(-80i8);
                         let mut rhs = ApInt::from(7i8);
                         ApInt::$fun(&mut lhs, &mut rhs).unwrap();
-                        assert_eq!(lhs, ApInt::from($r0.0));
-                        assert_eq!(rhs, ApInt::from($r0.1));
+                        assert_eq!(lhs, ApInt::from($r2.0));
+                        assert_eq!(rhs, ApInt::from($r2.1));
                     }
-                    if $signed {
-                        {
-                            let mut lhs = ApInt::from(80i8);
-                            let mut rhs = ApInt::from(-7i8);
-                            ApInt::$fun(&mut lhs, &mut rhs).unwrap();
-                            assert_eq!(lhs, ApInt::from($r1.0));
-                            assert_eq!(rhs, ApInt::from($r1.1));
-                        }
-                        {
-                            let mut lhs = ApInt::from(-80i8);
-                            let mut rhs = ApInt::from(7i8);
-                            ApInt::$fun(&mut lhs, &mut rhs).unwrap();
-                            assert_eq!(lhs, ApInt::from($r2.0));
-                            assert_eq!(rhs, ApInt::from($r2.1));
-                        }
-                        {
-                            let mut lhs = ApInt::from(-80i8);
-                            let mut rhs = ApInt::from(-7i8);
-                            ApInt::$fun(&mut lhs, &mut rhs).unwrap();
-                            assert_eq!(lhs, ApInt::from($r3.0));
-                            assert_eq!(rhs, ApInt::from($r3.1));
-                        }
+                    {
+                        let mut lhs = ApInt::from(-80i8);
+                        let mut rhs = ApInt::from(-7i8);
+                        ApInt::$fun(&mut lhs, &mut rhs).unwrap();
+                        assert_eq!(lhs, ApInt::from($r3.0));
+                        assert_eq!(rhs, ApInt::from($r3.1));
                     }
-                }
+                }};
             }
             s!(
                 false,
@@ -2413,7 +2475,11 @@ mod tests {
                 assert_eq!(rhs.clone().into_wrapping_udiv(&rhs).unwrap(), one);
                 let temp = product.clone().into_wrapping_udiv(&lhs).unwrap();
                 if temp != rhs {
-                    panic!("lhs_shl:{:?}\nrhs_shl:{:?}\nlhs:{:?}\nrhs:{:?}\n={:?}\ntemp:{:?}",lhs_shl[i],rhs_shl[i],lhs,rhs,product,temp);
+                    panic!(
+                        "lhs_shl:{:?}\nrhs_shl:{:?}\nlhs:{:?}\nrhs:{:?}\n={:?}\ntemp:{:?\
+                         }",
+                        lhs_shl[i], rhs_shl[i], lhs, rhs, product, temp
+                    );
                 }
                 assert_eq!(product.clone().into_wrapping_udiv(&rhs).unwrap(), lhs);
                 assert_eq!(zero.clone().into_wrapping_urem(&lhs).unwrap(), zero);
@@ -2491,8 +2557,8 @@ mod tests {
             );
         }
 
-        // throws all the functions together for an identities party. If one function breaks, the
-        // whole thing should break.
+        // throws all the functions together for an identities party. If one function
+        // breaks, the whole thing should break.
         fn identities(
             size: usize,
             width: BitWidth,
@@ -2561,8 +2627,8 @@ mod tests {
                 lhs.clone().into_wrapping_udiv(&tmp1).unwrap()
             );
             if (shift == (size - 1)) && (lhs == tmp1) {
-                // unfortunate numerical corner case where the result of the shift is -1 but the
-                // division ends up as +1
+                // unfortunate numerical corner case where the result of the shift is -1
+                // but the division ends up as +1
                 assert_eq!(
                     lhs.clone().into_wrapping_sdiv(&tmp1).unwrap(),
                     ApInt::one(width)
@@ -2621,10 +2687,38 @@ mod tests {
                     let mul_plus_rem = temp0.clone();
                     ApInt::wrapping_udivrem_assign(&mut temp0, &mut temp1).unwrap();
                     if temp0 != (lhs.clone() & &anti_overflow_mask) {
-                        panic!("wrong div\nlhs:{:?}\nactual:{:?}\nrhs:{:?}\nthird:{:?}\nrem:{:?}\nmul:{:?}\nmul_plus_rem:{:?}\ntemp0:{:?}\ntemp1:{:?}",lhs,(lhs.clone() & &anti_overflow_mask),rhs,third,rem,mul,mul_plus_rem,temp0,temp1)
+                        panic!(
+                            "wrong div\nlhs:{:?}\nactual:{:?}\nrhs:{:?}\nthird:{:?}\\
+                             \
+                             nrem:{:?}\nmul:{:?}\nmul_plus_rem:{:?}\ntemp0:{:?}\ntemp1:\
+                             {:?}",
+                            lhs,
+                            (lhs.clone() & &anti_overflow_mask),
+                            rhs,
+                            third,
+                            rem,
+                            mul,
+                            mul_plus_rem,
+                            temp0,
+                            temp1
+                        )
                     }
                     if temp1 != rem {
-                        panic!("wrong rem\nlhs:{:?}\nactual:{:?}\nrhs:{:?}\nthird:{:?}\nrem:{:?}\nmul:{:?}\nmul_plus_rem:{:?}\ntemp0:{:?}\ntemp1:{:?}",lhs,(lhs.clone() & &anti_overflow_mask),rhs,third,rem,mul,mul_plus_rem,temp0,temp1)
+                        panic!(
+                            "wrong rem\nlhs:{:?}\nactual:{:?}\nrhs:{:?}\nthird:{:?}\\
+                             \
+                             nrem:{:?}\nmul:{:?}\nmul_plus_rem:{:?}\ntemp0:{:?}\ntemp1:\
+                             {:?}",
+                            lhs,
+                            (lhs.clone() & &anti_overflow_mask),
+                            rhs,
+                            third,
+                            rem,
+                            mul,
+                            mul_plus_rem,
+                            temp0,
+                            temp1
+                        )
                     }
                 }
             }

@@ -24,7 +24,8 @@ pub(crate) use self::to_primitive::PrimitiveTy;
 
 use core::ptr::NonNull;
 
-/// An arbitrary precision integer with modulo arithmetics similar to machine integers.
+/// An arbitrary precision integer with modulo arithmetics similar to machine
+/// integers.
 pub struct ApInt {
     /// The width in bits of this `ApInt`.
     len: BitWidth,

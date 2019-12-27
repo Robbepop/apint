@@ -85,34 +85,46 @@ impl fmt::UpperHex for ApInt {
 
 /// # Deserialization
 impl ApInt {
-    /// Parses the given `input` `String` with the given `Radix` and returns an `ApInt`
-    /// with the given `target_width` `BitWidth`.
+    /// Parses the given `input` `String` with the given `Radix` and returns an
+    /// `ApInt` with the given `target_width` `BitWidth`.
     ///
-    /// **Note:** The given `input` is parsed as big-endian value. This means, the most significant bit (MSB)
-    /// is the leftst bit in the string representation provided by the user.
+    /// **Note:** The given `input` is parsed as big-endian value. This means,
+    /// the most significant bit (MSB) is the leftst bit in the string
+    /// representation provided by the user.
     ///
-    /// The string is assumed to contain no whitespace and contain only values within a subset of the
-    /// range of `0`..`9` and `a`..`z` depending on the given `radix`.
+    /// The string is assumed to contain no whitespace and contain only values
+    /// within a subset of the range of `0`..`9` and `a`..`z` depending on
+    /// the given `radix`.
     ///
-    /// The string is assumed to have no sign as `ApInt` does not handle signdness.
+    /// The string is assumed to have no sign as `ApInt` does not handle
+    /// signdness.
     ///
     /// # Errors
     ///
     /// - If `input` is empty.
-    /// - If `input` is not a valid representation for an `ApInt` for the given `radix`.
-    /// - If `input` has trailing zero characters (`0`), e.g. `"0042"` instead of `"42"`.
-    /// - If `input` represents an `ApInt` value that does not fit into the given `target_bitwidth`.
+    /// - If `input` is not a valid representation for an `ApInt` for the given
+    ///   `radix`.
+    /// - If `input` has trailing zero characters (`0`), e.g. `"0042"` instead
+    ///   of `"42"`.
+    /// - If `input` represents an `ApInt` value that does not fit into the
+    ///   given `target_bitwidth`.
     ///
     /// # Examples
     ///
     /// ```no_run
     /// # use apint::ApInt;
-    /// let a = ApInt::from_str_radix(10, "42");      // ok
-    /// let b = ApInt::from_str_radix( 2, "1011011"); // ok (dec. = 91)
-    /// let c = ApInt::from_str_radix(16, "ffcc00");  // ok (dec. = 16763904)
-    /// let c = ApInt::from_str_radix(10, "256");     // Error: 256 does not fit within 8 bits!
-    /// let d = ApInt::from_str_radix( 2, "01020");   // Error: Invalid digit '2' at position 3 for given radix.
-    /// let e = ApInt::from_str_radix(16, "hello");   // Error: "hello" is not a valid ApInt representation!
+    /// // ok
+    /// let a = ApInt::from_str_radix(10, "42");
+    /// // ok (dec. = 91)
+    /// let b = ApInt::from_str_radix(2, "1011011");
+    /// // ok (dec. = 16763904)
+    /// let c = ApInt::from_str_radix(16, "ffcc00");
+    /// // Error: 256 does not fit within 8 bits!
+    /// let c = ApInt::from_str_radix(10, "256");
+    /// // Error: Invalid digit '2' at position 3 for given radix.
+    /// let d = ApInt::from_str_radix(2, "01020");
+    /// // Error: "hello" is not a valid ApInt representation!
+    /// let e = ApInt::from_str_radix(16, "hello");
     /// ```
     pub fn from_str_radix<R, S>(radix: R, input: S) -> Result<ApInt>
     where
@@ -175,8 +187,8 @@ impl ApInt {
         Ok(result)
     }
 
-    // Convert from a power of two radix (bits == ilog2(radix)) where bits evenly divides
-    // Digit::BITS.
+    // Convert from a power of two radix (bits == ilog2(radix)) where bits evenly
+    // divides Digit::BITS.
     //
     // Forked from: https://github.com/rust-num/num/blob/master/bigint/src/biguint.rs#L126
     //
@@ -205,8 +217,8 @@ impl ApInt {
         ApInt::from_iter(data).unwrap()
     }
 
-    // Convert from a power of two radix (bits == ilog2(radix)) where bits doesn't evenly divide
-    // Digit::BITS.
+    // Convert from a power of two radix (bits == ilog2(radix)) where bits doesn't
+    // evenly divide Digit::BITS.
     //
     // Forked from: https://github.com/rust-num/num/blob/master/bigint/src/biguint.rs#L143
     //
@@ -226,7 +238,8 @@ impl ApInt {
         let mut d = 0;
         let mut dbits = 0; // Number of bits we currently have in d.
 
-        // Walk v accumulating bits in d; whenever we accumulate digit::BITS in d, spit out a digit:
+        // Walk v accumulating bits in d; whenever we accumulate digit::BITS in d, spit
+        // out a digit:
         for &c in v {
             d |= (DigitRepr::from(c)) << dbits;
             dbits += bits;
@@ -234,8 +247,9 @@ impl ApInt {
             if dbits >= digit::BITS {
                 data.push(Digit(d));
                 dbits -= digit::BITS;
-                // If `dbits` was greater than `digit::BITS`, we dropped some of the bits in c
-                // (they couldn't fit in d) - grab the bits we lost here:
+                // If `dbits` was greater than `digit::BITS`, we dropped some of the bits
+                // in c (they couldn't fit in d) - grab the bits we lost
+                // here:
                 d = (DigitRepr::from(c)) >> (bits - dbits);
             }
         }
@@ -290,12 +304,15 @@ impl ApInt {
 
             let carry = 0;
             for _d in &mut data {
-                // *d = mac_with_carry(0, *d, base, &mut carry); // TODO! This was commented out.
+                // *d = mac_with_carry(0, *d, base, &mut carry); // TODO! This
+                // was commented out.
 
-                // // fn carry_mul_add(a: Digit, b: Digit, c: Digit, carry: Digit) -> DigitAndCarry
-                // // Returns the result of `(a + (b * c)) + carry` and its implied carry value.
+                // // fn carry_mul_add(a: Digit, b: Digit, c: Digit, carry:
+                // Digit) -> DigitAndCarry // Returns the result
+                // of `(a + (b * c)) + carry` and its implied carry value.
 
-                // let DigitAndCarry(d, carry) = carry_mul_add(digit::ZERO, *d, base, carry); // TODO! This was commented out.
+                // let DigitAndCarry(d, carry) = carry_mul_add(digit::ZERO, *d,
+                // base, carry); // TODO! This was commented out.
             }
             debug_assert!(carry == 0);
 
@@ -313,7 +330,8 @@ impl ApInt {
 ///  Serialization
 /// =======================================================================
 impl ApInt {
-    /// Returns a `String` representation of the binary encoded `ApInt` for the given `Radix`.
+    /// Returns a `String` representation of the binary encoded `ApInt` for the
+    /// given `Radix`.
     pub fn to_string_radix<R>(&self, radix: R) -> String
     where
         R: Into<Radix>,
@@ -397,26 +415,10 @@ mod tests {
         fn small() {
             assert_hex(ApInt::zero(BitWidth::w32()), "0");
             assert_hex(ApInt::one(BitWidth::w32()), "1");
-            assert_hex(
-                ApInt::from(0xFEDC_BA98_u32),
-                "FEDC\
-                 BA98",
-            );
-            assert_hex(
-                ApInt::all_set(BitWidth::w32()),
-                "FFFF\
-                 FFFF",
-            );
-            assert_hex(
-                ApInt::signed_min_value(BitWidth::w32()),
-                "8000\
-                 0000",
-            );
-            assert_hex(
-                ApInt::signed_max_value(BitWidth::w32()),
-                "7FFF\
-                 FFFF",
-            );
+            assert_hex(ApInt::from(0xFEDC_BA98_u32), "FEDCBA98");
+            assert_hex(ApInt::all_set(BitWidth::w32()), "FFFFFFFF");
+            assert_hex(ApInt::signed_min_value(BitWidth::w32()), "80000000");
+            assert_hex(ApInt::signed_max_value(BitWidth::w32()), "7FFFFFFF");
         }
 
         #[test]
@@ -425,33 +427,19 @@ mod tests {
             assert_hex(ApInt::one(BitWidth::w128()), "1");
             assert_hex(
                 ApInt::from(0xFEDC_BA98_0A1B_7654_ABCD_0123_u128),
-                "FEDC\
-                 BA98\
-                 0A1B\
-                 7654\
-                 ABCD\
-                 0123",
+                "FEDCBA980A1B7654ABCD0123",
             );
             assert_hex(
                 ApInt::all_set(BitWidth::w128()),
-                "FFFFFFFF\
-                 FFFFFFFF\
-                 FFFFFFFF\
-                 FFFFFFFF",
+                "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF",
             );
             assert_hex(
                 ApInt::signed_min_value(BitWidth::w128()),
-                "80000000\
-                 00000000\
-                 00000000\
-                 00000000",
+                "80000000000000000000000000000000",
             );
             assert_hex(
                 ApInt::signed_max_value(BitWidth::w128()),
-                "7FFFFFFF\
-                 FFFFFFFF\
-                 FFFFFFFF\
-                 FFFFFFFF",
+                "7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF",
             );
         }
     }
@@ -483,9 +471,11 @@ mod tests {
                 for &input in &["_0", "_123", "__", "_1_0"] {
                     assert_eq!(
                         ApInt::from_str_radix(radix, input),
-                        Err(Error::invalid_string_repr(input, radix)
-                            .with_annotation("The input string starts with an underscore ('_') instead of a number. \
-                                              The use of underscores is explicitely for separation of digits."))
+                        Err(Error::invalid_string_repr(input, radix).with_annotation(
+                            "The input string starts with an underscore ('_') instead \
+                             of a number. The use of underscores is explicitely for \
+                             separation of digits."
+                        ))
                     )
                 }
             }
@@ -497,9 +487,11 @@ mod tests {
                 for &input in &["0_", "123_", "1_0_"] {
                     assert_eq!(
                         ApInt::from_str_radix(radix, input),
-                        Err(Error::invalid_string_repr(input, radix)
-                            .with_annotation("The input string ends with an underscore ('_') instead of a number. \
-                                              The use of underscores is explicitely for separation of digits."))
+                        Err(Error::invalid_string_repr(input, radix).with_annotation(
+                            "The input string ends with an underscore ('_') instead of \
+                             a number. The use of underscores is explicitely for \
+                             separation of digits."
+                        ))
                     )
                 }
             }
@@ -554,12 +546,14 @@ mod tests {
                 (8, "777_747_666", 0o777_747_666),
                 (8, "111", 0b001_001_001),
                 (8, "7_7777_7777_7777_7777_7777", u64::max_value() / 2),
-                // ( 8, "17_7777_7777_7777_7777_7777", u64::max_value()), // Does not work, yet! Should it work?
+                // ( 8, "17_7777_7777_7777_7777_7777", u64::max_value()), // Does not
+                // work, yet! Should it work?
                 (10, "100", 100),
                 (10, "42", 42),
                 (10, "1337", 1337),
                 (10, "5_000_000", 5_000_000),
-                // (10, "18_446_744_073_709_551_615", u64::max_value()), // Does not work, yet!
+                // (10, "18_446_744_073_709_551_615", u64::max_value()), // Does not
+                // work, yet!
                 (16, "100", 0x100),
                 (16, "42", 0x42),
                 (16, "1337", 0x1337),

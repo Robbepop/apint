@@ -26,16 +26,20 @@ use std::error;
 /// This also stores the unique information tied to the error report.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum ErrorKind {
-    /// Returned on trying to create a `Radix` from an invalid `u8` representation.
+    /// Returned on trying to create a `Radix` from an invalid `u8`
+    /// representation.
     InvalidRadix(u8),
 
-    /// Returned whenever trying to parse an invalid string representation for an `ApInt`.
+    /// Returned whenever trying to parse an invalid string representation for
+    /// an `ApInt`.
     InvalidStringRepr {
-        /// The string storing the invalid representation of the int for the given radix.
+        /// The string storing the invalid representation of the int for the
+        /// given radix.
         input: String,
         /// The radix that was used.
         radix: Radix,
-        /// An optional index and character when encountering an invalid character.
+        /// An optional index and character when encountering an invalid
+        /// character.
         pos_char: Option<(usize, char)>,
     },
 
@@ -58,19 +62,23 @@ pub enum ErrorKind {
     /// Returns on trying to cast an `ApInt` to a primitive type
     /// that can not represent the value represented by the `ApInt`.
     ValueUnrepresentable {
-        /// The `ApInt` that the user wanted to represent as the given `PrimitiveTy`.
+        /// The `ApInt` that the user wanted to represent as the given
+        /// `PrimitiveTy`.
         value: ApInt,
-        /// The `PrimitiveTy` that the user wanted for representing the given `ApInt`.
+        /// The `PrimitiveTy` that the user wanted for representing the given
+        /// `ApInt`.
         destination_ty: PrimitiveTy,
     },
 
     /// Returned on violation of matching bitwidth constraints of operations.
     UnmatchingBitwidth(BitWidth, BitWidth),
 
-    /// Returned on trying to create a `BitWidth` from an invalid `usize` representation.
+    /// Returned on trying to create a `BitWidth` from an invalid `usize`
+    /// representation.
     InvalidBitWidth(usize),
 
-    /// Returned on truncating an `ApInt` with a bitwidth greater than the current one.
+    /// Returned on truncating an `ApInt` with a bitwidth greater than the
+    /// current one.
     TruncationBitWidthTooLarge {
         /// The target bit width.
         target: BitWidth,
@@ -78,7 +86,8 @@ pub enum ErrorKind {
         current: BitWidth,
     },
 
-    /// Returned on extending an `ApInt` with a bitwidth less than the current one.
+    /// Returned on extending an `ApInt` with a bitwidth less than the current
+    /// one.
     ExtensionBitWidthTooSmall {
         /// The target bit width.
         target: BitWidth,
@@ -121,8 +130,9 @@ pub enum DivOp {
 
 /// Represents an error that may occure upon using the `ApInt` library.
 ///
-/// All errors have a unique kind which also stores extra information for error reporting.
-/// Besides that an `Error` also stores a message and an optional additional annotation.
+/// All errors have a unique kind which also stores extra information for error
+/// reporting. Besides that an `Error` also stores a message and an optional
+/// additional annotation.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Error {
     kind: ErrorKind,
@@ -187,10 +197,18 @@ impl Error {
         S: Into<String>,
     {
         let input = input.into();
-        Error{
-            kind: ErrorKind::InvalidStringRepr{input, radix, pos_char: None},
-            message: format!("Encountered an invalid string representation for the given radix (= {:?}).", radix),
-            annotation: None
+        Error {
+            kind: ErrorKind::InvalidStringRepr {
+                input,
+                radix,
+                pos_char: None,
+            },
+            message: format!(
+                "Encountered an invalid string representation for the given radix (= \
+                 {:?}).",
+                radix
+            ),
+            annotation: None,
         }
     }
 
@@ -204,11 +222,18 @@ impl Error {
         S: Into<String>,
     {
         let input = input.into();
-        Error{
-            kind: ErrorKind::InvalidStringRepr{input, radix, pos_char: None},
-            message: format!("Encountered an invalid character (= '{:?}') at position {:?} within the given string \
-                              representation for the given radix (= {:?}).", ch, pos, radix),
-            annotation: None
+        Error {
+            kind: ErrorKind::InvalidStringRepr {
+                input,
+                radix,
+                pos_char: None,
+            },
+            message: format!(
+                "Encountered an invalid character (= '{:?}') at position {:?} within \
+                 the given string representation for the given radix (= {:?}).",
+                ch, pos, radix
+            ),
+            annotation: None,
         }
     }
 
@@ -231,10 +256,14 @@ impl Error {
     {
         let target = target.into();
         let current = current.into();
-        Error{
-            kind: ErrorKind::ExtensionBitWidthTooSmall{target, current},
-            message: format!("Tried to extend an `ApInt` with a width of {:?} to a smaller target width of {:?}", current, target),
-            annotation: None
+        Error {
+            kind: ErrorKind::ExtensionBitWidthTooSmall { target, current },
+            message: format!(
+                "Tried to extend an `ApInt` with a width of {:?} to a smaller target \
+                 width of {:?}",
+                current, target
+            ),
+            annotation: None,
         }
     }
 
@@ -245,10 +274,14 @@ impl Error {
     {
         let target = target.into();
         let current = current.into();
-        Error{
-            kind: ErrorKind::TruncationBitWidthTooLarge{target, current},
-            message: format!("Tried to truncate an `ApInt` with a width of {:?} to a larger target width of {:?}", current, target),
-            annotation: None
+        Error {
+            kind: ErrorKind::TruncationBitWidthTooLarge { target, current },
+            message: format!(
+                "Tried to truncate an `ApInt` with a width of {:?} to a larger target \
+                 width of {:?}",
+                current, target
+            ),
+            annotation: None,
         }
     }
 
@@ -259,10 +292,14 @@ impl Error {
     {
         let lhs = lhs.into();
         let rhs = rhs.into();
-        Error{
+        Error {
             kind: ErrorKind::UnmatchingBitwidth(lhs, rhs),
-            message: format!("Encountered invalid operation on entities with non-matching bit-widths of {:?} and {:?}.", lhs, rhs),
-            annotation: None
+            message: format!(
+                "Encountered invalid operation on entities with non-matching bit-widths \
+                 of {:?} and {:?}.",
+                lhs, rhs
+            ),
+            annotation: None,
         }
     }
 
@@ -293,18 +330,24 @@ impl Error {
     {
         let pos = pos.into();
         let width = width.into();
-        Error{
-            kind: ErrorKind::InvalidBitAccess{pos, width},
-            message: format!("Encountered invalid bit access at position {:?} with a total bit-width of {:?}.", pos, width),
-            annotation: None
+        Error {
+            kind: ErrorKind::InvalidBitAccess { pos, width },
+            message: format!(
+                "Encountered invalid bit access at position {:?} with a total bit-width \
+                 of {:?}.",
+                pos, width
+            ),
+            annotation: None,
         }
     }
 
     pub(crate) fn expected_non_empty_digits() -> Error {
-        Error{
+        Error {
             kind: ErrorKind::ExpectedNonEmptyDigits,
-            message: "Encountered an empty iterator upon construction of an `ApInt` from a digit iterator.".to_owned(),
-            annotation: None
+            message: "Encountered an empty iterator upon construction of an `ApInt` \
+                      from a digit iterator."
+                .to_owned(),
+            annotation: None,
         }
     }
 
@@ -313,8 +356,8 @@ impl Error {
         destination_ty: PrimitiveTy,
     ) -> Error {
         let message = format!(
-            "Encountered a value ({:?}) that is unrepresentable \
-             by the destination type {:?}.",
+            "Encountered a value ({:?}) that is unrepresentable by the destination type \
+             {:?}.",
             value, destination_ty
         );
         Error {
@@ -329,7 +372,8 @@ impl Error {
 
     pub(crate) fn division_by_zero(op: DivOp, lhs: ApInt) -> Error {
         let message = format!(
-            "Encountered a division-by-zero for operation (= {:?}) with the left hand-side value: (= {:?})",
+            "Encountered a division-by-zero for operation (= {:?}) with the left \
+             hand-side value: (= {:?})",
             op, lhs
         );
         Error {

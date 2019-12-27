@@ -135,15 +135,15 @@ impl ApInt {
         let target_width = prim_ty.associated_width();
         if prim_ty.is_signed() && actual_width < target_width {
             lsd.sign_extend_from(actual_width).expect(
-                "We already asserted that `actual_width` < `target_width` \
-                 and since `target_width` is always less than or equal to \
-                 `64` bits calling `Digit::sign_extend_from` is safe for it.",
+                "We already asserted that `actual_width` < `target_width` and since \
+                 `target_width` is always less than or equal to `64` bits calling \
+                 `Digit::sign_extend_from` is safe for it.",
             );
         }
         if target_width < BitWidth::w64() {
             lsd.truncate_to(target_width).expect(
-                "Since `target_width` is always less than or equal to \
-                 `64` bits calling `Digit::sign_extend_from` is safe for it.",
+                "Since `target_width` is always less than or equal to `64` bits calling \
+                 `Digit::sign_extend_from` is safe for it.",
             );
         }
         lsd
@@ -156,8 +156,8 @@ impl ApInt {
     ///
     /// # Note
     ///
-    /// - Basically this returns `true` if the least significant
-    ///   bit of this `ApInt` is `1` and `false` otherwise.
+    /// - Basically this returns `true` if the least significant bit of this
+    ///   `ApInt` is `1` and `false` otherwise.
     pub fn resize_to_bool(&self) -> bool {
         match self.resize_to_primitive_ty(PrimitiveTy::Bool) {
             Digit(0) => false,
@@ -170,13 +170,11 @@ impl ApInt {
     ///
     /// # Note
     ///
-    /// - This operation will conserve the signedness of the
-    ///   value. This means that for `ApInt` instances with
-    ///   a `BitWidth` less than `8` bits the value is
-    ///   sign extended to the target bit width.
-    /// - All bits but the least significant `8` bits are
-    ///   being ignored by this operation to construct the
-    ///   result.
+    /// - This operation will conserve the signedness of the value. This means
+    ///   that for `ApInt` instances with a `BitWidth` less than `8` bits the
+    ///   value is sign extended to the target bit width.
+    /// - All bits but the least significant `8` bits are being ignored by this
+    ///   operation to construct the result.
     pub fn resize_to_i8(&self) -> i8 {
         self.resize_to_primitive_ty(PrimitiveTy::I8).repr() as i8
     }
@@ -185,9 +183,8 @@ impl ApInt {
     ///
     /// # Note
     ///
-    /// - All bits but the least significant `8` bits are
-    ///   being ignored by this operation to construct the
-    ///   result.
+    /// - All bits but the least significant `8` bits are being ignored by this
+    ///   operation to construct the result.
     pub fn resize_to_u8(&self) -> u8 {
         self.resize_to_primitive_ty(PrimitiveTy::U8).repr() as u8
     }
@@ -196,13 +193,11 @@ impl ApInt {
     ///
     /// # Note
     ///
-    /// - This operation will conserve the signedness of the
-    ///   value. This means that for `ApInt` instances with
-    ///   a `BitWidth` less than `16` bits the value is
-    ///   sign extended to the target bit width.
-    /// - All bits but the least significant `16` bits are
-    ///   being ignored by this operation to construct the
-    ///   result.
+    /// - This operation will conserve the signedness of the value. This means
+    ///   that for `ApInt` instances with a `BitWidth` less than `16` bits the
+    ///   value is sign extended to the target bit width.
+    /// - All bits but the least significant `16` bits are being ignored by this
+    ///   operation to construct the result.
     pub fn resize_to_i16(&self) -> i16 {
         self.resize_to_primitive_ty(PrimitiveTy::I16).repr() as i16
     }
@@ -211,9 +206,8 @@ impl ApInt {
     ///
     /// # Note
     ///
-    /// - All bits but the least significant `16` bits are
-    ///   being ignored by this operation to construct the
-    ///   result.
+    /// - All bits but the least significant `16` bits are being ignored by this
+    ///   operation to construct the result.
     pub fn resize_to_u16(&self) -> u16 {
         self.resize_to_primitive_ty(PrimitiveTy::U16).repr() as u16
     }
@@ -222,13 +216,11 @@ impl ApInt {
     ///
     /// # Note
     ///
-    /// - This operation will conserve the signedness of the
-    ///   value. This means that for `ApInt` instances with
-    ///   a `BitWidth` less than `32` bits the value is
-    ///   sign extended to the target bit width.
-    /// - All bits but the least significant `32` bits are
-    ///   being ignored by this operation to construct the
-    ///   result.
+    /// - This operation will conserve the signedness of the value. This means
+    ///   that for `ApInt` instances with a `BitWidth` less than `32` bits the
+    ///   value is sign extended to the target bit width.
+    /// - All bits but the least significant `32` bits are being ignored by this
+    ///   operation to construct the result.
     pub fn resize_to_i32(&self) -> i32 {
         self.resize_to_primitive_ty(PrimitiveTy::I32).repr() as i32
     }
@@ -237,9 +229,8 @@ impl ApInt {
     ///
     /// # Note
     ///
-    /// - All bits but the least significant `32` bits are
-    ///   being ignored by this operation to construct the
-    ///   result.
+    /// - All bits but the least significant `32` bits are being ignored by this
+    ///   operation to construct the result.
     pub fn resize_to_u32(&self) -> u32 {
         self.resize_to_primitive_ty(PrimitiveTy::U32).repr() as u32
     }
@@ -248,13 +239,11 @@ impl ApInt {
     ///
     /// # Note
     ///
-    /// - This operation will conserve the signedness of the
-    ///   value. This means that for `ApInt` instances with
-    ///   a `BitWidth` less than `64` bits the value is
-    ///   sign extended to the target bit width.
-    /// - All bits but the least significant `64` bits are
-    ///   being ignored by this operation to construct the
-    ///   result.
+    /// - This operation will conserve the signedness of the value. This means
+    ///   that for `ApInt` instances with a `BitWidth` less than `64` bits the
+    ///   value is sign extended to the target bit width.
+    /// - All bits but the least significant `64` bits are being ignored by this
+    ///   operation to construct the result.
     pub fn resize_to_i64(&self) -> i64 {
         self.resize_to_primitive_ty(PrimitiveTy::I64).repr() as i64
     }
@@ -263,9 +252,8 @@ impl ApInt {
     ///
     /// # Note
     ///
-    /// - All bits but the least significant `64` bits are
-    ///   being ignored by this operation to construct the
-    ///   result.
+    /// - All bits but the least significant `64` bits are being ignored by this
+    ///   operation to construct the result.
     pub fn resize_to_u64(&self) -> u64 {
         self.resize_to_primitive_ty(PrimitiveTy::U64).repr() as u64
     }
@@ -274,13 +262,11 @@ impl ApInt {
     ///
     /// # Note
     ///
-    /// - This operation will conserve the signedness of the
-    ///   value. This means that for `ApInt` instances with
-    ///   a `BitWidth` less than `128` bits the value is
-    ///   sign extended to the target bit width.
-    /// - All bits but the least significant `128` bits are
-    ///   being ignored by this operation to construct the
-    ///   result.
+    /// - This operation will conserve the signedness of the value. This means
+    ///   that for `ApInt` instances with a `BitWidth` less than `128` bits the
+    ///   value is sign extended to the target bit width.
+    /// - All bits but the least significant `128` bits are being ignored by
+    ///   this operation to construct the result.
     pub fn resize_to_i128(&self) -> i128 {
         let (lsd_0, rest) = self.split_least_significant_digit();
         let (&lsd_1, _) = rest.split_first().unwrap_or((&Digit(0), &[]));
@@ -292,9 +278,13 @@ impl ApInt {
         if actual_width < target_width {
             // Sign extend the `i128`. Fill up with `1` up to `128` bits
             // starting from the sign bit position.
-            let b = actual_width.to_usize(); // Number of bits representing the number in x.
-            let m: i128 = 1 << (b - 1); // Mask can be pre-computed if b is fixed.
-            result = (result ^ m) - m; // Resulting sign-extended number.
+
+            // Number of bits representing the number in x.
+            let b = actual_width.to_usize();
+            // Mask can be pre-computed if b is fixed.
+            let m: i128 = 1 << (b - 1);
+            // Resulting sign-extended number.
+            result = (result ^ m) - m;
         }
 
         result
@@ -304,9 +294,8 @@ impl ApInt {
     ///
     /// # Note
     ///
-    /// - All bits but the least significant `128` bits are
-    ///   being ignored by this operation to construct the
-    ///   result.
+    /// - All bits but the least significant `128` bits are being ignored by
+    ///   this operation to construct the result.
     pub fn resize_to_u128(&self) -> u128 {
         let (lsd_0, rest) = self.split_least_significant_digit();
         let (&lsd_1, _) = rest.split_first().unwrap_or((&Digit(0), &[]));
@@ -327,7 +316,8 @@ impl ApInt {
     /// If the given `PrimitiveTy` represents a signed integer type the
     /// returned `Digit` is also sign extended accordingly.
     /// This sign extension behaves equal to how in Rust a negative signed
-    /// `i32` is extended to an `i64` and correctly preserves the negative value.
+    /// `i32` is extended to an `i64` and correctly preserves the negative
+    /// value.
     ///
     /// # Errors
     ///
@@ -344,14 +334,14 @@ impl ApInt {
             let target_width = prim_ty.associated_width();
             if actual_width < target_width {
                 lsd.sign_extend_from(actual_width).expect(
-                    "We already asserted that `actual_width` < `target_width` \
-                     and since `target_width` is always less than or equal to \
-                     `64` bits calling `Digit::sign_extend_from` is safe for it.",
+                    "We already asserted that `actual_width` < `target_width` and since \
+                     `target_width` is always less than or equal to `64` bits calling \
+                     `Digit::sign_extend_from` is safe for it.",
                 );
                 if target_width < BitWidth::w64() {
                     lsd.truncate_to(target_width).expect(
-                        "Since `target_width` is always less than or equal to \
-                         `64` bits calling `Digit::sign_extend_from` is safe for it.",
+                        "Since `target_width` is always less than or equal to `64` bits \
+                         calling `Digit::sign_extend_from` is safe for it.",
                     );
                 }
             }
@@ -369,8 +359,8 @@ impl ApInt {
     ///
     /// # Errors
     ///
-    /// - If the value represented by this `ApInt` can not be
-    ///   represented by a `bool`.
+    /// - If the value represented by this `ApInt` can not be represented by a
+    ///   `bool`.
     pub fn try_to_bool(&self) -> Result<bool> {
         match self.try_cast_to_primitive_ty(PrimitiveTy::Bool)? {
             Digit(0) => Ok(false),
@@ -383,17 +373,16 @@ impl ApInt {
     ///
     /// # Note
     ///
-    /// - This operation will conserve the signedness of the
-    ///   value. This means that for `ApInt` instances with
-    ///   a `BitWidth` less than `8` bits the value is
-    ///   sign extended to the target bit width.
-    /// - This conversion is possible as long as the value represented
-    ///   by this `ApInt` does not exceed the maximum value of `u8`.
+    /// - This operation will conserve the signedness of the value. This means
+    ///   that for `ApInt` instances with a `BitWidth` less than `8` bits the
+    ///   value is sign extended to the target bit width.
+    /// - This conversion is possible as long as the value represented by this
+    ///   `ApInt` does not exceed the maximum value of `u8`.
     ///
     /// # Errors
     ///
-    /// - If the value represented by this `ApInt` can not be
-    ///   represented by a `i8`.
+    /// - If the value represented by this `ApInt` can not be represented by a
+    ///   `i8`.
     pub fn try_to_i8(&self) -> Result<i8> {
         self.try_cast_to_primitive_ty(PrimitiveTy::I8)
             .map(|d| d.repr() as i8)
@@ -403,13 +392,13 @@ impl ApInt {
     ///
     /// # Note
     ///
-    /// - This conversion is possible as long as the value represented
-    ///   by this `ApInt` does not exceed the maximum value of `u8`.
+    /// - This conversion is possible as long as the value represented by this
+    ///   `ApInt` does not exceed the maximum value of `u8`.
     ///
     /// # Errors
     ///
-    /// - If the value represented by this `ApInt` can not be
-    ///   represented by a `u8`.
+    /// - If the value represented by this `ApInt` can not be represented by a
+    ///   `u8`.
     pub fn try_to_u8(&self) -> Result<u8> {
         self.try_cast_to_primitive_ty(PrimitiveTy::U8)
             .map(|d| d.repr() as u8)
@@ -419,17 +408,16 @@ impl ApInt {
     ///
     /// # Note
     ///
-    /// - This operation will conserve the signedness of the
-    ///   value. This means that for `ApInt` instances with
-    ///   a `BitWidth` less than `16` bits the value is
-    ///   sign extended to the target bit width.
-    /// - This conversion is possible as long as the value represented
-    ///   by this `ApInt` does not exceed the maximum value of `u16`.
+    /// - This operation will conserve the signedness of the value. This means
+    ///   that for `ApInt` instances with a `BitWidth` less than `16` bits the
+    ///   value is sign extended to the target bit width.
+    /// - This conversion is possible as long as the value represented by this
+    ///   `ApInt` does not exceed the maximum value of `u16`.
     ///
     /// # Errors
     ///
-    /// - If the value represented by this `ApInt` can not be
-    ///   represented by a `i16`.
+    /// - If the value represented by this `ApInt` can not be represented by a
+    ///   `i16`.
     pub fn try_to_i16(&self) -> Result<i16> {
         self.try_cast_to_primitive_ty(PrimitiveTy::I16)
             .map(|d| d.repr() as i16)
@@ -439,13 +427,13 @@ impl ApInt {
     ///
     /// # Note
     ///
-    /// - This conversion is possible as long as the value represented
-    ///   by this `ApInt` does not exceed the maximum value of `u16`.
+    /// - This conversion is possible as long as the value represented by this
+    ///   `ApInt` does not exceed the maximum value of `u16`.
     ///
     /// # Errors
     ///
-    /// - If the value represented by this `ApInt` can not be
-    ///   represented by a `u16`.
+    /// - If the value represented by this `ApInt` can not be represented by a
+    ///   `u16`.
     pub fn try_to_u16(&self) -> Result<u16> {
         self.try_cast_to_primitive_ty(PrimitiveTy::U16)
             .map(|d| d.repr() as u16)
@@ -455,17 +443,16 @@ impl ApInt {
     ///
     /// # Note
     ///
-    /// - This operation will conserve the signedness of the
-    ///   value. This means that for `ApInt` instances with
-    ///   a `BitWidth` less than `32` bits the value is
-    ///   sign extended to the target bit width.
-    /// - This conversion is possible as long as the value represented
-    ///   by this `ApInt` does not exceed the maximum value of `u32`.
+    /// - This operation will conserve the signedness of the value. This means
+    ///   that for `ApInt` instances with a `BitWidth` less than `32` bits the
+    ///   value is sign extended to the target bit width.
+    /// - This conversion is possible as long as the value represented by this
+    ///   `ApInt` does not exceed the maximum value of `u32`.
     ///
     /// # Errors
     ///
-    /// - If the value represented by this `ApInt` can not be
-    ///   represented by a `i32`.
+    /// - If the value represented by this `ApInt` can not be represented by a
+    ///   `i32`.
     pub fn try_to_i32(&self) -> Result<i32> {
         self.try_cast_to_primitive_ty(PrimitiveTy::I32)
             .map(|d| d.repr() as i32)
@@ -475,13 +462,13 @@ impl ApInt {
     ///
     /// # Note
     ///
-    /// - This conversion is possible as long as the value represented
-    ///   by this `ApInt` does not exceed the maximum value of `u32`.
+    /// - This conversion is possible as long as the value represented by this
+    ///   `ApInt` does not exceed the maximum value of `u32`.
     ///
     /// # Errors
     ///
-    /// - If the value represented by this `ApInt` can not be
-    ///   represented by a `u32`.
+    /// - If the value represented by this `ApInt` can not be represented by a
+    ///   `u32`.
     pub fn try_to_u32(&self) -> Result<u32> {
         self.try_cast_to_primitive_ty(PrimitiveTy::U32)
             .map(|d| d.repr() as u32)
@@ -491,17 +478,16 @@ impl ApInt {
     ///
     /// # Note
     ///
-    /// - This operation will conserve the signedness of the
-    ///   value. This means that for `ApInt` instances with
-    ///   a `BitWidth` less than `64` bits the value is
-    ///   sign extended to the target bit width.
-    /// - This conversion is possible as long as the value represented
-    ///   by this `ApInt` does not exceed the maximum value of `u64`.
+    /// - This operation will conserve the signedness of the value. This means
+    ///   that for `ApInt` instances with a `BitWidth` less than `64` bits the
+    ///   value is sign extended to the target bit width.
+    /// - This conversion is possible as long as the value represented by this
+    ///   `ApInt` does not exceed the maximum value of `u64`.
     ///
     /// # Errors
     ///
-    /// - If the value represented by this `ApInt` can not be
-    ///   represented by a `i64`.
+    /// - If the value represented by this `ApInt` can not be represented by a
+    ///   `i64`.
     pub fn try_to_i64(&self) -> Result<i64> {
         self.try_cast_to_primitive_ty(PrimitiveTy::I64)
             .map(|d| d.repr() as i64)
@@ -511,13 +497,13 @@ impl ApInt {
     ///
     /// # Note
     ///
-    /// - This conversion is possible as long as the value represented
-    ///   by this `ApInt` does not exceed the maximum value of `u64`.
+    /// - This conversion is possible as long as the value represented by this
+    ///   `ApInt` does not exceed the maximum value of `u64`.
     ///
     /// # Errors
     ///
-    /// - If the value represented by this `ApInt` can not be
-    ///   represented by a `u64`.
+    /// - If the value represented by this `ApInt` can not be represented by a
+    ///   `u64`.
     pub fn try_to_u64(&self) -> Result<u64> {
         self.try_cast_to_primitive_ty(PrimitiveTy::U64)
             .map(|d| d.repr() as u64)
@@ -527,17 +513,16 @@ impl ApInt {
     ///
     /// # Note
     ///
-    /// - This operation will conserve the signedness of the
-    ///   value. This means that for `ApInt` instances with
-    ///   a `BitWidth` less than `128` bits the value is
-    ///   sign extended to the target bit width.
-    /// - This conversion is possible as long as the value represented
-    ///   by this `ApInt` does not exceed the maximum value of `u128`.
+    /// - This operation will conserve the signedness of the value. This means
+    ///   that for `ApInt` instances with a `BitWidth` less than `128` bits the
+    ///   value is sign extended to the target bit width.
+    /// - This conversion is possible as long as the value represented by this
+    ///   `ApInt` does not exceed the maximum value of `u128`.
     ///
     /// # Errors
     ///
-    /// - If the value represented by this `ApInt` can not be
-    ///   represented by a `i128`.
+    /// - If the value represented by this `ApInt` can not be represented by a
+    ///   `i128`.
     pub fn try_to_i128(&self) -> Result<i128> {
         let (lsd_0, rest) = self.split_least_significant_digit();
         let (&lsd_1, rest) = rest.split_first().unwrap_or((&Digit(0), &[]));
@@ -556,9 +541,13 @@ impl ApInt {
         if actual_width < target_width {
             // Sign extend the `i128`. Fill up with `1` up to `128` bits
             // starting from the sign bit position.
-            let b = actual_width.to_usize(); // Number of bits representing the number in x.
-            let m: i128 = 1 << (b - 1); // Mask can be pre-computed if b is fixed.
-            result = (result ^ m).wrapping_sub(m); // Resulting sign-extended number.
+
+            // Number of bits representing the number in x.
+            let b = actual_width.to_usize();
+            // Mask can be pre-computed if b is fixed.
+            let m: i128 = 1 << (b - 1);
+            // Resulting sign-extended number.
+            result = (result ^ m).wrapping_sub(m);
         }
 
         Ok(result)
@@ -568,8 +557,8 @@ impl ApInt {
     ///
     /// # Note
     ///
-    /// - This conversion is possible as long as the value represented
-    ///   by this `ApInt` does not exceed the maximum value of `u128`.
+    /// - This conversion is possible as long as the value represented by this
+    ///   `ApInt` does not exceed the maximum value of `u128`.
     ///
     /// # Complexity
     ///
@@ -577,8 +566,8 @@ impl ApInt {
     ///
     /// # Errors
     ///
-    /// - If the value represented by this `ApInt` can not be
-    ///   represented by a `u128`.
+    /// - If the value represented by this `ApInt` can not be represented by a
+    ///   `u128`.
     pub fn try_to_u128(&self) -> Result<u128> {
         let (lsd_0, rest) = self.split_least_significant_digit();
         let (&lsd_1, rest) = rest.split_first().unwrap_or((&Digit(0), &[]));
@@ -664,7 +653,8 @@ mod tests {
         vec![Bool, I8, U8, I16, U16, I32, U32, I64, U64, I128, U128].into_iter()
     }
 
-    /// Uses `test_values` to iterate over already constructed `ApInt` instances.
+    /// Uses `test_values` to iterate over already constructed `ApInt`
+    /// instances.
     fn test_vals_and_apints() -> impl Iterator<Item = (u128, ApInt)> {
         test_values()
             .cartesian_product(test_primitive_tys())
@@ -906,9 +896,11 @@ mod tests {
             assert!(ApInt::from(-1_i16).try_to_bool().is_err());
             assert!(ApInt::from(42_u32).try_to_bool().is_err());
             assert!(ApInt::from(1337_u64).try_to_bool().is_err());
-            assert!(ApInt::from(0xFFFF_FFFF_FFFF_FFFF_FFFF_FFFF_FFFF_u128)
-                .try_to_bool()
-                .is_err());
+            assert!(
+                ApInt::from(0xFFFF_FFFF_FFFF_FFFF_FFFF_FFFF_FFFF_u128)
+                    .try_to_bool()
+                    .is_err()
+            );
         }
 
         #[test]
@@ -1000,9 +992,13 @@ mod tests {
                     if actual_width < target_width {
                         // Sign extend the `i128`. Fill up with `1` up to `128` bits
                         // starting from the sign bit position.
-                        let b = actual_width.to_usize(); // Number of bits representing the number in x.
-                        let m: i128 = 1 << (b - 1); // Mask can be pre-computed if b is fixed.
-                        result = (result ^ m).wrapping_sub(m); // Resulting sign-extended number.
+
+                        // Number of bits representing the number in x.
+                        let b = actual_width.to_usize();
+                        // Mask can be pre-computed if b is fixed.
+                        let m: i128 = 1 << (b - 1);
+                        // Resulting sign-extended number.
+                        result = (result ^ m).wrapping_sub(m);
                     }
                     assert_eq!(apint.try_to_i128(), Ok(result))
                 } else {

@@ -153,8 +153,8 @@ impl ApInt {
             return Error::truncation_bitwidth_too_large(target_width, actual_width)
                 .with_annotation(format!(
                     "Cannot truncate `ApInt` with a width of {:?}
-                         to an `ApInt` with a width of {:?} bits. \
-                         Do you mean to extend the instance instead?",
+                         to an `ApInt` with a width of {:?} bits. Do you mean to extend \
+                     the instance instead?",
                     actual_width.to_usize(),
                     target_width.to_usize()
                 ))
@@ -174,8 +174,8 @@ impl ApInt {
             // The same applies to all bit widths that require the same
             // amount of digits for their representation.
             let excess_width = target_width.excess_bits().expect(
-                "We already filtered cases where `excess_bits` may return `None` \
-                 by requiring that `self.width() > target_width`.",
+                "We already filtered cases where `excess_bits` may return `None` by \
+                 requiring that `self.width() > target_width`.",
             );
             self.most_significant_digit_mut()
                 .truncate_to(excess_width)
@@ -255,8 +255,8 @@ impl ApInt {
         if target_width < actual_width {
             return Error::extension_bitwidth_too_small(target_width, actual_width)
                 .with_annotation(format!(
-                    "Cannot zero-extend bit-width of {:?} to {:?} bits. \
-                     Do you mean to truncate the instance instead?",
+                    "Cannot zero-extend bit-width of {:?} to {:?} bits. Do you mean to \
+                     truncate the instance instead?",
                     actual_width, target_width
                 ))
                 .into()
@@ -341,8 +341,8 @@ impl ApInt {
         if target_width < actual_width {
             return Error::extension_bitwidth_too_small(target_width, actual_width)
                 .with_annotation(format!(
-                    "Cannot sign-extend bit-width of {:?} to {:?} bits. \
-                     Do you mean to truncate the instance instead?",
+                    "Cannot sign-extend bit-width of {:?} to {:?} bits. Do you mean to \
+                     truncate the instance instead?",
                     actual_width, target_width
                 ))
                 .into()
@@ -385,7 +385,8 @@ impl ApInt {
             assert!(target_req_digits > actual_req_digits);
             let additional_digits = target_req_digits - actual_req_digits;
 
-            // Fill most-significant-digit of `self` with `1` starting from its most-significant bit.
+            // Fill most-significant-digit of `self` with `1` starting from its
+            // most-significant bit.
             if let Some(excess_width) = actual_width.excess_width() {
                 self.most_significant_digit_mut()
                     .sign_extend_from(excess_width)?;
@@ -442,11 +443,9 @@ impl ApInt {
     ///
     /// This operation will forward to
     ///
-    /// - [`truncate`](struct.ApInt.html#method.truncate)
-    ///   if `target_width` is less than or equal to the width of
-    ///   the given `ApInt`
-    /// - [`zero_extend`](struct.ApInt.html#method.zero_extend)
-    ///   otherwise
+    /// - [`truncate`](struct.ApInt.html#method.truncate) if `target_width` is
+    ///   less than or equal to the width of the given `ApInt`
+    /// - [`zero_extend`](struct.ApInt.html#method.zero_extend) otherwise
     pub fn zero_resize<W>(&mut self, target_width: W)
     where
         W: Into<BitWidth>,
@@ -456,13 +455,13 @@ impl ApInt {
 
         if target_width <= actual_width {
             self.truncate(target_width).expect(
-                "It was asserted that `target_width` is \
-                 a valid truncation `BitWidth` in this context.",
+                "It was asserted that `target_width` is a valid truncation `BitWidth` \
+                 in this context.",
             )
         } else {
             self.zero_extend(target_width).expect(
-                "It was asserted that `target_width` is \
-                 a valid zero-extension `BitWidth` in this context.",
+                "It was asserted that `target_width` is a valid zero-extension \
+                 `BitWidth` in this context.",
             )
         }
     }
@@ -473,11 +472,9 @@ impl ApInt {
     ///
     /// This operation will forward to
     ///
-    /// - [`truncate`](struct.ApInt.html#method.truncate)
-    ///   if `target_width` is less than or equal to the width of
-    ///   the given `ApInt`
-    /// - [`sign_extend`](struct.ApInt.html#method.sign_extend)
-    ///   otherwise
+    /// - [`truncate`](struct.ApInt.html#method.truncate) if `target_width` is
+    ///   less than or equal to the width of the given `ApInt`
+    /// - [`sign_extend`](struct.ApInt.html#method.sign_extend) otherwise
     pub fn sign_resize<W>(&mut self, target_width: W)
     where
         W: Into<BitWidth>,
@@ -487,13 +484,13 @@ impl ApInt {
 
         if target_width <= actual_width {
             self.truncate(target_width).expect(
-                "It was asserted that `target_width` is \
-                 a valid truncation `BitWidth` in this context.",
+                "It was asserted that `target_width` is a valid truncation `BitWidth` \
+                 in this context.",
             )
         } else {
             self.sign_extend(target_width).expect(
-                "It was asserted that `target_width` is \
-                 a valid sign-extension `BitWidth` in this context.",
+                "It was asserted that `target_width` is a valid sign-extension \
+                 `BitWidth` in this context.",
             )
         }
     }
@@ -543,35 +540,6 @@ mod tests {
             ApInt::from_u128(0x0000_0000_FFFF_FFFF_FFFF_FFFF_0000_0000),
             ApInt::from_u128(0x0000_0000_0000_0000_FFFF_FFFF_FFFF_FFFF),
             ApInt::all_set(BitWidth::w128()),
-            /* ApInt::zero(width_256),
-             * ApInt::one(width_256),
-             * ApInt::repeat_digit(width_256, Digit(1)),
-             * ApInt::repeat_digit(width_256, Digit(42)),
-             * ApInt::repeat_digit(width_256, Digit(1337)),
-             * ApInt::repeat_digit(width_256, 0xFFFF_FFFF_0000_0000),
-             * ApInt::repeat_digit(width_256, 0x0000_FFFF_FFFF_0000),
-             * ApInt::repeat_digit(width_256, 0x0000_0000_FFFF_FFFF),
-             * ApInt::all_set(width_256), */
-
-            /* ApInt::zero(width_500),
-             * ApInt::one(width_500),
-             * ApInt::repeat_digit(width_500, Digit(1)),
-             * ApInt::repeat_digit(width_500, Digit(42)),
-             * ApInt::repeat_digit(width_500, Digit(1337)),
-             * ApInt::repeat_digit(width_500, 0xFFFF_FFFF_0000_0000),
-             * ApInt::repeat_digit(width_500, 0x0000_FFFF_FFFF_0000),
-             * ApInt::repeat_digit(width_500, 0x0000_0000_FFFF_FFFF),
-             * ApInt::all_set(width_500), */
-
-            /* ApInt::zero(width_512),
-             * ApInt::one(width_512),
-             * ApInt::repeat_digit(width_512, Digit(1)),
-             * ApInt::repeat_digit(width_512, Digit(42)),
-             * ApInt::repeat_digit(width_512, Digit(1337)),
-             * ApInt::repeat_digit(width_512, 0xFFFF_FFFF_0000_0000),
-             * ApInt::repeat_digit(width_512, 0x0000_FFFF_FFFF_0000),
-             * ApInt::repeat_digit(width_512, 0x0000_0000_FFFF_FFFF),
-             * ApInt::all_set(width_512), */
         ]
         .into_iter()
     }
@@ -581,14 +549,16 @@ mod tests {
 
         /// Test Clone impl of `ApInt`.
         ///
-        /// Invariants between the origin `ApInt` `o` and for the cloned `c` are:
+        /// Invariants between the origin `ApInt` `o` and for the cloned `c`
+        /// are:
         ///
         /// - `o` and `c` have same bit widths
-        /// - If `o` is heap-allocated then `c` is, too and vice versa for stack.
+        /// - If `o` is heap-allocated then `c` is, too and vice versa for
+        ///   stack.
         /// - `o` and `c` have an equal amount of digits and the values of their
         ///   digits is equal and in the same order.
-        /// - Memory addresses of `c` and `o` won't overlap. (No aliasing!)
-        ///   This is enforced by safe Rust.
+        /// - Memory addresses of `c` and `o` won't overlap. (No aliasing!) This
+        ///   is enforced by safe Rust.
         #[test]
         fn clone() {
             for apint in test_apints() {
