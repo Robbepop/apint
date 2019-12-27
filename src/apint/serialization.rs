@@ -13,6 +13,24 @@ use crate::{
 };
 use core::fmt;
 
+/// Binary logarithms of the numbers 2..=36 in I3F13 fixed point format and
+/// rounded up. This is used for robustly calculating the maximum number of bits
+/// needed for a string representation of a number in some radix to be
+/// represented. This may give more bits than needed, but is guaranteed to never
+/// underestimate the number of bits needed. For example,
+/// When the radix 10 string "123456789" is going to be converted to an `ApInt`,
+/// `LB_2_36_I3F13` is indexed by 10 - 2 which gives 27214. 27214 multiplied by
+/// the length of the string plus 1 is 27214 * (9 + 1) = 272140. This is shifted
+/// right by 13 for the fixed point which produces 33. The actual number of bits
+/// needed is 27. The plus 1 added to the string length is needed to handle
+/// strings with all the digits being the maximum for the given radix (e.g.
+/// "999999999" which needs 30 bits).
+const LB_2_36_I3F13: [u16; 35] = [
+    8192, 12985, 16384, 19022, 21177, 22998, 24576, 25969, 27214, 28340, 29369, 30315,
+    31190, 32006, 32768, 33485, 34161, 34800, 35406, 35982, 36532, 37058, 37561, 38043,
+    38507, 38953, 39382, 39797, 40198, 40585, 40960, 41324, 41677, 42020, 42353,
+];
+
 impl fmt::Binary for ApInt {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         if self.is_zero() {
@@ -347,6 +365,21 @@ mod tests {
     use super::*;
 
     use crate::bitwidth::BitWidth;
+
+    mod constants {
+        use super::*;
+        use std::ops::Mul;
+
+        #[test]
+        fn test_lb_2_36_i3f13() {
+            for (i, c) in LB_2_36_I3F13.iter().enumerate() {
+                assert_eq!(
+                    *c,
+                    ((i + 2) as f64).log2().mul((1 << 13) as f64).ceil() as u16
+                );
+            }
+        }
+    }
 
     mod binary {
         use super::*;
