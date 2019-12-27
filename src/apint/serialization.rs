@@ -291,15 +291,17 @@ impl ApInt {
             Digit,
             DigitRepr,
         };
-        #[cfg(feature = "libm_0")]
-        use libm::F64Ext as _;
 
         debug_assert!(!v.is_empty() && !radix.is_power_of_two());
         debug_assert!(v.iter().all(|&c| radix.is_valid_byte(c)));
 
         // Estimate how big the result will be, so we can pre-allocate it.
-        let bits = f64::from(radix.to_u8()).log2() * v.len() as f64;
-        let big_digits = (bits / digit::BITS as f64).ceil();
+        // The `unwrap()` here will only panic if `v.len()` is massive.
+        let bits = (LB_2_36_I3F13[(radix.to_u8() - 2) as usize] as usize)
+            .checked_mul(v.len() + 1)
+            .unwrap()
+            >> 13;
+        let big_digits = (bits / digit::BITS) + 1;
         let mut data = Vec::with_capacity(big_digits as usize);
 
         let (_base, power) = radix.get_radix_base();
