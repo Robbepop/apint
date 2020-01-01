@@ -51,11 +51,11 @@ impl ApInt {
     pub fn wrapping_inc(&mut self) {
         match self.access_data_mut() {
             DataAccessMut::Inl(x) => {
-                *x = x.wrapping_add(Digit::one());
+                *x = x.wrapping_add(Digit::ONE);
             }
             DataAccessMut::Ext(x) => {
                 for i in 0..x.len() {
-                    match x[i].overflowing_add(Digit::one()) {
+                    match x[i].overflowing_add(Digit::ONE) {
                         (v, false) => {
                             x[i] = v;
                             break
@@ -81,11 +81,11 @@ impl ApInt {
     pub fn wrapping_dec(&mut self) {
         match self.access_data_mut() {
             DataAccessMut::Inl(x) => {
-                *x = x.wrapping_sub(Digit::one());
+                *x = x.wrapping_sub(Digit::ONE);
             }
             DataAccessMut::Ext(x) => {
                 for i in 0..x.len() {
-                    match x[i].overflowing_sub(Digit::one()) {
+                    match x[i].overflowing_sub(Digit::ONE) {
                         (v, false) => {
                             x[i] = v;
                             break
@@ -167,7 +167,7 @@ impl ApInt {
     pub(crate) fn overflowing_uadd_assign(&mut self, rhs: &ApInt) -> Result<bool> {
         match self.width().excess_bits() {
             Some(excess) => {
-                let mask = Digit::all_set() >> excess;
+                let mask = Digit::ONES >> excess;
                 match self.zip_access_data_mut_self(rhs)? {
                     Inl(lhs, rhs) => {
                         let temp = lhs.wrapping_add(rhs);
@@ -215,7 +215,7 @@ impl ApInt {
                             carry = temp.hi();
                         }
                         // no excess bits to clear
-                        Ok(carry != Digit::zero())
+                        Ok(!carry.is_zero())
                     }
                 }
             }
@@ -252,7 +252,7 @@ impl ApInt {
                 let (temp, mut carry) = lhs[0]
                     .dd()
                     .wrapping_add((!rhs[0]).dd())
-                    .wrapping_add(Digit::one().dd())
+                    .wrapping_add(Digit::ONE.dd())
                     .lo_hi();
                 lhs[0] = temp;
                 for i in 1..lhs.len() {
@@ -315,26 +315,26 @@ impl ApInt {
             Ext(lhs, rhs) => {
                 // finds the most significant nonzero digit (for later optimizations) and
                 // handles early return of multiplication by zero.
-                let rhs_sig_nonzero: usize =
-                    match rhs.iter().rposition(|x| x != &Digit::zero()) {
-                        Some(x) => x,
-                        None => {
-                            for x in lhs.iter_mut() {
-                                x.unset_all()
-                            }
-                            return Ok(())
+                let rhs_sig_nonzero: usize = match rhs.iter().rposition(|x| !x.is_zero())
+                {
+                    Some(x) => x,
+                    None => {
+                        for x in lhs.iter_mut() {
+                            x.unset_all()
                         }
-                    };
-                let lhs_sig_nonzero: usize =
-                    match lhs.iter().rposition(|x| x != &Digit::zero()) {
-                        Some(x) => x,
-                        None => {
-                            for x in lhs.iter_mut() {
-                                x.unset_all()
-                            }
-                            return Ok(())
+                        return Ok(())
+                    }
+                };
+                let lhs_sig_nonzero: usize = match lhs.iter().rposition(|x| !x.is_zero())
+                {
+                    Some(x) => x,
+                    None => {
+                        for x in lhs.iter_mut() {
+                            x.unset_all()
                         }
-                    };
+                        return Ok(())
+                    }
+                };
                 // for several routines below there was a nested loop that had its first
                 // and last iterations unrolled (and the unrolled loops
                 // had their first and last iterations unrolled), and then
@@ -715,7 +715,7 @@ impl ApInt {
             ($len:expr, $array:ident) => {
                 for i0 in 0..$len {
                     let bitnot = !$array[i0];
-                    match bitnot.overflowing_add(Digit::one()) {
+                    match bitnot.overflowing_add(Digit::ONE) {
                         (v, false) => {
                             $array[i0] = v;
                             for i1 in (i0 + 1)..$len {
@@ -747,7 +747,7 @@ impl ApInt {
                 let mut b0 = false;
                 // allows lhs.len() to be smaller than rhs.len()
                 for i in ($lhs_len..$rhs_len).rev() {
-                    if $rhs[i] != Digit::zero() {
+                    if !$rhs[i].is_zero() {
                         b0 = true;
                         break
                     }
@@ -789,7 +789,7 @@ impl ApInt {
                 let mut b0 = false;
                 // allows lhs.len() to be smaller than rhs.len()
                 for i in ($lhs_len..$rhs_len).rev() {
-                    if $rhs[i] != Digit::zero() {
+                    if !$rhs[i].is_zero() {
                         b0 = true;
                         break
                     }
@@ -860,7 +860,7 @@ impl ApInt {
                 let (temp, mut carry) = $add[0].carrying_add($val);
                 $sum[0] = temp;
                 for i0 in 1..$len {
-                    if carry == Digit::zero() {
+                    if carry.is_zero() {
                         for i1 in i0..$len {
                             $sum[i1] = $add[i1];
                             break
@@ -931,7 +931,7 @@ impl ApInt {
                     div,
                     {
                         twos_complement!(place, div);
-                        special0!(place, duo, div, div, Digit::one());
+                        special0!(place, duo, div, div, Digit::ONE);
                         return
                     },
                     {
@@ -987,13 +987,13 @@ impl ApInt {
                 if div_sd == len - 1 {
                     let temp = mul.carrying_mul_add(div[div_sd], carry);
                     sub.push(temp.0);
-                    if temp.1 != Digit::zero() {
+                    if !temp.1.is_zero() {
                         // overflow
                         // the quotient should be `mul - 1` and remainder should be
                         //`duo + (div - div*mul)`
                         twos_complement!(len, sub);
                         add!(len, sub, div);
-                        special0!(len, duo, sub, div, mul.wrapping_sub(Digit::one()));
+                        special0!(len, duo, sub, div, mul.wrapping_sub(Digit::ONE));
                         return
                     }
                     // if `div * mul > duo`
@@ -1005,7 +1005,7 @@ impl ApInt {
                         {
                             twos_complement!(len, sub);
                             add!(len, sub, div);
-                            special0!(len, duo, sub, div, mul.wrapping_sub(Digit::one()));
+                            special0!(len, duo, sub, div, mul.wrapping_sub(Digit::ONE));
                             return
                         },
                         {
@@ -1021,7 +1021,7 @@ impl ApInt {
                     sub.push(temp.0);
                     sub.push(temp.1);
                     for _ in sub.len()..len {
-                        sub.push(Digit::zero());
+                        sub.push(Digit::ZERO);
                     }
                     // if `div * mul > duo`
                     ugt!(
@@ -1032,7 +1032,7 @@ impl ApInt {
                         {
                             twos_complement!(len, sub);
                             add!(len, sub, div);
-                            special0!(len, duo, sub, div, mul.wrapping_sub(Digit::one()));
+                            special0!(len, duo, sub, div, mul.wrapping_sub(Digit::ONE));
                             return
                         },
                         {
@@ -1057,14 +1057,14 @@ impl ApInt {
                 (div[div_sd] << div_lz) | (div[div_sd - 1] >> (Digit::BITS - div_lz))
             };
             // has to be a `DoubleDigit` in case of overflow
-            let div_sig_d_add1 = div_sig_d.dd().wrapping_add(Digit::one().dd());
+            let div_sig_d_add1 = div_sig_d.dd().wrapping_add(Digit::ONE.dd());
             let mut duo_lesser_bits;
             let mut duo_sig_dd;
             // TODO: fix sizes here and below
             let quo_potential = len;
             // if ini_bits % Digit::BITS == 0 {ini_bits / Digit::BITS}
             // else {(ini_bits / Digit::BITS) + 1};
-            let mut quo: Vec<Digit> = vec![Digit::zero(); quo_potential as usize];
+            let mut quo: Vec<Digit> = vec![Digit::ZERO; quo_potential as usize];
             loop {
                 duo_lesser_bits =
                     (Digit::BITS - (duo_lz as usize)) + (Digit::BITS * (duo_sd - 2));
@@ -1104,7 +1104,7 @@ impl ApInt {
                     quo[digits + 1] = temp.lo();
                     carry = temp.hi();
                     for i in (digits + 2)..quo.len() {
-                        if carry == Digit::ZERO {
+                        if carry.is_zero() {
                             break
                         }
                         let temp = quo[i].carrying_add(carry);
@@ -1117,7 +1117,7 @@ impl ApInt {
                     // in order to not break this. these blocks
                     // subtract `(mul * div) << bits` from `duo` check
                     // for highest bit set
-                    if mul.hi() == Digit::zero() {
+                    if mul.hi().is_zero() {
                         let mul = mul.lo();
                         // carry for bits that wrap across digit boundaries when `<<
                         // bits_ll` applied
@@ -1129,7 +1129,7 @@ impl ApInt {
                         let (temp2, mut add_carry) = (!temp1)
                             .dd()
                             .wrapping_add(duo[digits].dd())
-                            .wrapping_add(Digit::one().dd())
+                            .wrapping_add(Digit::ONE.dd())
                             .lo_hi();
                         duo[digits] = temp2;
                         for i in (digits + 1)..=duo_sd {
@@ -1171,11 +1171,11 @@ impl ApInt {
                         let mul = mul.lo();
                         let (temp0, mut mul_carry) = mul.carrying_mul(div[0]);
                         let temp1 = temp0;
-                        let mut add0_carry = Digit::zero();
+                        let mut add0_carry = Digit::ZERO;
                         // the increment from the two's complement can be stored in
                         // `wrap_carry`
                         let (temp2, mut wrap_carry) =
-                            ((!temp1).dd().wrapping_add(Digit::one().dd()) << bits_ll)
+                            ((!temp1).dd().wrapping_add(Digit::ONE.dd()) << bits_ll)
                                 .lo_hi();
                         let (temp3, mut add1_carry) = temp2.carrying_add(duo[digits]);
                         duo[digits] = temp3;
@@ -1235,7 +1235,7 @@ impl ApInt {
                     sub.push(temp.0);
                     sub.push(temp.1);
                     for _ in (div_sd + 2)..len {
-                        sub.push(Digit::zero());
+                        sub.push(Digit::ZERO);
                     }
                     let sub_len = sub.len();
                     ugt!(
@@ -1253,7 +1253,7 @@ impl ApInt {
                                 duo,
                                 sub,
                                 div,
-                                mul.wrapping_sub(Digit::one()),
+                                mul.wrapping_sub(Digit::ONE),
                                 quo
                             );
                             return
@@ -1269,14 +1269,14 @@ impl ApInt {
                 }
                 // find the new `duo_sd`
                 for i in (0..=duo_sd).rev() {
-                    if duo[i] != Digit::zero() {
+                    if !duo[i].is_zero() {
                         duo_sd = i;
                         break
                     }
                     if i == 0 {
                         // the quotient should be `quo` and remainder should be zero
                         for i in 0..len {
-                            div[i] = Digit::zero();
+                            div[i] = Digit::ZERO;
                             duo[i] = quo[i];
                         }
                         return
@@ -1298,7 +1298,7 @@ impl ApInt {
                             twos_complement!(len, div);
                             add!(len, div, duo);
                             for i0 in 0..len {
-                                match quo[i0].overflowing_add(Digit::one()) {
+                                match quo[i0].overflowing_add(Digit::ONE) {
                                     (v, false) => {
                                         duo[i0] = v;
                                         for i1 in (i0 + 1)..len {
@@ -1352,7 +1352,7 @@ impl ApInt {
                     duo[1] = temp.lo();
                     carry = temp.hi();
                     for i0 in 2..len {
-                        if carry == Digit::zero() {
+                        if carry.is_zero() {
                             duo[i0..len].clone_from_slice(&quo[i0..len]);
                             break
                         }
@@ -1369,21 +1369,20 @@ impl ApInt {
         // both because the core long division algorithm does not work on many
         // edges, and because of optimization. find the most significant non
         // zeroes, check for `duo` < `div`, and check for division by zero
-        match div.iter().rposition(|x| x != &Digit::zero()) {
+        match div.iter().rposition(|x| !x.is_zero()) {
             Some(div_sd) => {
                 // the initial most significant nonzero duo digit
-                let ini_duo_sd: usize =
-                    match duo.iter().rposition(|x| x != &Digit::zero()) {
-                        Some(x) => x,
-                        None => {
-                            // quotient and remainder should be 0
-                            // duo is already zero
-                            for x in div.iter_mut() {
-                                x.unset_all()
-                            }
-                            return true
+                let ini_duo_sd: usize = match duo.iter().rposition(|x| !x.is_zero()) {
+                    Some(x) => x,
+                    None => {
+                        // quotient and remainder should be 0
+                        // duo is already zero
+                        for x in div.iter_mut() {
+                            x.unset_all()
                         }
-                    };
+                        return true
+                    }
+                };
                 if ini_duo_sd < div_sd {
                     // the divisor is larger than the dividend
                     // quotient should be 0 and remainder is `duo`
@@ -1462,7 +1461,7 @@ impl ApInt {
     pub fn wrapping_udivrem_assign(lhs: &mut ApInt, rhs: &mut ApInt) -> Result<()> {
         match ApInt::zip_access_data_mut_both(lhs, rhs)? {
             ZipDataAccessMutBoth::Inl(duo, div) => {
-                if *div != Digit::zero() {
+                if !div.is_zero() {
                     let temp = duo.wrapping_divrem(*div);
                     *duo = temp.0;
                     *div = temp.1;
@@ -1494,7 +1493,7 @@ impl ApInt {
     pub fn wrapping_uremdiv_assign(lhs: &mut ApInt, rhs: &mut ApInt) -> Result<()> {
         match ApInt::zip_access_data_mut_both(lhs, rhs)? {
             ZipDataAccessMutBoth::Inl(duo, div) => {
-                if *div != Digit::zero() {
+                if !div.is_zero() {
                     let temp = duo.wrapping_divrem(*div);
                     *duo = temp.1;
                     *div = temp.0;

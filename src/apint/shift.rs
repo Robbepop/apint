@@ -101,7 +101,7 @@ impl ApInt {
                     digits
                         .iter_mut()
                         .take(digit_steps)
-                        .for_each(|d| *d = Digit::zero());
+                        .for_each(|d| *d = Digit::ZERO);
                 }
                 let bit_steps = shift_amount.bit_steps();
                 if bit_steps != 0 {
@@ -161,7 +161,7 @@ impl ApInt {
                         .iter_mut()
                         .rev()
                         .take(digit_steps)
-                        .for_each(|d| *d = Digit::zero());
+                        .for_each(|d| *d = Digit::ZERO);
                 }
                 let bit_steps = shift_amount.bit_steps();
                 if bit_steps > 0 {

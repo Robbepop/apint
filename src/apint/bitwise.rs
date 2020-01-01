@@ -213,7 +213,7 @@ impl ApInt {
                 return false
             }
         }
-        rest.iter().all(|d| d.is_all_set())
+        rest.iter().all(|d| *d == Digit::ONES)
     }
 
     /// Sets all bits of this `ApInt` to zero (`0`).

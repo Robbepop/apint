@@ -471,14 +471,14 @@ mod tests {
         {
             let explicit = ApInt::from_bit(Bit::Set);
             let implicit = ApInt::from(Bit::Set);
-            let expected = ApInt::new_inl(BitWidth::w1(), Digit::one());
+            let expected = ApInt::new_inl(BitWidth::w1(), Digit::ONE);
             assert_eq!(explicit, implicit);
             assert_eq!(explicit, expected);
         }
         {
             let explicit = ApInt::from_bit(Bit::Unset);
             let implicit = ApInt::from(Bit::Unset);
-            let expected = ApInt::new_inl(BitWidth::w1(), Digit::zero());
+            let expected = ApInt::new_inl(BitWidth::w1(), Digit::ZERO);
             assert_eq!(explicit, implicit);
             assert_eq!(explicit, expected);
         }

@@ -44,6 +44,6 @@ pub(crate) fn borrow_sub(a: Digit, b: Digit, borrow: &mut Digit) -> Digit {
     //     hi * (base) + lo        ==    1 * (base) + ai - bi - borrow
     // =>  a_i - b_i - borrow < 0   <==>   hi == 0
 
-    *borrow = if hi == Digit::zero() { Digit::one() } else { Digit::zero() };
+    *borrow = if hi.is_zero() { Digit::ONE } else { Digit::ZERO };
     lo
 }
