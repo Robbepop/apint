@@ -1,6 +1,6 @@
 use crate::{
     bitwidth::BitWidth,
-    digit,
+    Digit,
 };
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
@@ -33,6 +33,6 @@ impl Storage {
     /// optimization.
     #[inline]
     fn is_inline(width: BitWidth) -> bool {
-        width.to_usize() <= digit::BITS
+        width.to_usize() <= Digit::BITS
     }
 }

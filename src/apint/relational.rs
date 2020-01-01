@@ -3,8 +3,10 @@ use crate::{
         utils::ZipDataAccess,
         ApInt,
     },
-    digit,
-    digit::Bit,
+    digit::{
+        Bit,
+        Digit,
+    },
     errors::Result,
     mem::format,
     traits::Width,
@@ -144,7 +146,7 @@ impl ApInt {
             .and_then(|zipped| {
                 match zipped {
                     ZipDataAccess::Inl(lhs, rhs) => {
-                        let infate_abs = digit::BITS - self.width().to_usize();
+                        let infate_abs = Digit::BITS - self.width().to_usize();
                         let lhs = (lhs.repr() << infate_abs) as i64;
                         let rhs = (rhs.repr() << infate_abs) as i64;
                         Ok(lhs < rhs)

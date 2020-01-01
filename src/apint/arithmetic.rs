@@ -10,11 +10,6 @@ use crate::{
         },
         ApInt,
     },
-    digit,
-    digit::{
-        Digit,
-        DoubleDigit,
-    },
     errors::{
         DivOp,
         Error,
@@ -29,6 +24,8 @@ use crate::{
         forward_mut_impl,
         try_forward_bin_mut_impl,
     },
+    Digit,
+    DoubleDigit,
 };
 use core::ops::{
     Add,
@@ -348,14 +345,14 @@ impl ApInt {
                 // `DoubleDigit` multiplications in some places.
                 match (lhs_sig_nonzero == 0, rhs_sig_nonzero == 0) {
                     (false, false) => {
-                        let lhs_sig_bits = (lhs_sig_nonzero * digit::BITS)
-                            + (digit::BITS
+                        let lhs_sig_bits = (lhs_sig_nonzero * Digit::BITS)
+                            + (Digit::BITS
                                 - (lhs[lhs_sig_nonzero].leading_zeros() as usize));
-                        let rhs_sig_bits = (rhs_sig_nonzero * digit::BITS)
-                            + (digit::BITS
+                        let rhs_sig_bits = (rhs_sig_nonzero * Digit::BITS)
+                            + (Digit::BITS
                                 - (rhs[rhs_sig_nonzero].leading_zeros() as usize));
                         let tot_sig_bits = lhs_sig_bits + rhs_sig_bits;
-                        if tot_sig_bits <= (lhs.len() * digit::BITS) {
+                        if tot_sig_bits <= (lhs.len() * Digit::BITS) {
                             // No possibility of `Digit` wise overflow. Note that end bits
                             // still have to be trimmed for
                             // `ApInt`s with a width that is not a multiple of
@@ -910,8 +907,8 @@ impl ApInt {
             let div_lz = div[div_sd].leading_zeros() as usize;
             // number of significant bits
             let ini_duo_sb =
-                (ini_duo_sd * digit::BITS) + (digit::BITS - (ini_duo_lz as usize));
-            let div_sb = (div_sd * digit::BITS) + (digit::BITS - div_lz);
+                (ini_duo_sd * Digit::BITS) + (Digit::BITS - (ini_duo_lz as usize));
+            let div_sb = (div_sd * Digit::BITS) + (Digit::BITS - div_lz);
             // quotient is 0 precheck
             if ini_duo_sb < div_sb {
                 // the quotient should be 0 and remainder should be `duo`
@@ -951,7 +948,7 @@ impl ApInt {
             }
             let ini_bits = ini_duo_sb - div_sb;
             // difference between the places of the significant bits
-            if ini_bits < digit::BITS {
+            if ini_bits < Digit::BITS {
                 // the `mul` or `mul - 1` algorithm
                 let (duo_sig_dd, div_sig_dd) = if ini_duo_lz == 0 {
                     // avoid shr overflow
@@ -961,12 +958,12 @@ impl ApInt {
                     )
                 } else {
                     (
-                        (duo[ini_duo_sd].dd() << (ini_duo_lz + digit::BITS))
+                        (duo[ini_duo_sd].dd() << (ini_duo_lz + Digit::BITS))
                             | (duo[ini_duo_sd - 1].dd() << ini_duo_lz)
-                            | (duo[ini_duo_sd - 2].dd() >> (digit::BITS - ini_duo_lz)),
-                        (div[ini_duo_sd].dd() << (ini_duo_lz + digit::BITS))
+                            | (duo[ini_duo_sd - 2].dd() >> (Digit::BITS - ini_duo_lz)),
+                        (div[ini_duo_sd].dd() << (ini_duo_lz + Digit::BITS))
                             | (div[ini_duo_sd - 1].dd() << ini_duo_lz)
-                            | (div[ini_duo_sd - 2].dd() >> (digit::BITS - ini_duo_lz)),
+                            | (div[ini_duo_sd - 2].dd() >> (Digit::BITS - ini_duo_lz)),
                     )
                 };
                 let mul = duo_sig_dd.wrapping_div(div_sig_dd).lo();
@@ -1052,12 +1049,12 @@ impl ApInt {
             let mut duo_lz = ini_duo_lz;
             // the number of lesser significant digits and bits not a part of `div_sig_d`
             let div_lesser_bits =
-                digit::BITS - (div_lz as usize) + (digit::BITS * (div_sd - 1));
+                Digit::BITS - (div_lz as usize) + (Digit::BITS * (div_sd - 1));
             // the most significant `Digit` bits of div
             let div_sig_d = if div_lz == 0 {
                 div[div_sd]
             } else {
-                (div[div_sd] << div_lz) | (div[div_sd - 1] >> (digit::BITS - div_lz))
+                (div[div_sd] << div_lz) | (div[div_sd - 1] >> (Digit::BITS - div_lz))
             };
             // has to be a `DoubleDigit` in case of overflow
             let div_sig_d_add1 = div_sig_d.dd().wrapping_add(Digit::one().dd());
@@ -1065,24 +1062,24 @@ impl ApInt {
             let mut duo_sig_dd;
             // TODO: fix sizes here and below
             let quo_potential = len;
-            // if ini_bits % digit::BITS == 0 {ini_bits / digit::BITS}
-            // else {(ini_bits / digit::BITS) + 1};
+            // if ini_bits % Digit::BITS == 0 {ini_bits / Digit::BITS}
+            // else {(ini_bits / Digit::BITS) + 1};
             let mut quo: Vec<Digit> = vec![Digit::zero(); quo_potential as usize];
             loop {
                 duo_lesser_bits =
-                    (digit::BITS - (duo_lz as usize)) + (digit::BITS * (duo_sd - 2));
+                    (Digit::BITS - (duo_lz as usize)) + (Digit::BITS * (duo_sd - 2));
                 duo_sig_dd = if duo_lz == 0 {
                     DoubleDigit::from_lo_hi(duo[duo_sd - 1], duo[duo_sd])
                 } else {
-                    (duo[duo_sd].dd() << (duo_lz + digit::BITS))
+                    (duo[duo_sd].dd() << (duo_lz + Digit::BITS))
                         | (duo[duo_sd - 1].dd() << duo_lz)
-                        | (duo[duo_sd - 2].dd() >> (digit::BITS - duo_lz))
+                        | (duo[duo_sd - 2].dd() >> (Digit::BITS - duo_lz))
                 };
                 if duo_lesser_bits >= div_lesser_bits {
                     let bits = duo_lesser_bits - div_lesser_bits;
                     // bits_ll is the number of lesser bits in the digit that contains
                     // lesser and greater bits
-                    let (digits, bits_ll) = (bits / digit::BITS, bits % digit::BITS);
+                    let (digits, bits_ll) = (bits / Digit::BITS, bits % Digit::BITS);
                     // Unfortunately, `mul` here can be up to (2^2n - 1)/(2^(n-1)), where
                     // `n` is the number of bits in a `Digit`. This
                     // means that an `n+1` bit integer is needed to
@@ -1107,7 +1104,7 @@ impl ApInt {
                     quo[digits + 1] = temp.lo();
                     carry = temp.hi();
                     for i in (digits + 2)..quo.len() {
-                        if carry == digit::ZERO {
+                        if carry == Digit::ZERO {
                             break
                         }
                         let temp = quo[i].carrying_add(carry);
@@ -1212,9 +1209,9 @@ impl ApInt {
                         // avoid shr overflow
                         DoubleDigit::from_lo_hi(div[duo_sd - 1], div[duo_sd])
                     } else {
-                        (div[duo_sd].dd() << (duo_lz + digit::BITS))
+                        (div[duo_sd].dd() << (duo_lz + Digit::BITS))
                             | (div[duo_sd - 1].dd() << duo_lz)
-                            | (div[duo_sd - 2].dd() >> (digit::BITS - duo_lz))
+                            | (div[duo_sd - 2].dd() >> (Digit::BITS - duo_lz))
                     };
                     let mul = duo_sig_dd.wrapping_div(div_sig_dd).lo();
                     // I could avoid allocation but it would involve more long division to
@@ -1286,7 +1283,7 @@ impl ApInt {
                     }
                 }
                 duo_lz = duo[duo_sd].leading_zeros() as usize;
-                let duo_sb = (duo_sd * digit::BITS) + (digit::BITS - duo_lz);
+                let duo_sb = (duo_sd * Digit::BITS) + (Digit::BITS - duo_lz);
                 //`quo` should have 0 or 1 added to it check
                 if duo_sb == div_sb {
                     // if `div <= duo`

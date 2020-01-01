@@ -36,16 +36,20 @@ pub(crate) type DigitRepr = u64;
 /// Must be exactly double the size of `DigitRepr`.
 pub(crate) type DoubleDigitRepr = u128;
 
-/// The amount of bits within a single `Digit`.
-pub(crate) const BITS: usize = 64;
-
 const REPR_ONE: DigitRepr = 0x1;
 const REPR_ZERO: DigitRepr = 0x0;
 const REPR_ONES: DigitRepr = !REPR_ZERO;
 
-pub(crate) const ONE: Digit = Digit(REPR_ONE);
-pub(crate) const ZERO: Digit = Digit(REPR_ZERO);
-pub(crate) const ONES: Digit = Digit(REPR_ONES);
+impl Digit {
+    /// The amount of bits within a single `Digit`.
+    pub(crate) const BITS: usize = 64;
+    /// A `Digit` with a value of 1
+    pub(crate) const ONE: Digit = Digit(REPR_ONE);
+    /// A `Digit` with all bits set to 1
+    pub(crate) const ONES: Digit = Digit(REPR_ONES);
+    /// A `Digit` with a value of 0
+    pub(crate) const ZERO: Digit = Digit(REPR_ZERO);
+}
 
 /// Represents the set or unset state of a bit within an `ApInt`.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
@@ -147,7 +151,7 @@ impl Shl<usize> for DoubleDigit {
     type Output = DoubleDigit;
 
     fn shl(self, rhs: usize) -> Self::Output {
-        assert!(rhs < (BITS * 2));
+        assert!(rhs < (Digit::BITS * 2));
         DoubleDigit(self.repr().wrapping_shl(rhs as u32))
     }
 }
@@ -156,7 +160,7 @@ impl Shr<usize> for DoubleDigit {
     type Output = DoubleDigit;
 
     fn shr(self, rhs: usize) -> Self::Output {
-        assert!(rhs < (BITS * 2));
+        assert!(rhs < (Digit::BITS * 2));
         DoubleDigit(self.repr().wrapping_shr(rhs as u32))
     }
 }
@@ -217,7 +221,7 @@ impl DoubleDigit {
 
     /// Returns the hi part of this `DoubleDigit` as `Digit`.
     pub(crate) fn hi(self) -> Digit {
-        Digit((self.0 >> BITS) as DigitRepr)
+        Digit((self.0 >> Digit::BITS) as DigitRepr)
     }
 
     /// Returns the hi part of this `DoubleDigit` as `Digit`.
@@ -233,7 +237,8 @@ impl DoubleDigit {
     /// Returns a `DoubleDigit` from the given lo and hi raw `Digit` parts.
     pub(crate) fn from_lo_hi(lo: Digit, hi: Digit) -> DoubleDigit {
         DoubleDigit(
-            DoubleDigitRepr::from(lo.repr()) | (DoubleDigitRepr::from(hi.repr()) << BITS),
+            DoubleDigitRepr::from(lo.repr())
+                | (DoubleDigitRepr::from(hi.repr()) << Digit::BITS),
         )
     }
 
@@ -276,32 +281,32 @@ impl Digit {
     ///
     /// **Note:** In twos-complement this means that all bits are `0`.
     pub fn zero() -> Digit {
-        ZERO
+        Digit::ZERO
     }
 
     /// Creates a digit that represents the value `1`.
     pub fn one() -> Digit {
-        ONE
+        Digit::ONE
     }
 
     /// Returns `true` if this `Digit` is zero (`0`).
     pub fn is_zero(self) -> bool {
-        self == ZERO
+        self == Digit::ZERO
     }
 
     /// Returns `true` if this `Digit` is one (`1`).
     pub fn is_one(self) -> bool {
-        self == ONE
+        self == Digit::ONE
     }
 
     /// Returns `true` if this `Digit` has all bits set.
     pub fn is_all_set(self) -> bool {
-        self == ONES
+        self == Digit::ONES
     }
 
     /// Creates a digit where all bits are initialized to `1`.
     pub fn all_set() -> Digit {
-        ONES
+        Digit::ONES
     }
 }
 
@@ -402,7 +407,7 @@ impl Digit {
         W: Into<BitWidth>,
     {
         let width = width.into();
-        if width.to_usize() > BITS {
+        if width.to_usize() > Digit::BITS {
             return Err(Error::invalid_bitwidth(width.to_usize()).with_annotation(
                 "Encountered invalid `BitWidth` for operating on a `Digit`.",
             ))
@@ -989,8 +994,8 @@ mod tests {
 
         #[test]
         fn width() {
-            assert_eq!(digit::ONES.width(), BitWidth::w64());
-            assert_eq!(digit::ZERO.width(), BitWidth::w64());
+            assert_eq!(Digit::ONES.width(), BitWidth::w64());
+            assert_eq!(Digit::ZERO.width(), BitWidth::w64());
             assert_eq!(even_digit().width(), BitWidth::w64());
             assert_eq!(odd_digit().width(), BitWidth::w64());
         }
@@ -998,8 +1003,8 @@ mod tests {
         #[test]
         fn get_ok() {
             for &pos in VALID_TEST_POS_VALUES {
-                assert_eq!(digit::ONES.get(pos), Ok(Bit::Set));
-                assert_eq!(digit::ZERO.get(pos), Ok(Bit::Unset));
+                assert_eq!(Digit::ONES.get(pos), Ok(Bit::Set));
+                assert_eq!(Digit::ZERO.get(pos), Ok(Bit::Unset));
                 assert_eq!(
                     even_digit().get(pos),
                     Ok(if pos % 2 == 0 { Bit::Set } else { Bit::Unset })
@@ -1015,8 +1020,8 @@ mod tests {
         fn get_fail() {
             for &pos in INVALID_TEST_POS_VALUES {
                 let expected_err = Err(Error::invalid_bit_access(pos, BitWidth::w64()));
-                assert_eq!(digit::ONES.get(pos), expected_err);
-                assert_eq!(digit::ZERO.get(pos), expected_err);
+                assert_eq!(Digit::ONES.get(pos), expected_err);
+                assert_eq!(Digit::ZERO.get(pos), expected_err);
                 assert_eq!(digit::even_digit().get(pos), expected_err);
                 assert_eq!(digit::odd_digit().get(pos), expected_err);
             }
@@ -1037,8 +1042,8 @@ mod tests {
         fn set_fail() {
             for &pos in INVALID_TEST_POS_VALUES {
                 let expected_err = Err(Error::invalid_bit_access(pos, BitWidth::w64()));
-                assert_eq!(digit::ONES.set(pos), expected_err);
-                assert_eq!(digit::ZERO.set(pos), expected_err);
+                assert_eq!(Digit::ONES.set(pos), expected_err);
+                assert_eq!(Digit::ZERO.set(pos), expected_err);
                 assert_eq!(digit::even_digit().set(pos), expected_err);
                 assert_eq!(digit::odd_digit().set(pos), expected_err);
             }
@@ -1056,7 +1061,7 @@ mod tests {
 
         #[test]
         fn retain_last_n() {
-            let mut d = ONES;
+            let mut d = Digit::ONES;
             d.retain_last_n(32).unwrap();
             assert_eq!(d, Digit(0x0000_0000_FFFF_FFFF));
         }
