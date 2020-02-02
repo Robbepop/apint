@@ -1,6 +1,5 @@
 use crate::{
     apint::ApInt,
-    digit,
     errors::{
         Error,
         Result,
@@ -10,6 +9,7 @@ use crate::{
         vec::Vec,
     },
     radix::Radix,
+    Digit,
 };
 use core::fmt;
 
@@ -193,7 +193,7 @@ impl ApInt {
         let result = match radix.exact_bits_per_digit() {
             Some(bits) => {
                 v.reverse();
-                if digit::BITS % bits == 0 {
+                if Digit::BITS % bits == 0 {
                     ApInt::from_bitwise_digits(&v, bits)
                 } else {
                     ApInt::from_inexact_bitwise_digits(&v, bits)
@@ -212,15 +212,12 @@ impl ApInt {
     //
     // TODO: Better document what happens here and why.
     fn from_bitwise_digits(v: &[u8], bits: usize) -> ApInt {
-        use crate::digit::{
-            Digit,
-            DigitRepr,
-        };
+        use crate::digit::DigitRepr;
 
-        debug_assert!(!v.is_empty() && bits <= 8 && digit::BITS % bits == 0);
+        debug_assert!(!v.is_empty() && bits <= 8 && Digit::BITS % bits == 0);
         debug_assert!(v.iter().all(|&c| DigitRepr::from(c) < (1 << bits)));
 
-        let radix_digits_per_digit = digit::BITS / bits;
+        let radix_digits_per_digit = Digit::BITS / bits;
 
         let data = v
             .chunks(radix_digits_per_digit)
@@ -242,30 +239,27 @@ impl ApInt {
     //
     // TODO: Better document what happens here and why.
     fn from_inexact_bitwise_digits(v: &[u8], bits: usize) -> ApInt {
-        use crate::digit::{
-            Digit,
-            DigitRepr,
-        };
+        use crate::digit::DigitRepr;
 
-        debug_assert!(!v.is_empty() && bits <= 8 && digit::BITS % bits != 0);
+        debug_assert!(!v.is_empty() && bits <= 8 && Digit::BITS % bits != 0);
         debug_assert!(v.iter().all(|&c| (DigitRepr::from(c)) < (1 << bits)));
 
-        let len_digits = (v.len() * bits + digit::BITS - 1) / digit::BITS;
+        let len_digits = (v.len() * bits + Digit::BITS - 1) / Digit::BITS;
         let mut data = Vec::with_capacity(len_digits);
 
         let mut d = 0;
         let mut dbits = 0; // Number of bits we currently have in d.
 
-        // Walk v accumulating bits in d; whenever we accumulate digit::BITS in d, spit
+        // Walk v accumulating bits in d; whenever we accumulate Digit::BITS in d, spit
         // out a digit:
         for &c in v {
             d |= (DigitRepr::from(c)) << dbits;
             dbits += bits;
 
-            if dbits >= digit::BITS {
+            if dbits >= Digit::BITS {
                 data.push(Digit(d));
-                dbits -= digit::BITS;
-                // If `dbits` was greater than `digit::BITS`, we dropped some of the bits
+                dbits -= Digit::BITS;
+                // If `dbits` was greater than `Digit::BITS`, we dropped some of the bits
                 // in c (they couldn't fit in d) - grab the bits we lost
                 // here:
                 d = (DigitRepr::from(c)) >> (bits - dbits);
@@ -273,7 +267,7 @@ impl ApInt {
         }
 
         if dbits > 0 {
-            debug_assert!(dbits < digit::BITS);
+            debug_assert!(dbits < Digit::BITS);
             data.push(Digit(d));
         }
 
@@ -287,10 +281,7 @@ impl ApInt {
     // TODO: This does not work, yet. Some parts of the algorithm are
     //       commented-out since the required functionality does not exist, yet.
     fn from_radix_digits(v: &[u8], radix: Radix) -> ApInt {
-        use crate::digit::{
-            Digit,
-            DigitRepr,
-        };
+        use crate::digit::DigitRepr;
 
         debug_assert!(!v.is_empty() && !radix.is_power_of_two());
         debug_assert!(v.iter().all(|&c| radix.is_valid_byte(c)));
@@ -301,7 +292,7 @@ impl ApInt {
             .checked_mul(v.len() + 1)
             .unwrap()
             >> 13;
-        let big_digits = (bits / digit::BITS) + 1;
+        let big_digits = (bits / Digit::BITS) + 1;
         let mut data = Vec::with_capacity(big_digits as usize);
 
         let (_base, power) = radix.get_radix_base();

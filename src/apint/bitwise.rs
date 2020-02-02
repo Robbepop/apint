@@ -8,8 +8,10 @@ use crate::{
     },
     bitpos::BitPos,
     checks,
-    digit,
-    digit::Bit,
+    digit::{
+        Bit,
+        Digit,
+    },
     errors::Result,
     traits::Width,
     utils::{
@@ -211,7 +213,7 @@ impl ApInt {
                 return false
             }
         }
-        rest.iter().all(|d| d.is_all_set())
+        rest.iter().all(|d| *d == Digit::ONES)
     }
 
     /// Sets all bits of this `ApInt` to zero (`0`).
@@ -294,7 +296,7 @@ impl ApInt {
         // Since `ApInt` instances with width's that are no powers of two
         // have unused excess bits that are always zero we need to cut them off
         // for a correct implementation of this operation.
-        zeros - (digit::BITS - self.width().excess_bits().unwrap_or(digit::BITS))
+        zeros - (Digit::BITS - self.width().excess_bits().unwrap_or(Digit::BITS))
     }
 
     /// Returns the number of leading zeros in the binary representation of this
@@ -304,11 +306,11 @@ impl ApInt {
         for d in self.as_digit_slice().iter().rev() {
             let leading_zeros = d.repr().leading_zeros() as usize;
             zeros += leading_zeros;
-            if leading_zeros != digit::BITS {
+            if leading_zeros != Digit::BITS {
                 break
             }
         }
-        zeros - (digit::BITS - self.width().excess_bits().unwrap_or(digit::BITS))
+        zeros - (Digit::BITS - self.width().excess_bits().unwrap_or(Digit::BITS))
     }
 
     /// Returns the number of trailing zeros in the binary representation of
@@ -318,12 +320,12 @@ impl ApInt {
         for d in self.as_digit_slice() {
             let trailing_zeros = d.repr().trailing_zeros() as usize;
             zeros += trailing_zeros;
-            if trailing_zeros != digit::BITS {
+            if trailing_zeros != Digit::BITS {
                 break
             }
         }
         if zeros >= self.width().to_usize() {
-            zeros -= digit::BITS - self.width().excess_bits().unwrap_or(digit::BITS);
+            zeros -= Digit::BITS - self.width().excess_bits().unwrap_or(Digit::BITS);
         }
         zeros
     }

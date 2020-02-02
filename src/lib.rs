@@ -43,6 +43,11 @@ mod traits;
 mod uint;
 mod utils;
 
+pub(crate) use digit::{
+    Digit,
+    DoubleDigit,
+};
+
 pub use crate::{
     apint::{
         ApInt,

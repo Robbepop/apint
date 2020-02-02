@@ -1,12 +1,12 @@
 use crate::{
     apint::ShiftAmount,
     bitpos::BitPos,
-    digit,
     errors::{
         Error,
         Result,
     },
     storage::Storage,
+    Digit,
 };
 
 /// The `BitWidth` represents the length of an `ApInt`.
@@ -121,7 +121,7 @@ impl BitWidth {
     ///
     /// *Note:* A better name for this method has yet to be found!
     pub(crate) fn excess_bits(self) -> Option<usize> {
-        match self.to_usize() % digit::BITS {
+        match self.to_usize() % Digit::BITS {
             0 => None,
             n => Some(n),
         }
@@ -153,7 +153,7 @@ impl BitWidth {
     /// *Note:* Maybe we should move this method somewhere else?
     #[inline]
     pub(crate) fn required_digits(self) -> usize {
-        ((self.to_usize() - 1) / digit::BITS) + 1
+        ((self.to_usize() - 1) / Digit::BITS) + 1
     }
 }
 

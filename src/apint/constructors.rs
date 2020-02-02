@@ -4,17 +4,14 @@ use crate::{
         ApIntData,
     },
     bitwidth::BitWidth,
-    digit,
-    digit::{
-        Bit,
-        Digit,
-    },
+    digit::Bit,
     errors::{
         Error,
         Result,
     },
     mem::vec::Vec,
     storage::Storage,
+    Digit,
 };
 
 use smallvec::SmallVec;
@@ -157,7 +154,7 @@ impl ApInt {
 
     /// Creates a new `ApInt` from a given `u128` value with a bit-width of 128.
     pub fn from_u128(val: u128) -> ApInt {
-        let hi = (val >> digit::BITS) as u64;
+        let hi = (val >> Digit::BITS) as u64;
         let lo = (val & ((1u128 << 64) - 1)) as u64;
         ApInt::from([hi, lo])
     }
@@ -193,7 +190,7 @@ impl ApInt {
             }
             n => {
                 use core::mem;
-                let bitwidth = BitWidth::new(n * digit::BITS).expect(
+                let bitwidth = BitWidth::new(n * Digit::BITS).expect(
                     "We have already asserted that the number of items the given \
                      Iterator iterates over is greater than `1` and thus non-zero and \
                      thus a valid `BitWidth`.",
@@ -249,7 +246,7 @@ impl ApInt {
 
     /// Creates a new `ApInt` with the given bit width that represents zero.
     pub fn zero(width: BitWidth) -> ApInt {
-        ApInt::repeat_digit(width, digit::ZERO)
+        ApInt::repeat_digit(width, Digit::ZERO)
     }
 
     /// Creates a new `ApInt` with the given bit width that represents one.
@@ -266,7 +263,7 @@ impl ApInt {
 
     /// Creates a new `ApInt` with the given bit width that has all bits set.
     pub fn all_set(width: BitWidth) -> ApInt {
-        ApInt::repeat_digit(width, digit::ONES)
+        ApInt::repeat_digit(width, Digit::ONES)
     }
 
     /// Returns the smallest unsigned `ApInt` that can be represented by the
@@ -474,14 +471,14 @@ mod tests {
         {
             let explicit = ApInt::from_bit(Bit::Set);
             let implicit = ApInt::from(Bit::Set);
-            let expected = ApInt::new_inl(BitWidth::w1(), Digit::one());
+            let expected = ApInt::new_inl(BitWidth::w1(), Digit::ONE);
             assert_eq!(explicit, implicit);
             assert_eq!(explicit, expected);
         }
         {
             let explicit = ApInt::from_bit(Bit::Unset);
             let implicit = ApInt::from(Bit::Unset);
-            let expected = ApInt::new_inl(BitWidth::w1(), Digit::zero());
+            let expected = ApInt::new_inl(BitWidth::w1(), Digit::ZERO);
             assert_eq!(explicit, implicit);
             assert_eq!(explicit, expected);
         }

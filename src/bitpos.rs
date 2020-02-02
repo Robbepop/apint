@@ -1,6 +1,6 @@
 use crate::{
-    digit,
     errors::Result,
+    Digit,
 };
 
 /// Represents a bit position within an `ApInt`.
@@ -37,7 +37,7 @@ impl BitPos {
     /// operate on `Digit` instances.
     #[inline]
     pub(crate) fn to_pos_within_digit(self) -> BitPos {
-        BitPos(self.0 % digit::BITS)
+        BitPos(self.0 % Digit::BITS)
     }
 
     /// Splits this `BitPos` that may range over several `Digit`s within an
@@ -45,8 +45,8 @@ impl BitPos {
     /// bit position.
     #[inline]
     pub(crate) fn to_digit_and_bit_pos(self) -> (DigitPos, BitPos) {
-        let digit_pos = self.0 / digit::BITS;
-        let bit_pos = BitPos::from(self.0 % digit::BITS);
+        let digit_pos = self.0 / Digit::BITS;
+        let bit_pos = BitPos::from(self.0 % Digit::BITS);
         (digit_pos, bit_pos)
     }
 }

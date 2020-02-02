@@ -1,13 +1,12 @@
 use crate::{
     apint::ApInt,
     bitwidth::BitWidth,
-    digit,
-    digit::Digit,
     errors::{
         Error,
         Result,
     },
     traits::Width,
+    Digit,
 };
 
 /// Represents a primitive data type.
@@ -271,7 +270,7 @@ impl ApInt {
         let (lsd_0, rest) = self.split_least_significant_digit();
         let (&lsd_1, _) = rest.split_first().unwrap_or((&Digit(0), &[]));
         let mut result: i128 =
-            (i128::from(lsd_1.repr()) << digit::BITS) + i128::from(lsd_0.repr());
+            (i128::from(lsd_1.repr()) << Digit::BITS) + i128::from(lsd_0.repr());
         let actual_width = self.width();
         let target_width = BitWidth::w128();
 
@@ -300,7 +299,7 @@ impl ApInt {
         let (lsd_0, rest) = self.split_least_significant_digit();
         let (&lsd_1, _) = rest.split_first().unwrap_or((&Digit(0), &[]));
         let result: u128 =
-            (u128::from(lsd_1.repr()) << digit::BITS) + u128::from(lsd_0.repr());
+            (u128::from(lsd_1.repr()) << Digit::BITS) + u128::from(lsd_0.repr());
         result
     }
 }
@@ -534,7 +533,7 @@ impl ApInt {
             .into()
         }
         let mut result: i128 =
-            (i128::from(lsd_1.repr()) << digit::BITS) + i128::from(lsd_0.repr());
+            (i128::from(lsd_1.repr()) << Digit::BITS) + i128::from(lsd_0.repr());
 
         let actual_width = self.width();
         let target_width = BitWidth::w128();
@@ -579,7 +578,7 @@ impl ApInt {
             .into()
         }
         let result: u128 =
-            (u128::from(lsd_1.repr()) << digit::BITS) + u128::from(lsd_0.repr());
+            (u128::from(lsd_1.repr()) << Digit::BITS) + u128::from(lsd_0.repr());
         Ok(result)
     }
 }

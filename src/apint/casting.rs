@@ -13,6 +13,7 @@ use crate::{
         forward_bin_mut_impl,
         try_forward_bin_mut_impl,
     },
+    Digit,
 };
 
 impl Clone for ApInt {
@@ -281,13 +282,12 @@ impl ApInt {
             // must allocate a new buffer that fits for the required amount of digits
             // for the target width. Also we need to `memcpy` the digits of the
             // extended `ApInt` to the newly allocated buffer.
-            use crate::digit;
             use core::iter;
             assert!(target_req_digits > actual_req_digits);
             let additional_digits = target_req_digits - actual_req_digits;
             let extended_clone = ApInt::from_iter(
                 self.digits()
-                    .chain(iter::repeat(digit::ZERO).take(additional_digits)),
+                    .chain(iter::repeat(Digit::ZERO).take(additional_digits)),
             )
             .and_then(|apint| apint.into_truncate(target_width))?;
             *self = extended_clone;
@@ -380,7 +380,6 @@ impl ApInt {
             // must allocate a new buffer that fits for the required amount of digits
             // for the target width. Also we need to `memcpy` the digits of the
             // extended `ApInt` to the newly allocated buffer.
-            use crate::digit;
             use core::iter;
             assert!(target_req_digits > actual_req_digits);
             let additional_digits = target_req_digits - actual_req_digits;
@@ -394,7 +393,7 @@ impl ApInt {
 
             let extended_copy = ApInt::from_iter(
                 self.digits()
-                    .chain(iter::repeat(digit::ONES).take(additional_digits)),
+                    .chain(iter::repeat(Digit::ONES).take(additional_digits)),
             )
             .and_then(|apint| apint.into_truncate(target_width))?;
 

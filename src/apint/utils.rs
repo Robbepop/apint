@@ -392,10 +392,10 @@ impl ApInt {
     #[inline]
     pub fn is_one(&self) -> bool {
         match self.access_data() {
-            DataAccess::Inl(digit) => digit == Digit::one(),
+            DataAccess::Inl(digit) => digit == Digit::ONE,
             DataAccess::Ext(digits) => {
                 let (last, rest) = digits.split_last().unwrap_or_else(|| unreachable!());
-                last.is_one() && rest.iter().all(|digit| digit.is_zero())
+                (*last == Digit::ONE) && rest.iter().all(|digit| digit.is_zero())
             }
         }
     }

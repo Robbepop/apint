@@ -4,14 +4,11 @@ use crate::{
         ApInt,
     },
     checks,
-    digit,
-    digit::{
-        Bit,
-        Digit,
-    },
+    digit::Bit,
     errors::Result,
     traits::Width,
     utils::try_forward_bin_mut_impl,
+    Digit,
 };
 
 /// Represents an amount of bits to shift an `ApInt`.
@@ -39,7 +36,7 @@ impl ShiftAmount {
     /// - `ShiftAmount(150)` leaps over 2 digits.
     #[inline]
     pub(in crate::apint) fn digit_steps(self) -> usize {
-        self.to_usize() / digit::BITS
+        self.to_usize() / Digit::BITS
     }
 
     /// Returns the number of bits within a single digit this
@@ -57,7 +54,7 @@ impl ShiftAmount {
     /// - `ShiftAmount(150)` leaps over `22` bits.
     #[inline]
     pub(in crate::apint) fn bit_steps(self) -> usize {
-        self.to_usize() % digit::BITS
+        self.to_usize() % Digit::BITS
     }
 }
 
@@ -104,14 +101,14 @@ impl ApInt {
                     digits
                         .iter_mut()
                         .take(digit_steps)
-                        .for_each(|d| *d = Digit::zero());
+                        .for_each(|d| *d = Digit::ZERO);
                 }
                 let bit_steps = shift_amount.bit_steps();
                 if bit_steps != 0 {
                     let mut carry = 0;
                     for elem in digits[digit_steps..].iter_mut() {
                         let repr = elem.repr();
-                        let new_carry = repr >> (digit::BITS - bit_steps);
+                        let new_carry = repr >> (Digit::BITS - bit_steps);
                         *elem = Digit((repr << bit_steps) | carry);
                         carry = new_carry;
                     }
@@ -164,14 +161,14 @@ impl ApInt {
                         .iter_mut()
                         .rev()
                         .take(digit_steps)
-                        .for_each(|d| *d = Digit::zero());
+                        .for_each(|d| *d = Digit::ZERO);
                 }
                 let bit_steps = shift_amount.bit_steps();
                 if bit_steps > 0 {
                     let mut borrow = 0;
                     for elem in digits.iter_mut().rev() {
                         let repr = elem.repr();
-                        let new_borrow = repr << (digit::BITS - bit_steps);
+                        let new_borrow = repr << (Digit::BITS - bit_steps);
                         *elem = Digit((repr >> bit_steps) | borrow);
                         borrow = new_borrow;
                     }
@@ -226,12 +223,12 @@ impl ApInt {
             return Ok(())
         }
         let width = self.width();
-        let width_bits = width.to_usize() % digit::BITS;
-        let (digits, bits) = (shift_amount / digit::BITS, shift_amount % digit::BITS);
-        let uns = digit::BITS - bits;
+        let width_bits = width.to_usize() % Digit::BITS;
+        let (digits, bits) = (shift_amount / Digit::BITS, shift_amount % Digit::BITS);
+        let uns = Digit::BITS - bits;
         match self.access_data_mut() {
             DataAccessMut::Inl(x) => {
-                *x = (*x >> bits) | (digit::ONES << (width.to_usize() - bits));
+                *x = (*x >> bits) | (Digit::ONES << (width.to_usize() - bits));
             }
             DataAccessMut::Ext(x) => {
                 if width_bits != 0 {
@@ -243,7 +240,7 @@ impl ApInt {
                     for i in 0..(x.len() - 1) {
                         x[i] = (x[i] >> bits) | (x[i + 1] << uns);
                     }
-                    x[x.len() - 1] = (x[x.len() - 1] >> bits) | (digit::ONES << uns);
+                    x[x.len() - 1] = (x[x.len() - 1] >> bits) | (Digit::ONES << uns);
                 } else if bits == 0 {
                     // digit shift
                     for i in digits..x.len() {
@@ -257,7 +254,7 @@ impl ApInt {
                     for i in digits..(x.len() - 1) {
                         x[i - digits] = (x[i] >> bits) | (x[i + 1] << uns);
                     }
-                    x[diff - 1] = (x[x.len() - 1] >> bits) | (digit::ONES << uns);
+                    x[diff - 1] = (x[x.len() - 1] >> bits) | (Digit::ONES << uns);
                     for i in 0..digits {
                         x[i + diff].set_all();
                     }
@@ -357,7 +354,6 @@ mod tests {
 
         #[test]
         fn assign_xtra_large_ok() {
-            use crate::digit;
             let d0 = 0xFEDC_BA98_7654_3210;
             let d1 = 0x5555_5555_4444_4444;
             let d2 = 0xAAAA_AAAA_CCCC_CCCC;
@@ -371,8 +367,8 @@ mod tests {
                 assert_eq!(bit_steps, 36);
                 let result = ApInt::from(input).into_wrapping_shl(shamt).unwrap();
                 let expected: [u64; 4] = [
-                    (d1 << bit_steps) | (d2 >> (digit::BITS - bit_steps)),
-                    (d2 << bit_steps) | (d3 >> (digit::BITS - bit_steps)),
+                    (d1 << bit_steps) | (d2 >> (Digit::BITS - bit_steps)),
+                    (d2 << bit_steps) | (d3 >> (Digit::BITS - bit_steps)),
                     (d3 << bit_steps),
                     0,
                 ];
@@ -387,7 +383,7 @@ mod tests {
                 assert_eq!(bit_steps, 22);
                 let result = ApInt::from(input).into_wrapping_shl(shamt).unwrap();
                 let expected: [u64; 4] = [
-                    (d2 << bit_steps) | (d3 >> (digit::BITS - bit_steps)),
+                    (d2 << bit_steps) | (d3 >> (Digit::BITS - bit_steps)),
                     (d3 << bit_steps),
                     0,
                     0,
