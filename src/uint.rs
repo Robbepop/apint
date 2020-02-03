@@ -43,6 +43,12 @@ impl From<ApInt> for UInt {
     }
 }
 
+impl Width for UInt {
+    fn width(&self) -> BitWidth {
+        self.value.width()
+    }
+}
+
 impl UInt {
     /// Transforms this `UInt` into an equivalent `ApInt` instance.
     pub fn into_apint(self) -> ApInt {
@@ -301,7 +307,7 @@ impl UInt {
 /// methods.
 impl PartialOrd for UInt {
     fn partial_cmp(&self, rhs: &UInt) -> Option<Ordering> {
-        if self.value.width() != rhs.value.width() {
+        if self.width() != rhs.width() {
             return None
         }
         if self.checked_lt(rhs).unwrap() {
