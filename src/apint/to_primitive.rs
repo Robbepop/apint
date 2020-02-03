@@ -1,12 +1,10 @@
 use crate::{
-    apint::ApInt,
-    bitwidth::BitWidth,
-    errors::{
-        Error,
-        Result,
-    },
-    Width,
+    ApInt,
+    BitWidth,
     Digit,
+    Error,
+    Result,
+    Width,
 };
 
 /// Represents a primitive data type.

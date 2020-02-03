@@ -63,8 +63,8 @@ pub use crate::{
     },
     int::Int,
     radix::Radix,
-    width::Width,
     uint::UInt,
+    width::Width,
 };
 
 /// Re-exports some commonly used items of this crate.

@@ -1,7 +1,7 @@
 use crate::{
-    apint::ApInt,
-    bitwidth::BitWidth,
-    digit::Digit,
+    ApInt,
+    BitWidth,
+    Digit,
 };
 use rand::SeedableRng as _;
 

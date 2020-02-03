@@ -1,31 +1,27 @@
 use crate::{
-    apint::{
-        utils::{
-            DataAccessMut,
-            ZipDataAccessMutBoth,
-            ZipDataAccessMutSelf::{
-                Ext,
-                Inl,
-            },
+    apint::utils::{
+        DataAccessMut,
+        ZipDataAccessMutBoth,
+        ZipDataAccessMutSelf::{
+            Ext,
+            Inl,
         },
-        ApInt,
     },
-    errors::{
-        DivOp,
-        Error,
-        Result,
-    },
+    errors::DivOp,
     mem::{
         vec,
         vec::Vec,
     },
-    Width,
     utils::{
         forward_mut_impl,
         try_forward_bin_mut_impl,
     },
+    ApInt,
     Digit,
     DoubleDigit,
+    Error,
+    Result,
+    Width,
 };
 use core::ops::{
     Add,

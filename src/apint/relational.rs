@@ -1,14 +1,10 @@
 use crate::{
-    apint::{
-        utils::ZipDataAccess,
-        ApInt,
-    },
-    digit::{
-        Bit,
-        Digit,
-    },
-    errors::Result,
+    apint::utils::ZipDataAccess,
     mem::format,
+    ApInt,
+    Bit,
+    Digit,
+    Result,
     Width,
 };
 use core::{

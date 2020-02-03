@@ -1,10 +1,8 @@
 use crate::{
-    apint::ShiftAmount,
-    bitpos::BitPos,
-    errors::{
-        Error,
-        Result,
-    },
+    BitPos,
+    Error,
+    Result,
+    ShiftAmount,
     Width,
 };
 

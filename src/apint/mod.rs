@@ -15,8 +15,8 @@ mod rand_impl;
 mod serde_impl;
 
 use crate::{
-    bitwidth::BitWidth,
-    digit::Digit,
+    BitWidth,
+    Digit,
 };
 
 pub use self::shift::ShiftAmount;

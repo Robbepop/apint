@@ -1,19 +1,15 @@
 use crate::{
-    apint::ApInt,
-    bitwidth::BitWidth,
-    digit::{
-        Bit,
-        Digit,
-    },
     digit_seq::{
         ContiguousDigitSeq,
         ContiguousDigitSeqMut,
     },
-    errors::{
-        Error,
-        Result,
-    },
     storage::Storage,
+    ApInt,
+    Bit,
+    BitWidth,
+    Digit,
+    Error,
+    Result,
     Width,
 };
 

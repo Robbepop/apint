@@ -1,12 +1,10 @@
 use crate::{
-    apint::ShiftAmount,
-    bitpos::BitPos,
-    errors::{
-        Error,
-        Result,
-    },
     storage::Storage,
+    BitPos,
     Digit,
+    Error,
+    Result,
+    ShiftAmount,
 };
 
 /// The `BitWidth` represents the length of an `ApInt`.

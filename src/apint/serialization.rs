@@ -1,15 +1,13 @@
 use crate::{
-    apint::ApInt,
-    errors::{
-        Error,
-        Result,
-    },
     mem::{
         string::String,
         vec::Vec,
     },
-    radix::Radix,
+    ApInt,
     Digit,
+    Error,
+    Radix,
+    Result,
 };
 use core::fmt;
 

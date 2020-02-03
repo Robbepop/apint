@@ -1,14 +1,12 @@
 use crate::{
-    apint::{
-        utils::DataAccessMut,
-        ApInt,
-    },
+    apint::utils::DataAccessMut,
     checks,
-    digit::Bit,
-    errors::Result,
-    Width,
     utils::try_forward_bin_mut_impl,
+    ApInt,
+    Bit,
     Digit,
+    Result,
+    Width,
 };
 
 /// Represents an amount of bits to shift an `ApInt`.

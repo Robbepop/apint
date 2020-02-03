@@ -3,10 +3,8 @@ use crate::{
         Digit,
         DigitRepr,
     },
-    errors::{
-        Error,
-        Result,
-    },
+    Error,
+    Result,
 };
 
 /// A radix for parsing strings as `ApInt`s.

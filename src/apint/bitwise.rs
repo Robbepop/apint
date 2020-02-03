@@ -1,23 +1,19 @@
 use crate::{
-    apint::{
-        utils::{
-            DataAccess,
-            DataAccessMut,
-        },
-        ApInt,
+    apint::utils::{
+        DataAccess,
+        DataAccessMut,
     },
-    bitpos::BitPos,
     checks,
-    digit::{
-        Bit,
-        Digit,
-    },
-    errors::Result,
-    Width,
     utils::{
         forward_mut_impl,
         try_forward_bin_mut_impl,
     },
+    ApInt,
+    Bit,
+    BitPos,
+    Digit,
+    Result,
+    Width,
 };
 
 use core::ops::{

@@ -1,19 +1,17 @@
 use crate::{
-    apint::{
-        ApInt,
-        ShiftAmount,
-    },
-    bitpos::BitPos,
-    bitwidth::BitWidth,
-    digit::Bit,
-    errors::Result,
-    Width,
-    uint::UInt,
     utils::{
         forward_bin_mut_impl,
         forward_mut_impl,
         try_forward_bin_mut_impl,
     },
+    ApInt,
+    Bit,
+    BitPos,
+    BitWidth,
+    Result,
+    ShiftAmount,
+    UInt,
+    Width,
 };
 
 #[cfg(feature = "rand_support")]

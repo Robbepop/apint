@@ -1,17 +1,15 @@
 use crate::{
-    apint::{
-        ApInt,
-        PrimitiveTy,
-        ShiftAmount,
-    },
-    bitpos::BitPos,
-    bitwidth::BitWidth,
+    apint::PrimitiveTy,
     mem::{
         borrow::ToOwned,
         format,
         string::String,
     },
-    radix::Radix,
+    ApInt,
+    BitPos,
+    BitWidth,
+    Radix,
+    ShiftAmount,
 };
 
 use core::{
