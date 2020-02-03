@@ -1,21 +1,4 @@
-//! ============================================================================
-//!  Standard `std::ops` trait implementations.
-//! ----------------------------------------------------------------------------
-//!  **Note:** These ops will panic if their corresponding functions return an
-//!  error. These ops all happen inplace and no cloning is happening internally,
-//!  but they can allocate memory if their corresponding function does.
-//!
-//!  `ApInt` implements some `std::ops` traits for improved usability.
-//!  Only traits for operations that do not depend on the signedness
-//!  interpretation of the specific `ApInt` instance are actually implemented.
-//!  Operations like `div` and `rem` are not expected to have an
-//!  implementation since a favor in unsigned or signed cannot be decided.
-//!
-//!  Also note that no traits have been implemented `for &'b ApInt` or
-//!  `for &'b mut ApInt`, because doing so involves cloning. This crate strives
-//!  for clearly exposing where expensive operations happen, so in this case we
-//!  favor the user side to use explicit `.clone()`s.
-//! ============================================================================
+//! `std::ops` trait implementations. See the docs in `lib.rs` for more.
 
 use crate::{
     ApInt,
