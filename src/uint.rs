@@ -8,7 +8,7 @@ use crate::{
     digit::Bit,
     errors::Result,
     int::Int,
-    traits::Width,
+    Width,
     utils::{
         forward_bin_mut_impl,
         forward_mut_impl,

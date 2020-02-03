@@ -5,7 +5,7 @@ use crate::{
         Error,
         Result,
     },
-    traits::Width,
+    Width,
     Digit,
 };
 

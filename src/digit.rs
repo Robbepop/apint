@@ -6,7 +6,7 @@ use crate::{
         Error,
         Result,
     },
-    traits::Width,
+    Width,
 };
 
 use core::ops::{

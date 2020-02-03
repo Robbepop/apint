@@ -6,7 +6,7 @@ use crate::{
     checks,
     digit::Bit,
     errors::Result,
-    traits::Width,
+    Width,
     utils::try_forward_bin_mut_impl,
     Digit,
 };

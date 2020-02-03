@@ -19,7 +19,7 @@ use crate::{
         vec,
         vec::Vec,
     },
-    traits::Width,
+    Width,
     utils::{
         forward_mut_impl,
         try_forward_bin_mut_impl,

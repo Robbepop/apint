@@ -39,9 +39,9 @@ mod int;
 mod mem;
 mod radix;
 mod storage;
-mod traits;
 mod uint;
 mod utils;
+mod width;
 
 pub(crate) use digit::{
     Digit,
@@ -63,7 +63,7 @@ pub use crate::{
     },
     int::Int,
     radix::Radix,
-    traits::Width,
+    width::Width,
     uint::UInt,
 };
 

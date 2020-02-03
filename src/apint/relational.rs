@@ -9,7 +9,7 @@ use crate::{
     },
     errors::Result,
     mem::format,
-    traits::Width,
+    Width,
 };
 use core::{
     cmp::Ordering,

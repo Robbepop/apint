@@ -13,7 +13,7 @@ use crate::{
         Digit,
     },
     errors::Result,
-    traits::Width,
+    Width,
     utils::{
         forward_mut_impl,
         try_forward_bin_mut_impl,

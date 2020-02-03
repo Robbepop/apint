@@ -14,7 +14,7 @@ use crate::{
         Result,
     },
     storage::Storage,
-    traits::Width,
+    Width,
 };
 
 use core::{

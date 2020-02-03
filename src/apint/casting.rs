@@ -8,7 +8,7 @@ use crate::{
     },
     mem::format,
     storage::Storage,
-    traits::Width,
+    Width,
     utils::{
         forward_bin_mut_impl,
         try_forward_bin_mut_impl,
