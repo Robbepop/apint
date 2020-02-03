@@ -38,6 +38,7 @@ mod errors;
 mod int;
 mod mem;
 mod radix;
+mod std_ops;
 mod storage;
 mod uint;
 mod utils;
