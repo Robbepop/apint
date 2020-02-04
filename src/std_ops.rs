@@ -7,7 +7,7 @@ use crate::{
     UInt,
 };
 
-use std::ops::{
+use core::ops::{
     Add,
     AddAssign,
     BitAnd,
