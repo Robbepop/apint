@@ -1,15 +1,11 @@
 use crate::{
-    apint::{
-        utils::ZipDataAccess,
-        ApInt,
-    },
-    digit::{
-        Bit,
-        Digit,
-    },
-    errors::Result,
+    apint::utils::ZipDataAccess,
     mem::format,
-    traits::Width,
+    ApInt,
+    Bit,
+    Digit,
+    Result,
+    Width,
 };
 use core::{
     cmp::Ordering,

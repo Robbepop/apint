@@ -1,12 +1,10 @@
 use crate::{
-    bitpos::BitPos,
-    bitwidth::BitWidth,
     checks,
-    errors::{
-        Error,
-        Result,
-    },
-    traits::Width,
+    BitPos,
+    BitWidth,
+    Error,
+    Result,
+    Width,
 };
 
 use core::ops::{
@@ -409,9 +407,8 @@ impl Digit {
     /// - This can be truncated again to a real target `BitWidth` afterwards if
     ///   the users wishes to.
     ///
-    /// - Implementation inspired by [Bit Twiddling
-    ///   Hacks](https://graphics.stanford.edu/~seander/bithacks.html#
-    ///   VariableSignExtend).
+    /// - Implementation inspired by [Bit Twiddling Hacks] (
+    /// https://graphics.stanford.edu/~seander/bithacks.html#VariableSignExtend).
     ///
     /// # Errors
     ///

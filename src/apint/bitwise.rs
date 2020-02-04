@@ -1,33 +1,19 @@
 use crate::{
-    apint::{
-        utils::{
-            DataAccess,
-            DataAccessMut,
-        },
-        ApInt,
+    apint::utils::{
+        DataAccess,
+        DataAccessMut,
     },
-    bitpos::BitPos,
     checks,
-    digit::{
-        Bit,
-        Digit,
-    },
-    errors::Result,
-    traits::Width,
     utils::{
         forward_mut_impl,
         try_forward_bin_mut_impl,
     },
-};
-
-use core::ops::{
-    BitAnd,
-    BitAndAssign,
-    BitOr,
-    BitOrAssign,
-    BitXor,
-    BitXorAssign,
-    Not,
+    ApInt,
+    Bit,
+    BitPos,
+    Digit,
+    Result,
+    Width,
 };
 
 /// # Bitwise Operations
@@ -328,124 +314,6 @@ impl ApInt {
             zeros -= Digit::BITS - self.width().excess_bits().unwrap_or(Digit::BITS);
         }
         zeros
-    }
-}
-
-//  ===========================================================================
-//  `Not` (bitwise) impls
-//  ===========================================================================
-
-impl Not for ApInt {
-    type Output = ApInt;
-
-    fn not(self) -> Self::Output {
-        forward_mut_impl(self, ApInt::bitnot)
-    }
-}
-
-//  ===========================================================================
-//  `BitAnd` impls
-//  ===========================================================================
-
-impl<'a> BitAnd<&'a ApInt> for ApInt {
-    type Output = ApInt;
-
-    fn bitand(self, rhs: &'a ApInt) -> Self::Output {
-        self.into_bitand(rhs).unwrap()
-    }
-}
-
-impl<'a, 'b> BitAnd<&'a ApInt> for &'b ApInt {
-    type Output = ApInt;
-
-    fn bitand(self, rhs: &'a ApInt) -> Self::Output {
-        self.clone().into_bitand(rhs).unwrap()
-    }
-}
-
-impl<'a, 'b> BitAnd<&'a ApInt> for &'b mut ApInt {
-    type Output = ApInt;
-
-    fn bitand(self, rhs: &'a ApInt) -> Self::Output {
-        self.clone().into_bitand(rhs).unwrap()
-    }
-}
-
-//  ===========================================================================
-//  `BitOr` impls
-//  ===========================================================================
-
-impl<'a> BitOr<&'a ApInt> for ApInt {
-    type Output = ApInt;
-
-    fn bitor(self, rhs: &'a ApInt) -> Self::Output {
-        self.into_bitor(rhs).unwrap()
-    }
-}
-
-impl<'a, 'b> BitOr<&'a ApInt> for &'b ApInt {
-    type Output = ApInt;
-
-    fn bitor(self, rhs: &'a ApInt) -> Self::Output {
-        self.clone().into_bitor(rhs).unwrap()
-    }
-}
-
-impl<'a, 'b> BitOr<&'a ApInt> for &'b mut ApInt {
-    type Output = ApInt;
-
-    fn bitor(self, rhs: &'a ApInt) -> Self::Output {
-        self.clone().into_bitor(rhs).unwrap()
-    }
-}
-
-//  ===========================================================================
-//  `BitXor` impls
-//  ===========================================================================
-
-impl<'a> BitXor<&'a ApInt> for ApInt {
-    type Output = ApInt;
-
-    fn bitxor(self, rhs: &'a ApInt) -> Self::Output {
-        self.into_bitxor(rhs).unwrap()
-    }
-}
-
-impl<'a, 'b> BitXor<&'a ApInt> for &'b ApInt {
-    type Output = ApInt;
-
-    fn bitxor(self, rhs: &'a ApInt) -> Self::Output {
-        self.clone().into_bitxor(rhs).unwrap()
-    }
-}
-
-impl<'a, 'b> BitXor<&'a ApInt> for &'b mut ApInt {
-    type Output = ApInt;
-
-    fn bitxor(self, rhs: &'a ApInt) -> Self::Output {
-        self.clone().into_bitxor(rhs).unwrap()
-    }
-}
-
-//  ===========================================================================
-//  `BitAndAssign`, `BitOrAssign` and `BitXorAssign` impls
-//  ===========================================================================
-
-impl<'a> BitAndAssign<&'a ApInt> for ApInt {
-    fn bitand_assign(&mut self, rhs: &'a ApInt) {
-        self.bitand_assign(rhs).unwrap();
-    }
-}
-
-impl<'a> BitOrAssign<&'a ApInt> for ApInt {
-    fn bitor_assign(&mut self, rhs: &'a ApInt) {
-        self.bitor_assign(rhs).unwrap();
-    }
-}
-
-impl<'a> BitXorAssign<&'a ApInt> for ApInt {
-    fn bitxor_assign(&mut self, rhs: &'a ApInt) {
-        self.bitxor_assign(rhs).unwrap();
     }
 }
 

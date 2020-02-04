@@ -1,11 +1,9 @@
 use crate::{
-    apint::ShiftAmount,
-    bitpos::BitPos,
-    errors::{
-        Error,
-        Result,
-    },
-    traits::Width,
+    BitPos,
+    Error,
+    Result,
+    ShiftAmount,
+    Width,
 };
 
 #[inline]

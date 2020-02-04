@@ -1,8 +1,8 @@
 use crate::{
-    apint::ApInt,
-    bitwidth::BitWidth,
-    digit::Digit,
     mem::vec::Vec,
+    ApInt,
+    BitWidth,
+    Digit,
 };
 
 use serde::{

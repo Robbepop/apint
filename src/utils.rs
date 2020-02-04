@@ -1,4 +1,4 @@
-use crate::errors::Result;
+use crate::Result;
 
 /// Consumes `entity` and forwards it to an inplace-mutating function.
 ///

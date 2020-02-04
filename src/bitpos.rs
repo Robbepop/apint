@@ -1,6 +1,6 @@
 use crate::{
-    errors::Result,
     Digit,
+    Result,
 };
 
 /// Represents a bit position within an `ApInt`.

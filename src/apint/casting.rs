@@ -1,19 +1,17 @@
 use crate::{
-    apint::ApInt,
-    bitwidth::BitWidth,
-    digit::Bit,
-    errors::{
-        Error,
-        Result,
-    },
     mem::format,
     storage::Storage,
-    traits::Width,
     utils::{
         forward_bin_mut_impl,
         try_forward_bin_mut_impl,
     },
+    ApInt,
+    Bit,
+    BitWidth,
     Digit,
+    Error,
+    Result,
+    Width,
 };
 
 impl Clone for ApInt {

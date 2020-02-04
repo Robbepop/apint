@@ -1,17 +1,13 @@
 use crate::{
-    apint::{
-        ApInt,
-        ApIntData,
-    },
-    bitwidth::BitWidth,
-    digit::Bit,
-    errors::{
-        Error,
-        Result,
-    },
+    apint::ApIntData,
     mem::vec::Vec,
     storage::Storage,
+    ApInt,
+    Bit,
+    BitWidth,
     Digit,
+    Error,
+    Result,
 };
 
 use smallvec::SmallVec;
@@ -375,6 +371,8 @@ impl From<i128> for ApInt {
     }
 }
 
+// TODO: when https://github.com/rust-lang/rustfmt/issues/4036 is fixed remove this
+#[rustfmt::skip]
 macro_rules! impl_from_array_for_apint {
     ($n:expr) => {
         impl From<[i64; $n]> for ApInt {

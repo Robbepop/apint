@@ -1,17 +1,15 @@
 use crate::{
-    apint::{
-        ApInt,
-        PrimitiveTy,
-        ShiftAmount,
-    },
-    bitpos::BitPos,
-    bitwidth::BitWidth,
+    apint::PrimitiveTy,
     mem::{
         borrow::ToOwned,
         format,
         string::String,
     },
-    radix::Radix,
+    ApInt,
+    BitPos,
+    BitWidth,
+    Radix,
+    ShiftAmount,
 };
 
 use core::{
@@ -128,7 +126,7 @@ pub enum DivOp {
     SignedRem,
 }
 
-/// Represents an error that may occure upon using the `ApInt` library.
+/// Represents an error that may occur upon using the `ApInt` library.
 ///
 /// All errors have a unique kind which also stores extra information for error
 /// reporting. Besides that an `Error` also stores a message and an optional

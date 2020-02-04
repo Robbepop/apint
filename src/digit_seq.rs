@@ -1,4 +1,4 @@
-use crate::digit::Digit;
+use crate::Digit;
 
 use core::slice;
 

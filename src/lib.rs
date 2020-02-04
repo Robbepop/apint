@@ -1,22 +1,52 @@
 //! Arbitrary precision integers library.
 //!
 //! This library mainly features the **A**rbitrary **p**recision **Int**eger
-//! (`ApInt`) type which is an `n-bit` integer type acting like a machine
-//! integer working in the twos-complement.
+//! (`ApInt`) type which is an `n-bit` integer type acting like a
+//! twos-complement machine integer.
 //!
-//! This is useful for emulating machine integers for example in constant
-//! evaluation of compilers or for solving bitvector formulas of SMT solvers.
+//! This is useful for emulating machine integers and anything requiring large
+//! bitvectors, e.g. SMT solvers.
 //!
-//! Internally `ApInt` uses small-value optimization for values with a bit-width
-//! less than or equal to `64` bits. It uses `64` bit digits and thus its
-//! algorithms computes within the base of 2<sup>64</sup>.
+//! This crate can be used like a bigint crate, except that most operations are
+//! completely inline with no reallocations, resizing is manual, and arithmetic
+//! can be purposely overflowed.
+//!
+//! The crate was designed for correctness of emulation and performance in mind,
+//! the interface of `ApInt` is very comprehensive, and functions that allocate
+//! are clearly documented.
+//!
+//! Internally `ApInt` uses small-value optimization (no allocations) for values
+//! with a bit-width less than or equal to a `Digit`. It uses `64` bit `Digit`s
+//! by default, however it can potentially be configured to use other types.
 //!
 //! The `ApInt` data structure does **not** know signedness. Instead, the
 //! operations defined on it (methods) do so. This makes it the perfect building
 //! block for higher-level primitives later on.
 //!
-//! The crate was designed for correctness of emulation and performance in mind
-//! and the interface of `ApInt` is very comprehensive.
+//! **Note:** Almost all fallible functions in this crate have return types of
+//! `Result` or `Option` to let the user handle errors. The exceptions are the
+//! `std::ops` traits which will panic if their corresponding `into_wrapping_`
+//! or `wrapping_assign` function does.
+//!
+//! # `std::ops` trait implementations
+//!
+//! `ApInt` implements some `std::ops` traits for improved usability.
+//! Only traits for operations that do not depend on the signedness
+//! interpretation of the specific `ApInt` instance are actually implemented.
+//! Operations like `div` and `rem` are not expected to have an
+//! implementation since a favor in unsigned or signed cannot be decided.
+//!
+//! `UInt` and `Int` on the other hand implement `Shr`, `Div`, and `Rem` related
+//! traits.
+//!
+//! These ops all happen inplace and no cloning is happening internally,
+//! but they can allocate memory if their corresponding `into_wrapping_`
+//! or `wrapping_assign` function does.
+//!
+//! No traits have been implemented `for &'b ApInt` or
+//! `for &'b mut ApInt`, because doing so involves cloning. This crate strives
+//! for clearly exposing where expensive operations happen, so in this case we
+//! favor the user side to use explicit `.clone()`s.
 
 // #![allow(dead_code)]
 // #![deny(missing_docs)]
@@ -38,10 +68,11 @@ mod errors;
 mod int;
 mod mem;
 mod radix;
+mod std_ops;
 mod storage;
-mod traits;
 mod uint;
 mod utils;
+mod width;
 
 pub(crate) use digit::{
     Digit,
@@ -63,8 +94,8 @@ pub use crate::{
     },
     int::Int,
     radix::Radix,
-    traits::Width,
     uint::UInt,
+    width::Width,
 };
 
 /// Re-exports some commonly used items of this crate.

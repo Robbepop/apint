@@ -1,5 +1,5 @@
 use crate::{
-    bitwidth::BitWidth,
+    BitWidth,
     Digit,
 };
 

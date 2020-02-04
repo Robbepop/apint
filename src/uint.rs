@@ -1,46 +1,26 @@
+//! All UInt methods are defined here, except for `std::ops` traits in
+//! `std_ops.rs`
+
 use crate::{
-    apint::{
-        ApInt,
-        ShiftAmount,
-    },
-    bitpos::BitPos,
-    bitwidth::BitWidth,
-    digit::Bit,
-    errors::Result,
-    int::Int,
-    traits::Width,
     utils::{
         forward_bin_mut_impl,
         forward_mut_impl,
         try_forward_bin_mut_impl,
     },
+    ApInt,
+    Bit,
+    BitPos,
+    BitWidth,
+    Int,
+    Result,
+    ShiftAmount,
+    Width,
 };
 
 #[cfg(feature = "rand_support")]
 use rand;
 
-use core::{
-    cmp::Ordering,
-    ops::{
-        Add,
-        AddAssign,
-        BitAnd,
-        BitAndAssign,
-        BitOr,
-        BitOrAssign,
-        BitXor,
-        BitXorAssign,
-        Div,
-        DivAssign,
-        Mul,
-        MulAssign,
-        Not,
-        Rem,
-        RemAssign,
-        Sub,
-        SubAssign,
-    },
-};
+use core::cmp::Ordering;
 
 /// Unsigned machine integer with arbitrary bitwidths and modulo arithmetics.
 ///
@@ -60,6 +40,12 @@ pub struct UInt {
 impl From<ApInt> for UInt {
     fn from(value: ApInt) -> UInt {
         UInt { value }
+    }
+}
+
+impl Width for UInt {
+    fn width(&self) -> BitWidth {
+        self.value.width()
     }
 }
 
@@ -321,7 +307,7 @@ impl UInt {
 /// methods.
 impl PartialOrd for UInt {
     fn partial_cmp(&self, rhs: &UInt) -> Option<Ordering> {
-        if self.value.width() != rhs.value.width() {
+        if self.width() != rhs.width() {
             return None
         }
         if self.checked_lt(rhs).unwrap() {
@@ -576,53 +562,6 @@ impl UInt {
         S: Into<ShiftAmount>,
     {
         self.value.into_wrapping_lshr(shift_amount).map(UInt::from)
-    }
-}
-
-use core::ops::{
-    Shl,
-    ShlAssign,
-    Shr,
-    ShrAssign,
-};
-
-impl<S> Shl<S> for UInt
-where
-    S: Into<ShiftAmount>,
-{
-    type Output = UInt;
-
-    fn shl(self, shift_amount: S) -> Self::Output {
-        self.into_wrapping_shl(shift_amount).unwrap()
-    }
-}
-
-impl<S> Shr<S> for UInt
-where
-    S: Into<ShiftAmount>,
-{
-    type Output = UInt;
-
-    fn shr(self, shift_amount: S) -> Self::Output {
-        self.into_wrapping_shr(shift_amount).unwrap()
-    }
-}
-
-impl<S> ShlAssign<S> for UInt
-where
-    S: Into<ShiftAmount>,
-{
-    fn shl_assign(&mut self, shift_amount: S) {
-        self.wrapping_shl_assign(shift_amount).unwrap()
-    }
-}
-
-impl<S> ShrAssign<S> for UInt
-where
-    S: Into<ShiftAmount>,
-{
-    fn shr_assign(&mut self, shift_amount: S) {
-        self.wrapping_shr_assign(shift_amount).unwrap()
     }
 }
 
@@ -988,126 +927,24 @@ impl UInt {
     }
 }
 
-//  ===========================================================================
-//  `Not` (bitwise) impls
-//  ===========================================================================
-
-impl Not for UInt {
-    type Output = UInt;
-
-    fn not(self) -> Self::Output {
-        forward_mut_impl(self, UInt::bitnot)
-    }
-}
-
-//  ===========================================================================
-//  `BitAnd` impls
-//  ===========================================================================
-
-impl<'a> BitAnd<&'a UInt> for UInt {
-    type Output = UInt;
-
-    fn bitand(self, rhs: &'a UInt) -> Self::Output {
-        self.into_bitand(rhs).unwrap()
-    }
-}
-
-impl<'a, 'b> BitAnd<&'a UInt> for &'b UInt {
-    type Output = UInt;
-
-    fn bitand(self, rhs: &'a UInt) -> Self::Output {
-        self.clone().into_bitand(rhs).unwrap()
-    }
-}
-
-impl<'a, 'b> BitAnd<&'a UInt> for &'b mut UInt {
-    type Output = UInt;
-
-    fn bitand(self, rhs: &'a UInt) -> Self::Output {
-        self.clone().into_bitand(rhs).unwrap()
-    }
-}
-
-//  ===========================================================================
-//  `BitOr` impls
-//  ===========================================================================
-
-impl<'a> BitOr<&'a UInt> for UInt {
-    type Output = UInt;
-
-    fn bitor(self, rhs: &'a UInt) -> Self::Output {
-        self.into_bitor(rhs).unwrap()
-    }
-}
-
-impl<'a, 'b> BitOr<&'a UInt> for &'b UInt {
-    type Output = UInt;
-
-    fn bitor(self, rhs: &'a UInt) -> Self::Output {
-        self.clone().into_bitor(rhs).unwrap()
-    }
-}
-
-impl<'a, 'b> BitOr<&'a UInt> for &'b mut UInt {
-    type Output = UInt;
-
-    fn bitor(self, rhs: &'a UInt) -> Self::Output {
-        self.clone().into_bitor(rhs).unwrap()
-    }
-}
-
-//  ===========================================================================
-//  `BitXor` impls
-//  ===========================================================================
-
-impl<'a> BitXor<&'a UInt> for UInt {
-    type Output = UInt;
-
-    fn bitxor(self, rhs: &'a UInt) -> Self::Output {
-        self.into_bitxor(rhs).unwrap()
-    }
-}
-
-impl<'a, 'b> BitXor<&'a UInt> for &'b UInt {
-    type Output = UInt;
-
-    fn bitxor(self, rhs: &'a UInt) -> Self::Output {
-        self.clone().into_bitxor(rhs).unwrap()
-    }
-}
-
-impl<'a, 'b> BitXor<&'a UInt> for &'b mut UInt {
-    type Output = UInt;
-
-    fn bitxor(self, rhs: &'a UInt) -> Self::Output {
-        self.clone().into_bitxor(rhs).unwrap()
-    }
-}
-
-//  ===========================================================================
-//  `BitAndAssign`, `BitOrAssign` and `BitXorAssign` impls
-//  ===========================================================================
-
-impl<'a> BitAndAssign<&'a UInt> for UInt {
-    fn bitand_assign(&mut self, rhs: &'a UInt) {
-        self.bitand_assign(rhs).unwrap();
-    }
-}
-
-impl<'a> BitOrAssign<&'a UInt> for UInt {
-    fn bitor_assign(&mut self, rhs: &'a UInt) {
-        self.bitor_assign(rhs).unwrap();
-    }
-}
-
-impl<'a> BitXorAssign<&'a UInt> for UInt {
-    fn bitxor_assign(&mut self, rhs: &'a UInt) {
-        self.bitxor_assign(rhs).unwrap();
-    }
-}
-
 /// # Arithmetic Operations
 impl UInt {
+    /// Negates this `Int` inplace. Note that this will overflow for all values
+    /// except 0.
+    ///
+    /// **Note:** This will **not** allocate memory.
+    pub fn wrapping_neg(&mut self) {
+        self.value.wrapping_neg()
+    }
+
+    /// Negates this `Int` inplace and returns the result. Note that this will
+    /// overflow for all values except 0.
+    ///
+    /// **Note:** This will **not** allocate memory.
+    pub fn into_wrapping_neg(self) -> UInt {
+        forward_mut_impl(self, UInt::wrapping_neg)
+    }
+
     /// Adds `rhs` to `self` and returns the result.
     ///
     /// **Note:** This will **not** allocate memory.
@@ -1253,136 +1090,6 @@ impl UInt {
     /// - If `self` and `rhs` have unmatching bit widths.
     pub fn wrapping_rem_assign(&mut self, rhs: &UInt) -> Result<()> {
         self.value.wrapping_urem_assign(&rhs.value)
-    }
-}
-
-// ============================================================================
-//  Add and Add-Assign: `core::ops::Add` and `core::ops::AddAssign`
-// ============================================================================
-
-impl<'a> Add<&'a UInt> for UInt {
-    type Output = UInt;
-
-    fn add(self, rhs: &'a UInt) -> Self::Output {
-        self.into_wrapping_add(rhs).unwrap()
-    }
-}
-
-impl<'a, 'b> Add<&'a UInt> for &'b UInt {
-    type Output = UInt;
-
-    fn add(self, rhs: &'a UInt) -> Self::Output {
-        self.clone().into_wrapping_add(rhs).unwrap()
-    }
-}
-
-impl<'a> AddAssign<&'a UInt> for UInt {
-    fn add_assign(&mut self, rhs: &'a UInt) {
-        self.wrapping_add_assign(rhs).unwrap()
-    }
-}
-
-// ============================================================================
-//  Sub and Sub-Assign: `core::ops::Sub` and `core::ops::SubAssign`
-// ============================================================================
-
-impl<'a> Sub<&'a UInt> for UInt {
-    type Output = UInt;
-
-    fn sub(self, rhs: &'a UInt) -> Self::Output {
-        self.into_wrapping_sub(rhs).unwrap()
-    }
-}
-
-impl<'a, 'b> Sub<&'a UInt> for &'b UInt {
-    type Output = UInt;
-
-    fn sub(self, rhs: &'a UInt) -> Self::Output {
-        self.clone().into_wrapping_sub(rhs).unwrap()
-    }
-}
-
-impl<'a> SubAssign<&'a UInt> for UInt {
-    fn sub_assign(&mut self, rhs: &'a UInt) {
-        self.wrapping_sub_assign(rhs).unwrap()
-    }
-}
-
-// ============================================================================
-//  Mul and Mul-Assign: `core::ops::Mul` and `core::ops::MulAssign`
-// ============================================================================
-
-impl<'a> Mul<&'a UInt> for UInt {
-    type Output = UInt;
-
-    fn mul(self, rhs: &'a UInt) -> Self::Output {
-        self.into_wrapping_mul(rhs).unwrap()
-    }
-}
-
-impl<'a, 'b> Mul<&'a UInt> for &'b UInt {
-    type Output = UInt;
-
-    fn mul(self, rhs: &'a UInt) -> Self::Output {
-        self.clone().into_wrapping_mul(rhs).unwrap()
-    }
-}
-
-impl<'a> MulAssign<&'a UInt> for UInt {
-    fn mul_assign(&mut self, rhs: &'a UInt) {
-        self.wrapping_mul_assign(rhs).unwrap();
-    }
-}
-
-// ============================================================================
-//  Div and Div-Assign: `core::ops::Div` and `core::ops::DivAssign`
-// ============================================================================
-
-impl<'a> Div<&'a UInt> for UInt {
-    type Output = UInt;
-
-    fn div(self, rhs: &'a UInt) -> Self::Output {
-        self.into_wrapping_div(rhs).unwrap()
-    }
-}
-
-impl<'a, 'b> Div<&'a UInt> for &'b UInt {
-    type Output = UInt;
-
-    fn div(self, rhs: &'a UInt) -> Self::Output {
-        self.clone().into_wrapping_div(rhs).unwrap()
-    }
-}
-
-impl<'a> DivAssign<&'a UInt> for UInt {
-    fn div_assign(&mut self, rhs: &'a UInt) {
-        self.wrapping_div_assign(rhs).unwrap();
-    }
-}
-
-// ============================================================================
-//  Rem and Rem-Assign: `core::ops::Rem` and `core::ops::RemAssign`
-// ============================================================================
-
-impl<'a> Rem<&'a UInt> for UInt {
-    type Output = UInt;
-
-    fn rem(self, rhs: &'a UInt) -> Self::Output {
-        self.into_wrapping_rem(rhs).unwrap()
-    }
-}
-
-impl<'a, 'b> Rem<&'a UInt> for &'b UInt {
-    type Output = UInt;
-
-    fn rem(self, rhs: &'a UInt) -> Self::Output {
-        self.clone().into_wrapping_rem(rhs).unwrap()
-    }
-}
-
-impl<'a> RemAssign<&'a UInt> for UInt {
-    fn rem_assign(&mut self, rhs: &'a UInt) {
-        self.wrapping_rem_assign(rhs).unwrap();
     }
 }
 
