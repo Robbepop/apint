@@ -6,7 +6,6 @@ use crate::{
         try_forward_bin_mut_impl,
     },
     ApInt,
-    Bit,
     BitWidth,
     Digit,
     Error,
@@ -346,7 +345,7 @@ impl ApInt {
                 .into()
         }
 
-        if self.most_significant_bit() == Bit::Unset {
+        if !self.msb() {
             return self.zero_extend(target_width)
         }
 

@@ -87,7 +87,7 @@ mod tests {
         let mut rng = XorShiftRng::from_seed(default_seed);
         assert_eq!(
             ApInt::random_with_width_using(BitWidth::w1(), &mut rng),
-            ApInt::from_bit(true)
+            ApInt::from_bool(true)
         );
         assert_eq!(
             ApInt::random_with_width_using(BitWidth::w8(), &mut rng),
@@ -118,7 +118,7 @@ mod tests {
         let mut rng2 = XorShiftRng::from_seed(default_seed);
 
         {
-            let mut randomized = ApInt::from_bit(false);
+            let mut randomized = ApInt::from_bool(false);
             randomized.randomize_using(&mut rng1);
             let new_random = ApInt::random_with_width_using(BitWidth::w1(), &mut rng2);
             assert_eq!(randomized, new_random);

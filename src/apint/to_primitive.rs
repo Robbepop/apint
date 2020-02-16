@@ -660,7 +660,7 @@ mod tests {
                 match prim_ty {
                     Bool => {
                         let val = val != 0;
-                        (val as u128, ApInt::from_bit(val))
+                        (val as u128, ApInt::from_bool(val))
                     }
                     I8 => {
                         let val = val as i8;

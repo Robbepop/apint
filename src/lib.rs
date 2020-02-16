@@ -86,7 +86,6 @@ pub use crate::{
     },
     bitpos::BitPos,
     bitwidth::BitWidth,
-    digit::Bit,
     errors::{
         Error,
         ErrorKind,

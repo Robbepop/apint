@@ -3,7 +3,6 @@ use crate::{
     mem::vec::Vec,
     storage::Storage,
     ApInt,
-    Bit,
     BitWidth,
     Digit,
     Error,
@@ -82,16 +81,14 @@ impl ApInt {
         }
     }
 
-    /// Creates a new `ApInt` from the given `Bit` value with a bit width of
+    /// Creates a new `ApInt` from the given `bool` value with a bit-width of
     /// `1`.
     ///
-    /// This function is generic over types that are convertible to `Bit` such
-    /// as `bool`.
-    pub fn from_bit<B>(bit: B) -> ApInt
-    where
-        B: Into<Bit>,
-    {
-        ApInt::new_inl(BitWidth::w1(), Digit(bit.into().to_bool() as u64))
+    /// **Note:** for single bit `ApInt`s , the most and least significant bits
+    /// are the same bits, so that the signed interpretation of `ApInt`s
+    /// take a value of -1 for `ApInt::from_bool(true)`
+    pub fn from_bool(bit: bool) -> ApInt {
+        ApInt::new_inl(BitWidth::w1(), Digit(bit as u64))
     }
 
     /// Creates a new `ApInt` from a given `i8` value with a bit-width of 8.
@@ -278,7 +275,7 @@ impl ApInt {
     /// `BitWidth`.
     pub fn signed_min_value(width: BitWidth) -> ApInt {
         let mut result = ApInt::zero(width);
-        result.set_sign_bit();
+        result.set_msb();
         result
     }
 
@@ -286,18 +283,15 @@ impl ApInt {
     /// `BitWidth`.
     pub fn signed_max_value(width: BitWidth) -> ApInt {
         let mut result = ApInt::all_set(width);
-        result.unset_sign_bit();
+        result.unset_msb();
         result
     }
 }
 
-impl<B> From<B> for ApInt
-where
-    B: Into<Bit>,
-{
+impl From<bool> for ApInt {
     #[inline]
-    fn from(bit: B) -> ApInt {
-        ApInt::from_bit(bit)
+    fn from(bit: bool) -> ApInt {
+        ApInt::from_bool(bit)
     }
 }
 
@@ -465,17 +459,17 @@ mod tests {
     }
 
     #[test]
-    fn from_bit() {
+    fn from_bool() {
         {
-            let explicit = ApInt::from_bit(Bit::Set);
-            let implicit = ApInt::from(Bit::Set);
+            let explicit = ApInt::from_bool(true);
+            let implicit = ApInt::from(true);
             let expected = ApInt::new_inl(BitWidth::w1(), Digit::ONE);
             assert_eq!(explicit, implicit);
             assert_eq!(explicit, expected);
         }
         {
-            let explicit = ApInt::from_bit(Bit::Unset);
-            let implicit = ApInt::from(Bit::Unset);
+            let explicit = ApInt::from_bool(false);
+            let implicit = ApInt::from(false);
             let expected = ApInt::new_inl(BitWidth::w1(), Digit::ZERO);
             assert_eq!(explicit, implicit);
             assert_eq!(explicit, expected);
@@ -641,7 +635,7 @@ mod tests {
 
     #[test]
     fn zero() {
-        assert_eq!(ApInt::zero(BitWidth::w1()), ApInt::from_bit(false));
+        assert_eq!(ApInt::zero(BitWidth::w1()), ApInt::from_bool(false));
         assert_eq!(ApInt::zero(BitWidth::w8()), ApInt::from_u8(0));
         assert_eq!(ApInt::zero(BitWidth::w16()), ApInt::from_u16(0));
         assert_eq!(ApInt::zero(BitWidth::w32()), ApInt::from_u32(0));
@@ -659,7 +653,7 @@ mod tests {
 
     #[test]
     fn one() {
-        assert_eq!(ApInt::one(BitWidth::w1()), ApInt::from_bit(true));
+        assert_eq!(ApInt::one(BitWidth::w1()), ApInt::from_bool(true));
         assert_eq!(ApInt::one(BitWidth::w8()), ApInt::from_u8(1));
         assert_eq!(ApInt::one(BitWidth::w16()), ApInt::from_u16(1));
         assert_eq!(ApInt::one(BitWidth::w32()), ApInt::from_u32(1));
@@ -701,7 +695,7 @@ mod tests {
 
     #[test]
     fn all_set() {
-        assert_eq!(ApInt::all_set(BitWidth::w1()), ApInt::from_bit(true));
+        assert_eq!(ApInt::all_set(BitWidth::w1()), ApInt::from_bool(true));
         assert_eq!(ApInt::all_set(BitWidth::w8()), ApInt::from_i8(-1));
         assert_eq!(ApInt::all_set(BitWidth::w16()), ApInt::from_i16(-1));
         assert_eq!(ApInt::all_set(BitWidth::w32()), ApInt::from_i32(-1));
@@ -745,7 +739,7 @@ mod tests {
     fn signed_min_value() {
         assert_eq!(
             ApInt::signed_min_value(BitWidth::w1()),
-            ApInt::from_bit(true)
+            ApInt::from_bool(true)
         );
         assert_eq!(
             ApInt::signed_min_value(BitWidth::w8()),
@@ -797,7 +791,7 @@ mod tests {
     fn signed_max_value() {
         assert_eq!(
             ApInt::signed_max_value(BitWidth::w1()),
-            ApInt::from_bit(false)
+            ApInt::from_bool(false)
         );
         assert_eq!(
             ApInt::signed_max_value(BitWidth::w8()),

@@ -5,7 +5,6 @@ use crate::{
     },
     storage::Storage,
     ApInt,
-    Bit,
     BitWidth,
     Digit,
     Error,
@@ -321,24 +320,22 @@ impl ApInt {
         }
     }
 
-    /// Returns `Bit::Set` if the most significant bit of this `ApInt` is set
-    /// and `Bit::Unset` otherwise.
+    /// Returns the most significant bit of this `ApInt`
     #[inline]
-    pub(in crate::apint) fn most_significant_bit(&self) -> Bit {
-        let sign_bit_pos = self.width().sign_bit_pos();
+    pub fn msb(&self) -> bool {
+        let msb_pos = self.width().msb_pos();
         self.most_significant_digit()
-            .get(sign_bit_pos.to_pos_within_digit())
+            .get(msb_pos.to_pos_within_digit())
             .expect(
                 "`BitWidth::excess_bits` returns a number that is always a valid \
                  `BitPos` for a `Digit` so this operation cannot fail.",
             )
     }
 
-    /// Returns `Bit::Set` if the least significant bit of this `ApInt` is set
-    /// and `Bit::Unset` otherwise.
+    /// Returns the least significant bit of this `ApInt`
     #[inline]
-    pub(in crate::apint) fn least_significant_bit(&self) -> Bit {
-        self.least_significant_digit().least_significant_bit()
+    pub fn lsb(&self) -> bool {
+        self.least_significant_digit().lsb()
     }
 
     /// Clears unused bits of this `ApInt`.
@@ -400,28 +397,28 @@ impl ApInt {
     /// Equivalent to testing if the least significant bit is zero.
     #[inline]
     pub fn is_even(&self) -> bool {
-        self.least_significant_bit() == Bit::Unset
+        !self.lsb()
     }
 
     /// Returns `true` if this `ApInt` represents an odd number.
     /// Equivalent to testing if the least significant bit is one.
     #[inline]
     pub fn is_odd(&self) -> bool {
-        self.least_significant_bit() == Bit::Set
+        self.lsb()
     }
 
     /// Returns `true` if the **signed** representation of this `ApInt` is
     /// positive. Equivalent to testing if the most significant bit is zero.
     #[inline]
     pub fn is_positive(&self) -> bool {
-        self.most_significant_bit() == Bit::Unset
+        !self.msb()
     }
 
     /// Returns `true` if the **signed** representation of this `ApInt` is
     /// negative. Equivalent to testing if the most significant bit is one.
     #[inline]
     pub fn is_negative(&self) -> bool {
-        self.most_significant_bit() == Bit::Set
+        self.msb()
     }
 
     /// Splits the least significant digits from the rest of the digit slice
@@ -462,37 +459,16 @@ mod tests {
     use super::*;
 
     #[test]
-    fn most_significant_bit() {
-        assert_eq!(Bit::Unset, ApInt::from_bit(false).most_significant_bit());
-        assert_eq!(Bit::Set, ApInt::from_bit(true).most_significant_bit());
-        assert_eq!(
-            Bit::Unset,
-            ApInt::from_u8(0b0101_0101).most_significant_bit()
-        );
-        assert_eq!(Bit::Set, ApInt::from_u8(0b1101_0101).most_significant_bit());
-        assert_eq!(
-            Bit::Unset,
-            ApInt::from_u16(0b0111_1000_1101_0101).most_significant_bit()
-        );
-        assert_eq!(
-            Bit::Set,
-            ApInt::from_u16(0b1011_0001_0101_0101).most_significant_bit()
-        );
-        assert_eq!(
-            Bit::Unset,
-            ApInt::from_u32(0x7000_0000).most_significant_bit()
-        );
-        assert_eq!(
-            Bit::Set,
-            ApInt::from_u32(0x8000_0000).most_significant_bit()
-        );
-        assert_eq!(
-            Bit::Unset,
-            ApInt::from_u64(0x70FC_A875_4321_1234).most_significant_bit()
-        );
-        assert_eq!(
-            Bit::Set,
-            ApInt::from_u64(0x8765_4321_5555_6666).most_significant_bit()
-        );
+    fn msb() {
+        assert_eq!(false, ApInt::from_bool(false).msb());
+        assert_eq!(true, ApInt::from_bool(true).msb());
+        assert_eq!(false, ApInt::from_u8(0b0101_0101).msb());
+        assert_eq!(true, ApInt::from_u8(0b1101_0101).msb());
+        assert_eq!(false, ApInt::from_u16(0b0111_1000_1101_0101).msb());
+        assert_eq!(true, ApInt::from_u16(0b1011_0001_0101_0101).msb());
+        assert_eq!(false, ApInt::from_u32(0x7000_0000).msb());
+        assert_eq!(true, ApInt::from_u32(0x8000_0000).msb());
+        assert_eq!(false, ApInt::from_u64(0x70FC_A875_4321_1234).msb());
+        assert_eq!(true, ApInt::from_u64(0x8765_4321_5555_6666).msb());
     }
 }

@@ -8,7 +8,6 @@ use crate::{
         try_forward_bin_mut_impl,
     },
     ApInt,
-    Bit,
     BitPos,
     BitWidth,
     Result,
@@ -63,15 +62,12 @@ impl Int {
 
 /// # Constructors
 impl Int {
-    /// Creates a new `Int` from the given `Bit` value with a bit width of `1`.
+    /// Creates a new `Int` from the given `bool` value with a bit-width of `1`.
     ///
-    /// This function is generic over types that are convertible to `Bit` such
-    /// as `bool`.
-    pub fn from_bit<B>(bit: B) -> Int
-    where
-        B: Into<Bit>,
-    {
-        Int::from(ApInt::from_bit(bit))
+    /// Note: for single bit `Int`s , the most and least significant bits are
+    /// the same, so `Int::from_bool(true)` produces a value of -1.
+    pub fn from_bool(bit: bool) -> Int {
+        Int::from(ApInt::from_bool(bit))
     }
 
     /// Creates a new `Int` from a given `i8` value with a bit-width of 8.
@@ -142,13 +138,10 @@ impl Int {
     }
 }
 
-impl<B> From<B> for Int
-where
-    B: Into<Bit>,
-{
+impl From<bool> for Int {
     #[inline]
-    fn from(bit: B) -> Int {
-        Int::from_bit(bit)
+    fn from(bit: bool) -> Int {
+        Int::from_bool(bit)
     }
 }
 
@@ -238,7 +231,7 @@ impl Int {
 
     /// Returns `true` if the value of this `Int` is positive.
     pub fn is_positive(&self) -> bool {
-        self.sign_bit() == Bit::Unset
+        !self.msb()
     }
 
     /// Returns `true` if the value of this `Int` is negative.
@@ -865,15 +858,10 @@ impl Int {
 impl Int {
     /// Returns the bit at the given bit position `pos`.
     ///
-    /// This returns
-    ///
-    /// - `Bit::Set` if the bit at `pos` is `1`
-    /// - `Bit::Unset` otherwise
-    ///
     /// # Errors
     ///
     /// - If `pos` is not a valid bit position for the width of this `Int`.
-    pub fn get_bit_at<P>(&self, pos: P) -> Result<Bit>
+    pub fn get_bit_at<P>(&self, pos: P) -> Result<bool>
     where
         P: Into<BitPos>,
     {
@@ -946,33 +934,24 @@ impl Int {
         self.value.flip_all()
     }
 
-    /// Returns the sign bit of this `Int`.
-    ///
-    /// **Note:** This is equal to the most significant bit of this `Int`.
-    pub fn sign_bit(&self) -> Bit {
-        self.value.sign_bit()
+    /// Returns the most significant bit or sign bit of this `Int`.
+    pub fn msb(&self) -> bool {
+        self.value.msb()
     }
 
-    /// Sets the sign bit of this `Int` to one (`1`).
-    pub fn set_sign_bit(&mut self) {
-        self.value.set_sign_bit()
+    /// Sets the most significant bit or sign bit of this `Int` to one (`1`).
+    pub fn set_msb(&mut self) {
+        self.value.set_msb()
     }
 
-    /// Sets the sign bit of this `Int` to zero (`0`).
-    pub fn unset_sign_bit(&mut self) {
-        self.value.unset_sign_bit()
+    /// Sets the most significant bit sign bit of this `Int` to zero (`0`).
+    pub fn unset_msb(&mut self) {
+        self.value.unset_msb()
     }
 
-    /// Flips the sign bit of this `Int`.
-    ///
-    /// # Note
-    ///
-    /// - If the sign bit was `0` it will be `1` after this operation and vice
-    ///   versa.
-    /// - Depending on the interpretation of the `Int` this operation changes
-    ///   its signedness.
-    pub fn flip_sign_bit(&mut self) {
-        self.value.flip_sign_bit()
+    /// Flips the most significant bit or sign bit of this `Int`.
+    pub fn flip_msb(&mut self) {
+        self.value.flip_msb()
     }
 }
 

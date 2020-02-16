@@ -49,43 +49,6 @@ impl Digit {
     pub(crate) const ZERO: Digit = Digit(REPR_ZERO);
 }
 
-/// Represents the set or unset state of a bit within an `ApInt`.
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
-pub enum Bit {
-    /// Unset, or `false` or `off` state.
-    Unset = 0,
-    /// Set, or `true` or `on` state.
-    Set = 1,
-}
-
-impl Bit {
-    /// Converts this `Bit` into a `bool`.
-    ///
-    /// - `Unset` to `false`
-    /// - `Set` to `true`
-    #[inline]
-    pub fn to_bool(self) -> bool {
-        match self {
-            Bit::Unset => false,
-            Bit::Set => true,
-        }
-    }
-}
-
-impl From<bool> for Bit {
-    #[inline]
-    fn from(flag: bool) -> Bit {
-        if flag { Bit::Set } else { Bit::Unset }
-    }
-}
-
-impl From<Bit> for bool {
-    #[inline]
-    fn from(bit: Bit) -> bool {
-        bit.to_bool()
-    }
-}
-
 /// A (big) digit within an `ApInt` or similar representations.
 ///
 /// It uses the `DoubleDigit` as computation unit.
@@ -450,13 +413,13 @@ impl Digit {
         self == Digit::ZERO
     }
 
-    /// Returns the least significant `Bit` of this `Digit`.
+    /// Returns the least significant bit of this `Digit`.
     ///
     /// Note: This may be useful to determine if a `Digit`
     ///       represents an even or an uneven number for example.
     #[inline]
-    pub fn least_significant_bit(self) -> Bit {
-        Bit::from((self.repr() & 0x1) != 0)
+    pub fn lsb(self) -> bool {
+        (self.repr() & 0x1) != 0
     }
 
     /// Returns `true` if the `n`th bit is set to `1`, else returns `false`.
@@ -465,13 +428,13 @@ impl Digit {
     ///
     /// If the given `n` is greater than the digit size.
     #[inline]
-    pub fn get<P>(self, pos: P) -> Result<Bit>
+    pub fn get<P>(self, pos: P) -> Result<bool>
     where
         P: Into<BitPos>,
     {
         let pos = pos.into();
         checks::verify_bit_access(&self, pos)?;
-        Ok(Bit::from(((self.repr() >> pos.to_usize()) & 0x01) == 1))
+        Ok((self.repr() >> pos.to_usize()) & 0x01 == 1)
     }
 
     /// Sets the bit at position `pos` to `1`.
@@ -635,22 +598,6 @@ impl Not for Digit {
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    mod bit {
-        use super::*;
-
-        #[test]
-        fn from_bool() {
-            assert_eq!(Bit::from(true), Bit::Set);
-            assert_eq!(Bit::from(false), Bit::Unset);
-        }
-
-        #[test]
-        fn from_bit() {
-            assert_eq!(bool::from(Bit::Set), true);
-            assert_eq!(bool::from(Bit::Unset), false);
-        }
-    }
 
     mod double_digit {
         use super::*;
@@ -969,16 +916,10 @@ mod tests {
         #[test]
         fn get_ok() {
             for &pos in VALID_TEST_POS_VALUES {
-                assert_eq!(Digit::ONES.get(pos), Ok(Bit::Set));
-                assert_eq!(Digit::ZERO.get(pos), Ok(Bit::Unset));
-                assert_eq!(
-                    even_digit().get(pos),
-                    Ok(if pos % 2 == 0 { Bit::Set } else { Bit::Unset })
-                );
-                assert_eq!(
-                    odd_digit().get(pos),
-                    Ok(if pos % 2 == 1 { Bit::Set } else { Bit::Unset })
-                );
+                assert_eq!(Digit::ONES.get(pos), Ok(true));
+                assert_eq!(Digit::ZERO.get(pos), Ok(false));
+                assert_eq!(even_digit().get(pos), Ok(pos % 2 == 0));
+                assert_eq!(odd_digit().get(pos), Ok(pos % 2 == 1));
             }
         }
 
@@ -999,7 +940,7 @@ mod tests {
                 let mut digit = Digit(val);
                 for &pos in VALID_TEST_POS_VALUES {
                     digit.set(pos).unwrap();
-                    assert_eq!(digit.get(pos), Ok(Bit::Set));
+                    assert_eq!(digit.get(pos), Ok(true));
                 }
             }
         }

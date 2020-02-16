@@ -9,7 +9,6 @@ use crate::{
         try_forward_bin_mut_impl,
     },
     ApInt,
-    Bit,
     BitPos,
     Digit,
     Result,
@@ -97,15 +96,10 @@ impl ApInt {
 impl ApInt {
     /// Returns the bit at the given bit position `pos`.
     ///
-    /// This returns
-    ///
-    /// - `Bit::Set` if the bit at `pos` is `1`
-    /// - `Bit::Unset` otherwise
-    ///
     /// # Errors
     ///
     /// - If `pos` is not a valid bit position for the width of this `ApInt`.
-    pub fn get_bit_at<P>(&self, pos: P) -> Result<Bit>
+    pub fn get_bit_at<P>(&self, pos: P) -> Result<bool>
     where
         P: Into<BitPos>,
     {
@@ -219,32 +213,25 @@ impl ApInt {
         self.clear_unused_bits();
     }
 
-    /// Returns the sign bit of this `ApInt`.
-    ///
-    /// **Note:** This is equal to the most significant bit of this `ApInt`.
-    pub fn sign_bit(&self) -> Bit {
-        self.most_significant_bit()
-    }
-
-    /// Sets the sign bit of this `ApInt` to one (`1`).
-    pub fn set_sign_bit(&mut self) {
-        let sign_bit_pos = self.width().sign_bit_pos();
-        self.set_bit_at(sign_bit_pos).expect(
-            "`BitWidth::sign_bit_pos` always returns a valid `BitPos`
+    /// Sets the most significant bit of this `ApInt` to one (`1`).
+    pub fn set_msb(&mut self) {
+        let msb_pos = self.width().msb_pos();
+        self.set_bit_at(msb_pos).expect(
+            "`BitWidth::msb_pos` always returns a valid `BitPos`
                      for usage in the associated `ApInt` for operating on bits.",
         )
     }
 
-    /// Sets the sign bit of this `ApInt` to zero (`0`).
-    pub fn unset_sign_bit(&mut self) {
-        let sign_bit_pos = self.width().sign_bit_pos();
-        self.unset_bit_at(sign_bit_pos).expect(
-            "`BitWidth::sign_bit_pos` always returns a valid `BitPos`
+    /// Sets the most significant bit of this `ApInt` to zero (`0`).
+    pub fn unset_msb(&mut self) {
+        let msb_pos = self.width().msb_pos();
+        self.unset_bit_at(msb_pos).expect(
+            "`BitWidth::msb_pos` always returns a valid `BitPos`
                      for usage in the associated `ApInt` for operating on bits.",
         )
     }
 
-    /// Flips the sign bit of this `ApInt`.
+    /// Flips the most significant bit of this `ApInt`.
     ///
     /// # Note
     ///
@@ -252,10 +239,10 @@ impl ApInt {
     ///   versa.
     /// - Depending on the interpretation of the `ApInt` this operation changes
     ///   its signedness.
-    pub fn flip_sign_bit(&mut self) {
-        let sign_bit_pos = self.width().sign_bit_pos();
-        self.flip_bit_at(sign_bit_pos).expect(
-            "`BitWidth::sign_bit_pos` always returns a valid `BitPos`
+    pub fn flip_msb(&mut self) {
+        let msb_pos = self.width().msb_pos();
+        self.flip_bit_at(msb_pos).expect(
+            "`BitWidth::msb_pos` always returns a valid `BitPos`
                      for usage in the associated `ApInt` for operating on bits.",
         )
     }
