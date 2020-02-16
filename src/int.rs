@@ -268,7 +268,7 @@ impl Int {
     ///
     /// - Does nothing for positive `Int` instances.
     pub fn wrapping_abs(&mut self) {
-        if self.is_negative() {
+        if self.msb() {
             self.wrapping_neg()
         }
     }

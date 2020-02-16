@@ -219,10 +219,10 @@ impl ApInt {
     // TODO: add tests
     #[allow(dead_code)]
     pub(crate) fn overflowing_sadd_assign(&mut self, rhs: &ApInt) -> Result<bool> {
-        let self_sign = self.is_negative();
-        let rhs_sign = rhs.is_negative();
+        let self_sign = self.msb();
+        let rhs_sign = rhs.msb();
         self.wrapping_add_assign(rhs)?;
-        Ok((self_sign == rhs_sign) && (self_sign != self.is_negative()))
+        Ok((self_sign == rhs_sign) && (self_sign != self.msb()))
     }
 
     /// Subtract-assigns `rhs` from `self` inplace.
@@ -1578,7 +1578,7 @@ impl ApInt {
         if rhs.is_zero() {
             return Err(Error::division_by_zero(DivOp::SignedDivRem, lhs.clone()))
         }
-        let (negate_lhs, negate_rhs) = match ((*lhs).is_negative(), (*rhs).is_negative())
+        let (negate_lhs, negate_rhs) = match ((*lhs).msb(), (*rhs).msb())
         {
             (false, false) => (false, false),
             (true, false) => {
@@ -1618,7 +1618,7 @@ impl ApInt {
         if rhs.is_zero() {
             return Err(Error::division_by_zero(DivOp::SignedRemDiv, lhs.clone()))
         }
-        let (negate_lhs, negate_rhs) = match ((*lhs).is_negative(), (*rhs).is_negative())
+        let (negate_lhs, negate_rhs) = match ((*lhs).msb(), (*rhs).msb())
         {
             (false, false) => (false, false),
             (true, false) => {
@@ -1658,7 +1658,7 @@ impl ApInt {
             return Err(Error::division_by_zero(DivOp::SignedDiv, self.clone()))
         }
         let mut rhs_clone = (*rhs).clone();
-        let negate_lhs = match ((*self).is_negative(), rhs_clone.is_negative()) {
+        let negate_lhs = match ((*self).msb(), rhs_clone.msb()) {
             (false, false) => false,
             (true, false) => {
                 self.wrapping_neg();
@@ -1705,7 +1705,7 @@ impl ApInt {
             return Err(Error::division_by_zero(DivOp::SignedRem, self.clone()))
         }
         let mut rhs_clone = (*rhs).clone();
-        let negate_lhs = match ((*self).is_negative(), rhs_clone.is_negative()) {
+        let negate_lhs = match ((*self).msb(), rhs_clone.msb()) {
             (false, false) => false,
             (true, false) => {
                 self.wrapping_neg();
@@ -2516,7 +2516,7 @@ mod tests {
                 let mut tmp0 = lhs.clone();
                 ApInt::wrapping_sdivrem_assign(&mut tmp0, &mut tmp1).unwrap();
                 // make it a floored division
-                if lhs.is_negative() && !tmp1.is_zero() {
+                if lhs.msb() && !tmp1.is_zero() {
                     tmp0.wrapping_dec();
                 }
                 assert_eq!(tmp0, lhs.clone().into_wrapping_ashr(shift).unwrap());

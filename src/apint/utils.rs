@@ -407,20 +407,6 @@ impl ApInt {
         self.lsb()
     }
 
-    /// Returns `true` if the **signed** representation of this `ApInt` is
-    /// positive. Equivalent to testing if the most significant bit is zero.
-    #[inline]
-    pub fn is_positive(&self) -> bool {
-        !self.msb()
-    }
-
-    /// Returns `true` if the **signed** representation of this `ApInt` is
-    /// negative. Equivalent to testing if the most significant bit is one.
-    #[inline]
-    pub fn is_negative(&self) -> bool {
-        self.msb()
-    }
-
     /// Splits the least significant digits from the rest of the digit slice
     /// and returns it as well as the remaining part of the digit slice.
     #[inline]
