@@ -375,24 +375,6 @@ impl ApInt {
         }
     }
 
-    /// Returns `true` if this `ApInt` represents the value one (`1`).
-    ///
-    /// # Note
-    ///
-    /// - One (`1`) is also called the multiplicative neutral element.
-    /// - This operation is more efficient than comparing two instances of
-    ///   `ApInt` for the same reason.
-    #[inline]
-    pub fn is_one(&self) -> bool {
-        match self.access_data() {
-            DataAccess::Inl(digit) => digit == Digit::ONE,
-            DataAccess::Ext(digits) => {
-                let (last, rest) = digits.split_last().unwrap_or_else(|| unreachable!());
-                (*last == Digit::ONE) && rest.iter().all(|digit| digit.is_zero())
-            }
-        }
-    }
-
     /// Returns `true` if this `ApInt` represents an even number.
     /// Equivalent to testing if the least significant bit is zero.
     #[inline]

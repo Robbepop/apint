@@ -652,24 +652,6 @@ mod tests {
     }
 
     #[test]
-    fn one() {
-        assert_eq!(ApInt::one(BitWidth::w1()), ApInt::from_bool(true));
-        assert_eq!(ApInt::one(BitWidth::w8()), ApInt::from_u8(1));
-        assert_eq!(ApInt::one(BitWidth::w16()), ApInt::from_u16(1));
-        assert_eq!(ApInt::one(BitWidth::w32()), ApInt::from_u32(1));
-        assert_eq!(ApInt::one(BitWidth::w64()), ApInt::from_u64(1));
-        assert_eq!(ApInt::one(BitWidth::w128()), ApInt::from_u128(1));
-        assert_eq!(
-            ApInt::one(BitWidth::new(192).unwrap()),
-            ApInt::from([0_u64, 0, 1])
-        );
-        assert_eq!(
-            ApInt::one(BitWidth::new(256).unwrap()),
-            ApInt::from([0_u64, 0, 0, 1])
-        );
-    }
-
-    #[test]
     fn all_unset_eq_zero() {
         let test_widths = [
             1_usize, 2, 4, 8, 10, 16, 32, 50, 64, 100, 128, 150, 200, 250, 255, 256,

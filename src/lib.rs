@@ -47,6 +47,32 @@
 //! `for &'b mut ApInt`, because doing so involves cloning. This crate strives
 //! for clearly exposing where expensive operations happen, so in this case we
 //! favor the user side to use explicit `.clone()`s.
+//!
+//! # `signed_min_value` corner cases
+//!
+//! Two's complement is a very well defined number representation system that
+//! allows for the same addition and multiplication functions to work on both
+//! unsigned and signed integers. However, for `Int`s and `ApInt`s interpreted
+//! as signed, there is one particular value that can cause unexpected results
+//! in many functions: `ApInt::signed_min_value` and the corresponding
+//! `Int::min_value`.
+//!
+//! The root cause of problems for `signed_min_value` of a given bitwidth is
+//! that there does not exist a positive version of this value with the same
+//! absolute magnitude. Calling `wrapping_neg` or `wrapping_abs` on a
+//! `signed_min_value`, for example, will overflow and return
+//! `signed_min_value`.
+//!
+//! The smallest case of this is for single bit width integers, where
+//! the most significant bit and least significant bit are the same bit. These
+//! integers can only take on the values 0 (when the bit is not set) and -1
+//! (when the bit is set). Not accounting for this can cause [very nasty edge
+//! cases](https://github.com/rust-lang/rust/issues/51582). For this reason,
+//! this crate does not have a `ApInt::one()` constructor or any constructors
+//! besides `ApInt::zero()` and the different min/max functions. Users of this
+//! crate are instead expected to us one of the existing constructors and
+//! resizing functions, plus special casing and docs for `signed_min_value` if
+//! it causes problems.
 
 // #![allow(dead_code)]
 // #![deny(missing_docs)]

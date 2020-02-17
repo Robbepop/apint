@@ -104,11 +104,6 @@ impl Int {
         Int::from(ApInt::zero(width))
     }
 
-    /// Creates a new `Int` with the given bit width that represents one.
-    pub fn one(width: BitWidth) -> Int {
-        Int::from(ApInt::one(width))
-    }
-
     /// Creates a new `Int` with the given bit width that has all bits unset.
     ///
     /// **Note:** This is equal to calling `Int::zero` with the given `width`.
@@ -206,17 +201,6 @@ impl Int {
     ///   for the same reason.
     pub fn is_zero(&self) -> bool {
         self.value.is_zero()
-    }
-
-    /// Returns `true` if this `Int` represents the value one (`1`).
-    ///
-    /// # Note
-    ///
-    /// - One (`1`) is also called the multiplicative neutral element.
-    /// - This operation is more efficient than comparing two instances of `Int`
-    ///   for the same reason.
-    pub fn is_one(&self) -> bool {
-        self.value.is_one()
     }
 
     /// Returns `true` if this `Int` represents an even number.
