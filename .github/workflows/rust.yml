@@ -1,4 +1,4 @@
-name: Rust
+name: Rust - Continuous Integration
 
 on:
   push:
@@ -6,29 +6,63 @@ on:
   pull_request:
     branches: [ master ]
 
-jobs:  
-  checks:
-    name: Checks
+jobs:
+  check:
+    name: Check
     runs-on: ubuntu-latest
-
     steps:
-        - uses: actions-rs/toolchain@v1
-        - name: Install latest nightly
-          uses: actions-rs/toolchain@v1
-          with:
-              toolchain: stable
-              override: true
-              components: rustfmt, clippy, miri
-  
-        - name: Check & Build
-          run: cargo build --verbose
-        - name: Test
-          run: cargo test --verbose
-        - name: Formatting
-          run: cargo fmt --verbose
-        - name: Clippy
-          run: cargo clippy --verbose
-          continue-on-error: true
-        - name: Miri
-          run: cargo miri test
-          continue-on-error: true
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+      - uses: actions-rs/cargo@v1
+        with:
+          command: check
+
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+      - uses: actions-rs/cargo@v1
+        with:
+          command: test
+
+  fmt:
+    name: Formatting
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+      - run: rustup component add rustfmt
+      - uses: actions-rs/cargo@v1
+        with:
+          command: fmt
+          args: --all -- --check
+
+  clippy:
+    name: Clippy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+      - run: rustup component add clippy
+      - uses: actions-rs/cargo@v1
+        with:
+          command: clippy
+          args: -- -D warnings
