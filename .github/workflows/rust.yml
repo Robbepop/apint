@@ -1,0 +1,34 @@
+name: Rust
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:  
+  checks:
+    name: Checks
+    runs-on: ubuntu-latest
+
+    steps:
+        - uses: actions-rs/toolchain@v1
+        - name: Install latest nightly
+          uses: actions-rs/toolchain@v1
+          with:
+              toolchain: stable
+              override: true
+              components: rustfmt, clippy, miri
+  
+        - name: Check & Build
+          run: cargo build --verbose
+        - name: Test
+          run: cargo test --verbose
+        - name: Formatting
+          run: cargo fmt --verbose
+        - name: Clippy
+          run: cargo clippy --verbose
+          continue-on-error: true
+        - name: Miri
+          run: cargo miri test
+          continue-on-error: true
