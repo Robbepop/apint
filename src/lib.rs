@@ -47,6 +47,34 @@
 //! `for &'b mut ApInt`, because doing so involves cloning. This crate strives
 //! for clearly exposing where expensive operations happen, so in this case we
 //! favor the user side to use explicit `.clone()`s.
+//!
+//! # `signed_min_value` corner cases
+//!
+//! Two's complement is a very well defined number representation system that
+//! allows for the same addition and multiplication functions to work on both
+//! unsigned and signed integers. However, for `Int`s and `ApInt`s interpreted
+//! as signed, there is one particular value that can cause unexpected results
+//! in many functions: `ApInt::signed_min_value` and the corresponding
+//! `Int::min_value`.
+//!
+//! The root cause of problems for `signed_min_value` of a given bitwidth is
+//! that there does not exist a positive version of this value with the same
+//! absolute magnitude. Calling `wrapping_neg` or `wrapping_abs` on a
+//! `signed_min_value`, for example, will overflow and return
+//! `signed_min_value`.
+//!
+//! The smallest case of this is for single bit width integers, where
+//! the most significant bit and least significant bit are the same bit. These
+//! integers can only take on the values 0 (when the bit is not set) and -1
+//! (when the bit is set). Not accounting for this can cause [very nasty edge
+//! cases](https://github.com/rust-lang/rust/issues/51582). For this reason,
+//! this crate does not have a `ApInt::one()` constructor or any constructors
+//! besides `ApInt::zero()` and the different min/max functions. `UInt` and
+//! `Int`, however, do have `one` and `is_one` functions. `Int::one()` has a
+//! differing signature from `UInt::one()`, returning a `Option<Int>` because
+//! it can fail. Users of this crate are likewise expected to check if
+//! `signed_min_value` can cause problems for functions they write using
+//! `ApInt`s and `Int`s, and to provide special casing and docs if it does.
 
 // #![allow(dead_code)]
 // #![deny(missing_docs)]
@@ -86,7 +114,6 @@ pub use crate::{
     },
     bitpos::BitPos,
     bitwidth::BitWidth,
-    digit::Bit,
     errors::{
         Error,
         ErrorKind,

@@ -8,7 +8,6 @@ use crate::{
         try_forward_bin_mut_impl,
     },
     ApInt,
-    Bit,
     BitPos,
     BitWidth,
     Int,
@@ -63,15 +62,10 @@ impl UInt {
 
 /// # Constructors
 impl UInt {
-    /// Creates a new `UInt` from the given `Bit` value with a bit width of `1`.
-    ///
-    /// This function is generic over types that are convertible to `Bit` such
-    /// as `bool`.
-    pub fn from_bit<B>(bit: B) -> UInt
-    where
-        B: Into<Bit>,
-    {
-        UInt::from(ApInt::from_bit(bit))
+    /// Creates a new `UInt` from the given `bool` value with a bit-width of
+    /// `1`.
+    pub fn from_bool(bit: bool) -> UInt {
+        UInt::from(ApInt::from_bool(bit))
     }
 
     /// Creates a new `UInt` from a given `u8` value with a bit-width of 8.
@@ -142,13 +136,10 @@ impl UInt {
     }
 }
 
-impl<B> From<B> for UInt
-where
-    B: Into<Bit>,
-{
+impl From<bool> for UInt {
     #[inline]
-    fn from(bit: B) -> UInt {
-        UInt::from_bit(bit)
+    fn from(bit: bool) -> UInt {
+        UInt::from_bool(bit)
     }
 }
 
@@ -210,18 +201,17 @@ impl UInt {
     ///
     /// - Zero (`0`) is also called the additive neutral element.
     /// - This operation is more efficient than comparing two instances of
-    ///   `UInt` for the same reason.
+    ///   `UInt`
     pub fn is_zero(&self) -> bool {
         self.value.is_zero()
     }
 
-    /// Returns `true` if this `UInt` represents the value one (`1`).
+    /// Returns `true` if this `Int` represents the value one (`1`).
     ///
     /// # Note
     ///
     /// - One (`1`) is also called the multiplicative neutral element.
-    /// - This operation is more efficient than comparing two instances of
-    ///   `UInt` for the same reason.
+    /// - This operation is more efficient than comparing two instances of `Int`
     pub fn is_one(&self) -> bool {
         self.value.is_one()
     }
@@ -820,15 +810,10 @@ impl UInt {
 impl UInt {
     /// Returns the bit at the given bit position `pos`.
     ///
-    /// This returns
-    ///
-    /// - `Bit::Set` if the bit at `pos` is `1`
-    /// - `Bit::Unset` otherwise
-    ///
     /// # Errors
     ///
     /// - If `pos` is not a valid bit position for the width of this `UInt`.
-    pub fn get_bit_at<P>(&self, pos: P) -> Result<Bit>
+    pub fn get_bit_at<P>(&self, pos: P) -> Result<bool>
     where
         P: Into<BitPos>,
     {
@@ -1120,5 +1105,59 @@ impl fmt::LowerHex for UInt {
 impl fmt::UpperHex for UInt {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         self.value.fmt(f)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    mod tests {
+        use super::*;
+
+        #[test]
+        fn one() {
+            assert_eq!(UInt::one(BitWidth::w1()), UInt::from_bool(true));
+            assert_eq!(UInt::one(BitWidth::w8()), UInt::from_u8(1));
+            assert_eq!(UInt::one(BitWidth::w16()), UInt::from_u16(1));
+            assert_eq!(UInt::one(BitWidth::w32()), UInt::from_u32(1));
+            assert_eq!(UInt::one(BitWidth::w64()), UInt::from_u64(1));
+            assert_eq!(UInt::one(BitWidth::w128()), UInt::from_u128(1));
+            assert_eq!(
+                UInt::one(BitWidth::new(192).unwrap()),
+                UInt::from([0u64, 0, 1])
+            );
+        }
+
+        #[test]
+        fn count() {
+            assert_eq!(UInt::one(BitWidth::w1()).count_ones(), 1);
+            assert_eq!(UInt::one(BitWidth::w8()).count_ones(), 1);
+            assert_eq!(UInt::one(BitWidth::w16()).count_ones(), 1);
+            assert_eq!(UInt::one(BitWidth::w32()).count_ones(), 1);
+            assert_eq!(UInt::one(BitWidth::w64()).count_ones(), 1);
+            assert_eq!(UInt::one(BitWidth::w128()).count_ones(), 1);
+
+            assert_eq!(UInt::one(BitWidth::w1()).count_zeros(), 0);
+            assert_eq!(UInt::one(BitWidth::w8()).count_zeros(), 7);
+            assert_eq!(UInt::one(BitWidth::w16()).count_zeros(), 15);
+            assert_eq!(UInt::one(BitWidth::w32()).count_zeros(), 31);
+            assert_eq!(UInt::one(BitWidth::w64()).count_zeros(), 63);
+            assert_eq!(UInt::one(BitWidth::w128()).count_zeros(), 127);
+
+            assert_eq!(UInt::one(BitWidth::w1()).leading_zeros(), 0);
+            assert_eq!(UInt::one(BitWidth::w8()).leading_zeros(), 7);
+            assert_eq!(UInt::one(BitWidth::w16()).leading_zeros(), 15);
+            assert_eq!(UInt::one(BitWidth::w32()).leading_zeros(), 31);
+            assert_eq!(UInt::one(BitWidth::w64()).leading_zeros(), 63);
+            assert_eq!(UInt::one(BitWidth::w128()).leading_zeros(), 127);
+
+            assert_eq!(UInt::one(BitWidth::w1()).trailing_zeros(), 0);
+            assert_eq!(UInt::one(BitWidth::w8()).trailing_zeros(), 0);
+            assert_eq!(UInt::one(BitWidth::w16()).trailing_zeros(), 0);
+            assert_eq!(UInt::one(BitWidth::w32()).trailing_zeros(), 0);
+            assert_eq!(UInt::one(BitWidth::w64()).trailing_zeros(), 0);
+            assert_eq!(UInt::one(BitWidth::w128()).trailing_zeros(), 0);
+        }
     }
 }

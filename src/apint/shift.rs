@@ -3,7 +3,6 @@ use crate::{
     checks,
     utils::try_forward_bin_mut_impl,
     ApInt,
-    Bit,
     Digit,
     Result,
     Width,
@@ -210,7 +209,7 @@ impl ApInt {
     where
         S: Into<ShiftAmount>,
     {
-        if self.sign_bit() == Bit::Unset {
+        if !self.msb() {
             return self.wrapping_lshr_assign(shift_amount)
         }
         let shift_amount = shift_amount.into();

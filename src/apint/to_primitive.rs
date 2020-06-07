@@ -156,11 +156,7 @@ impl ApInt {
     /// - Basically this returns `true` if the least significant bit of this
     ///   `ApInt` is `1` and `false` otherwise.
     pub fn resize_to_bool(&self) -> bool {
-        match self.resize_to_primitive_ty(PrimitiveTy::Bool) {
-            Digit(0) => false,
-            Digit(1) => true,
-            _ => unreachable!(),
-        }
+        self.lsb()
     }
 
     /// Resizes this `ApInt` to a `i8` primitive type.
@@ -660,7 +656,7 @@ mod tests {
                 match prim_ty {
                     Bool => {
                         let val = val != 0;
-                        (val as u128, ApInt::from_bit(val))
+                        (val as u128, ApInt::from_bool(val))
                     }
                     I8 => {
                         let val = val as i8;

@@ -84,10 +84,10 @@ impl BitWidth {
         shift_amount.into().to_usize() < self.0
     }
 
-    /// Returns the `BitPos` for the sign bit of an `ApInt` with this
-    /// `BitWidth`.
+    /// Returns the `BitPos` for the most significant bit of an `ApInt` with
+    /// this `BitWidth`.
     #[inline]
-    pub(crate) fn sign_bit_pos(self) -> BitPos {
+    pub(crate) fn msb_pos(self) -> BitPos {
         BitPos::from(self.to_usize() - 1)
     }
 }

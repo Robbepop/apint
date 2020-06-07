@@ -2,7 +2,6 @@ use crate::{
     apint::utils::ZipDataAccess,
     mem::format,
     ApInt,
-    Bit,
     Digit,
     Result,
     Width,
@@ -148,11 +147,11 @@ impl ApInt {
                         Ok(lhs < rhs)
                     }
                     ZipDataAccess::Ext(..) => {
-                        match (lhs.sign_bit(), rhs.sign_bit()) {
-                            (Bit::Unset, Bit::Unset) => lhs.checked_ult(rhs),
-                            (Bit::Unset, Bit::Set) => Ok(false),
-                            (Bit::Set, Bit::Unset) => Ok(true),
-                            (Bit::Set, Bit::Set) => rhs.checked_ugt(lhs),
+                        match (lhs.msb(), rhs.msb()) {
+                            (false, false) => lhs.checked_ult(rhs),
+                            (false, true) => Ok(false),
+                            (true, false) => Ok(true),
+                            (true, true) => rhs.checked_ugt(lhs),
                         }
                     }
                 }

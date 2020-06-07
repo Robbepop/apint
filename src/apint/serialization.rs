@@ -382,7 +382,6 @@ mod tests {
         #[test]
         fn small() {
             assert_binary(ApInt::zero(BitWidth::w32()), "0");
-            assert_binary(ApInt::one(BitWidth::w32()), "1");
             assert_binary(ApInt::from(0b_1010_0110_0110_1001_u32), "1010011001101001");
             assert_binary(
                 ApInt::all_set(BitWidth::w32()),
@@ -401,7 +400,6 @@ mod tests {
         #[test]
         fn large() {
             assert_binary(ApInt::zero(BitWidth::w128()), "0");
-            assert_binary(ApInt::one(BitWidth::w128()), "1");
             assert_binary(ApInt::from(0b_1010_0110_0110_1001_u128), "1010011001101001");
             assert_binary(
                 ApInt::all_set(BitWidth::w128()),
@@ -438,7 +436,6 @@ mod tests {
         #[test]
         fn small() {
             assert_hex(ApInt::zero(BitWidth::w32()), "0");
-            assert_hex(ApInt::one(BitWidth::w32()), "1");
             assert_hex(ApInt::from(0xFEDC_BA98_u32), "FEDCBA98");
             assert_hex(ApInt::all_set(BitWidth::w32()), "FFFFFFFF");
             assert_hex(ApInt::signed_min_value(BitWidth::w32()), "80000000");
@@ -448,7 +445,6 @@ mod tests {
         #[test]
         fn large() {
             assert_hex(ApInt::zero(BitWidth::w128()), "0");
-            assert_hex(ApInt::one(BitWidth::w128()), "1");
             assert_hex(
                 ApInt::from(0xFEDC_BA98_0A1B_7654_ABCD_0123_u128),
                 "FEDCBA980A1B7654ABCD0123",

@@ -219,10 +219,10 @@ impl ApInt {
     // TODO: add tests
     #[allow(dead_code)]
     pub(crate) fn overflowing_sadd_assign(&mut self, rhs: &ApInt) -> Result<bool> {
-        let self_sign = self.is_negative();
-        let rhs_sign = rhs.is_negative();
+        let self_sign = self.msb();
+        let rhs_sign = rhs.msb();
         self.wrapping_add_assign(rhs)?;
-        Ok((self_sign == rhs_sign) && (self_sign != self.is_negative()))
+        Ok((self_sign == rhs_sign) && (self_sign != self.msb()))
     }
 
     /// Subtract-assigns `rhs` from `self` inplace.
@@ -1578,8 +1578,7 @@ impl ApInt {
         if rhs.is_zero() {
             return Err(Error::division_by_zero(DivOp::SignedDivRem, lhs.clone()))
         }
-        let (negate_lhs, negate_rhs) = match ((*lhs).is_negative(), (*rhs).is_negative())
-        {
+        let (negate_lhs, negate_rhs) = match ((*lhs).msb(), (*rhs).msb()) {
             (false, false) => (false, false),
             (true, false) => {
                 lhs.wrapping_neg();
@@ -1618,8 +1617,7 @@ impl ApInt {
         if rhs.is_zero() {
             return Err(Error::division_by_zero(DivOp::SignedRemDiv, lhs.clone()))
         }
-        let (negate_lhs, negate_rhs) = match ((*lhs).is_negative(), (*rhs).is_negative())
-        {
+        let (negate_lhs, negate_rhs) = match ((*lhs).msb(), (*rhs).msb()) {
             (false, false) => (false, false),
             (true, false) => {
                 lhs.wrapping_neg();
@@ -1658,7 +1656,7 @@ impl ApInt {
             return Err(Error::division_by_zero(DivOp::SignedDiv, self.clone()))
         }
         let mut rhs_clone = (*rhs).clone();
-        let negate_lhs = match ((*self).is_negative(), rhs_clone.is_negative()) {
+        let negate_lhs = match ((*self).msb(), rhs_clone.msb()) {
             (false, false) => false,
             (true, false) => {
                 self.wrapping_neg();
@@ -1705,7 +1703,7 @@ impl ApInt {
             return Err(Error::division_by_zero(DivOp::SignedRem, self.clone()))
         }
         let mut rhs_clone = (*rhs).clone();
-        let negate_lhs = match ((*self).is_negative(), rhs_clone.is_negative()) {
+        let negate_lhs = match ((*self).msb(), rhs_clone.msb()) {
             (false, false) => false,
             (true, false) => {
                 self.wrapping_neg();
@@ -1799,7 +1797,10 @@ mod tests {
         #[test]
         fn simple() {
             assert_symmetry(ApInt::zero(BitWidth::w1()), ApInt::zero(BitWidth::w1()));
-            assert_symmetry(ApInt::one(BitWidth::w1()), ApInt::all_set(BitWidth::w1()));
+            assert_symmetry(
+                ApInt::unsigned_max_value(BitWidth::w1()),
+                ApInt::all_set(BitWidth::w1()),
+            );
         }
 
         #[test]
@@ -2413,9 +2414,7 @@ mod tests {
             );
             // multiplication related
             let v1 = ApInt::from((1u128 << 64) | (7u128)).into_zero_resize(width);
-            let v2 = ApInt::one(BitWidth::w1())
-                .into_zero_extend(width)
-                .unwrap()
+            let v2 = ApInt::unsigned_max_value(width)
                 .into_wrapping_shl(64)
                 .unwrap();
             let v3 = v1.clone().into_wrapping_mul(&v2).unwrap();
@@ -2451,7 +2450,12 @@ mod tests {
             let mut temp = lhs.clone().into_wrapping_inc();
             assert_eq!(
                 temp,
-                lhs.clone().into_wrapping_add(&ApInt::one(width)).unwrap()
+                lhs.clone()
+                    .into_wrapping_add(
+                        &ApInt::unsigned_max_value(BitWidth::w1())
+                            .into_zero_resize(width)
+                    )
+                    .unwrap()
             );
             assert_eq!(
                 temp,
@@ -2464,7 +2468,12 @@ mod tests {
             temp.wrapping_dec();
             assert_eq!(
                 temp,
-                lhs.clone().into_wrapping_sub(&ApInt::one(width)).unwrap()
+                lhs.clone()
+                    .into_wrapping_sub(
+                        &ApInt::unsigned_max_value(BitWidth::w1())
+                            .into_zero_resize(width)
+                    )
+                    .unwrap()
             );
             assert_eq!(
                 temp,
@@ -2476,9 +2485,8 @@ mod tests {
             assert_eq!(temp, lhs);
 
             // power of two multiplication and division shifting tests
-            let mut tmp1 = ApInt::one(BitWidth::w1())
-                .into_zero_extend(width)
-                .unwrap()
+            let mut tmp1 = ApInt::unsigned_max_value(BitWidth::w1())
+                .into_zero_resize(width)
                 .into_wrapping_shl(shift)
                 .unwrap();
             assert_eq!(
@@ -2493,9 +2501,7 @@ mod tests {
                     .unwrap(),
                 lhs.clone()
                     .into_wrapping_mul(
-                        &ApInt::one(BitWidth::w1())
-                            .into_sign_extend(width)
-                            .unwrap()
+                        &ApInt::unsigned_max_value(width)
                             .into_wrapping_shl(shift)
                             .unwrap()
                     )
@@ -2510,13 +2516,13 @@ mod tests {
                 // but the division ends up as +1
                 assert_eq!(
                     lhs.clone().into_wrapping_sdiv(&tmp1).unwrap(),
-                    ApInt::one(width)
+                    ApInt::unsigned_max_value(BitWidth::w1()).into_zero_resize(width)
                 );
             } else {
                 let mut tmp0 = lhs.clone();
                 ApInt::wrapping_sdivrem_assign(&mut tmp0, &mut tmp1).unwrap();
                 // make it a floored division
-                if lhs.is_negative() && !tmp1.is_zero() {
+                if lhs.msb() && !tmp1.is_zero() {
                     tmp0.wrapping_dec();
                 }
                 assert_eq!(tmp0, lhs.clone().into_wrapping_ashr(shift).unwrap());
@@ -2544,16 +2550,12 @@ mod tests {
                 if rhs.leading_zeros() == 0 {
                     ApInt::zero(width)
                 } else {
-                    ApInt::one(BitWidth::new(1).unwrap())
-                        .into_sign_extend(rhs.leading_zeros())
-                        .unwrap()
+                    ApInt::unsigned_max_value(BitWidth::from(rhs.leading_zeros()))
                         .into_zero_extend(width)
                         .unwrap()
                 }
             } else {
-                ApInt::one(BitWidth::new(1).unwrap())
-                    .into_sign_extend(width)
-                    .unwrap()
+                ApInt::unsigned_max_value(width)
             };
             let mul = (lhs.clone() & &anti_overflow_mask)
                 .into_wrapping_mul(&rhs)
@@ -2615,9 +2617,7 @@ mod tests {
                 if r0 == 0 {
                     r0 = 1;
                 }
-                let ones = ApInt::one(BitWidth::new(1).unwrap())
-                    .into_sign_extend(r0)
-                    .unwrap()
+                let ones = ApInt::unsigned_max_value(BitWidth::new(r0).unwrap())
                     .into_zero_extend(width)
                     .unwrap();
                 let r1 = (random::<u32>() % (size as u32)) as usize;
