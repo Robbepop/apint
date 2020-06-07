@@ -375,6 +375,24 @@ impl ApInt {
         }
     }
 
+    /// Returns `true` if this `ApInt` represents the value one (`1`).
+    ///
+    /// # Note
+    ///
+    /// This is `pub(crate)` because this is not well defined for bitwidths of
+    /// one, but it is reused by `Int` and `UInt` which have public `is_one`
+    /// functions.
+    #[inline]
+    pub(crate) fn is_one(&self) -> bool {
+        match self.access_data() {
+            DataAccess::Inl(digit) => digit == Digit::ONE,
+            DataAccess::Ext(digits) => {
+                let (last, rest) = digits.split_last().unwrap_or_else(|| unreachable!());
+                (*last == Digit::ONE) && rest.iter().all(|digit| digit.is_zero())
+            }
+        }
+    }
+
     /// Returns `true` if this `ApInt` represents an even number.
     /// Equivalent to testing if the least significant bit is zero.
     #[inline]

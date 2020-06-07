@@ -69,10 +69,12 @@
 //! (when the bit is set). Not accounting for this can cause [very nasty edge
 //! cases](https://github.com/rust-lang/rust/issues/51582). For this reason,
 //! this crate does not have a `ApInt::one()` constructor or any constructors
-//! besides `ApInt::zero()` and the different min/max functions. Users of this
-//! crate are instead expected to us one of the existing constructors and
-//! resizing functions, plus special casing and docs for `signed_min_value` if
-//! it causes problems.
+//! besides `ApInt::zero()` and the different min/max functions. `UInt` and
+//! `Int`, however, do have `one` and `is_one` functions. `Int::one()` has a
+//! differing signature from `UInt::one()`, returning a `Option<Int>` because
+//! it can fail. Users of this crate are likewise expected to check if
+//! `signed_min_value` can cause problems for functions they write using
+//! `ApInt`s and `Int`s, and to provide special casing and docs if it does.
 
 // #![allow(dead_code)]
 // #![deny(missing_docs)]
