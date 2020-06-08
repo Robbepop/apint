@@ -2,6 +2,7 @@
 //! `std_ops.rs`
 
 use crate::{
+    mem::TryInto,
     utils::{
         forward_bin_mut_impl,
         forward_mut_impl,
@@ -634,9 +635,10 @@ impl UInt {
     /// # Errors
     ///
     /// - If the `target_width` is greater than the current width.
-    pub fn into_truncate<W>(self, target_width: W) -> Result<UInt>
+    pub fn into_truncate<W, E>(self, target_width: W) -> Result<UInt>
     where
-        W: Into<BitWidth>,
+        W: TryInto<BitWidth, Error = E>,
+        crate::Error: From<E>,
     {
         try_forward_bin_mut_impl(self, target_width, UInt::truncate)
     }
@@ -652,9 +654,10 @@ impl UInt {
     /// # Errors
     ///
     /// - If the `target_width` is greater than the current width.
-    pub fn truncate<W>(&mut self, target_width: W) -> Result<()>
+    pub fn truncate<W, E>(&mut self, target_width: W) -> Result<()>
     where
-        W: Into<BitWidth>,
+        W: TryInto<BitWidth, Error = E>,
+        crate::Error: From<E>,
     {
         self.value.truncate(target_width)
     }
@@ -672,9 +675,10 @@ impl UInt {
     /// # Errors
     ///
     /// - If the `target_width` is less than the current width.
-    pub fn into_extend<W>(self, target_width: W) -> Result<UInt>
+    pub fn into_extend<W, E>(self, target_width: W) -> Result<UInt>
     where
-        W: Into<BitWidth>,
+        W: TryInto<BitWidth, Error = E>,
+        crate::Error: From<E>,
     {
         try_forward_bin_mut_impl(self, target_width, UInt::extend)
     }
@@ -690,9 +694,10 @@ impl UInt {
     /// # Errors
     ///
     /// - If the `target_width` is less than the current width.
-    pub fn extend<W>(&mut self, target_width: W) -> Result<()>
+    pub fn extend<W, E>(&mut self, target_width: W) -> Result<()>
     where
-        W: Into<BitWidth>,
+        W: TryInto<BitWidth, Error = E>,
+        crate::Error: From<E>,
     {
         self.value.zero_extend(target_width)
     }
@@ -706,10 +711,7 @@ impl UInt {
     ///
     /// - This is useful for method chaining.
     /// - For more details look into [`resize`](struct.UInt.html#method.resize).
-    pub fn into_resize<W>(self, target_width: W) -> UInt
-    where
-        W: Into<BitWidth>,
-    {
+    pub fn into_resize(self, target_width: BitWidth) -> UInt {
         forward_bin_mut_impl(self, target_width, UInt::resize)
     }
 
@@ -722,10 +724,7 @@ impl UInt {
     /// - [`truncate`](struct.UInt.html#method.truncate) if `target_width` is
     ///   less than or equal to the width of the given `UInt`
     /// - [`extend`](struct.UInt.html#method.extend) otherwise
-    pub fn resize<W>(&mut self, target_width: W)
-    where
-        W: Into<BitWidth>,
-    {
+    pub fn resize(&mut self, target_width: BitWidth) {
         self.value.zero_resize(target_width)
     }
 }
@@ -1111,53 +1110,51 @@ impl fmt::UpperHex for UInt {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::bw;
 
     mod tests {
         use super::*;
 
         #[test]
         fn one() {
-            assert_eq!(UInt::one(BitWidth::w1()), UInt::from_bool(true));
-            assert_eq!(UInt::one(BitWidth::w8()), UInt::from_u8(1));
-            assert_eq!(UInt::one(BitWidth::w16()), UInt::from_u16(1));
-            assert_eq!(UInt::one(BitWidth::w32()), UInt::from_u32(1));
-            assert_eq!(UInt::one(BitWidth::w64()), UInt::from_u64(1));
-            assert_eq!(UInt::one(BitWidth::w128()), UInt::from_u128(1));
-            assert_eq!(
-                UInt::one(BitWidth::new(192).unwrap()),
-                UInt::from([0u64, 0, 1])
-            );
+            assert_eq!(UInt::one(bw(1)), UInt::from_bool(true));
+            assert_eq!(UInt::one(bw(8)), UInt::from_u8(1));
+            assert_eq!(UInt::one(bw(16)), UInt::from_u16(1));
+            assert_eq!(UInt::one(bw(32)), UInt::from_u32(1));
+            assert_eq!(UInt::one(bw(64)), UInt::from_u64(1));
+            assert_eq!(UInt::one(bw(128)), UInt::from_u128(1));
+            assert_eq!(UInt::one(bw(192)), UInt::from([0u64, 0, 1]));
         }
 
         #[test]
         fn count() {
-            assert_eq!(UInt::one(BitWidth::w1()).count_ones(), 1);
-            assert_eq!(UInt::one(BitWidth::w8()).count_ones(), 1);
-            assert_eq!(UInt::one(BitWidth::w16()).count_ones(), 1);
-            assert_eq!(UInt::one(BitWidth::w32()).count_ones(), 1);
-            assert_eq!(UInt::one(BitWidth::w64()).count_ones(), 1);
-            assert_eq!(UInt::one(BitWidth::w128()).count_ones(), 1);
+            assert_eq!(UInt::one(bw(1)).count_ones(), 1);
+            assert_eq!(UInt::one(bw(8)).count_ones(), 1);
+            assert_eq!(UInt::one(bw(16)).count_ones(), 1);
+            assert_eq!(UInt::one(bw(32)).count_ones(), 1);
+            assert_eq!(UInt::one(bw(64)).count_ones(), 1);
+            assert_eq!(UInt::one(bw(128)).count_ones(), 1);
 
-            assert_eq!(UInt::one(BitWidth::w1()).count_zeros(), 0);
-            assert_eq!(UInt::one(BitWidth::w8()).count_zeros(), 7);
-            assert_eq!(UInt::one(BitWidth::w16()).count_zeros(), 15);
-            assert_eq!(UInt::one(BitWidth::w32()).count_zeros(), 31);
-            assert_eq!(UInt::one(BitWidth::w64()).count_zeros(), 63);
-            assert_eq!(UInt::one(BitWidth::w128()).count_zeros(), 127);
+            assert_eq!(UInt::one(bw(1)).count_zeros(), 0);
+            assert_eq!(UInt::one(bw(8)).count_zeros(), 7);
+            assert_eq!(UInt::one(bw(16)).count_zeros(), 15);
+            assert_eq!(UInt::one(bw(32)).count_zeros(), 31);
+            assert_eq!(UInt::one(bw(64)).count_zeros(), 63);
+            assert_eq!(UInt::one(bw(128)).count_zeros(), 127);
 
-            assert_eq!(UInt::one(BitWidth::w1()).leading_zeros(), 0);
-            assert_eq!(UInt::one(BitWidth::w8()).leading_zeros(), 7);
-            assert_eq!(UInt::one(BitWidth::w16()).leading_zeros(), 15);
-            assert_eq!(UInt::one(BitWidth::w32()).leading_zeros(), 31);
-            assert_eq!(UInt::one(BitWidth::w64()).leading_zeros(), 63);
-            assert_eq!(UInt::one(BitWidth::w128()).leading_zeros(), 127);
+            assert_eq!(UInt::one(bw(1)).leading_zeros(), 0);
+            assert_eq!(UInt::one(bw(8)).leading_zeros(), 7);
+            assert_eq!(UInt::one(bw(16)).leading_zeros(), 15);
+            assert_eq!(UInt::one(bw(32)).leading_zeros(), 31);
+            assert_eq!(UInt::one(bw(64)).leading_zeros(), 63);
+            assert_eq!(UInt::one(bw(128)).leading_zeros(), 127);
 
-            assert_eq!(UInt::one(BitWidth::w1()).trailing_zeros(), 0);
-            assert_eq!(UInt::one(BitWidth::w8()).trailing_zeros(), 0);
-            assert_eq!(UInt::one(BitWidth::w16()).trailing_zeros(), 0);
-            assert_eq!(UInt::one(BitWidth::w32()).trailing_zeros(), 0);
-            assert_eq!(UInt::one(BitWidth::w64()).trailing_zeros(), 0);
-            assert_eq!(UInt::one(BitWidth::w128()).trailing_zeros(), 0);
+            assert_eq!(UInt::one(bw(1)).trailing_zeros(), 0);
+            assert_eq!(UInt::one(bw(8)).trailing_zeros(), 0);
+            assert_eq!(UInt::one(bw(16)).trailing_zeros(), 0);
+            assert_eq!(UInt::one(bw(32)).trailing_zeros(), 0);
+            assert_eq!(UInt::one(bw(64)).trailing_zeros(), 0);
+            assert_eq!(UInt::one(bw(128)).trailing_zeros(), 0);
         }
     }
 }

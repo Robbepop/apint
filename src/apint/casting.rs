@@ -1,5 +1,9 @@
 use crate::{
-    mem::format,
+    mem::{
+        format,
+        Infallible,
+        TryInto,
+    },
     storage::Storage,
     utils::{
         forward_bin_mut_impl,
@@ -118,9 +122,10 @@ impl ApInt {
     /// # Errors
     ///
     /// - If the `target_width` is greater than the current width.
-    pub fn into_truncate<W>(self, target_width: W) -> Result<ApInt>
+    pub fn into_truncate<W, E>(self, target_width: W) -> Result<ApInt>
     where
-        W: Into<BitWidth>,
+        W: TryInto<BitWidth, Error = E>,
+        crate::Error: From<E>,
     {
         try_forward_bin_mut_impl(self, target_width, ApInt::truncate)
     }
@@ -136,12 +141,13 @@ impl ApInt {
     /// # Errors
     ///
     /// - If the `target_width` is greater than the current width.
-    pub fn truncate<W>(&mut self, target_width: W) -> Result<()>
+    pub fn truncate<W, E>(&mut self, target_width: W) -> Result<()>
     where
-        W: Into<BitWidth>,
+        W: TryInto<BitWidth, Error = E>,
+        crate::Error: From<E>,
     {
         let actual_width = self.width();
-        let target_width = target_width.into();
+        let target_width = target_width.try_into()?;
 
         if target_width == actual_width {
             return Ok(())
@@ -171,12 +177,12 @@ impl ApInt {
             // exactly `2` digits for the representation.
             // The same applies to all bit widths that require the same
             // amount of digits for their representation.
-            let excess_width = target_width.excess_bits().expect(
+            let excess_width: usize = target_width.excess_bits().expect(
                 "We already filtered cases where `excess_bits` may return `None` by \
                  requiring that `self.width() > target_width`.",
             );
             self.most_significant_digit_mut()
-                .truncate_to(excess_width)
+                .truncate_to::<usize, Error>(excess_width)
                 .expect(
                     "Excess bits are guaranteed to be within the bounds for valid \
                      truncation of a single `Digit`.",
@@ -200,7 +206,7 @@ impl ApInt {
             // with bit precision.
             // This will simply call the `then` branch of this method.
             if truncated_copy.width() != target_width {
-                truncated_copy.truncate(target_width)?;
+                truncated_copy.truncate::<BitWidth, Infallible>(target_width)?;
             }
             *self = truncated_copy;
         }
@@ -221,9 +227,10 @@ impl ApInt {
     /// # Errors
     ///
     /// - If the `target_width` is less than the current width.
-    pub fn into_zero_extend<W>(self, target_width: W) -> Result<ApInt>
+    pub fn into_zero_extend<W, E>(self, target_width: W) -> Result<ApInt>
     where
-        W: Into<BitWidth>,
+        W: TryInto<BitWidth, Error = E>,
+        crate::Error: From<E>,
     {
         try_forward_bin_mut_impl(self, target_width, ApInt::zero_extend)
     }
@@ -239,12 +246,13 @@ impl ApInt {
     /// # Errors
     ///
     /// - If the `target_width` is less than the current width.
-    pub fn zero_extend<W>(&mut self, target_width: W) -> Result<()>
+    pub fn zero_extend<W, E>(&mut self, target_width: W) -> Result<()>
     where
-        W: Into<BitWidth>,
+        W: TryInto<BitWidth, Error = E>,
+        crate::Error: From<E>,
     {
         let actual_width = self.width();
-        let target_width = target_width.into();
+        let target_width = target_width.try_into()?;
 
         if target_width == actual_width {
             return Ok(())
@@ -286,7 +294,9 @@ impl ApInt {
                 self.digits()
                     .chain(iter::repeat(Digit::ZERO).take(additional_digits)),
             )
-            .and_then(|apint| apint.into_truncate(target_width))?;
+            .and_then(|apint| {
+                apint.into_truncate::<BitWidth, Infallible>(target_width)
+            })?;
             *self = extended_clone;
         }
         Ok(())
@@ -306,9 +316,10 @@ impl ApInt {
     /// # Errors
     ///
     /// - If the `target_width` is less than the current width.
-    pub fn into_sign_extend<W>(self, target_width: W) -> Result<ApInt>
+    pub fn into_sign_extend<W, E>(self, target_width: W) -> Result<ApInt>
     where
-        W: Into<BitWidth>,
+        W: TryInto<BitWidth, Error = E>,
+        crate::Error: From<E>,
     {
         try_forward_bin_mut_impl(self, target_width, ApInt::sign_extend)
     }
@@ -324,12 +335,13 @@ impl ApInt {
     /// # Errors
     ///
     /// - If the `target_width` is less than the current width.
-    pub fn sign_extend<W>(&mut self, target_width: W) -> Result<()>
+    pub fn sign_extend<W, E>(&mut self, target_width: W) -> Result<()>
     where
-        W: Into<BitWidth>,
+        W: TryInto<BitWidth, Error = E>,
+        crate::Error: From<E>,
     {
         let actual_width = self.width();
-        let target_width = target_width.into();
+        let target_width = target_width.try_into()?;
 
         if target_width == actual_width {
             return Ok(())
@@ -346,7 +358,7 @@ impl ApInt {
         }
 
         if !self.msb() {
-            return self.zero_extend(target_width)
+            return self.zero_extend::<BitWidth, Infallible>(target_width)
         }
 
         let actual_req_digits = actual_width.required_digits();
@@ -369,7 +381,7 @@ impl ApInt {
             // most-significant bit up to the `target_width`.
             if let Some(excess_width) = actual_width.excess_width() {
                 self.most_significant_digit_mut()
-                    .sign_extend_from(excess_width)?;
+                    .sign_extend_from::<BitWidth, Infallible>(excess_width)?;
             }
             self.clear_unused_bits();
         } else {
@@ -385,14 +397,16 @@ impl ApInt {
             // most-significant bit.
             if let Some(excess_width) = actual_width.excess_width() {
                 self.most_significant_digit_mut()
-                    .sign_extend_from(excess_width)?;
+                    .sign_extend_from::<BitWidth, Infallible>(excess_width)?;
             }
 
             let extended_copy = ApInt::from_iter(
                 self.digits()
                     .chain(iter::repeat(Digit::ONES).take(additional_digits)),
             )
-            .and_then(|apint| apint.into_truncate(target_width))?;
+            .and_then(|apint| {
+                apint.into_truncate::<BitWidth, Infallible>(target_width)
+            })?;
 
             self.clear_unused_bits();
             *self = extended_copy;
@@ -411,10 +425,7 @@ impl ApInt {
     /// - This is useful for method chaining.
     /// - For more details look into
     ///   [`zero_resize`](struct.ApInt.html#method.zero_resize).
-    pub fn into_zero_resize<W>(self, target_width: W) -> ApInt
-    where
-        W: Into<BitWidth>,
-    {
+    pub fn into_zero_resize(self, target_width: BitWidth) -> ApInt {
         forward_bin_mut_impl(self, target_width, ApInt::zero_resize)
     }
 
@@ -426,10 +437,7 @@ impl ApInt {
     /// - This is useful for method chaining.
     /// - For more details look into
     ///   [`sign_resize`](struct.ApInt.html#method.sign_resize).
-    pub fn into_sign_resize<W>(self, target_width: W) -> ApInt
-    where
-        W: Into<BitWidth>,
-    {
+    pub fn into_sign_resize(self, target_width: BitWidth) -> ApInt {
         forward_bin_mut_impl(self, target_width, ApInt::sign_resize)
     }
 
@@ -442,12 +450,8 @@ impl ApInt {
     /// - [`truncate`](struct.ApInt.html#method.truncate) if `target_width` is
     ///   less than or equal to the width of the given `ApInt`
     /// - [`zero_extend`](struct.ApInt.html#method.zero_extend) otherwise
-    pub fn zero_resize<W>(&mut self, target_width: W)
-    where
-        W: Into<BitWidth>,
-    {
+    pub fn zero_resize(&mut self, target_width: BitWidth) {
         let actual_width = self.width();
-        let target_width = target_width.into();
 
         if target_width <= actual_width {
             self.truncate(target_width).expect(
@@ -471,12 +475,8 @@ impl ApInt {
     /// - [`truncate`](struct.ApInt.html#method.truncate) if `target_width` is
     ///   less than or equal to the width of the given `ApInt`
     /// - [`sign_extend`](struct.ApInt.html#method.sign_extend) otherwise
-    pub fn sign_resize<W>(&mut self, target_width: W)
-    where
-        W: Into<BitWidth>,
-    {
+    pub fn sign_resize(&mut self, target_width: BitWidth) {
         let actual_width = self.width();
-        let target_width = target_width.into();
 
         if target_width <= actual_width {
             self.truncate(target_width).expect(
@@ -495,6 +495,7 @@ impl ApInt {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::bw;
 
     fn test_apints() -> impl Iterator<Item = ApInt> {
         vec![
@@ -503,7 +504,7 @@ mod tests {
             ApInt::from_u8(42),
             ApInt::from_u8(0xF0),
             ApInt::from_u8(0x0F),
-            ApInt::all_set(BitWidth::w8()),
+            ApInt::all_set(bw(8)),
             ApInt::from_u16(0),
             ApInt::from_u16(1),
             ApInt::from_u16(42),
@@ -511,7 +512,7 @@ mod tests {
             ApInt::from_u16(0xFF00),
             ApInt::from_u16(0x0FF0),
             ApInt::from_u16(0x00FF),
-            ApInt::all_set(BitWidth::w16()),
+            ApInt::all_set(bw(16)),
             ApInt::from_u32(0),
             ApInt::from_u32(1),
             ApInt::from_u32(42),
@@ -519,7 +520,7 @@ mod tests {
             ApInt::from_u32(0xFFFF_0000),
             ApInt::from_u32(0x00FF_FF00),
             ApInt::from_u32(0x0000_FFFF),
-            ApInt::all_set(BitWidth::w32()),
+            ApInt::all_set(bw(32)),
             ApInt::from_u64(0),
             ApInt::from_u64(1),
             ApInt::from_u64(42),
@@ -527,7 +528,7 @@ mod tests {
             ApInt::from_u64(0xFFFF_FFFF_0000_0000),
             ApInt::from_u64(0x0000_FFFF_FFFF_0000),
             ApInt::from_u64(0x0000_0000_FFFF_FFFF),
-            ApInt::all_set(BitWidth::w64()),
+            ApInt::all_set(bw(64)),
             ApInt::from_u128(0),
             ApInt::from_u128(1),
             ApInt::from_u128(42),
@@ -535,7 +536,7 @@ mod tests {
             ApInt::from_u128(0xFFFF_FFFF_FFFF_FFFF_0000_0000_0000_0000),
             ApInt::from_u128(0x0000_0000_FFFF_FFFF_FFFF_FFFF_0000_0000),
             ApInt::from_u128(0x0000_0000_0000_0000_FFFF_FFFF_FFFF_FFFF),
-            ApInt::all_set(BitWidth::w128()),
+            ApInt::all_set(bw(128)),
         ]
         .into_iter()
     }
@@ -705,20 +706,14 @@ mod tests {
 
         #[test]
         fn regression_issue15() {
-            use core::{
-                i128,
-                i64,
-            };
             {
-                let input = ApInt::from_i64(i64::MIN)
-                    .into_sign_extend(BitWidth::new(128).unwrap())
-                    .unwrap();
+                let input = ApInt::from_i64(i64::MIN).into_sign_extend(bw(128)).unwrap();
                 let expected = ApInt::from([-1_i64, i64::MIN]);
                 assert_eq!(input, expected);
             }
             {
                 let input = ApInt::from_i128(i128::MIN)
-                    .into_sign_extend(BitWidth::new(256).unwrap())
+                    .into_sign_extend(bw(256))
                     .unwrap();
                 let expected = ApInt::from([-1_i64, -1_i64, i64::MIN, 0_i64]);
                 assert_eq!(input, expected);

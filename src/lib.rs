@@ -83,6 +83,12 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 #![doc(html_root_url = "https://docs.rs/crate/apint/0.2.0")]
 
+// TODO remove these as soon as they are on stable
+#![feature(const_if_match)]
+#![feature(const_fn)]
+#![feature(const_panic)]
+#![feature(const_nonzero_int_methods)]
+
 #[cfg(not(feature = "std"))]
 extern crate alloc;
 
@@ -113,7 +119,10 @@ pub use crate::{
         ShiftAmount,
     },
     bitpos::BitPos,
-    bitwidth::BitWidth,
+    bitwidth::{
+        bw,
+        BitWidth,
+    },
     errors::{
         Error,
         ErrorKind,
@@ -129,6 +138,7 @@ pub use crate::{
 pub mod prelude {
     #[doc(no_inline)]
     pub use super::{
+        bw,
         ApInt,
         BitWidth,
         Int,

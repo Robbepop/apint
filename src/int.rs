@@ -2,6 +2,8 @@
 //! `std_ops.rs`
 
 use crate::{
+    bw,
+    mem::TryInto,
     utils::{
         forward_bin_mut_impl,
         forward_mut_impl,
@@ -108,7 +110,7 @@ impl Int {
     /// that one cannot be represented with an `Int` of bitwidth one, in
     /// which case `None` will be returned.
     pub fn one(width: BitWidth) -> Option<Int> {
-        if width == BitWidth::w1() {
+        if width == bw(1) {
             None
         } else {
             Some(Int::from(ApInt::one(width)))
@@ -222,7 +224,7 @@ impl Int {
     /// - One (`1`) is also called the multiplicative neutral element.
     /// - This operation is more efficient than comparing two instances of `Int`
     pub fn is_one(&self) -> bool {
-        if self.width() == BitWidth::w1() {
+        if self.width() == bw(1) {
             false
         } else {
             self.value.is_one()
@@ -692,9 +694,10 @@ impl Int {
     /// # Errors
     ///
     /// - If the `target_width` is greater than the current width.
-    pub fn into_truncate<W>(self, target_width: W) -> Result<Int>
+    pub fn into_truncate<W, E>(self, target_width: W) -> Result<Int>
     where
-        W: Into<BitWidth>,
+        W: TryInto<BitWidth, Error = E>,
+        crate::Error: From<E>,
     {
         try_forward_bin_mut_impl(self, target_width, Int::truncate)
     }
@@ -710,9 +713,10 @@ impl Int {
     /// # Errors
     ///
     /// - If the `target_width` is greater than the current width.
-    pub fn truncate<W>(&mut self, target_width: W) -> Result<()>
+    pub fn truncate<W, E>(&mut self, target_width: W) -> Result<()>
     where
-        W: Into<BitWidth>,
+        W: TryInto<BitWidth, Error = E>,
+        crate::Error: From<E>,
     {
         self.value.truncate(target_width)
     }
@@ -730,9 +734,10 @@ impl Int {
     /// # Errors
     ///
     /// - If the `target_width` is less than the current width.
-    pub fn into_extend<W>(self, target_width: W) -> Result<Int>
+    pub fn into_extend<W, E>(self, target_width: W) -> Result<Int>
     where
-        W: Into<BitWidth>,
+        W: TryInto<BitWidth, Error = E>,
+        crate::Error: From<E>,
     {
         try_forward_bin_mut_impl(self, target_width, Int::extend)
     }
@@ -748,9 +753,10 @@ impl Int {
     /// # Errors
     ///
     /// - If the `target_width` is less than the current width.
-    pub fn extend<W>(&mut self, target_width: W) -> Result<()>
+    pub fn extend<W, E>(&mut self, target_width: W) -> Result<()>
     where
-        W: Into<BitWidth>,
+        W: TryInto<BitWidth, Error = E>,
+        crate::Error: From<E>,
     {
         self.value.sign_extend(target_width)
     }
@@ -764,10 +770,7 @@ impl Int {
     ///
     /// - This is useful for method chaining.
     /// - For more details look into [`resize`](struct.Int.html#method.resize).
-    pub fn into_resize<W>(self, target_width: W) -> Int
-    where
-        W: Into<BitWidth>,
-    {
+    pub fn into_resize(self, target_width: BitWidth) -> Int {
         forward_bin_mut_impl(self, target_width, Int::resize)
     }
 
@@ -780,10 +783,7 @@ impl Int {
     /// - [`truncate`](struct.Int.html#method.truncate) if `target_width` is
     ///   less than or equal to the width of the given `Int`
     /// - [`extend`](struct.Int.html#method.extend) otherwise
-    pub fn resize<W>(&mut self, target_width: W)
-    where
-        W: Into<BitWidth>,
-    {
+    pub fn resize(&mut self, target_width: BitWidth) {
         self.value.sign_resize(target_width)
     }
 }
@@ -1193,16 +1193,13 @@ mod tests {
 
         #[test]
         fn one() {
-            assert_eq!(Int::one(BitWidth::w1()), None);
-            assert_eq!(Int::one(BitWidth::w8()), Some(Int::from_i8(1)));
-            assert_eq!(Int::one(BitWidth::w16()), Some(Int::from_i16(1)));
-            assert_eq!(Int::one(BitWidth::w32()), Some(Int::from_i32(1)));
-            assert_eq!(Int::one(BitWidth::w64()), Some(Int::from_i64(1)));
-            assert_eq!(Int::one(BitWidth::w128()), Some(Int::from_i128(1)));
-            assert_eq!(
-                Int::one(BitWidth::new(192).unwrap()),
-                Some(Int::from([0i64, 0, 1]))
-            );
+            assert_eq!(Int::one(bw(1)), None);
+            assert_eq!(Int::one(bw(8)), Some(Int::from_i8(1)));
+            assert_eq!(Int::one(bw(16)), Some(Int::from_i16(1)));
+            assert_eq!(Int::one(bw(32)), Some(Int::from_i32(1)));
+            assert_eq!(Int::one(bw(64)), Some(Int::from_i64(1)));
+            assert_eq!(Int::one(bw(128)), Some(Int::from_i128(1)));
+            assert_eq!(Int::one(bw(192)), Some(Int::from([0i64, 0, 1])));
         }
     }
 }

@@ -1,8 +1,11 @@
 use crate::{
+    mem::{
+        NonZeroUsize,
+        TryFrom,
+    },
     storage::Storage,
     BitPos,
     Digit,
-    Error,
     Result,
     ShiftAmount,
 };
@@ -11,60 +14,65 @@ use crate::{
 ///
 /// Its invariant restricts it to always be a positive, non-zero value.
 /// Code that built's on top of `BitWidth` may and should use this invariant.
+///
+/// This is currently just a wrapper around `NonZeroUsize` (in case
+/// future compiler optimizations can make use of it), but this is not
+/// exposed because of the potential for feature flags and custom forks for
+/// `apint` to use other internal types.
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct BitWidth(usize);
+pub struct BitWidth(NonZeroUsize);
 
-//  ===========================================================================
-///  Constructors
-/// ===========================================================================
-impl BitWidth {
-    /// Creates a `BitWidth` that represents a bit-width of `1` bit.
-    #[inline]
-    pub fn w1() -> Self {
-        BitWidth(1)
+impl From<NonZeroUsize> for BitWidth {
+    /// Creates a `BitWidth` from the given `NonZeroUsize`.
+    fn from(width: NonZeroUsize) -> Self {
+        BitWidth(width)
     }
+}
 
-    /// Creates a `BitWidth` that represents a bit-width of `8` bits.
-    #[inline]
-    pub fn w8() -> Self {
-        BitWidth(8)
-    }
-
-    /// Creates a `BitWidth` that represents a bit-width of `16` bits.
-    #[inline]
-    pub fn w16() -> Self {
-        BitWidth(16)
-    }
-
-    /// Creates a `BitWidth` that represents a bit-width of `32` bits.
-    #[inline]
-    pub fn w32() -> Self {
-        BitWidth(32)
-    }
-
-    /// Creates a `BitWidth` that represents a bit-width of `64` bits.
-    #[inline]
-    pub fn w64() -> Self {
-        BitWidth(64)
-    }
-
-    /// Creates a `BitWidth` that represents a bit-width of `128` bits.
-    #[inline]
-    pub fn w128() -> Self {
-        BitWidth(128)
-    }
+impl TryFrom<usize> for BitWidth {
+    type Error = crate::Error;
 
     /// Creates a `BitWidth` from the given `usize`.
     ///
     /// # Errors
     ///
     /// - If the given `width` is equal to zero.
-    pub fn new(width: usize) -> Result<Self> {
-        if width == 0 {
-            return Err(Error::invalid_zero_bitwidth())
+    fn try_from(width: usize) -> Result<BitWidth> {
+        match NonZeroUsize::new(width) {
+            Some(bitwidth) => Ok(BitWidth(bitwidth)),
+            None => Err(crate::Error::invalid_zero_bitwidth()),
         }
-        Ok(BitWidth(width))
     }
+}
+
+/// Convenience free function for converting a `usize` to a `BitWidth`.
+///
+/// # Panics
+///
+/// If `width == 0`, this function will panic
+pub const fn bw(width: usize) -> BitWidth {
+    // Ideally, the code here would be `width.try_into().ok().expect("tried to
+    // ...");`, but we want this to be a `const` function.
+    match NonZeroUsize::new(width) {
+        None => {
+            panic!(
+                "Tried to construct an invalid BitWidth of 0 using the `apint::bw` \
+                 function"
+            )
+        }
+        Some(n) => BitWidth(n),
+    }
+}
+
+impl BitWidth {
+    // TODO: change to using `NonZeroUsize::new()` as soon as `unwrap`ing can be done.
+
+    /// Width of a `Digit`
+    pub(crate) const DIGIT: BitWidth =
+        BitWidth(unsafe { NonZeroUsize::new_unchecked(Digit::BITS) });
+    /// Width of a `DoubleDigit`
+    pub(crate) const DOUBLE_DIGIT: BitWidth =
+        BitWidth(unsafe { NonZeroUsize::new_unchecked(Digit::BITS * 2) });
 
     /// Returns `true` if the given `BitPos` is valid for this `BitWidth`.
     #[inline]
@@ -72,7 +80,7 @@ impl BitWidth {
     where
         P: Into<BitPos>,
     {
-        pos.into().to_usize() < self.0
+        pos.into().to_usize() < self.to_usize()
     }
 
     /// Returns `true` if the given `ShiftAmount` is valid for this `BitWidth`.
@@ -81,7 +89,7 @@ impl BitWidth {
     where
         S: Into<ShiftAmount>,
     {
-        shift_amount.into().to_usize() < self.0
+        shift_amount.into().to_usize() < self.to_usize()
     }
 
     /// Returns the `BitPos` for the most significant bit of an `ApInt` with
@@ -92,12 +100,6 @@ impl BitWidth {
     }
 }
 
-impl From<usize> for BitWidth {
-    fn from(width: usize) -> BitWidth {
-        BitWidth::new(width).unwrap()
-    }
-}
-
 //  ===========================================================================
 ///  API
 /// ===========================================================================
@@ -105,17 +107,17 @@ impl BitWidth {
     /// Converts this `BitWidth` into a `usize`.
     #[inline]
     pub fn to_usize(self) -> usize {
-        self.0
+        self.0.get()
     }
 
     /// Returns the number of exceeding bits that is implied for `ApInt`
     /// instances with this `BitWidth`.
     ///
     /// For example for an `ApInt` with a `BitWidth` of `140` bits requires
-    /// exactly `3` digits (each with its `64` bits). The third however,
-    /// only requires `140 - 128 = 12` bits of its `64` bits in total to
-    /// represent the `ApInt` instance. So `excess_bits` returns `12` for
-    /// a `BitWidth` that is equal to `140`.
+    /// exactly `3` digits (assuming `Digit::BITS == 64` bits). The third
+    /// however, only requires `140 - 128 = 12` bits of its `64` bits in
+    /// total to represent the `ApInt` instance. So `excess_bits` returns
+    /// `12` for a `BitWidth` that is equal to `140`.
     ///
     /// *Note:* A better name for this method has yet to be found!
     pub(crate) fn excess_bits(self) -> Option<usize> {
@@ -131,7 +133,10 @@ impl BitWidth {
     ///         Read the documentation of `excess_bits` for more information
     ///         about what is actually returned by this.
     pub(crate) fn excess_width(self) -> Option<BitWidth> {
-        self.excess_bits().map(BitWidth::from)
+        match NonZeroUsize::new(self.to_usize() % Digit::BITS) {
+            Some(bitwidth) => Some(BitWidth(bitwidth)),
+            None => None,
+        }
     }
 
     /// Returns a storage specifier that tells the caller if `ApInt`'s
@@ -164,22 +169,22 @@ mod tests {
 
         #[test]
         fn powers_of_two() {
-            assert_eq!(BitWidth::w1().excess_bits(), Some(1));
-            assert_eq!(BitWidth::w8().excess_bits(), Some(8));
-            assert_eq!(BitWidth::w16().excess_bits(), Some(16));
-            assert_eq!(BitWidth::w32().excess_bits(), Some(32));
-            assert_eq!(BitWidth::w64().excess_bits(), None);
-            assert_eq!(BitWidth::w128().excess_bits(), None);
+            assert_eq!(bw(1).excess_bits(), Some(1));
+            assert_eq!(bw(8).excess_bits(), Some(8));
+            assert_eq!(bw(16).excess_bits(), Some(16));
+            assert_eq!(bw(32).excess_bits(), Some(32));
+            assert_eq!(bw(64).excess_bits(), None);
+            assert_eq!(bw(128).excess_bits(), None);
         }
 
         #[test]
         fn multiples_of_50() {
-            assert_eq!(BitWidth::new(50).unwrap().excess_bits(), Some(50));
-            assert_eq!(BitWidth::new(100).unwrap().excess_bits(), Some(36));
-            assert_eq!(BitWidth::new(150).unwrap().excess_bits(), Some(22));
-            assert_eq!(BitWidth::new(200).unwrap().excess_bits(), Some(8));
-            assert_eq!(BitWidth::new(250).unwrap().excess_bits(), Some(58));
-            assert_eq!(BitWidth::new(300).unwrap().excess_bits(), Some(44));
+            assert_eq!(bw(50).excess_bits(), Some(50));
+            assert_eq!(bw(100).excess_bits(), Some(36));
+            assert_eq!(bw(150).excess_bits(), Some(22));
+            assert_eq!(bw(200).excess_bits(), Some(8));
+            assert_eq!(bw(250).excess_bits(), Some(58));
+            assert_eq!(bw(300).excess_bits(), Some(44));
         }
     }
 }

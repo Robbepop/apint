@@ -1,5 +1,6 @@
 use crate::{
     checks,
+    mem::TryInto,
     BitPos,
     BitWidth,
     Error,
@@ -326,21 +327,6 @@ impl Digit {
 }
 
 impl Digit {
-    /// Validates the given `BitWidth` for `Digit` instances and returns
-    /// an appropriate error if the given `BitWidth` is invalid.
-    fn verify_valid_bitwidth<W>(self, width: W) -> Result<()>
-    where
-        W: Into<BitWidth>,
-    {
-        let width = width.into();
-        if width.to_usize() > Digit::BITS {
-            return Err(Error::invalid_bitwidth(width.to_usize()).with_annotation(
-                "Encountered invalid `BitWidth` for operating on a `Digit`.",
-            ))
-        }
-        Ok(())
-    }
-
     /// Truncates this `Digit` to the given `BitWidth`.
     ///
     /// This operation just zeros out any bits on this `Digit`
@@ -353,17 +339,22 @@ impl Digit {
     /// # Errors
     ///
     /// - If the given `BitWidth` is invalid for `Digit` instances.
-    pub(crate) fn truncate_to<W>(&mut self, to: W) -> Result<()>
+    pub(crate) fn truncate_to<W, E>(&mut self, to: W) -> Result<()>
     where
-        W: Into<BitWidth>,
+        W: TryInto<BitWidth, Error = E>,
+        crate::Error: From<E>,
     {
-        let to = to.into();
-        self.verify_valid_bitwidth(to)?;
-        self.0 &= !(REPR_ONES << to.to_usize());
+        let to = to.try_into()?.to_usize();
+        if to > Digit::BITS {
+            return Err(Error::invalid_bitwidth(to).with_annotation(
+                "Encountered invalid `BitWidth` for operating on a `Digit`.",
+            ))
+        }
+        self.0 &= !(REPR_ONES << to);
         Ok(())
     }
 
-    /// Sign extends this `Digit` from a given `BitWidth` to `64` bits.
+    /// Sign extends this `Digit` from a given `BitWidth` to `Digit::BITS` bits.
     ///
     /// # Note
     ///
@@ -376,12 +367,12 @@ impl Digit {
     /// # Errors
     ///
     /// - If the given `BitWidth` is invalid for `Digit` instances.
-    pub(crate) fn sign_extend_from<W>(&mut self, from: W) -> Result<()>
+    pub(crate) fn sign_extend_from<W, E>(&mut self, from: W) -> Result<()>
     where
-        W: Into<BitWidth>,
+        W: TryInto<BitWidth, Error = E>,
+        crate::Error: From<E>,
     {
-        let from = from.into();
-        self.verify_valid_bitwidth(from)?;
+        let from = from.try_into()?;
 
         let b = from.to_usize(); // number of bits representing the number in x
         let x = self.repr() as i64; // sign extend this b-bit number to r
@@ -397,13 +388,13 @@ impl Digit {
 
 impl Width for Digit {
     fn width(&self) -> BitWidth {
-        BitWidth::w64()
+        BitWidth::DIGIT
     }
 }
 
 impl Width for DoubleDigit {
     fn width(&self) -> BitWidth {
-        BitWidth::w128()
+        BitWidth::DOUBLE_DIGIT
     }
 }
 
@@ -598,6 +589,7 @@ impl Not for Digit {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::bw;
 
     mod double_digit {
         use super::*;
@@ -688,7 +680,7 @@ mod tests {
         #[test]
         fn width() {
             for &val in TEST_VALUES {
-                assert_eq!(DoubleDigit(val).width(), BitWidth::w128());
+                assert_eq!(DoubleDigit(val).width(), bw(128));
             }
         }
 
@@ -907,10 +899,10 @@ mod tests {
 
         #[test]
         fn width() {
-            assert_eq!(Digit::ONES.width(), BitWidth::w64());
-            assert_eq!(Digit::ZERO.width(), BitWidth::w64());
-            assert_eq!(even_digit().width(), BitWidth::w64());
-            assert_eq!(odd_digit().width(), BitWidth::w64());
+            assert_eq!(Digit::ONES.width(), bw(64));
+            assert_eq!(Digit::ZERO.width(), bw(64));
+            assert_eq!(even_digit().width(), bw(64));
+            assert_eq!(odd_digit().width(), bw(64));
         }
 
         #[test]
@@ -926,7 +918,7 @@ mod tests {
         #[test]
         fn get_fail() {
             for &pos in INVALID_TEST_POS_VALUES {
-                let expected_err = Err(Error::invalid_bit_access(pos, BitWidth::w64()));
+                let expected_err = Err(Error::invalid_bit_access(pos, bw(64)));
                 assert_eq!(Digit::ONES.get(pos), expected_err);
                 assert_eq!(Digit::ZERO.get(pos), expected_err);
                 assert_eq!(digit::even_digit().get(pos), expected_err);
@@ -948,7 +940,7 @@ mod tests {
         #[test]
         fn set_fail() {
             for &pos in INVALID_TEST_POS_VALUES {
-                let expected_err = Err(Error::invalid_bit_access(pos, BitWidth::w64()));
+                let expected_err = Err(Error::invalid_bit_access(pos, bw(64)));
                 assert_eq!(Digit::ONES.set(pos), expected_err);
                 assert_eq!(Digit::ZERO.set(pos), expected_err);
                 assert_eq!(digit::even_digit().set(pos), expected_err);

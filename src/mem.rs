@@ -2,6 +2,15 @@
 
 #[cfg(not(feature = "std"))]
 mod no_std_defs {
+    pub use core::{
+        convert::{
+            Infallible,
+            TryFrom,
+            TryInto,
+        },
+        num::NonZeroUsize,
+    };
+
     pub use alloc::{
         borrow,
         boxed,
@@ -29,7 +38,13 @@ mod std_defs {
     pub use std::{
         borrow,
         boxed,
+        convert::{
+            Infallible,
+            TryFrom,
+            TryInto,
+        },
         format,
+        num::NonZeroUsize,
         string,
         vec,
     };
