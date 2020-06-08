@@ -78,6 +78,7 @@ impl ApInt {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::bw;
     use rand::SeedableRng;
     use rand_xorshift::XorShiftRng;
 
@@ -86,27 +87,27 @@ mod tests {
         let default_seed = <XorShiftRng as rand::SeedableRng>::Seed::default();
         let mut rng = XorShiftRng::from_seed(default_seed);
         assert_eq!(
-            ApInt::random_with_width_using(BitWidth::w1(), &mut rng),
+            ApInt::random_with_width_using(bw(1), &mut rng),
             ApInt::from_bool(true)
         );
         assert_eq!(
-            ApInt::random_with_width_using(BitWidth::w8(), &mut rng),
+            ApInt::random_with_width_using(bw(8), &mut rng),
             ApInt::from_u8(100)
         );
         assert_eq!(
-            ApInt::random_with_width_using(BitWidth::w16(), &mut rng),
+            ApInt::random_with_width_using(bw(16), &mut rng),
             ApInt::from_u16(30960)
         );
         assert_eq!(
-            ApInt::random_with_width_using(BitWidth::w32(), &mut rng),
+            ApInt::random_with_width_using(bw(32), &mut rng),
             ApInt::from_u32(1788231528)
         );
         assert_eq!(
-            ApInt::random_with_width_using(BitWidth::w64(), &mut rng),
+            ApInt::random_with_width_using(bw(64), &mut rng),
             ApInt::from_u64(13499822775494449820)
         );
         assert_eq!(
-            ApInt::random_with_width_using(BitWidth::w128(), &mut rng),
+            ApInt::random_with_width_using(bw(128), &mut rng),
             ApInt::from([16330942765510900160_u64, 131735358788273206])
         );
     }
@@ -120,37 +121,37 @@ mod tests {
         {
             let mut randomized = ApInt::from_bool(false);
             randomized.randomize_using(&mut rng1);
-            let new_random = ApInt::random_with_width_using(BitWidth::w1(), &mut rng2);
+            let new_random = ApInt::random_with_width_using(bw(1), &mut rng2);
             assert_eq!(randomized, new_random);
         }
         {
             let mut randomized = ApInt::from_u8(0);
             randomized.randomize_using(&mut rng1);
-            let new_random = ApInt::random_with_width_using(BitWidth::w8(), &mut rng2);
+            let new_random = ApInt::random_with_width_using(bw(8), &mut rng2);
             assert_eq!(randomized, new_random);
         }
         {
             let mut randomized = ApInt::from_u16(0);
             randomized.randomize_using(&mut rng1);
-            let new_random = ApInt::random_with_width_using(BitWidth::w16(), &mut rng2);
+            let new_random = ApInt::random_with_width_using(bw(16), &mut rng2);
             assert_eq!(randomized, new_random);
         }
         {
             let mut randomized = ApInt::from_u32(0);
             randomized.randomize_using(&mut rng1);
-            let new_random = ApInt::random_with_width_using(BitWidth::w32(), &mut rng2);
+            let new_random = ApInt::random_with_width_using(bw(32), &mut rng2);
             assert_eq!(randomized, new_random);
         }
         {
             let mut randomized = ApInt::from_u64(0);
             randomized.randomize_using(&mut rng1);
-            let new_random = ApInt::random_with_width_using(BitWidth::w64(), &mut rng2);
+            let new_random = ApInt::random_with_width_using(bw(64), &mut rng2);
             assert_eq!(randomized, new_random);
         }
         {
             let mut randomized = ApInt::from_u128(0);
             randomized.randomize_using(&mut rng1);
-            let new_random = ApInt::random_with_width_using(BitWidth::w128(), &mut rng2);
+            let new_random = ApInt::random_with_width_using(bw(128), &mut rng2);
             assert_eq!(randomized, new_random);
         }
     }

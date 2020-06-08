@@ -1,7 +1,6 @@
 use crate::{
     digit_seq::{
         ContiguousDigitSeq,
-        ContiguousDigitSeqMut,
     },
     storage::Storage,
     ApInt,
@@ -11,6 +10,9 @@ use crate::{
     Result,
     Width,
 };
+
+#[cfg(feature = "rand_support")]
+use crate::digit_seq::ContiguousDigitSeqMut;
 
 use core::{
     fmt,
@@ -43,6 +45,7 @@ impl ApInt {
         ContiguousDigitSeq::from(self.as_digit_slice())
     }
 
+    #[cfg(feature = "rand_support")]
     pub(in crate::apint) fn digits_mut(&mut self) -> ContiguousDigitSeqMut {
         ContiguousDigitSeqMut::from(self.as_digit_slice_mut())
     }
@@ -86,7 +89,7 @@ impl Width for ApInt {
     /// Returns the `BitWidth` of this `ApInt`.
     #[inline]
     fn width(&self) -> BitWidth {
-        BitWidth::new(self.len_bits()).unwrap()
+        self.len
     }
 }
 
@@ -344,8 +347,8 @@ impl ApInt {
     ///
     /// An `ApInt` with a `BitWidth` of `100` bits requires
     /// 2 `Digit`s for its internal value representation,
-    /// each having 64-bits which totals in `128` bits for the
-    /// `ApInt` instance.
+    /// each having 64-bits (assuming `Digit::BITS == 64`) which totals in `128`
+    /// bits for the `ApInt` instance.
     /// So upon a call to `ApInt::clear_unused_bits` the upper
     /// `128-100 = 28` bits are cleared (set to zero (`0`)).
     #[inline]

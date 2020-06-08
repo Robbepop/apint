@@ -27,6 +27,7 @@ impl ShiftAmount {
     ///
     /// # Examples
     ///
+    /// (assuming `Digit::BITS == 64`)
     /// - `ShiftAmount(50)` leaps over zero digits.
     /// - `ShiftAmount(64)` leaps exactly over one digit.
     /// - `ShiftAmount(100)` leaps over 1 digit.
@@ -45,6 +46,7 @@ impl ShiftAmount {
     ///
     /// # Examples
     ///
+    /// (assuming `Digit::BITS == 64`)
     /// - `ShiftAmount(50)` leaps over `50` bits.
     /// - `ShiftAmount(64)` leaps exactly over `0` bits.
     /// - `ShiftAmount(100)` leaps over `28` bits.

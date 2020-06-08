@@ -307,121 +307,105 @@ impl ApInt {
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    use crate::bitwidth::BitWidth;
+    use crate::bw;
 
     // Note: there are more tests of the counting functions in `uint.rs`
 
     #[test]
     fn count_ones() {
-        assert_eq!(ApInt::zero(BitWidth::w1()).count_ones(), 0);
-        assert_eq!(ApInt::zero(BitWidth::w8()).count_ones(), 0);
-        assert_eq!(ApInt::zero(BitWidth::w16()).count_ones(), 0);
-        assert_eq!(ApInt::zero(BitWidth::w32()).count_ones(), 0);
-        assert_eq!(ApInt::zero(BitWidth::w64()).count_ones(), 0);
-        assert_eq!(ApInt::zero(BitWidth::w128()).count_ones(), 0);
+        assert_eq!(ApInt::zero(bw(1)).count_ones(), 0);
+        assert_eq!(ApInt::zero(bw(8)).count_ones(), 0);
+        assert_eq!(ApInt::zero(bw(16)).count_ones(), 0);
+        assert_eq!(ApInt::zero(bw(32)).count_ones(), 0);
+        assert_eq!(ApInt::zero(bw(64)).count_ones(), 0);
+        assert_eq!(ApInt::zero(bw(128)).count_ones(), 0);
 
-        assert_eq!(ApInt::signed_min_value(BitWidth::w1()).count_ones(), 1);
-        assert_eq!(ApInt::signed_min_value(BitWidth::w8()).count_ones(), 1);
-        assert_eq!(ApInt::signed_min_value(BitWidth::w16()).count_ones(), 1);
-        assert_eq!(ApInt::signed_min_value(BitWidth::w32()).count_ones(), 1);
-        assert_eq!(ApInt::signed_min_value(BitWidth::w64()).count_ones(), 1);
-        assert_eq!(ApInt::signed_min_value(BitWidth::w128()).count_ones(), 1);
+        assert_eq!(ApInt::signed_min_value(bw(1)).count_ones(), 1);
+        assert_eq!(ApInt::signed_min_value(bw(8)).count_ones(), 1);
+        assert_eq!(ApInt::signed_min_value(bw(16)).count_ones(), 1);
+        assert_eq!(ApInt::signed_min_value(bw(32)).count_ones(), 1);
+        assert_eq!(ApInt::signed_min_value(bw(64)).count_ones(), 1);
+        assert_eq!(ApInt::signed_min_value(bw(128)).count_ones(), 1);
 
-        assert_eq!(ApInt::signed_max_value(BitWidth::w1()).count_ones(), 0);
-        assert_eq!(ApInt::signed_max_value(BitWidth::w8()).count_ones(), 7);
-        assert_eq!(ApInt::signed_max_value(BitWidth::w16()).count_ones(), 15);
-        assert_eq!(ApInt::signed_max_value(BitWidth::w32()).count_ones(), 31);
-        assert_eq!(ApInt::signed_max_value(BitWidth::w64()).count_ones(), 63);
-        assert_eq!(ApInt::signed_max_value(BitWidth::w128()).count_ones(), 127);
+        assert_eq!(ApInt::signed_max_value(bw(1)).count_ones(), 0);
+        assert_eq!(ApInt::signed_max_value(bw(8)).count_ones(), 7);
+        assert_eq!(ApInt::signed_max_value(bw(16)).count_ones(), 15);
+        assert_eq!(ApInt::signed_max_value(bw(32)).count_ones(), 31);
+        assert_eq!(ApInt::signed_max_value(bw(64)).count_ones(), 63);
+        assert_eq!(ApInt::signed_max_value(bw(128)).count_ones(), 127);
     }
 
     #[test]
     fn count_zeros() {
-        assert_eq!(ApInt::zero(BitWidth::w1()).count_zeros(), 1);
-        assert_eq!(ApInt::zero(BitWidth::w8()).count_zeros(), 8);
-        assert_eq!(ApInt::zero(BitWidth::w16()).count_zeros(), 16);
-        assert_eq!(ApInt::zero(BitWidth::w32()).count_zeros(), 32);
-        assert_eq!(ApInt::zero(BitWidth::w64()).count_zeros(), 64);
-        assert_eq!(ApInt::zero(BitWidth::w128()).count_zeros(), 128);
+        assert_eq!(ApInt::zero(bw(1)).count_zeros(), 1);
+        assert_eq!(ApInt::zero(bw(8)).count_zeros(), 8);
+        assert_eq!(ApInt::zero(bw(16)).count_zeros(), 16);
+        assert_eq!(ApInt::zero(bw(32)).count_zeros(), 32);
+        assert_eq!(ApInt::zero(bw(64)).count_zeros(), 64);
+        assert_eq!(ApInt::zero(bw(128)).count_zeros(), 128);
 
-        assert_eq!(ApInt::signed_min_value(BitWidth::w1()).count_zeros(), 0);
-        assert_eq!(ApInt::signed_min_value(BitWidth::w8()).count_zeros(), 7);
-        assert_eq!(ApInt::signed_min_value(BitWidth::w16()).count_zeros(), 15);
-        assert_eq!(ApInt::signed_min_value(BitWidth::w32()).count_zeros(), 31);
-        assert_eq!(ApInt::signed_min_value(BitWidth::w64()).count_zeros(), 63);
-        assert_eq!(ApInt::signed_min_value(BitWidth::w128()).count_zeros(), 127);
+        assert_eq!(ApInt::signed_min_value(bw(1)).count_zeros(), 0);
+        assert_eq!(ApInt::signed_min_value(bw(8)).count_zeros(), 7);
+        assert_eq!(ApInt::signed_min_value(bw(16)).count_zeros(), 15);
+        assert_eq!(ApInt::signed_min_value(bw(32)).count_zeros(), 31);
+        assert_eq!(ApInt::signed_min_value(bw(64)).count_zeros(), 63);
+        assert_eq!(ApInt::signed_min_value(bw(128)).count_zeros(), 127);
 
-        assert_eq!(ApInt::signed_max_value(BitWidth::w1()).count_zeros(), 1);
-        assert_eq!(ApInt::signed_max_value(BitWidth::w8()).count_zeros(), 1);
-        assert_eq!(ApInt::signed_max_value(BitWidth::w16()).count_zeros(), 1);
-        assert_eq!(ApInt::signed_max_value(BitWidth::w32()).count_zeros(), 1);
-        assert_eq!(ApInt::signed_max_value(BitWidth::w64()).count_zeros(), 1);
-        assert_eq!(ApInt::signed_max_value(BitWidth::w128()).count_zeros(), 1);
+        assert_eq!(ApInt::signed_max_value(bw(1)).count_zeros(), 1);
+        assert_eq!(ApInt::signed_max_value(bw(8)).count_zeros(), 1);
+        assert_eq!(ApInt::signed_max_value(bw(16)).count_zeros(), 1);
+        assert_eq!(ApInt::signed_max_value(bw(32)).count_zeros(), 1);
+        assert_eq!(ApInt::signed_max_value(bw(64)).count_zeros(), 1);
+        assert_eq!(ApInt::signed_max_value(bw(128)).count_zeros(), 1);
     }
 
     #[test]
     fn leading_zeros() {
-        assert_eq!(ApInt::zero(BitWidth::w1()).leading_zeros(), 1);
-        assert_eq!(ApInt::zero(BitWidth::w8()).leading_zeros(), 8);
-        assert_eq!(ApInt::zero(BitWidth::w16()).leading_zeros(), 16);
-        assert_eq!(ApInt::zero(BitWidth::w32()).leading_zeros(), 32);
-        assert_eq!(ApInt::zero(BitWidth::w64()).leading_zeros(), 64);
-        assert_eq!(ApInt::zero(BitWidth::w128()).leading_zeros(), 128);
+        assert_eq!(ApInt::zero(bw(1)).leading_zeros(), 1);
+        assert_eq!(ApInt::zero(bw(8)).leading_zeros(), 8);
+        assert_eq!(ApInt::zero(bw(16)).leading_zeros(), 16);
+        assert_eq!(ApInt::zero(bw(32)).leading_zeros(), 32);
+        assert_eq!(ApInt::zero(bw(64)).leading_zeros(), 64);
+        assert_eq!(ApInt::zero(bw(128)).leading_zeros(), 128);
 
-        assert_eq!(ApInt::signed_min_value(BitWidth::w1()).leading_zeros(), 0);
-        assert_eq!(ApInt::signed_min_value(BitWidth::w8()).leading_zeros(), 0);
-        assert_eq!(ApInt::signed_min_value(BitWidth::w16()).leading_zeros(), 0);
-        assert_eq!(ApInt::signed_min_value(BitWidth::w32()).leading_zeros(), 0);
-        assert_eq!(ApInt::signed_min_value(BitWidth::w64()).leading_zeros(), 0);
-        assert_eq!(ApInt::signed_min_value(BitWidth::w128()).leading_zeros(), 0);
+        assert_eq!(ApInt::signed_min_value(bw(1)).leading_zeros(), 0);
+        assert_eq!(ApInt::signed_min_value(bw(8)).leading_zeros(), 0);
+        assert_eq!(ApInt::signed_min_value(bw(16)).leading_zeros(), 0);
+        assert_eq!(ApInt::signed_min_value(bw(32)).leading_zeros(), 0);
+        assert_eq!(ApInt::signed_min_value(bw(64)).leading_zeros(), 0);
+        assert_eq!(ApInt::signed_min_value(bw(128)).leading_zeros(), 0);
 
-        assert_eq!(ApInt::signed_max_value(BitWidth::w1()).leading_zeros(), 1);
-        assert_eq!(ApInt::signed_max_value(BitWidth::w8()).leading_zeros(), 1);
-        assert_eq!(ApInt::signed_max_value(BitWidth::w16()).leading_zeros(), 1);
-        assert_eq!(ApInt::signed_max_value(BitWidth::w32()).leading_zeros(), 1);
-        assert_eq!(ApInt::signed_max_value(BitWidth::w64()).leading_zeros(), 1);
-        assert_eq!(ApInt::signed_max_value(BitWidth::w128()).leading_zeros(), 1);
+        assert_eq!(ApInt::signed_max_value(bw(1)).leading_zeros(), 1);
+        assert_eq!(ApInt::signed_max_value(bw(8)).leading_zeros(), 1);
+        assert_eq!(ApInt::signed_max_value(bw(16)).leading_zeros(), 1);
+        assert_eq!(ApInt::signed_max_value(bw(32)).leading_zeros(), 1);
+        assert_eq!(ApInt::signed_max_value(bw(64)).leading_zeros(), 1);
+        assert_eq!(ApInt::signed_max_value(bw(128)).leading_zeros(), 1);
     }
 
     #[test]
     fn trailing_zeros() {
-        assert_eq!(ApInt::zero(BitWidth::w1()).trailing_zeros(), 1);
-        assert_eq!(ApInt::zero(BitWidth::w8()).trailing_zeros(), 8);
-        assert_eq!(ApInt::zero(BitWidth::w16()).trailing_zeros(), 16);
-        assert_eq!(ApInt::zero(BitWidth::w32()).trailing_zeros(), 32);
-        assert_eq!(ApInt::zero(BitWidth::w64()).trailing_zeros(), 64);
-        assert_eq!(ApInt::zero(BitWidth::w128()).trailing_zeros(), 128);
+        assert_eq!(ApInt::zero(bw(1)).trailing_zeros(), 1);
+        assert_eq!(ApInt::zero(bw(8)).trailing_zeros(), 8);
+        assert_eq!(ApInt::zero(bw(16)).trailing_zeros(), 16);
+        assert_eq!(ApInt::zero(bw(32)).trailing_zeros(), 32);
+        assert_eq!(ApInt::zero(bw(64)).trailing_zeros(), 64);
+        assert_eq!(ApInt::zero(bw(128)).trailing_zeros(), 128);
 
-        assert_eq!(ApInt::signed_min_value(BitWidth::w1()).trailing_zeros(), 0);
-        assert_eq!(ApInt::signed_min_value(BitWidth::w8()).trailing_zeros(), 7);
-        assert_eq!(
-            ApInt::signed_min_value(BitWidth::w16()).trailing_zeros(),
-            15
-        );
-        assert_eq!(
-            ApInt::signed_min_value(BitWidth::w32()).trailing_zeros(),
-            31
-        );
-        assert_eq!(
-            ApInt::signed_min_value(BitWidth::w64()).trailing_zeros(),
-            63
-        );
-        assert_eq!(
-            ApInt::signed_min_value(BitWidth::w128()).trailing_zeros(),
-            127
-        );
+        assert_eq!(ApInt::signed_min_value(bw(1)).trailing_zeros(), 0);
+        assert_eq!(ApInt::signed_min_value(bw(8)).trailing_zeros(), 7);
+        assert_eq!(ApInt::signed_min_value(bw(16)).trailing_zeros(), 15);
+        assert_eq!(ApInt::signed_min_value(bw(32)).trailing_zeros(), 31);
+        assert_eq!(ApInt::signed_min_value(bw(64)).trailing_zeros(), 63);
+        assert_eq!(ApInt::signed_min_value(bw(128)).trailing_zeros(), 127);
 
         // note edge case
-        assert_eq!(ApInt::signed_max_value(BitWidth::w1()).trailing_zeros(), 1);
-        assert_eq!(ApInt::signed_max_value(BitWidth::w8()).trailing_zeros(), 0);
-        assert_eq!(ApInt::signed_max_value(BitWidth::w16()).trailing_zeros(), 0);
-        assert_eq!(ApInt::signed_max_value(BitWidth::w32()).trailing_zeros(), 0);
-        assert_eq!(ApInt::signed_max_value(BitWidth::w64()).trailing_zeros(), 0);
-        assert_eq!(
-            ApInt::signed_max_value(BitWidth::w128()).trailing_zeros(),
-            0
-        );
+        assert_eq!(ApInt::signed_max_value(bw(1)).trailing_zeros(), 1);
+        assert_eq!(ApInt::signed_max_value(bw(8)).trailing_zeros(), 0);
+        assert_eq!(ApInt::signed_max_value(bw(16)).trailing_zeros(), 0);
+        assert_eq!(ApInt::signed_max_value(bw(32)).trailing_zeros(), 0);
+        assert_eq!(ApInt::signed_max_value(bw(64)).trailing_zeros(), 0);
+        assert_eq!(ApInt::signed_max_value(bw(128)).trailing_zeros(), 0);
     }
 
     mod is_all_set {
@@ -430,15 +414,15 @@ mod tests {
         #[test]
         fn simple_false() {
             let input = ApInt::from(0b0001_1011_0110_0111_u16);
-            assert_eq!(input.width(), BitWidth::w16());
+            assert_eq!(input.width(), bw(16));
             assert_eq!(input.count_ones(), 9);
             assert!(!input.is_all_set());
         }
 
         #[test]
         fn simple_true() {
-            let input = ApInt::all_set(BitWidth::w32());
-            assert_eq!(input.width(), BitWidth::w32());
+            let input = ApInt::all_set(bw(32));
+            assert_eq!(input.width(), bw(32));
             assert_eq!(input.count_ones(), 32);
             assert!(input.is_all_set());
         }
@@ -450,15 +434,15 @@ mod tests {
         #[test]
         fn simple_false() {
             let input = ApInt::from(0b0001_1011_0110_0111_u16);
-            assert_eq!(input.width(), BitWidth::w16());
+            assert_eq!(input.width(), bw(16));
             assert_eq!(input.count_ones(), 9);
             assert_eq!(input.is_zero(), input.is_all_unset());
         }
 
         #[test]
         fn simple_true() {
-            let input = ApInt::all_unset(BitWidth::w32());
-            assert_eq!(input.width(), BitWidth::w32());
+            let input = ApInt::all_unset(bw(32));
+            assert_eq!(input.width(), bw(32));
             assert_eq!(input.count_ones(), 0);
             assert_eq!(input.is_zero(), input.is_all_unset());
         }
