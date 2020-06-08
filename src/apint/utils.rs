@@ -1,7 +1,5 @@
 use crate::{
-    digit_seq::{
-        ContiguousDigitSeq,
-    },
+    digit_seq::ContiguousDigitSeq,
     storage::Storage,
     ApInt,
     BitWidth,

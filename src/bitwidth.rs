@@ -17,8 +17,63 @@ use crate::{
 ///
 /// This is currently just a wrapper around `NonZeroUsize` (in case
 /// future compiler optimizations can make use of it), but this is not
-/// exposed because of the potential for feature flags and custom forks for
+/// exposed because of the potential for feature flags and custom forks of
 /// `apint` to use other internal types.
+///
+/// # Examples
+///
+/// Most of what the functions in this library can do is self explanatory
+/// through the extensive function documentation, however there are details from
+/// across the library that need to be brought together when making things less
+/// verbose.
+///
+/// ```
+/// use apint::{
+///     prelude::*,
+///     Result,
+/// };
+///
+/// use core::convert::TryFrom;
+///
+/// // This is just a dummy example, practical functions normally use `BitWidth`s as bit
+/// // width arguments or have `TryInto<BitWidth>` based signatures like the one
+/// // `ApInt::extend` uses.
+/// fn example_function(input_width: usize) -> Result<ApInt> {
+///     // The standard way of constructing `BitWidth`s and propogating errors up the call
+///     // stack if the input is not a valid `BitWidth`.
+///     let width = BitWidth::try_from(input_width)?;
+///
+///     // most single argument functions do not need any kind of error handling because
+///     // the invariants are already handled by `BitWidth`.
+///     let mut x = ApInt::signed_max_value(width);
+///     x.sign_resize(width);
+///     x.zero_resize(width);
+///
+///     // Let us resize `x` to some constant size. When using a constant or literal, a
+///     // better shorthand for `BitWidth::try_from(42)?` is to use the `bw` free function
+///     // instead:
+///     x.sign_resize(bw(42));
+///
+///     // Let us extend `x` to another constant size. In this case, even though the
+///     // `BitWidth` invariant is already handled, there is still error handling involved
+///     // because this function returns an error if `x.width()` is larger than the target
+///     // width.
+///     x.sign_extend(width)?;
+///
+///     // Since error handling is involved no matter what, we have made the function
+///     // signature accept `target_width: W` where
+///     // `W: TryInto<BitWidth, Error = E>, crate::Error: From<E>`. This means that any
+///     // type with an impl for `TryInto<BitWidth>` can be used as an argument. There is
+///     // an `impl TryFrom<usize> for BitWidth`, so a plain `usize` can be entered into
+///     // the function, and the function will handle both `BitWidth` invariant checking
+///     // and its own invariants.
+///     x.sign_extend(100)?;
+///
+///     Ok(x)
+/// }
+///
+/// example_function(64).unwrap();
+/// ```
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct BitWidth(NonZeroUsize);
 
@@ -65,7 +120,8 @@ pub const fn bw(width: usize) -> BitWidth {
 }
 
 impl BitWidth {
-    // TODO: change to using `NonZeroUsize::new()` as soon as `unwrap`ing can be done.
+    // TODO: change to using `NonZeroUsize::new()` as soon as `unwrap`ing can be
+    // done.
 
     /// Width of a `Digit`
     pub(crate) const DIGIT: BitWidth =

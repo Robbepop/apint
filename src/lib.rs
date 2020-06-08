@@ -26,7 +26,7 @@
 //! **Note:** Almost all fallible functions in this crate have return types of
 //! `Result` or `Option` to let the user handle errors. The exceptions are the
 //! `std::ops` traits which will panic if their corresponding `into_wrapping_`
-//! or `wrapping_assign` function does.
+//! or `wrapping_assign` function does, and the `bw` free function.
 //!
 //! # `std::ops` trait implementations
 //!
@@ -47,6 +47,14 @@
 //! `for &'b mut ApInt`, because doing so involves cloning. This crate strives
 //! for clearly exposing where expensive operations happen, so in this case we
 //! favor the user side to use explicit `.clone()`s.
+//!
+//! # Error Handling
+//!
+//! Note that `apint::Result<T>` is equivalent to
+//! `core::Result<T, apint::Error>`. `apint::Result<T>` and `apint::Error` are
+//! not exported by `apint::prelude` to avoid confusion. When starting with
+//! `apint`, it is highly recommended to first read the documentation on the
+//! invariant management types `BitWidth`, `BitPos`, `ShiftAmount`, and `Radix`.
 //!
 //! # `signed_min_value` corner cases
 //!
@@ -82,7 +90,6 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 #![doc(html_root_url = "https://docs.rs/crate/apint/0.2.0")]
-
 // TODO remove these as soon as they are on stable
 #![feature(const_if_match)]
 #![feature(const_fn)]

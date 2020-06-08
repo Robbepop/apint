@@ -121,6 +121,7 @@ impl ApInt {
     ///
     /// # Errors
     ///
+    /// - If `target_width.try_into()` returns an error.
     /// - If the `target_width` is greater than the current width.
     pub fn into_truncate<W, E>(self, target_width: W) -> Result<ApInt>
     where
@@ -140,6 +141,7 @@ impl ApInt {
     ///
     /// # Errors
     ///
+    /// - If `target_width.try_into()` returns an error.
     /// - If the `target_width` is greater than the current width.
     pub fn truncate<W, E>(&mut self, target_width: W) -> Result<()>
     where
@@ -226,6 +228,7 @@ impl ApInt {
     ///
     /// # Errors
     ///
+    /// - If `target_width.try_into()` returns an error.
     /// - If the `target_width` is less than the current width.
     pub fn into_zero_extend<W, E>(self, target_width: W) -> Result<ApInt>
     where
@@ -245,6 +248,7 @@ impl ApInt {
     ///
     /// # Errors
     ///
+    /// - If `target_width.try_into()` returns an error.
     /// - If the `target_width` is less than the current width.
     pub fn zero_extend<W, E>(&mut self, target_width: W) -> Result<()>
     where
@@ -315,6 +319,7 @@ impl ApInt {
     ///
     /// # Errors
     ///
+    /// - If `target_width.try_into()` returns an error.
     /// - If the `target_width` is less than the current width.
     pub fn into_sign_extend<W, E>(self, target_width: W) -> Result<ApInt>
     where
@@ -334,6 +339,7 @@ impl ApInt {
     ///
     /// # Errors
     ///
+    /// - If `target_width.try_into()` returns an error.
     /// - If the `target_width` is less than the current width.
     pub fn sign_extend<W, E>(&mut self, target_width: W) -> Result<()>
     where

@@ -634,6 +634,7 @@ impl UInt {
     ///
     /// # Errors
     ///
+    /// - If `target_width.try_into()` returns an error.
     /// - If the `target_width` is greater than the current width.
     pub fn into_truncate<W, E>(self, target_width: W) -> Result<UInt>
     where
@@ -653,6 +654,7 @@ impl UInt {
     ///
     /// # Errors
     ///
+    /// - If `target_width.try_into()` returns an error.
     /// - If the `target_width` is greater than the current width.
     pub fn truncate<W, E>(&mut self, target_width: W) -> Result<()>
     where
@@ -674,6 +676,7 @@ impl UInt {
     ///
     /// # Errors
     ///
+    /// - If `target_width.try_into()` returns an error.
     /// - If the `target_width` is less than the current width.
     pub fn into_extend<W, E>(self, target_width: W) -> Result<UInt>
     where
@@ -693,6 +696,7 @@ impl UInt {
     ///
     /// # Errors
     ///
+    /// - If `target_width.try_into()` returns an error.
     /// - If the `target_width` is less than the current width.
     pub fn extend<W, E>(&mut self, target_width: W) -> Result<()>
     where
