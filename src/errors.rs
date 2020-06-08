@@ -4,6 +4,7 @@ use crate::{
         borrow::ToOwned,
         format,
         string::String,
+        Infallible,
     },
     ApInt,
     BitPos,
@@ -18,6 +19,56 @@ use core::{
 };
 #[cfg(feature = "std")]
 use std::error;
+
+/// Represents an error that may occur upon using the `ApInt` library.
+///
+/// All errors have a unique kind which also stores extra information for error
+/// reporting. Besides that an `Error` also stores a message and an optional
+/// additional annotation.
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct Error {
+    kind: ErrorKind,
+    message: String,
+    annotation: Option<String>,
+}
+
+#[cfg(feature = "std")]
+impl error::Error for Error {
+    fn description(&self) -> &str {
+        self.message.as_str()
+    }
+}
+
+impl fmt::Display for Error {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        <Self as fmt::Debug>::fmt(self, f)
+    }
+}
+
+// This is needed for practical ergonomics with `impl TryFrom<usize> for
+// BitWidth` in `bitwidth.rs`. Trying to do `BitWidth::try_from(bw: BitWidth)`
+// would collide with a blanket impl for `impl Tryfrom<T> for T` that has a
+// return type of `!` unless this is done.
+impl From<Infallible> for Error {
+    fn from(_: Infallible) -> Self {
+        unreachable!()
+    }
+}
+
+/// The `Result` type used in `ApInt`.
+pub type Result<T> = result::Result<T, Error>;
+
+impl<T> Into<Result<T>> for Error {
+    /// Converts an `Error` into a `Result<T, Error>`.
+    ///
+    /// This might be useful to prevent some parentheses spams
+    /// because it replaces `Err(my_error)` with `my_error.into()`.
+    ///
+    /// On the other hand it might be an abuse of the trait ...
+    fn into(self) -> Result<T> {
+        Err(self)
+    }
+}
 
 /// Represents the kind of an `Error`.
 ///
@@ -124,18 +175,6 @@ pub enum DivOp {
     SignedDiv,
     /// The signed remainder operation.
     SignedRem,
-}
-
-/// Represents an error that may occur upon using the `ApInt` library.
-///
-/// All errors have a unique kind which also stores extra information for error
-/// reporting. Besides that an `Error` also stores a message and an optional
-/// additional annotation.
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct Error {
-    kind: ErrorKind,
-    message: String,
-    annotation: Option<String>,
 }
 
 //  ===========================================================================
@@ -381,31 +420,3 @@ impl Error {
         }
     }
 }
-
-impl<T> Into<Result<T>> for Error {
-    /// Converts an `Error` into a `Result<T, Error>`.
-    ///
-    /// This might be useful to prevent some parentheses spams
-    /// because it replaces `Err(my_error)` with `my_error.into()`.
-    ///
-    /// On the other hand it might be an abuse of the trait ...
-    fn into(self) -> Result<T> {
-        Err(self)
-    }
-}
-
-impl fmt::Display for Error {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        <Self as fmt::Debug>::fmt(self, f)
-    }
-}
-
-#[cfg(feature = "std")]
-impl error::Error for Error {
-    fn description(&self) -> &str {
-        self.message.as_str()
-    }
-}
-
-/// The `Result` type used in `ApInt`.
-pub type Result<T> = result::Result<T, Error>;
