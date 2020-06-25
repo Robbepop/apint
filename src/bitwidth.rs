@@ -112,10 +112,10 @@ impl BitWidth {
     /// instances with this `BitWidth`.
     ///
     /// For example for an `ApInt` with a `BitWidth` of `140` bits requires
-    /// exactly `3` digits (each with its `64` bits). The third however,
-    /// only requires `140 - 128 = 12` bits of its `64` bits in total to
-    /// represent the `ApInt` instance. So `excess_bits` returns `12` for
-    /// a `BitWidth` that is equal to `140`.
+    /// exactly `3` digits (assuming `Digit::BITS == 64` bits). The third
+    /// however, only requires `140 - 128 = 12` bits of its `64` bits in
+    /// total to represent the `ApInt` instance. So `excess_bits` returns
+    /// `12` for a `BitWidth` that is equal to `140`.
     ///
     /// *Note:* A better name for this method has yet to be found!
     pub(crate) fn excess_bits(self) -> Option<usize> {

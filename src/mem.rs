@@ -2,6 +2,17 @@
 
 #[cfg(not(feature = "std"))]
 mod no_std_defs {
+    // We could use `core::` to import these directly instead of through `mem`, but
+    // this removes the need to type out `::convert`, `::num`, and some extra
+    // braces for every use in the crate.
+    pub use core::{
+        convert::{
+            TryFrom,
+            TryInto,
+        },
+        num::NonZeroUsize,
+    };
+
     pub use alloc::{
         borrow,
         boxed,
@@ -29,7 +40,12 @@ mod std_defs {
     pub use std::{
         borrow,
         boxed,
+        convert::{
+            TryFrom,
+            TryInto,
+        },
         format,
+        num::NonZeroUsize,
         string,
         vec,
     };

@@ -16,9 +16,6 @@ use crate::{
     Width,
 };
 
-#[cfg(feature = "rand_support")]
-use rand;
-
 use core::cmp::Ordering;
 
 /// Signed machine integer with arbitrary bitwidths and modulo arithmetics.

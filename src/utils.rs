@@ -5,7 +5,7 @@ use crate::Result;
 /// Returns the entity afterwards.
 pub fn forward_mut_impl<T, F>(entity: T, op: F) -> T
 where
-    F: Fn(&mut T) -> (),
+    F: Fn(&mut T),
 {
     let mut this = entity;
     op(&mut this);
@@ -17,7 +17,7 @@ where
 /// Returns the entity afterwards.
 pub fn forward_bin_mut_impl<L, R, F>(entity: L, rhs: R, op: F) -> L
 where
-    F: Fn(&mut L, R) -> (),
+    F: Fn(&mut L, R),
 {
     let mut this = entity;
     op(&mut this, rhs);
