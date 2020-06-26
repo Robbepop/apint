@@ -16,8 +16,6 @@ use core::{
     fmt,
     result,
 };
-#[cfg(feature = "std")]
-use std::error;
 
 /// Represents the kind of an `Error`.
 ///
@@ -401,7 +399,7 @@ impl fmt::Display for Error {
 }
 
 #[cfg(feature = "std")]
-impl error::Error for Error {
+impl std::error::Error for Error {
     fn description(&self) -> &str {
         self.message.as_str()
     }
