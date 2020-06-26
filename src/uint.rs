@@ -1111,50 +1111,48 @@ mod tests {
 
     mod tests {
         use super::*;
+        use crate::bw;
 
         #[test]
         fn one() {
-            assert_eq!(UInt::one(BitWidth::w1()), UInt::from_bool(true));
-            assert_eq!(UInt::one(BitWidth::w8()), UInt::from_u8(1));
-            assert_eq!(UInt::one(BitWidth::w16()), UInt::from_u16(1));
-            assert_eq!(UInt::one(BitWidth::w32()), UInt::from_u32(1));
-            assert_eq!(UInt::one(BitWidth::w64()), UInt::from_u64(1));
-            assert_eq!(UInt::one(BitWidth::w128()), UInt::from_u128(1));
-            assert_eq!(
-                UInt::one(BitWidth::new(192).unwrap()),
-                UInt::from([0u64, 0, 1])
-            );
+            assert_eq!(UInt::one(bw(1)), UInt::from_bool(true));
+            assert_eq!(UInt::one(bw(8)), UInt::from_u8(1));
+            assert_eq!(UInt::one(bw(16)), UInt::from_u16(1));
+            assert_eq!(UInt::one(bw(32)), UInt::from_u32(1));
+            assert_eq!(UInt::one(bw(64)), UInt::from_u64(1));
+            assert_eq!(UInt::one(bw(128)), UInt::from_u128(1));
+            assert_eq!(UInt::one(bw(192)), UInt::from([0u64, 0, 1]));
         }
 
         #[test]
         fn count() {
-            assert_eq!(UInt::one(BitWidth::w1()).count_ones(), 1);
-            assert_eq!(UInt::one(BitWidth::w8()).count_ones(), 1);
-            assert_eq!(UInt::one(BitWidth::w16()).count_ones(), 1);
-            assert_eq!(UInt::one(BitWidth::w32()).count_ones(), 1);
-            assert_eq!(UInt::one(BitWidth::w64()).count_ones(), 1);
-            assert_eq!(UInt::one(BitWidth::w128()).count_ones(), 1);
+            assert_eq!(UInt::one(bw(1)).count_ones(), 1);
+            assert_eq!(UInt::one(bw(8)).count_ones(), 1);
+            assert_eq!(UInt::one(bw(16)).count_ones(), 1);
+            assert_eq!(UInt::one(bw(32)).count_ones(), 1);
+            assert_eq!(UInt::one(bw(64)).count_ones(), 1);
+            assert_eq!(UInt::one(bw(128)).count_ones(), 1);
 
-            assert_eq!(UInt::one(BitWidth::w1()).count_zeros(), 0);
-            assert_eq!(UInt::one(BitWidth::w8()).count_zeros(), 7);
-            assert_eq!(UInt::one(BitWidth::w16()).count_zeros(), 15);
-            assert_eq!(UInt::one(BitWidth::w32()).count_zeros(), 31);
-            assert_eq!(UInt::one(BitWidth::w64()).count_zeros(), 63);
-            assert_eq!(UInt::one(BitWidth::w128()).count_zeros(), 127);
+            assert_eq!(UInt::one(bw(1)).count_zeros(), 0);
+            assert_eq!(UInt::one(bw(8)).count_zeros(), 7);
+            assert_eq!(UInt::one(bw(16)).count_zeros(), 15);
+            assert_eq!(UInt::one(bw(32)).count_zeros(), 31);
+            assert_eq!(UInt::one(bw(64)).count_zeros(), 63);
+            assert_eq!(UInt::one(bw(128)).count_zeros(), 127);
 
-            assert_eq!(UInt::one(BitWidth::w1()).leading_zeros(), 0);
-            assert_eq!(UInt::one(BitWidth::w8()).leading_zeros(), 7);
-            assert_eq!(UInt::one(BitWidth::w16()).leading_zeros(), 15);
-            assert_eq!(UInt::one(BitWidth::w32()).leading_zeros(), 31);
-            assert_eq!(UInt::one(BitWidth::w64()).leading_zeros(), 63);
-            assert_eq!(UInt::one(BitWidth::w128()).leading_zeros(), 127);
+            assert_eq!(UInt::one(bw(1)).leading_zeros(), 0);
+            assert_eq!(UInt::one(bw(8)).leading_zeros(), 7);
+            assert_eq!(UInt::one(bw(16)).leading_zeros(), 15);
+            assert_eq!(UInt::one(bw(32)).leading_zeros(), 31);
+            assert_eq!(UInt::one(bw(64)).leading_zeros(), 63);
+            assert_eq!(UInt::one(bw(128)).leading_zeros(), 127);
 
-            assert_eq!(UInt::one(BitWidth::w1()).trailing_zeros(), 0);
-            assert_eq!(UInt::one(BitWidth::w8()).trailing_zeros(), 0);
-            assert_eq!(UInt::one(BitWidth::w16()).trailing_zeros(), 0);
-            assert_eq!(UInt::one(BitWidth::w32()).trailing_zeros(), 0);
-            assert_eq!(UInt::one(BitWidth::w64()).trailing_zeros(), 0);
-            assert_eq!(UInt::one(BitWidth::w128()).trailing_zeros(), 0);
+            assert_eq!(UInt::one(bw(1)).trailing_zeros(), 0);
+            assert_eq!(UInt::one(bw(8)).trailing_zeros(), 0);
+            assert_eq!(UInt::one(bw(16)).trailing_zeros(), 0);
+            assert_eq!(UInt::one(bw(32)).trailing_zeros(), 0);
+            assert_eq!(UInt::one(bw(64)).trailing_zeros(), 0);
+            assert_eq!(UInt::one(bw(128)).trailing_zeros(), 0);
         }
     }
 }

@@ -34,9 +34,9 @@ pub struct ApInt {
 }
 
 union ApIntData {
-    /// Inline storage (up to 64 bits) for small-space optimization.
+    /// Inline storage (up to `Digit::BITS` bits) for small-space optimization.
     inl: Digit,
-    /// Extern storage (>64 bits) for larger `ApInt`s.
+    /// Extern storage (>`Digit::BITS` bits) for larger `ApInt`s.
     ext: NonNull<Digit>,
 }
 

@@ -2,6 +2,7 @@
 //! `std_ops.rs`
 
 use crate::{
+    bw,
     utils::{
         forward_bin_mut_impl,
         forward_mut_impl,
@@ -105,7 +106,7 @@ impl Int {
     /// that one cannot be represented with an `Int` of bitwidth one, in
     /// which case `None` will be returned.
     pub fn one(width: BitWidth) -> Option<Int> {
-        if width == BitWidth::w1() {
+        if width == bw(1) {
             None
         } else {
             Some(Int::from(ApInt::one(width)))
@@ -219,7 +220,7 @@ impl Int {
     /// - One (`1`) is also called the multiplicative neutral element.
     /// - This operation is more efficient than comparing two instances of `Int`
     pub fn is_one(&self) -> bool {
-        if self.width() == BitWidth::w1() {
+        if self.width() == bw(1) {
             false
         } else {
             self.value.is_one()
@@ -1190,16 +1191,13 @@ mod tests {
 
         #[test]
         fn one() {
-            assert_eq!(Int::one(BitWidth::w1()), None);
-            assert_eq!(Int::one(BitWidth::w8()), Some(Int::from_i8(1)));
-            assert_eq!(Int::one(BitWidth::w16()), Some(Int::from_i16(1)));
-            assert_eq!(Int::one(BitWidth::w32()), Some(Int::from_i32(1)));
-            assert_eq!(Int::one(BitWidth::w64()), Some(Int::from_i64(1)));
-            assert_eq!(Int::one(BitWidth::w128()), Some(Int::from_i128(1)));
-            assert_eq!(
-                Int::one(BitWidth::new(192).unwrap()),
-                Some(Int::from([0i64, 0, 1]))
-            );
+            assert_eq!(Int::one(bw(1)), None);
+            assert_eq!(Int::one(bw(8)), Some(Int::from_i8(1)));
+            assert_eq!(Int::one(bw(16)), Some(Int::from_i16(1)));
+            assert_eq!(Int::one(bw(32)), Some(Int::from_i32(1)));
+            assert_eq!(Int::one(bw(64)), Some(Int::from_i64(1)));
+            assert_eq!(Int::one(bw(128)), Some(Int::from_i128(1)));
+            assert_eq!(Int::one(bw(192)), Some(Int::from([0i64, 0, 1])));
         }
     }
 }

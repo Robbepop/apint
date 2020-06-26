@@ -1,5 +1,7 @@
 use crate::{
     apint::ApIntData,
+    bw,
+    digit::DigitRepr,
     mem::vec::Vec,
     storage::Storage,
     ApInt,
@@ -16,7 +18,7 @@ use core::ptr::NonNull;
 impl ApInt {
     /// Deallocates memory that may be allocated by this `ApInt`.
     ///
-    /// `ApInt` instances with a bit width larger than `64` bits
+    /// `ApInt` instances with a bit width larger than `Digit::BITS` bits
     /// allocate their digits on the heap. With `drop_digits` this
     /// memory can be freed.
     ///
@@ -40,6 +42,8 @@ impl Drop for ApInt {
 }
 
 /// # Constructors
+// Makes it easier for changes to `DigitRepr`
+#[allow(clippy::useless_conversion)]
 impl ApInt {
     /// Creates a new small `ApInt` from the given `BitWidth` and `Digit`.
     ///
@@ -47,7 +51,8 @@ impl ApInt {
     ///
     /// # Panics
     ///
-    /// - If the given `width` represents a `BitWidth` larger than `64` bits.
+    /// - If the given `width` represents a `BitWidth` larger than `Digit::BITS`
+    ///   bits.
     #[inline]
     pub(in crate::apint) fn new_inl(width: BitWidth, digit: Digit) -> ApInt {
         assert_eq!(width.storage(), Storage::Inl);
@@ -67,7 +72,7 @@ impl ApInt {
     /// # Panics
     ///
     /// - If the given `width` represents a `BitWidth` smaller than or equal to
-    ///   `64` bits.
+    ///   `Digit::BITS` bits.
     pub(in crate::apint) unsafe fn new_ext(
         width: BitWidth,
         ext_ptr: *mut Digit,
@@ -88,7 +93,7 @@ impl ApInt {
     /// are the same bits, so that the signed interpretation of `ApInt`s
     /// take a value of -1 for `ApInt::from_bool(true)`
     pub fn from_bool(bit: bool) -> ApInt {
-        ApInt::new_inl(BitWidth::w1(), Digit(bit as u64))
+        ApInt::new_inl(bw(1), Digit(DigitRepr::from(bit)))
     }
 
     /// Creates a new `ApInt` from a given `i8` value with a bit-width of 8.
@@ -100,7 +105,7 @@ impl ApInt {
     /// Creates a new `ApInt` from a given `u8` value with a bit-width of 8.
     #[inline]
     pub fn from_u8(val: u8) -> ApInt {
-        ApInt::new_inl(BitWidth::w8(), Digit(u64::from(val)))
+        ApInt::new_inl(bw(8), Digit(DigitRepr::from(val)))
     }
 
     /// Creates a new `ApInt` from a given `i16` value with a bit-width of 16.
@@ -112,7 +117,7 @@ impl ApInt {
     /// Creates a new `ApInt` from a given `u16` value with a bit-width of 16.
     #[inline]
     pub fn from_u16(val: u16) -> ApInt {
-        ApInt::new_inl(BitWidth::w16(), Digit(u64::from(val)))
+        ApInt::new_inl(bw(16), Digit(DigitRepr::from(val)))
     }
 
     /// Creates a new `ApInt` from a given `i32` value with a bit-width of 32.
@@ -124,7 +129,7 @@ impl ApInt {
     /// Creates a new `ApInt` from a given `u32` value with a bit-width of 32.
     #[inline]
     pub fn from_u32(val: u32) -> ApInt {
-        ApInt::new_inl(BitWidth::w32(), Digit(u64::from(val)))
+        ApInt::new_inl(bw(32), Digit(DigitRepr::from(val)))
     }
 
     /// Creates a new `ApInt` from a given `i64` value with a bit-width of 64.
@@ -136,7 +141,7 @@ impl ApInt {
     /// Creates a new `ApInt` from a given `u64` value with a bit-width of 64.
     #[inline]
     pub fn from_u64(val: u64) -> ApInt {
-        ApInt::new_inl(BitWidth::w64(), Digit(val))
+        ApInt::new_inl(bw(64), Digit(DigitRepr::from(val)))
     }
 
     /// Creates a new `ApInt` from a given `i128` value with a bit-width of 128.
@@ -147,7 +152,7 @@ impl ApInt {
 
     /// Creates a new `ApInt` from a given `u128` value with a bit-width of 128.
     pub fn from_u128(val: u128) -> ApInt {
-        let hi = (val >> Digit::BITS) as u64;
+        let hi = (val >> 64) as u64;
         let lo = (val & ((1u128 << 64) - 1)) as u64;
         ApInt::from([hi, lo])
     }
@@ -179,10 +184,9 @@ impl ApInt {
                     "We have already asserted that `digits.len()` must be at exactly \
                      `1`.",
                 );
-                Ok(ApInt::new_inl(BitWidth::w64(), first_and_only))
+                Ok(ApInt::new_inl(bw(Digit::BITS), first_and_only))
             }
             n => {
-                use core::mem;
                 let bitwidth = BitWidth::new(n * Digit::BITS).expect(
                     "We have already asserted that the number of items the given \
                      Iterator iterates over is greater than `1` and thus non-zero and \
@@ -193,7 +197,7 @@ impl ApInt {
                 assert_eq!(buffer.capacity(), req_digits);
                 assert_eq!(buffer.len(), req_digits);
                 let ptr_buffer = buffer.as_ptr() as *mut Digit;
-                mem::forget(buffer);
+                core::mem::forget(buffer);
                 Ok(unsafe { ApInt::new_ext(bitwidth, ptr_buffer) })
             }
         }
@@ -219,10 +223,9 @@ impl ApInt {
     where
         D: Into<Digit>,
     {
-        use core::iter;
         let digit = digit.into();
         let req_digits = target_width.required_digits();
-        ApInt::from_iter(iter::repeat(digit).take(req_digits))
+        ApInt::from_iter(core::iter::repeat(digit).take(req_digits))
             .expect(
                 "Since `required_digits` always returns `1` or more required digits we \
                  can safely assume that this operation never fails.",
@@ -372,7 +375,7 @@ macro_rules! impl_from_array_for_apint {
         impl From<[i64; $n]> for ApInt {
             fn from(val: [i64; $n]) -> ApInt {
                 <Self as From<[u64; $n]>>::from(unsafe {
-                    ::core::mem::transmute::<[i64; $n], [u64; $n]>(val)
+                    core::mem::transmute::<[i64; $n], [u64; $n]>(val)
                 })
             }
         }
@@ -463,14 +466,14 @@ mod tests {
         {
             let explicit = ApInt::from_bool(true);
             let implicit = ApInt::from(true);
-            let expected = ApInt::new_inl(BitWidth::w1(), Digit::ONE);
+            let expected = ApInt::new_inl(bw(1), Digit::ONE);
             assert_eq!(explicit, implicit);
             assert_eq!(explicit, expected);
         }
         {
             let explicit = ApInt::from_bool(false);
             let implicit = ApInt::from(false);
-            let expected = ApInt::new_inl(BitWidth::w1(), Digit::ZERO);
+            let expected = ApInt::new_inl(bw(1), Digit::ZERO);
             assert_eq!(explicit, implicit);
             assert_eq!(explicit, expected);
         }
@@ -484,7 +487,7 @@ mod tests {
             let implicit_u8 = ApInt::from(val);
             let implicit_i8 = ApInt::from(val as i8);
             let expected = ApInt {
-                len: BitWidth::w8(),
+                len: bw(8),
                 data: ApIntData {
                     inl: Digit(u64::from(val)),
                 },
@@ -515,7 +518,7 @@ mod tests {
             let implicit_u16 = ApInt::from(val);
             let implicit_i16 = ApInt::from(val as i16);
             let expected = ApInt {
-                len: BitWidth::w16(),
+                len: bw(16),
                 data: ApIntData {
                     inl: Digit(u64::from(val)),
                 },
@@ -546,7 +549,7 @@ mod tests {
             let implicit_u32 = ApInt::from(val);
             let implicit_i32 = ApInt::from(val as i32);
             let expected = ApInt {
-                len: BitWidth::w32(),
+                len: bw(32),
                 data: ApIntData {
                     inl: Digit(u64::from(val)),
                 },
@@ -582,7 +585,7 @@ mod tests {
             let implicit_u64 = ApInt::from(val);
             let implicit_i64 = ApInt::from(val as i64);
             let expected = ApInt {
-                len: BitWidth::w64(),
+                len: bw(64),
                 data: ApIntData {
                     inl: Digit(u64::from(val)),
                 },
@@ -635,20 +638,14 @@ mod tests {
 
     #[test]
     fn zero() {
-        assert_eq!(ApInt::zero(BitWidth::w1()), ApInt::from_bool(false));
-        assert_eq!(ApInt::zero(BitWidth::w8()), ApInt::from_u8(0));
-        assert_eq!(ApInt::zero(BitWidth::w16()), ApInt::from_u16(0));
-        assert_eq!(ApInt::zero(BitWidth::w32()), ApInt::from_u32(0));
-        assert_eq!(ApInt::zero(BitWidth::w64()), ApInt::from_u64(0));
-        assert_eq!(ApInt::zero(BitWidth::w128()), ApInt::from_u128(0));
-        assert_eq!(
-            ApInt::zero(BitWidth::new(192).unwrap()),
-            ApInt::from([0_u64; 3])
-        );
-        assert_eq!(
-            ApInt::zero(BitWidth::new(256).unwrap()),
-            ApInt::from([0_u64; 4])
-        );
+        assert_eq!(ApInt::zero(bw(1)), ApInt::from_bool(false));
+        assert_eq!(ApInt::zero(bw(8)), ApInt::from_u8(0));
+        assert_eq!(ApInt::zero(bw(16)), ApInt::from_u16(0));
+        assert_eq!(ApInt::zero(bw(32)), ApInt::from_u32(0));
+        assert_eq!(ApInt::zero(bw(64)), ApInt::from_u64(0));
+        assert_eq!(ApInt::zero(bw(128)), ApInt::from_u128(0));
+        assert_eq!(ApInt::zero(bw(192)), ApInt::from([0_u64; 3]));
+        assert_eq!(ApInt::zero(bw(256)), ApInt::from([0_u64; 4]));
     }
 
     #[test]
@@ -677,18 +674,18 @@ mod tests {
 
     #[test]
     fn all_set() {
-        assert_eq!(ApInt::all_set(BitWidth::w1()), ApInt::from_bool(true));
-        assert_eq!(ApInt::all_set(BitWidth::w8()), ApInt::from_i8(-1));
-        assert_eq!(ApInt::all_set(BitWidth::w16()), ApInt::from_i16(-1));
-        assert_eq!(ApInt::all_set(BitWidth::w32()), ApInt::from_i32(-1));
-        assert_eq!(ApInt::all_set(BitWidth::w64()), ApInt::from_i64(-1));
-        assert_eq!(ApInt::all_set(BitWidth::w128()), ApInt::from_i128(-1));
+        assert_eq!(ApInt::all_set(bw(1)), ApInt::from_bool(true));
+        assert_eq!(ApInt::all_set(bw(8)), ApInt::from_i8(-1));
+        assert_eq!(ApInt::all_set(bw(16)), ApInt::from_i16(-1));
+        assert_eq!(ApInt::all_set(bw(32)), ApInt::from_i32(-1));
+        assert_eq!(ApInt::all_set(bw(64)), ApInt::from_i64(-1));
+        assert_eq!(ApInt::all_set(bw(128)), ApInt::from_i128(-1));
         assert_eq!(
-            ApInt::all_set(BitWidth::new(192).unwrap()),
+            ApInt::all_set(bw(192)),
             ApInt::from([-1_i64 as u64, -1_i64 as u64, -1_i64 as u64])
         );
         assert_eq!(
-            ApInt::all_set(BitWidth::new(256).unwrap()),
+            ApInt::all_set(bw(256)),
             ApInt::from([-1_i64 as u64, -1_i64 as u64, -1_i64 as u64, -1_i64 as u64])
         );
     }
@@ -719,51 +716,42 @@ mod tests {
 
     #[test]
     fn signed_min_value() {
+        assert_eq!(ApInt::signed_min_value(bw(1)), ApInt::from_bool(true));
         assert_eq!(
-            ApInt::signed_min_value(BitWidth::w1()),
-            ApInt::from_bool(true)
-        );
-        assert_eq!(
-            ApInt::signed_min_value(BitWidth::w8()),
+            ApInt::signed_min_value(bw(8)),
             ApInt::from_i8(i8::min_value())
         );
         assert_eq!(
-            ApInt::signed_min_value(BitWidth::w16()),
+            ApInt::signed_min_value(bw(16)),
             ApInt::from_i16(i16::min_value())
         );
         assert_eq!(
-            ApInt::signed_min_value(BitWidth::w32()),
+            ApInt::signed_min_value(bw(32)),
             ApInt::from_i32(i32::min_value())
         );
         assert_eq!(
-            ApInt::signed_min_value(BitWidth::w64()),
+            ApInt::signed_min_value(bw(64)),
             ApInt::from_i64(i64::min_value())
         );
         assert_eq!(
-            ApInt::signed_min_value(BitWidth::w128()),
+            ApInt::signed_min_value(bw(128)),
             ApInt::from_i128(i128::min_value())
         );
 
         {
-            let w10 = BitWidth::new(10).unwrap();
             assert_eq!(
-                ApInt::signed_min_value(w10),
-                ApInt::new_inl(w10, Digit(0x0000_0000_0000_0200))
+                ApInt::signed_min_value(bw(10)),
+                ApInt::new_inl(bw(10), Digit(0x0000_0000_0000_0200))
             )
         }
         {
-            use core::i128;
+            assert_eq!(ApInt::signed_min_value(bw(128)), ApInt::from(i128::MIN));
             assert_eq!(
-                ApInt::signed_min_value(BitWidth::w128()),
-                ApInt::from(i128::MIN)
-            );
-            assert_eq!(
-                ApInt::signed_min_value(BitWidth::w128()),
+                ApInt::signed_min_value(bw(128)),
                 ApInt::from([0x8000_0000_0000_0000_u64, 0_u64])
             );
-            let w256 = BitWidth::new(256).unwrap();
             assert_eq!(
-                ApInt::signed_min_value(w256),
+                ApInt::signed_min_value(bw(256)),
                 ApInt::from([0x8000_0000_0000_0000_u64, 0_u64, 0_u64, 0_u64])
             )
         }
@@ -771,36 +759,32 @@ mod tests {
 
     #[test]
     fn signed_max_value() {
+        assert_eq!(ApInt::signed_max_value(bw(1)), ApInt::from_bool(false));
         assert_eq!(
-            ApInt::signed_max_value(BitWidth::w1()),
-            ApInt::from_bool(false)
-        );
-        assert_eq!(
-            ApInt::signed_max_value(BitWidth::w8()),
+            ApInt::signed_max_value(bw(8)),
             ApInt::from_i8(i8::max_value())
         );
         assert_eq!(
-            ApInt::signed_max_value(BitWidth::w16()),
+            ApInt::signed_max_value(bw(16)),
             ApInt::from_i16(i16::max_value())
         );
         assert_eq!(
-            ApInt::signed_max_value(BitWidth::w32()),
+            ApInt::signed_max_value(bw(32)),
             ApInt::from_i32(i32::max_value())
         );
         assert_eq!(
-            ApInt::signed_max_value(BitWidth::w64()),
+            ApInt::signed_max_value(bw(64)),
             ApInt::from_i64(i64::max_value())
         );
         assert_eq!(
-            ApInt::signed_max_value(BitWidth::w128()),
+            ApInt::signed_max_value(bw(128)),
             ApInt::from_i128(i128::max_value())
         );
 
         {
-            let w10 = BitWidth::new(10).unwrap();
             assert_eq!(
-                ApInt::signed_max_value(w10),
-                ApInt::new_inl(w10, Digit(0x0000_0000_0000_01FF))
+                ApInt::signed_max_value(bw(10)),
+                ApInt::new_inl(bw(10), Digit(0x0000_0000_0000_01FF))
             )
         }
     }

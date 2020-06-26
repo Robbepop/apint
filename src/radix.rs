@@ -83,7 +83,7 @@ impl Radix {
     pub(crate) fn bits_per_digit(self) -> usize {
         assert!(self.is_power_of_two());
         fn find_last_bit_set(val: u8) -> usize {
-            ::core::mem::size_of::<u8>() * 8 - val.leading_zeros() as usize
+            core::mem::size_of::<u8>() * 8 - val.leading_zeros() as usize
         }
         find_last_bit_set(self.to_u8()) - 1
     }

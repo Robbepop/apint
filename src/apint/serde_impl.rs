@@ -1,4 +1,5 @@
 use crate::{
+    digit::DigitRepr,
     mem::vec::Vec,
     ApInt,
     BitWidth,
@@ -84,8 +85,8 @@ impl<'de> Deserialize<'de> for BitWidth {
         {
             BitWidth::new(width as usize).map_err(|_| {
                 de::Error::invalid_value(
-                    de::Unexpected::Unsigned(width as u64),
-                    &"a valid `u64` `BitWidth` representation",
+                    de::Unexpected::Unsigned(width as DigitRepr),
+                    &"a valid `DigitRepr` `BitWidth` representation",
                 )
             })
         }

@@ -18,12 +18,11 @@ impl Clone for ApInt {
         match self.storage() {
             Storage::Inl => ApInt::new_inl(self.len, unsafe { self.data.inl }),
             Storage::Ext => {
-                use core::mem;
                 let req_digits = self.len_digits();
                 let mut buffer = self.as_digit_slice().to_vec().into_boxed_slice();
                 assert_eq!(buffer.len(), req_digits);
                 let ptr_buffer = buffer.as_mut_ptr();
-                mem::forget(buffer);
+                core::mem::forget(buffer);
                 unsafe { ApInt::new_ext(self.len, ptr_buffer) }
             }
         }
@@ -68,8 +67,7 @@ impl ApInt {
                     // need to expensively clone its buffer and feed it to `self`.
                     let cloned = rhs.clone();
                     self.data.ext = unsafe { cloned.data.ext };
-                    use core::mem;
-                    mem::forget(cloned);
+                    core::mem::forget(cloned);
                 }
             }
         }
@@ -279,12 +277,11 @@ impl ApInt {
             // must allocate a new buffer that fits for the required amount of digits
             // for the target width. Also we need to `memcpy` the digits of the
             // extended `ApInt` to the newly allocated buffer.
-            use core::iter;
             assert!(target_req_digits > actual_req_digits);
             let additional_digits = target_req_digits - actual_req_digits;
             let extended_clone = ApInt::from_iter(
                 self.digits()
-                    .chain(iter::repeat(Digit::ZERO).take(additional_digits)),
+                    .chain(core::iter::repeat(Digit::ZERO).take(additional_digits)),
             )
             .and_then(|apint| apint.into_truncate(target_width))?;
             *self = extended_clone;
@@ -377,7 +374,6 @@ impl ApInt {
             // must allocate a new buffer that fits for the required amount of digits
             // for the target width. Also we need to `memcpy` the digits of the
             // extended `ApInt` to the newly allocated buffer.
-            use core::iter;
             assert!(target_req_digits > actual_req_digits);
             let additional_digits = target_req_digits - actual_req_digits;
 
@@ -390,7 +386,7 @@ impl ApInt {
 
             let extended_copy = ApInt::from_iter(
                 self.digits()
-                    .chain(iter::repeat(Digit::ONES).take(additional_digits)),
+                    .chain(core::iter::repeat(Digit::ONES).take(additional_digits)),
             )
             .and_then(|apint| apint.into_truncate(target_width))?;
 
@@ -495,6 +491,7 @@ impl ApInt {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::bw;
 
     fn test_apints() -> impl Iterator<Item = ApInt> {
         vec![
@@ -503,7 +500,7 @@ mod tests {
             ApInt::from_u8(42),
             ApInt::from_u8(0xF0),
             ApInt::from_u8(0x0F),
-            ApInt::all_set(BitWidth::w8()),
+            ApInt::all_set(bw(8)),
             ApInt::from_u16(0),
             ApInt::from_u16(1),
             ApInt::from_u16(42),
@@ -511,7 +508,7 @@ mod tests {
             ApInt::from_u16(0xFF00),
             ApInt::from_u16(0x0FF0),
             ApInt::from_u16(0x00FF),
-            ApInt::all_set(BitWidth::w16()),
+            ApInt::all_set(bw(16)),
             ApInt::from_u32(0),
             ApInt::from_u32(1),
             ApInt::from_u32(42),
@@ -519,7 +516,7 @@ mod tests {
             ApInt::from_u32(0xFFFF_0000),
             ApInt::from_u32(0x00FF_FF00),
             ApInt::from_u32(0x0000_FFFF),
-            ApInt::all_set(BitWidth::w32()),
+            ApInt::all_set(bw(32)),
             ApInt::from_u64(0),
             ApInt::from_u64(1),
             ApInt::from_u64(42),
@@ -527,7 +524,7 @@ mod tests {
             ApInt::from_u64(0xFFFF_FFFF_0000_0000),
             ApInt::from_u64(0x0000_FFFF_FFFF_0000),
             ApInt::from_u64(0x0000_0000_FFFF_FFFF),
-            ApInt::all_set(BitWidth::w64()),
+            ApInt::all_set(bw(64)),
             ApInt::from_u128(0),
             ApInt::from_u128(1),
             ApInt::from_u128(42),
@@ -535,7 +532,7 @@ mod tests {
             ApInt::from_u128(0xFFFF_FFFF_FFFF_FFFF_0000_0000_0000_0000),
             ApInt::from_u128(0x0000_0000_FFFF_FFFF_FFFF_FFFF_0000_0000),
             ApInt::from_u128(0x0000_0000_0000_0000_FFFF_FFFF_FFFF_FFFF),
-            ApInt::all_set(BitWidth::w128()),
+            ApInt::all_set(bw(128)),
         ]
         .into_iter()
     }
@@ -705,20 +702,14 @@ mod tests {
 
         #[test]
         fn regression_issue15() {
-            use core::{
-                i128,
-                i64,
-            };
             {
-                let input = ApInt::from_i64(i64::MIN)
-                    .into_sign_extend(BitWidth::new(128).unwrap())
-                    .unwrap();
+                let input = ApInt::from_i64(i64::MIN).into_sign_extend(bw(128)).unwrap();
                 let expected = ApInt::from([-1_i64, i64::MIN]);
                 assert_eq!(input, expected);
             }
             {
                 let input = ApInt::from_i128(i128::MIN)
-                    .into_sign_extend(BitWidth::new(256).unwrap())
+                    .into_sign_extend(bw(256))
                     .unwrap();
                 let expected = ApInt::from([-1_i64, -1_i64, i64::MIN, 0_i64]);
                 assert_eq!(input, expected);

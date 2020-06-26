@@ -45,6 +45,7 @@ impl ShiftAmount {
     ///
     /// # Examples
     ///
+    /// (assuming `Digit::BITS == 64`)
     /// - `ShiftAmount(50)` leaps over `50` bits.
     /// - `ShiftAmount(64)` leaps exactly over `0` bits.
     /// - `ShiftAmount(100)` leaps over `28` bits.
@@ -88,11 +89,10 @@ impl ApInt {
                 if digit_steps != 0 {
                     let digits_len = digits.len();
                     {
-                        use core::ptr;
                         let src_ptr = digits.as_mut_ptr();
                         unsafe {
                             let dst_ptr = src_ptr.add(digit_steps);
-                            ptr::copy(src_ptr, dst_ptr, digits_len - digit_steps)
+                            core::ptr::copy(src_ptr, dst_ptr, digits_len - digit_steps)
                         }
                     }
                     digits

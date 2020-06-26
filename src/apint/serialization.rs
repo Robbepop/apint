@@ -175,7 +175,7 @@ impl ApInt {
                 b'a'..=b'z' => b - b'a' + 10,
                 b'A'..=b'Z' => b - b'A' + 10,
                 b'_' => continue,
-                _ => ::core::u8::MAX,
+                _ => u8::MAX,
             };
             if !radix.is_valid_byte(d) {
                 return Err(Error::invalid_char_in_string_repr(
@@ -354,8 +354,7 @@ impl ApInt {
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    use crate::bitwidth::BitWidth;
+    use crate::bw;
 
     mod constants {
         use super::*;
@@ -381,42 +380,42 @@ mod tests {
 
         #[test]
         fn small() {
-            assert_binary(ApInt::zero(BitWidth::w32()), "0");
+            assert_binary(ApInt::zero(bw(32)), "0");
             assert_binary(ApInt::from(0b_1010_0110_0110_1001_u32), "1010011001101001");
             assert_binary(
-                ApInt::all_set(BitWidth::w32()),
+                ApInt::all_set(bw(32)),
                 "11111111111111111111111111111111", // 32 ones
             );
             assert_binary(
-                ApInt::signed_min_value(BitWidth::w32()),
+                ApInt::signed_min_value(bw(32)),
                 "10000000000000000000000000000000", // 31 zeros
             );
             assert_binary(
-                ApInt::signed_max_value(BitWidth::w32()),
+                ApInt::signed_max_value(bw(32)),
                 "1111111111111111111111111111111", // 31 ones
             );
         }
 
         #[test]
         fn large() {
-            assert_binary(ApInt::zero(BitWidth::w128()), "0");
+            assert_binary(ApInt::zero(bw(128)), "0");
             assert_binary(ApInt::from(0b_1010_0110_0110_1001_u128), "1010011001101001");
             assert_binary(
-                ApInt::all_set(BitWidth::w128()),
+                ApInt::all_set(bw(128)),
                 "11111111111111111111111111111111\
                  11111111111111111111111111111111\
                  11111111111111111111111111111111\
                  11111111111111111111111111111111",
             );
             assert_binary(
-                ApInt::signed_min_value(BitWidth::w128()),
+                ApInt::signed_min_value(bw(128)),
                 "10000000000000000000000000000000\
                  00000000000000000000000000000000\
                  00000000000000000000000000000000\
                  00000000000000000000000000000000",
             );
             assert_binary(
-                ApInt::signed_max_value(BitWidth::w128()),
+                ApInt::signed_max_value(bw(128)),
                 "1111111111111111111111111111111\
                  11111111111111111111111111111111\
                  11111111111111111111111111111111\
@@ -435,30 +434,27 @@ mod tests {
 
         #[test]
         fn small() {
-            assert_hex(ApInt::zero(BitWidth::w32()), "0");
+            assert_hex(ApInt::zero(bw(32)), "0");
             assert_hex(ApInt::from(0xFEDC_BA98_u32), "FEDCBA98");
-            assert_hex(ApInt::all_set(BitWidth::w32()), "FFFFFFFF");
-            assert_hex(ApInt::signed_min_value(BitWidth::w32()), "80000000");
-            assert_hex(ApInt::signed_max_value(BitWidth::w32()), "7FFFFFFF");
+            assert_hex(ApInt::all_set(bw(32)), "FFFFFFFF");
+            assert_hex(ApInt::signed_min_value(bw(32)), "80000000");
+            assert_hex(ApInt::signed_max_value(bw(32)), "7FFFFFFF");
         }
 
         #[test]
         fn large() {
-            assert_hex(ApInt::zero(BitWidth::w128()), "0");
+            assert_hex(ApInt::zero(bw(128)), "0");
             assert_hex(
                 ApInt::from(0xFEDC_BA98_0A1B_7654_ABCD_0123_u128),
                 "FEDCBA980A1B7654ABCD0123",
             );
+            assert_hex(ApInt::all_set(bw(128)), "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF");
             assert_hex(
-                ApInt::all_set(BitWidth::w128()),
-                "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF",
-            );
-            assert_hex(
-                ApInt::signed_min_value(BitWidth::w128()),
+                ApInt::signed_min_value(bw(128)),
                 "80000000000000000000000000000000",
             );
             assert_hex(
-                ApInt::signed_max_value(BitWidth::w128()),
+                ApInt::signed_max_value(bw(128)),
                 "7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF",
             );
         }
@@ -522,14 +518,13 @@ mod tests {
             for radix in test_radices() {
                 assert_eq!(
                     ApInt::from_str_radix(radix, "0"),
-                    Ok(ApInt::zero(BitWidth::new(64).unwrap()))
+                    Ok(ApInt::zero(bw(Digit::BITS)))
                 )
             }
         }
 
         #[test]
         fn small_values() {
-            use core::u64;
             let samples = vec![
                 // (Radix, Input String, Expected ApInt)
                 (2, "0", 0),

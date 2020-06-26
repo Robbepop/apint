@@ -113,7 +113,10 @@ pub use crate::{
         ShiftAmount,
     },
     bitpos::BitPos,
-    bitwidth::BitWidth,
+    bitwidth::{
+        bw,
+        BitWidth,
+    },
     errors::{
         Error,
         ErrorKind,
@@ -129,6 +132,7 @@ pub use crate::{
 pub mod prelude {
     #[doc(no_inline)]
     pub use super::{
+        bw,
         ApInt,
         BitWidth,
         Int,

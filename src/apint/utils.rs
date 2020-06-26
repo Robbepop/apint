@@ -343,12 +343,11 @@ impl ApInt {
     ///
     /// # Example
     ///
-    /// An `ApInt` with a `BitWidth` of `100` bits requires
-    /// 2 `Digit`s for its internal value representation,
-    /// each having 64-bits which totals in `128` bits for the
-    /// `ApInt` instance.
-    /// So upon a call to `ApInt::clear_unused_bits` the upper
-    /// `128-100 = 28` bits are cleared (set to zero (`0`)).
+    /// An `ApInt` with a `BitWidth` of `100` bits requires 2 `Digit`s for its
+    /// internal value representation (assuming `Digit::BITS == 64`), which
+    /// totals in `128` bits for the `ApInt` instance. So upon a call to
+    /// `ApInt::clear_unused_bits` the upper `128-100 = 28` bits are cleared
+    /// (set to zero (`0`)).
     #[inline]
     pub(in crate::apint) fn clear_unused_bits(&mut self) {
         if let Some(bits) = self.width().excess_bits() {

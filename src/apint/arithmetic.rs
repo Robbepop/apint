@@ -1742,10 +1742,13 @@ impl ApInt {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::{
+        bw,
+        BitWidth,
+    };
 
     mod inc {
         use super::*;
-        use core::u64;
 
         #[test]
         fn test() {
@@ -1778,7 +1781,6 @@ mod tests {
 
     mod wrapping_neg {
         use super::*;
-        use crate::bitwidth::BitWidth;
 
         fn assert_symmetry(input: ApInt, expected: ApInt) {
             assert_eq!(input.clone().into_wrapping_neg(), expected.clone());
@@ -1796,11 +1798,8 @@ mod tests {
 
         #[test]
         fn simple() {
-            assert_symmetry(ApInt::zero(BitWidth::w1()), ApInt::zero(BitWidth::w1()));
-            assert_symmetry(
-                ApInt::unsigned_max_value(BitWidth::w1()),
-                ApInt::all_set(BitWidth::w1()),
-            );
+            assert_symmetry(ApInt::zero(bw(1)), ApInt::zero(bw(1)));
+            assert_symmetry(ApInt::unsigned_max_value(bw(1)), ApInt::all_set(bw(1)));
         }
 
         #[test]
@@ -1817,11 +1816,6 @@ mod tests {
 
     mod mul {
         use super::*;
-        use crate::bitwidth::BitWidth;
-        use core::{
-            u64,
-            u8,
-        };
 
         #[test]
         fn rigorous() {
@@ -1970,8 +1964,6 @@ mod tests {
 
     mod div_rem {
         use super::*;
-        use crate::bitwidth::BitWidth;
-        use core::u64;
 
         // TODO: add division by zero testing after error refactoring is finished
         // use errors::ErrorKind;
@@ -2394,13 +2386,11 @@ mod tests {
 
     mod megafuzz {
         use super::*;
-        use crate::bitwidth::BitWidth;
-        use core::u64;
         use rand::random;
 
         #[test]
         fn pull_request_35_regression() {
-            let width = BitWidth::new(65).unwrap();
+            let width = bw(65);
             // arithmetic shift right shift
             assert_eq!(
                 ApInt::from([1u64, u64::MAX - (1 << 6)])
@@ -2421,7 +2411,7 @@ mod tests {
             assert_eq!(v1, ApInt::from([1u64, 7]).into_zero_resize(width));
             assert_eq!(v2, ApInt::from([1u64, 0]).into_zero_resize(width));
             assert_eq!(v3, ApInt::from([1u64, 0]).into_zero_resize(width));
-            let width = BitWidth::new(193).unwrap();
+            let width = bw(193);
             let v3 = ApInt::from([0u64, 0, 17179852800, 1073676288])
                 .into_zero_resize(width)
                 .into_wrapping_mul(&ApInt::from(1u128 << 115).into_zero_resize(width))
@@ -2452,8 +2442,7 @@ mod tests {
                 temp,
                 lhs.clone()
                     .into_wrapping_add(
-                        &ApInt::unsigned_max_value(BitWidth::w1())
-                            .into_zero_resize(width)
+                        &ApInt::unsigned_max_value(bw(1)).into_zero_resize(width)
                     )
                     .unwrap()
             );
@@ -2470,8 +2459,7 @@ mod tests {
                 temp,
                 lhs.clone()
                     .into_wrapping_sub(
-                        &ApInt::unsigned_max_value(BitWidth::w1())
-                            .into_zero_resize(width)
+                        &ApInt::unsigned_max_value(bw(1)).into_zero_resize(width)
                     )
                     .unwrap()
             );
@@ -2485,7 +2473,7 @@ mod tests {
             assert_eq!(temp, lhs);
 
             // power of two multiplication and division shifting tests
-            let mut tmp1 = ApInt::unsigned_max_value(BitWidth::w1())
+            let mut tmp1 = ApInt::unsigned_max_value(bw(1))
                 .into_zero_resize(width)
                 .into_wrapping_shl(shift)
                 .unwrap();
@@ -2516,7 +2504,7 @@ mod tests {
                 // but the division ends up as +1
                 assert_eq!(
                     lhs.clone().into_wrapping_sdiv(&tmp1).unwrap(),
-                    ApInt::unsigned_max_value(BitWidth::w1()).into_zero_resize(width)
+                    ApInt::unsigned_max_value(bw(1)).into_zero_resize(width)
                 );
             } else {
                 let mut tmp0 = lhs.clone();
@@ -2550,7 +2538,7 @@ mod tests {
                 if rhs.leading_zeros() == 0 {
                     ApInt::zero(width)
                 } else {
-                    ApInt::unsigned_max_value(BitWidth::from(rhs.leading_zeros()))
+                    ApInt::unsigned_max_value(BitWidth::new(rhs.leading_zeros()).unwrap())
                         .into_zero_extend(width)
                         .unwrap()
                 }

@@ -24,46 +24,24 @@ pub struct BitWidth(NonZeroUsize);
 // introduce edge cases in the future where the internal type is not
 // `NonZeroUsize` and is fallable.
 
-//  ===========================================================================
+/// Utility free function for converting a `usize` to a `BitWidth`. This is
+/// mainly intended for usage with literals, and shouldn't be used for fallible
+/// conversions.
+///
+/// # Panics
+///
+/// If `width == 0`, this function will panic. This panics using indexing
+/// outside of an array to allow `const` compilation on stable Rust.
+pub const fn bw(width: usize) -> BitWidth {
+    // TODO use normal panicking functionality and `#[track_caller]` when
+    // https://github.com/rust-lang/rust/issues/51999 is fixed.
+    ["Tried to construct an invalid BitWidth of 0 using the `apint::bw` function"]
+        [(width == 0) as usize];
+    unsafe { BitWidth(NonZeroUsize::new_unchecked(width)) }
+}
+
 ///  Constructors
-/// ===========================================================================
 impl BitWidth {
-    /// Creates a `BitWidth` that represents a bit-width of `1` bit.
-    #[inline]
-    pub fn w1() -> Self {
-        BitWidth(NonZeroUsize::new(1).unwrap())
-    }
-
-    /// Creates a `BitWidth` that represents a bit-width of `8` bits.
-    #[inline]
-    pub fn w8() -> Self {
-        BitWidth(NonZeroUsize::new(8).unwrap())
-    }
-
-    /// Creates a `BitWidth` that represents a bit-width of `16` bits.
-    #[inline]
-    pub fn w16() -> Self {
-        BitWidth(NonZeroUsize::new(16).unwrap())
-    }
-
-    /// Creates a `BitWidth` that represents a bit-width of `32` bits.
-    #[inline]
-    pub fn w32() -> Self {
-        BitWidth(NonZeroUsize::new(32).unwrap())
-    }
-
-    /// Creates a `BitWidth` that represents a bit-width of `64` bits.
-    #[inline]
-    pub fn w64() -> Self {
-        BitWidth(NonZeroUsize::new(64).unwrap())
-    }
-
-    /// Creates a `BitWidth` that represents a bit-width of `128` bits.
-    #[inline]
-    pub fn w128() -> Self {
-        BitWidth(NonZeroUsize::new(128).unwrap())
-    }
-
     /// Creates a `BitWidth` from the given `usize`.
     ///
     /// # Errors
@@ -172,27 +150,37 @@ impl BitWidth {
 mod tests {
     use super::*;
 
+    mod bw {
+        use super::*;
+
+        #[test]
+        #[should_panic]
+        fn zero_bitwidth_construction() {
+            bw(0);
+        }
+    }
+
     mod excess_bits {
         use super::*;
 
         #[test]
         fn powers_of_two() {
-            assert_eq!(BitWidth::w1().excess_bits(), Some(1));
-            assert_eq!(BitWidth::w8().excess_bits(), Some(8));
-            assert_eq!(BitWidth::w16().excess_bits(), Some(16));
-            assert_eq!(BitWidth::w32().excess_bits(), Some(32));
-            assert_eq!(BitWidth::w64().excess_bits(), None);
-            assert_eq!(BitWidth::w128().excess_bits(), None);
+            assert_eq!(bw(1).excess_bits(), Some(1));
+            assert_eq!(bw(8).excess_bits(), Some(8));
+            assert_eq!(bw(16).excess_bits(), Some(16));
+            assert_eq!(bw(32).excess_bits(), Some(32));
+            assert_eq!(bw(64).excess_bits(), None);
+            assert_eq!(bw(128).excess_bits(), None);
         }
 
         #[test]
         fn multiples_of_50() {
-            assert_eq!(BitWidth::new(50).unwrap().excess_bits(), Some(50));
-            assert_eq!(BitWidth::new(100).unwrap().excess_bits(), Some(36));
-            assert_eq!(BitWidth::new(150).unwrap().excess_bits(), Some(22));
-            assert_eq!(BitWidth::new(200).unwrap().excess_bits(), Some(8));
-            assert_eq!(BitWidth::new(250).unwrap().excess_bits(), Some(58));
-            assert_eq!(BitWidth::new(300).unwrap().excess_bits(), Some(44));
+            assert_eq!(bw(50).excess_bits(), Some(50));
+            assert_eq!(bw(100).excess_bits(), Some(36));
+            assert_eq!(bw(150).excess_bits(), Some(22));
+            assert_eq!(bw(200).excess_bits(), Some(8));
+            assert_eq!(bw(250).excess_bits(), Some(58));
+            assert_eq!(bw(300).excess_bits(), Some(44));
         }
     }
 }
