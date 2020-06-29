@@ -215,7 +215,6 @@ impl DoubleDigit {
         self.wrapping_divrem(other).0
     }
 
-    #[cfg(not(feature = "specialized_div_rem"))]
     pub(crate) fn wrapping_divrem(
         self,
         other: DoubleDigit,
@@ -224,15 +223,6 @@ impl DoubleDigit {
             DoubleDigit(self.repr().wrapping_div(other.repr())),
             DoubleDigit(self.repr().wrapping_rem(other.repr())),
         )
-    }
-
-    #[cfg(feature = "specialized_div_rem")]
-    pub(crate) fn wrapping_divrem(
-        self,
-        other: DoubleDigit,
-    ) -> (DoubleDigit, DoubleDigit) {
-        let temp = specialized_div_rem::u128_div_rem(self.repr(), other.repr());
-        (DoubleDigit(temp.0), DoubleDigit(temp.1))
     }
 }
 

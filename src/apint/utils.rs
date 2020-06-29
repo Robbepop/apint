@@ -1,8 +1,5 @@
 use crate::{
-    digit_seq::{
-        ContiguousDigitSeq,
-        ContiguousDigitSeqMut,
-    },
+    digit_seq::ContiguousDigitSeq,
     storage::Storage,
     ApInt,
     BitWidth,
@@ -11,6 +8,9 @@ use crate::{
     Result,
     Width,
 };
+
+#[cfg(feature = "rand_support")]
+use crate::digit_seq::ContiguousDigitSeqMut;
 
 use core::{
     fmt,
@@ -43,6 +43,7 @@ impl ApInt {
         ContiguousDigitSeq::from(self.as_digit_slice())
     }
 
+    #[cfg(feature = "rand_support")]
     pub(in crate::apint) fn digits_mut(&mut self) -> ContiguousDigitSeqMut {
         ContiguousDigitSeqMut::from(self.as_digit_slice_mut())
     }
