@@ -1,13 +1,7 @@
 use crate::{
-    apint::utils::{
-        DataAccess,
-        DataAccessMut,
-    },
+    apint::utils::{DataAccess, DataAccessMut},
     checks,
-    utils::{
-        forward_mut_impl,
-        try_forward_bin_mut_impl,
-    },
+    utils::{forward_mut_impl, try_forward_bin_mut_impl},
     ApInt,
     BitPos,
     Digit,
@@ -269,7 +263,8 @@ impl ApInt {
         // Since `ApInt` instances with width's that are no powers of two
         // have unused excess bits that are always zero we need to cut them off
         // for a correct implementation of this operation.
-        zeros - (Digit::BITS - self.width().excess_bits().unwrap_or(Digit::BITS))
+        zeros
+            - (Digit::BITS - self.width().excess_bits().unwrap_or(Digit::BITS))
     }
 
     /// Returns the number of leading zeros in the binary representation of this
@@ -283,7 +278,8 @@ impl ApInt {
                 break
             }
         }
-        zeros - (Digit::BITS - self.width().excess_bits().unwrap_or(Digit::BITS))
+        zeros
+            - (Digit::BITS - self.width().excess_bits().unwrap_or(Digit::BITS))
     }
 
     /// Returns the number of trailing zeros in the binary representation of
@@ -298,7 +294,8 @@ impl ApInt {
             }
         }
         if zeros >= self.width().to_usize() {
-            zeros -= Digit::BITS - self.width().excess_bits().unwrap_or(Digit::BITS);
+            zeros -=
+                Digit::BITS - self.width().excess_bits().unwrap_or(Digit::BITS);
         }
         zeros
     }
@@ -350,7 +347,10 @@ mod tests {
         assert_eq!(ApInt::signed_min_value(BitWidth::w16()).count_zeros(), 15);
         assert_eq!(ApInt::signed_min_value(BitWidth::w32()).count_zeros(), 31);
         assert_eq!(ApInt::signed_min_value(BitWidth::w64()).count_zeros(), 63);
-        assert_eq!(ApInt::signed_min_value(BitWidth::w128()).count_zeros(), 127);
+        assert_eq!(
+            ApInt::signed_min_value(BitWidth::w128()).count_zeros(),
+            127
+        );
 
         assert_eq!(ApInt::signed_max_value(BitWidth::w1()).count_zeros(), 1);
         assert_eq!(ApInt::signed_max_value(BitWidth::w8()).count_zeros(), 1);
@@ -374,14 +374,20 @@ mod tests {
         assert_eq!(ApInt::signed_min_value(BitWidth::w16()).leading_zeros(), 0);
         assert_eq!(ApInt::signed_min_value(BitWidth::w32()).leading_zeros(), 0);
         assert_eq!(ApInt::signed_min_value(BitWidth::w64()).leading_zeros(), 0);
-        assert_eq!(ApInt::signed_min_value(BitWidth::w128()).leading_zeros(), 0);
+        assert_eq!(
+            ApInt::signed_min_value(BitWidth::w128()).leading_zeros(),
+            0
+        );
 
         assert_eq!(ApInt::signed_max_value(BitWidth::w1()).leading_zeros(), 1);
         assert_eq!(ApInt::signed_max_value(BitWidth::w8()).leading_zeros(), 1);
         assert_eq!(ApInt::signed_max_value(BitWidth::w16()).leading_zeros(), 1);
         assert_eq!(ApInt::signed_max_value(BitWidth::w32()).leading_zeros(), 1);
         assert_eq!(ApInt::signed_max_value(BitWidth::w64()).leading_zeros(), 1);
-        assert_eq!(ApInt::signed_max_value(BitWidth::w128()).leading_zeros(), 1);
+        assert_eq!(
+            ApInt::signed_max_value(BitWidth::w128()).leading_zeros(),
+            1
+        );
     }
 
     #[test]
@@ -415,9 +421,18 @@ mod tests {
         // note edge case
         assert_eq!(ApInt::signed_max_value(BitWidth::w1()).trailing_zeros(), 1);
         assert_eq!(ApInt::signed_max_value(BitWidth::w8()).trailing_zeros(), 0);
-        assert_eq!(ApInt::signed_max_value(BitWidth::w16()).trailing_zeros(), 0);
-        assert_eq!(ApInt::signed_max_value(BitWidth::w32()).trailing_zeros(), 0);
-        assert_eq!(ApInt::signed_max_value(BitWidth::w64()).trailing_zeros(), 0);
+        assert_eq!(
+            ApInt::signed_max_value(BitWidth::w16()).trailing_zeros(),
+            0
+        );
+        assert_eq!(
+            ApInt::signed_max_value(BitWidth::w32()).trailing_zeros(),
+            0
+        );
+        assert_eq!(
+            ApInt::signed_max_value(BitWidth::w64()).trailing_zeros(),
+            0
+        );
         assert_eq!(
             ApInt::signed_max_value(BitWidth::w128()).trailing_zeros(),
             0

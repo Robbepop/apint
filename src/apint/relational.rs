@@ -6,10 +6,7 @@ use crate::{
     Result,
     Width,
 };
-use core::{
-    cmp::Ordering,
-    ops::Not,
-};
+use core::{cmp::Ordering, ops::Not};
 
 /// If `self` and `other` have unmatching bit widths, `false` will be returned.
 impl PartialEq for ApInt {

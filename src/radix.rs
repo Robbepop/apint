@@ -1,8 +1,5 @@
 use crate::{
-    digit::{
-        Digit,
-        DigitRepr,
-    },
+    digit::{Digit, DigitRepr},
     Error,
     Result,
 };

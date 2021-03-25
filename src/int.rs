@@ -2,11 +2,7 @@
 //! `std_ops.rs`
 
 use crate::{
-    utils::{
-        forward_bin_mut_impl,
-        forward_mut_impl,
-        try_forward_bin_mut_impl,
-    },
+    utils::{forward_bin_mut_impl, forward_mut_impl, try_forward_bin_mut_impl},
     ApInt,
     BitPos,
     BitWidth,

@@ -1,10 +1,7 @@
 use crate::{
     mem::format,
     storage::Storage,
-    utils::{
-        forward_bin_mut_impl,
-        try_forward_bin_mut_impl,
-    },
+    utils::{forward_bin_mut_impl, try_forward_bin_mut_impl},
     ApInt,
     BitWidth,
     Digit,
@@ -20,7 +17,8 @@ impl Clone for ApInt {
             Storage::Ext => {
                 use core::mem;
                 let req_digits = self.len_digits();
-                let mut buffer = self.as_digit_slice().to_vec().into_boxed_slice();
+                let mut buffer =
+                    self.as_digit_slice().to_vec().into_boxed_slice();
                 assert_eq!(buffer.len(), req_digits);
                 let ptr_buffer = buffer.as_mut_ptr();
                 mem::forget(buffer);
@@ -178,9 +176,9 @@ impl ApInt {
             self.most_significant_digit_mut()
                 .truncate_to(excess_width)
                 .expect(
-                    "Excess bits are guaranteed to be within the bounds for valid \
+                "Excess bits are guaranteed to be within the bounds for valid \
                      truncation of a single `Digit`.",
-                );
+            );
             self.len = target_width;
         } else {
             // We need to copy the digits for a correct truncation, here!
@@ -705,10 +703,7 @@ mod tests {
 
         #[test]
         fn regression_issue15() {
-            use core::{
-                i128,
-                i64,
-            };
+            use core::{i128, i64};
             {
                 let input = ApInt::from_i64(i64::MIN)
                     .into_sign_extend(BitWidth::new(128).unwrap())

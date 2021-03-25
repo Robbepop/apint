@@ -1,11 +1,6 @@
 //! `std::ops` trait implementations. See the docs in `lib.rs` for more.
 
-use crate::{
-    ApInt,
-    Int,
-    ShiftAmount,
-    UInt,
-};
+use crate::{ApInt, Int, ShiftAmount, UInt};
 
 use core::ops::{
     Add,

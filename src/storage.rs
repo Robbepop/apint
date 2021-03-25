@@ -1,7 +1,4 @@
-use crate::{
-    BitWidth,
-    Digit,
-};
+use crate::{BitWidth, Digit};
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 pub(crate) enum Storage {

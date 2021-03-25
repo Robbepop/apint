@@ -102,23 +102,13 @@ mod uint;
 mod utils;
 mod width;
 
-pub(crate) use digit::{
-    Digit,
-    DoubleDigit,
-};
+pub(crate) use digit::{Digit, DoubleDigit};
 
 pub use crate::{
-    apint::{
-        ApInt,
-        ShiftAmount,
-    },
+    apint::{ApInt, ShiftAmount},
     bitpos::BitPos,
     bitwidth::BitWidth,
-    errors::{
-        Error,
-        ErrorKind,
-        Result,
-    },
+    errors::{Error, ErrorKind, Result},
     int::Int,
     radix::Radix,
     uint::UInt,
@@ -128,11 +118,5 @@ pub use crate::{
 /// Re-exports some commonly used items of this crate.
 pub mod prelude {
     #[doc(no_inline)]
-    pub use super::{
-        ApInt,
-        BitWidth,
-        Int,
-        UInt,
-        Width,
-    };
+    pub use super::{ApInt, BitWidth, Int, UInt, Width};
 }

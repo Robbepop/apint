@@ -1,15 +1,6 @@
-use crate::{
-    mem::vec::Vec,
-    ApInt,
-    BitWidth,
-    Digit,
-};
+use crate::{mem::vec::Vec, ApInt, BitWidth, Digit};
 
-use serde::{
-    ser::SerializeTupleStruct,
-    Serialize,
-    Serializer,
-};
+use serde::{ser::SerializeTupleStruct, Serialize, Serializer};
 
 impl Serialize for Digit {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
@@ -40,10 +31,7 @@ impl Serialize for ApInt {
     where
         S: Serializer,
     {
-        use serde::ser::{
-            SerializeStruct,
-            SerializeTuple,
-        };
+        use serde::ser::{SerializeStruct, SerializeTuple};
 
         if serializer.is_human_readable() {
             let mut s = serializer.serialize_struct("ApInt", 2)?;
@@ -62,11 +50,7 @@ impl Serialize for ApInt {
 use core::fmt;
 use serde::{
     de,
-    de::{
-        MapAccess,
-        SeqAccess,
-        Visitor,
-    },
+    de::{MapAccess, SeqAccess, Visitor},
     Deserialize,
     Deserializer,
 };
@@ -184,7 +168,10 @@ impl<'de> Deserialize<'de> for ApInt {
                 impl<'de> Visitor<'de> for FieldVisitor {
                     type Value = Field;
 
-                    fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+                    fn expecting(
+                        &self,
+                        formatter: &mut fmt::Formatter,
+                    ) -> fmt::Result {
                         formatter.write_str("`width` or `digits`")
                     }
 
@@ -235,8 +222,10 @@ impl<'de> Deserialize<'de> for ApInt {
                         }
                     }
                 }
-                let width = width.ok_or_else(|| de::Error::missing_field("width"))?;
-                let digits = digits.ok_or_else(|| de::Error::missing_field("digits"))?;
+                let width =
+                    width.ok_or_else(|| de::Error::missing_field("width"))?;
+                let digits =
+                    digits.ok_or_else(|| de::Error::missing_field("digits"))?;
 
                 if width.required_digits() != digits.len() {
                     return Err(de::Error::invalid_value(
@@ -301,7 +290,11 @@ impl<'de> Deserialize<'de> for ApInt {
         }
 
         if deserializer.is_human_readable() {
-            deserializer.deserialize_struct("ApInt", FIELDS, HumanReadableApIntVisitor)
+            deserializer.deserialize_struct(
+                "ApInt",
+                FIELDS,
+                HumanReadableApIntVisitor,
+            )
         } else {
             deserializer.deserialize_tuple(2, CompactApIntVisitor)
         }
@@ -312,10 +305,7 @@ impl<'de> Deserialize<'de> for ApInt {
 mod tests {
     use super::*;
 
-    use serde_test::{
-        assert_tokens,
-        Token,
-    };
+    use serde_test::{assert_tokens, Token};
 
     mod compact {
         use super::*;
@@ -337,7 +327,8 @@ mod tests {
 
         #[test]
         fn test_large() {
-            let x = ApInt::from_u128(0xFEDC_BA98_7654_3210__0101_1010_0110_1001);
+            let x =
+                ApInt::from_u128(0xFEDC_BA98_7654_3210__0101_1010_0110_1001);
             let expected = &[
                 Token::Tuple { len: 2 },
                 Token::U64(128),

@@ -1,11 +1,4 @@
-use crate::{
-    ApInt,
-    BitWidth,
-    Digit,
-    Error,
-    Result,
-    Width,
-};
+use crate::{ApInt, BitWidth, Digit, Error, Result, Width};
 
 /// Represents a primitive data type.
 ///
@@ -263,8 +256,8 @@ impl ApInt {
     pub fn resize_to_i128(&self) -> i128 {
         let (lsd_0, rest) = self.split_least_significant_digit();
         let (&lsd_1, _) = rest.split_first().unwrap_or((&Digit(0), &[]));
-        let mut result: i128 =
-            (i128::from(lsd_1.repr()) << Digit::BITS) + i128::from(lsd_0.repr());
+        let mut result: i128 = (i128::from(lsd_1.repr()) << Digit::BITS)
+            + i128::from(lsd_0.repr());
         let actual_width = self.width();
         let target_width = BitWidth::w128();
 
@@ -292,8 +285,8 @@ impl ApInt {
     pub fn resize_to_u128(&self) -> u128 {
         let (lsd_0, rest) = self.split_least_significant_digit();
         let (&lsd_1, _) = rest.split_first().unwrap_or((&Digit(0), &[]));
-        let result: u128 =
-            (u128::from(lsd_1.repr()) << Digit::BITS) + u128::from(lsd_0.repr());
+        let result: u128 = (u128::from(lsd_1.repr()) << Digit::BITS)
+            + u128::from(lsd_0.repr());
         result
     }
 }
@@ -319,8 +312,14 @@ impl ApInt {
         debug_assert_ne!(prim_ty, PrimitiveTy::U128);
         debug_assert_ne!(prim_ty, PrimitiveTy::I128);
         let (mut lsd, rest) = self.split_least_significant_digit();
-        if !prim_ty.is_valid_repr(lsd.repr()) || rest.iter().any(|d| d.repr() != 0) {
-            return Error::encountered_unrepresentable_value(self.clone(), prim_ty).into()
+        if !prim_ty.is_valid_repr(lsd.repr())
+            || rest.iter().any(|d| d.repr() != 0)
+        {
+            return Error::encountered_unrepresentable_value(
+                self.clone(),
+                prim_ty,
+            )
+            .into()
         }
         if prim_ty.is_signed() {
             let actual_width = self.width();
@@ -526,8 +525,8 @@ impl ApInt {
             )
             .into()
         }
-        let mut result: i128 =
-            (i128::from(lsd_1.repr()) << Digit::BITS) + i128::from(lsd_0.repr());
+        let mut result: i128 = (i128::from(lsd_1.repr()) << Digit::BITS)
+            + i128::from(lsd_0.repr());
 
         let actual_width = self.width();
         let target_width = BitWidth::w128();
@@ -571,8 +570,8 @@ impl ApInt {
             )
             .into()
         }
-        let result: u128 =
-            (u128::from(lsd_1.repr()) << Digit::BITS) + u128::from(lsd_0.repr());
+        let result: u128 = (u128::from(lsd_1.repr()) << Digit::BITS)
+            + u128::from(lsd_0.repr());
         Ok(result)
     }
 }
@@ -649,9 +648,8 @@ mod tests {
     /// Uses `test_values` to iterate over already constructed `ApInt`
     /// instances.
     fn test_vals_and_apints() -> impl Iterator<Item = (u128, ApInt)> {
-        test_values()
-            .cartesian_product(test_primitive_tys())
-            .map(|(val, prim_ty)| {
+        test_values().cartesian_product(test_primitive_tys()).map(
+            |(val, prim_ty)| {
                 use self::PrimitiveTy::*;
                 match prim_ty {
                     Bool => {
@@ -699,7 +697,8 @@ mod tests {
                         (val, ApInt::from_u128(val))
                     }
                 }
-            })
+            },
+        )
     }
 
     mod resize {
@@ -828,7 +827,10 @@ mod tests {
                 if actual_width < target_width {
                     let mut digit = Digit(val as u64);
                     digit.sign_extend_from(actual_width).unwrap();
-                    assert_eq!(apint.resize_to_i128(), digit.repr() as i64 as i128);
+                    assert_eq!(
+                        apint.resize_to_i128(),
+                        digit.repr() as i64 as i128
+                    );
                 } else {
                     assert_eq!(apint.resize_to_i128(), val as i128)
                 }
@@ -889,11 +891,9 @@ mod tests {
             assert!(ApInt::from(-1_i16).try_to_bool().is_err());
             assert!(ApInt::from(42_u32).try_to_bool().is_err());
             assert!(ApInt::from(1337_u64).try_to_bool().is_err());
-            assert!(
-                ApInt::from(0xFFFF_FFFF_FFFF_FFFF_FFFF_FFFF_FFFF_u128)
-                    .try_to_bool()
-                    .is_err()
-            );
+            assert!(ApInt::from(0xFFFF_FFFF_FFFF_FFFF_FFFF_FFFF_FFFF_u128)
+                .try_to_bool()
+                .is_err());
         }
 
         #[test]

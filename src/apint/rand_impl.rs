@@ -1,11 +1,9 @@
-use crate::{
-    ApInt,
-    BitWidth,
-    Digit,
-};
+use crate::{ApInt, BitWidth, Digit};
 use rand::SeedableRng as _;
 
-impl rand::distributions::Distribution<Digit> for rand::distributions::Standard {
+impl rand::distributions::Distribution<Digit>
+    for rand::distributions::Standard
+{
     /// Creates a random `Digit` using the given random number generator.
     fn sample<R>(&self, rng: &mut R) -> Digit
     where
@@ -19,7 +17,10 @@ impl rand::distributions::Distribution<Digit> for rand::distributions::Standard 
 impl ApInt {
     /// Creates a new `ApInt` with the given `BitWidth` and random `Digit`s.
     pub fn random_with_width(width: BitWidth) -> ApInt {
-        ApInt::random_with_width_using(width, &mut rand::rngs::SmallRng::from_entropy())
+        ApInt::random_with_width_using(
+            width,
+            &mut rand::rngs::SmallRng::from_entropy(),
+        )
     }
 
     /// Creates a new `ApInt` with the given `BitWidth` and random `Digit`s
@@ -32,10 +33,7 @@ impl ApInt {
     {
         let required_digits = width.required_digits();
         assert!(required_digits >= 1);
-        use rand::distributions::{
-            Distribution,
-            Standard,
-        };
+        use rand::distributions::{Distribution, Standard};
         let random_digits = Standard.sample_iter(rng).take(required_digits);
         // The truncation will be cheap always!
         ApInt::from_iter(random_digits)
@@ -65,10 +63,7 @@ impl ApInt {
     where
         R: rand::Rng,
     {
-        use rand::distributions::{
-            Distribution,
-            Standard,
-        };
+        use rand::distributions::{Distribution, Standard};
         let std_dist = Standard.sample_iter(rng);
         self.digits_mut().zip(std_dist).for_each(|(d, r)| *d = r);
         self.clear_unused_bits();
@@ -120,37 +115,43 @@ mod tests {
         {
             let mut randomized = ApInt::from_bool(false);
             randomized.randomize_using(&mut rng1);
-            let new_random = ApInt::random_with_width_using(BitWidth::w1(), &mut rng2);
+            let new_random =
+                ApInt::random_with_width_using(BitWidth::w1(), &mut rng2);
             assert_eq!(randomized, new_random);
         }
         {
             let mut randomized = ApInt::from_u8(0);
             randomized.randomize_using(&mut rng1);
-            let new_random = ApInt::random_with_width_using(BitWidth::w8(), &mut rng2);
+            let new_random =
+                ApInt::random_with_width_using(BitWidth::w8(), &mut rng2);
             assert_eq!(randomized, new_random);
         }
         {
             let mut randomized = ApInt::from_u16(0);
             randomized.randomize_using(&mut rng1);
-            let new_random = ApInt::random_with_width_using(BitWidth::w16(), &mut rng2);
+            let new_random =
+                ApInt::random_with_width_using(BitWidth::w16(), &mut rng2);
             assert_eq!(randomized, new_random);
         }
         {
             let mut randomized = ApInt::from_u32(0);
             randomized.randomize_using(&mut rng1);
-            let new_random = ApInt::random_with_width_using(BitWidth::w32(), &mut rng2);
+            let new_random =
+                ApInt::random_with_width_using(BitWidth::w32(), &mut rng2);
             assert_eq!(randomized, new_random);
         }
         {
             let mut randomized = ApInt::from_u64(0);
             randomized.randomize_using(&mut rng1);
-            let new_random = ApInt::random_with_width_using(BitWidth::w64(), &mut rng2);
+            let new_random =
+                ApInt::random_with_width_using(BitWidth::w64(), &mut rng2);
             assert_eq!(randomized, new_random);
         }
         {
             let mut randomized = ApInt::from_u128(0);
             randomized.randomize_using(&mut rng1);
-            let new_random = ApInt::random_with_width_using(BitWidth::w128(), &mut rng2);
+            let new_random =
+                ApInt::random_with_width_using(BitWidth::w128(), &mut rng2);
             assert_eq!(randomized, new_random);
         }
     }

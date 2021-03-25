@@ -1,10 +1,4 @@
-use crate::{
-    BitPos,
-    Error,
-    Result,
-    ShiftAmount,
-    Width,
-};
+use crate::{BitPos, Error, Result, ShiftAmount, Width};
 
 #[inline]
 pub(crate) fn verify_bit_access<T, P>(a: &T, pos: P) -> Result<()>

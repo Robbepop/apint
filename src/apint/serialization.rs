@@ -1,8 +1,5 @@
 use crate::{
-    mem::{
-        string::String,
-        vec::Vec,
-    },
+    mem::{string::String, vec::Vec},
     ApInt,
     Digit,
     Error,
@@ -24,9 +21,10 @@ use core::fmt;
 /// strings with all the digits being the maximum for the given radix (e.g.
 /// "999999999" which needs 30 bits).
 const LB_2_36_I3F13: [u16; 35] = [
-    8192, 12985, 16384, 19022, 21177, 22998, 24576, 25969, 27214, 28340, 29369, 30315,
-    31190, 32006, 32768, 33485, 34161, 34800, 35406, 35982, 36532, 37058, 37561, 38043,
-    38507, 38953, 39382, 39797, 40198, 40585, 40960, 41324, 41677, 42020, 42353,
+    8192, 12985, 16384, 19022, 21177, 22998, 24576, 25969, 27214, 28340, 29369,
+    30315, 31190, 32006, 32768, 33485, 34161, 34800, 35406, 35982, 36532,
+    37058, 37561, 38043, 38507, 38953, 39382, 39797, 40198, 40585, 40960,
+    41324, 41677, 42020, 42353,
 ];
 
 impl fmt::Binary for ApInt {
@@ -382,7 +380,10 @@ mod tests {
         #[test]
         fn small() {
             assert_binary(ApInt::zero(BitWidth::w32()), "0");
-            assert_binary(ApInt::from(0b_1010_0110_0110_1001_u32), "1010011001101001");
+            assert_binary(
+                ApInt::from(0b_1010_0110_0110_1001_u32),
+                "1010011001101001",
+            );
             assert_binary(
                 ApInt::all_set(BitWidth::w32()),
                 "11111111111111111111111111111111", // 32 ones
@@ -400,7 +401,10 @@ mod tests {
         #[test]
         fn large() {
             assert_binary(ApInt::zero(BitWidth::w128()), "0");
-            assert_binary(ApInt::from(0b_1010_0110_0110_1001_u128), "1010011001101001");
+            assert_binary(
+                ApInt::from(0b_1010_0110_0110_1001_u128),
+                "1010011001101001",
+            );
             assert_binary(
                 ApInt::all_set(BitWidth::w128()),
                 "11111111111111111111111111111111\
@@ -479,8 +483,9 @@ mod tests {
             for radix in test_radices() {
                 assert_eq!(
                     ApInt::from_str_radix(radix, ""),
-                    Err(Error::invalid_string_repr("", radix)
-                        .with_annotation("Cannot parse an empty string into an ApInt."))
+                    Err(Error::invalid_string_repr("", radix).with_annotation(
+                        "Cannot parse an empty string into an ApInt."
+                    ))
                 )
             }
         }

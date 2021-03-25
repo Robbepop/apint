@@ -14,10 +14,7 @@ mod rand_impl;
 #[cfg(feature = "serde_support")]
 mod serde_impl;
 
-use crate::{
-    BitWidth,
-    Digit,
-};
+use crate::{BitWidth, Digit};
 
 pub use self::shift::ShiftAmount;
 pub(crate) use self::to_primitive::PrimitiveTy;
