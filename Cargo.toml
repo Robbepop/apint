@@ -29,17 +29,22 @@ default = [
     "serde_support",
     "std",
 ]
+# Enable support for features that require Rust std library.
+#
+# This must be disabled for `no_std` environments.
 std = [
     "rand/std",
     "serde/std",
     "rand/std",
     "rand/std_rng",
 ]
+# Enable `rand` crate support.
 rand_support = [
     "rand",
     "rand/small_rng",
     "rand/getrandom",
 ]
+# Enable `serde` serialization and deserialization support.
 serde_support = ["serde"]
 
 # Enable fuzz testing.
