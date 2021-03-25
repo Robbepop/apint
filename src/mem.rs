@@ -6,30 +6,15 @@ mod no_std_defs {
     // this removes the need to type out `::convert`, `::num`, and some extra
     // braces for every use in the crate.
     pub use core::{
-        convert::{
-            TryFrom,
-            TryInto,
-        },
+        convert::{TryFrom, TryInto},
         num::NonZeroUsize,
     };
 
-    pub use alloc::{
-        borrow,
-        boxed,
-        format,
-        string,
-        vec,
-    };
+    pub use alloc::{borrow, boxed, format, string, vec};
 
     /// Collection types.
     pub mod collections {
-        pub use self::{
-            BTreeMap,
-            BTreeSet,
-            BinaryHeap,
-            LinkedList,
-            VecDeque,
-        };
+        pub use self::{BTreeMap, BTreeSet, BinaryHeap, LinkedList, VecDeque};
         pub use alloc::collections::*;
         pub use core::ops::Bound;
     }
@@ -40,10 +25,7 @@ mod std_defs {
     pub use std::{
         borrow,
         boxed,
-        convert::{
-            TryFrom,
-            TryInto,
-        },
+        convert::{TryFrom, TryInto},
         format,
         num::NonZeroUsize,
         string,

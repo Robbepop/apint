@@ -1,10 +1,6 @@
 use crate::{
     apint::PrimitiveTy,
-    mem::{
-        borrow::ToOwned,
-        format,
-        string::String,
-    },
+    mem::{borrow::ToOwned, format, string::String},
     ApInt,
     BitPos,
     BitWidth,
@@ -12,10 +8,7 @@ use crate::{
     ShiftAmount,
 };
 
-use core::{
-    fmt,
-    result,
-};
+use core::{fmt, result};
 
 /// Represents the kind of an `Error`.
 ///
@@ -183,7 +176,10 @@ impl Error {
     pub(crate) fn invalid_radix(val: u8) -> Error {
         Error {
             kind: ErrorKind::InvalidRadix(val),
-            message: format!("Encountered an invalid parsing radix of {:?}.", val),
+            message: format!(
+                "Encountered an invalid parsing radix of {:?}.",
+                val
+            ),
             annotation: None,
         }
     }
@@ -245,7 +241,10 @@ impl Error {
         Error::invalid_bitwidth(0)
     }
 
-    pub(crate) fn extension_bitwidth_too_small<W1, W2>(target: W1, current: W2) -> Error
+    pub(crate) fn extension_bitwidth_too_small<W1, W2>(
+        target: W1,
+        current: W2,
+    ) -> Error
     where
         W1: Into<BitWidth>,
         W2: Into<BitWidth>,
@@ -263,7 +262,10 @@ impl Error {
         }
     }
 
-    pub(crate) fn truncation_bitwidth_too_large<W1, W2>(target: W1, current: W2) -> Error
+    pub(crate) fn truncation_bitwidth_too_large<W1, W2>(
+        target: W1,
+        current: W2,
+    ) -> Error
     where
         W1: Into<BitWidth>,
         W2: Into<BitWidth>,
@@ -340,9 +342,10 @@ impl Error {
     pub(crate) fn expected_non_empty_digits() -> Error {
         Error {
             kind: ErrorKind::ExpectedNonEmptyDigits,
-            message: "Encountered an empty iterator upon construction of an `ApInt` \
+            message:
+                "Encountered an empty iterator upon construction of an `ApInt` \
                       from a digit iterator."
-                .to_owned(),
+                    .to_owned(),
             annotation: None,
         }
     }

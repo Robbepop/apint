@@ -205,7 +205,8 @@ impl ApInt {
         if val.len() == 0 {
             None
         } else {
-            let buffer = val.into_iter().rev().map(Digit).collect::<Vec<Digit>>();
+            let buffer =
+                val.into_iter().rev().map(Digit).collect::<Vec<Digit>>();
             Some(ApInt::from_iter(buffer).unwrap())
         }
     }
@@ -215,7 +216,10 @@ impl ApInt {
     ///
     /// Note: The last digit in the generated sequence is truncated to make the
     /// `ApInt`'s       value representation fit the given bit-width.
-    pub(in crate::apint) fn repeat_digit<D>(target_width: BitWidth, digit: D) -> ApInt
+    pub(in crate::apint) fn repeat_digit<D>(
+        target_width: BitWidth,
+        digit: D,
+    ) -> ApInt
     where
         D: Into<Digit>,
     {
@@ -415,10 +419,7 @@ mod tests {
     }
 
     mod tests {
-        use super::{
-            powers,
-            powers_from_to,
-        };
+        use super::{powers, powers_from_to};
 
         #[test]
         fn test_powers() {
@@ -612,10 +613,7 @@ mod tests {
 
     #[test]
     fn from_w128() {
-        use crate::digit::{
-            Digit,
-            DigitRepr,
-        };
+        use crate::digit::{Digit, DigitRepr};
         for val in test_values_u128() {
             let explicit_u128 = ApInt::from_u128(val);
             let explicit_i128 = ApInt::from_i128(val as i128);
@@ -654,7 +652,8 @@ mod tests {
     #[test]
     fn all_unset_eq_zero() {
         let test_widths = [
-            1_usize, 2, 4, 8, 10, 16, 32, 50, 64, 100, 128, 150, 200, 250, 255, 256,
+            1_usize, 2, 4, 8, 10, 16, 32, 50, 64, 100, 128, 150, 200, 250, 255,
+            256,
         ]
         .iter()
         .map(|&w| BitWidth::new(w).unwrap());
@@ -689,14 +688,20 @@ mod tests {
         );
         assert_eq!(
             ApInt::all_set(BitWidth::new(256).unwrap()),
-            ApInt::from([-1_i64 as u64, -1_i64 as u64, -1_i64 as u64, -1_i64 as u64])
+            ApInt::from([
+                -1_i64 as u64,
+                -1_i64 as u64,
+                -1_i64 as u64,
+                -1_i64 as u64
+            ])
         );
     }
 
     #[test]
     fn unsiged_min_value_eq_zero() {
         let test_widths = [
-            1_usize, 2, 4, 8, 10, 16, 32, 50, 64, 100, 128, 150, 200, 250, 255, 256,
+            1_usize, 2, 4, 8, 10, 16, 32, 50, 64, 100, 128, 150, 200, 250, 255,
+            256,
         ]
         .iter()
         .map(|&w| BitWidth::new(w).unwrap());
@@ -708,7 +713,8 @@ mod tests {
     #[test]
     fn unsiged_max_value_eq_all_set() {
         let test_widths = [
-            1_usize, 2, 4, 8, 10, 16, 32, 50, 64, 100, 128, 150, 200, 250, 255, 256,
+            1_usize, 2, 4, 8, 10, 16, 32, 50, 64, 100, 128, 150, 200, 250, 255,
+            256,
         ]
         .iter()
         .map(|&w| BitWidth::new(w).unwrap());

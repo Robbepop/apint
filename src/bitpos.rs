@@ -1,7 +1,4 @@
-use crate::{
-    Digit,
-    Result,
-};
+use crate::{Digit, Result};
 
 /// Represents a bit position within an `ApInt`.
 ///

@@ -14,10 +14,7 @@ use crate::digit_seq::ContiguousDigitSeqMut;
 
 use core::{
     fmt,
-    hash::{
-        Hash,
-        Hasher,
-    },
+    hash::{Hash, Hasher},
 };
 
 impl fmt::Debug for ApInt {
@@ -146,14 +143,20 @@ impl ApInt {
         other: &'b ApInt,
     ) -> Result<ZipDataAccess<'a, 'b>> {
         if self.width() != other.width() {
-            return Error::unmatching_bitwidths(self.width(), other.width()).into()
+            return Error::unmatching_bitwidths(self.width(), other.width())
+                .into()
         }
         Ok(match self.storage() {
             Storage::Inl => {
-                ZipDataAccess::Inl(unsafe { self.data.inl }, unsafe { other.data.inl })
+                ZipDataAccess::Inl(unsafe { self.data.inl }, unsafe {
+                    other.data.inl
+                })
             }
             Storage::Ext => {
-                ZipDataAccess::Ext(self.as_digit_slice(), other.as_digit_slice())
+                ZipDataAccess::Ext(
+                    self.as_digit_slice(),
+                    other.as_digit_slice(),
+                )
             }
         })
     }
@@ -170,13 +173,15 @@ impl ApInt {
         other: &'b ApInt,
     ) -> Result<ZipDataAccessMutSelf<'a, 'b>> {
         if self.width() != other.width() {
-            return Error::unmatching_bitwidths(self.width(), other.width()).into()
+            return Error::unmatching_bitwidths(self.width(), other.width())
+                .into()
         }
         Ok(match self.storage() {
             Storage::Inl => {
-                ZipDataAccessMutSelf::Inl(unsafe { &mut self.data.inl }, unsafe {
-                    other.data.inl
-                })
+                ZipDataAccessMutSelf::Inl(
+                    unsafe { &mut self.data.inl },
+                    unsafe { other.data.inl },
+                )
             }
             Storage::Ext => {
                 ZipDataAccessMutSelf::Ext(
@@ -203,9 +208,10 @@ impl ApInt {
         }
         Ok(match lhs.storage() {
             Storage::Inl => {
-                ZipDataAccessMutBoth::Inl(unsafe { &mut lhs.data.inl }, unsafe {
-                    &mut rhs.data.inl
-                })
+                ZipDataAccessMutBoth::Inl(
+                    unsafe { &mut lhs.data.inl },
+                    unsafe { &mut rhs.data.inl },
+                )
             }
             Storage::Ext => {
                 ZipDataAccessMutBoth::Ext(
@@ -286,9 +292,14 @@ impl ApInt {
     pub(in crate::apint) fn as_digit_slice_mut(&mut self) -> &mut [Digit] {
         use core::slice;
         match self.len.storage() {
-            Storage::Inl => unsafe { slice::from_raw_parts_mut(&mut self.data.inl, 1) },
+            Storage::Inl => unsafe {
+                slice::from_raw_parts_mut(&mut self.data.inl, 1)
+            },
             Storage::Ext => unsafe {
-                slice::from_raw_parts_mut(self.data.ext.as_ptr(), self.len_digits())
+                slice::from_raw_parts_mut(
+                    self.data.ext.as_ptr(),
+                    self.len_digits(),
+                )
             },
         }
     }
@@ -305,7 +316,9 @@ impl ApInt {
     /// Returns a mutable reference to the most significant `Digit` of this
     /// `ApInt`.
     #[inline]
-    pub(in crate::apint) fn most_significant_digit_mut(&mut self) -> &mut Digit {
+    pub(in crate::apint) fn most_significant_digit_mut(
+        &mut self,
+    ) -> &mut Digit {
         match self.access_data_mut() {
             DataAccessMut::Inl(digit) => digit,
             DataAccessMut::Ext(digits) => digits.last_mut().unwrap(),
@@ -372,7 +385,9 @@ impl ApInt {
     pub fn is_zero(&self) -> bool {
         match self.access_data() {
             DataAccess::Inl(digit) => digit.is_zero(),
-            DataAccess::Ext(digits) => digits.iter().all(|digit| digit.is_zero()),
+            DataAccess::Ext(digits) => {
+                digits.iter().all(|digit| digit.is_zero())
+            }
         }
     }
 
@@ -388,8 +403,10 @@ impl ApInt {
         match self.access_data() {
             DataAccess::Inl(digit) => digit == Digit::ONE,
             DataAccess::Ext(digits) => {
-                let (last, rest) = digits.split_last().unwrap_or_else(|| unreachable!());
-                (*last == Digit::ONE) && rest.iter().all(|digit| digit.is_zero())
+                let (last, rest) =
+                    digits.split_last().unwrap_or_else(|| unreachable!());
+                (*last == Digit::ONE)
+                    && rest.iter().all(|digit| digit.is_zero())
             }
         }
     }
@@ -411,7 +428,9 @@ impl ApInt {
     /// Splits the least significant digits from the rest of the digit slice
     /// and returns it as well as the remaining part of the digit slice.
     #[inline]
-    pub(in crate::apint) fn split_least_significant_digit(&self) -> (Digit, &[Digit]) {
+    pub(in crate::apint) fn split_least_significant_digit(
+        &self,
+    ) -> (Digit, &[Digit]) {
         match self.access_data() {
             DataAccess::Inl(digit) => (digit, &[]),
             DataAccess::Ext(digits) => {
@@ -427,7 +446,9 @@ impl ApInt {
     /// Splits the most significant digits from the rest of the digit slice
     /// and returns it as well as the remaining part of the digit slice.
     #[inline]
-    pub(in crate::apint) fn split_most_significant_digit(&self) -> (Digit, &[Digit]) {
+    pub(in crate::apint) fn split_most_significant_digit(
+        &self,
+    ) -> (Digit, &[Digit]) {
         match self.access_data() {
             DataAccess::Inl(digit) => (digit, &[]),
             DataAccess::Ext(digits) => {

@@ -92,7 +92,11 @@ impl ApInt {
                         let src_ptr = digits.as_mut_ptr();
                         unsafe {
                             let dst_ptr = src_ptr.add(digit_steps);
-                            ptr::copy(src_ptr, dst_ptr, digits_len - digit_steps)
+                            ptr::copy(
+                                src_ptr,
+                                dst_ptr,
+                                digits_len - digit_steps,
+                            )
                         }
                     }
                     digits
@@ -188,7 +192,11 @@ impl ApInt {
     where
         S: Into<ShiftAmount>,
     {
-        try_forward_bin_mut_impl(self, shift_amount, ApInt::wrapping_lshr_assign)
+        try_forward_bin_mut_impl(
+            self,
+            shift_amount,
+            ApInt::wrapping_lshr_assign,
+        )
     }
 
     /// Arithmetically right-shifts this `ApInt` by the given `shift_amount`
@@ -221,7 +229,8 @@ impl ApInt {
         }
         let width = self.width();
         let width_bits = width.to_usize() % Digit::BITS;
-        let (digits, bits) = (shift_amount / Digit::BITS, shift_amount % Digit::BITS);
+        let (digits, bits) =
+            (shift_amount / Digit::BITS, shift_amount % Digit::BITS);
         let uns = Digit::BITS - bits;
         match self.access_data_mut() {
             DataAccessMut::Inl(x) => {
@@ -237,7 +246,8 @@ impl ApInt {
                     for i in 0..(x.len() - 1) {
                         x[i] = (x[i] >> bits) | (x[i + 1] << uns);
                     }
-                    x[x.len() - 1] = (x[x.len() - 1] >> bits) | (Digit::ONES << uns);
+                    x[x.len() - 1] =
+                        (x[x.len() - 1] >> bits) | (Digit::ONES << uns);
                 } else if bits == 0 {
                     // digit shift
                     for i in digits..x.len() {
@@ -251,7 +261,8 @@ impl ApInt {
                     for i in digits..(x.len() - 1) {
                         x[i - digits] = (x[i] >> bits) | (x[i + 1] << uns);
                     }
-                    x[diff - 1] = (x[x.len() - 1] >> bits) | (Digit::ONES << uns);
+                    x[diff - 1] =
+                        (x[x.len() - 1] >> bits) | (Digit::ONES << uns);
                     for i in 0..digits {
                         x[i + diff].set_all();
                     }
@@ -280,7 +291,11 @@ impl ApInt {
     where
         S: Into<ShiftAmount>,
     {
-        try_forward_bin_mut_impl(self, shift_amount, ApInt::wrapping_ashr_assign)
+        try_forward_bin_mut_impl(
+            self,
+            shift_amount,
+            ApInt::wrapping_ashr_assign,
+        )
     }
 }
 
@@ -362,7 +377,8 @@ mod tests {
                 let bit_steps = shamt % 64;
                 assert_eq!(digit_steps, 1);
                 assert_eq!(bit_steps, 36);
-                let result = ApInt::from(input).into_wrapping_shl(shamt).unwrap();
+                let result =
+                    ApInt::from(input).into_wrapping_shl(shamt).unwrap();
                 let expected: [u64; 4] = [
                     (d1 << bit_steps) | (d2 >> (Digit::BITS - bit_steps)),
                     (d2 << bit_steps) | (d3 >> (Digit::BITS - bit_steps)),
@@ -378,7 +394,8 @@ mod tests {
                 let bit_steps = shamt % 64;
                 assert_eq!(digit_steps, 2);
                 assert_eq!(bit_steps, 22);
-                let result = ApInt::from(input).into_wrapping_shl(shamt).unwrap();
+                let result =
+                    ApInt::from(input).into_wrapping_shl(shamt).unwrap();
                 let expected: [u64; 4] = [
                     (d2 << bit_steps) | (d3 >> (Digit::BITS - bit_steps)),
                     (d3 << bit_steps),
@@ -394,7 +411,8 @@ mod tests {
                 let bit_steps = shamt % 64;
                 assert_eq!(digit_steps, 3);
                 assert_eq!(bit_steps, 8);
-                let result = ApInt::from(input).into_wrapping_shl(shamt).unwrap();
+                let result =
+                    ApInt::from(input).into_wrapping_shl(shamt).unwrap();
                 let expected: [u64; 4] = [(d3 << bit_steps), 0, 0, 0];
                 let expected = ApInt::from(expected);
                 assert_eq!(result, expected);
