@@ -1,9 +1,9 @@
 ApInt - Arbitrary Precision Integer
 ===================================
 
-|        Linux        |       Windows       |       Codecov        |       Coveralls      |       Docs       |       Crates.io      |
-|:-------------------:|:-------------------:|:--------------------:|:--------------------:|:----------------:|:--------------------:|
-| [![travisCI][1]][2] | [![appveyor][3]][4] | [![codecov][15]][16] | [![coveralls][5]][6] | [![docs][11]][12] | [![crates][13]][14] |
+|        Linux        |       Windows       |       Codecov        |       Docs       |       Crates.io      |
+|:-------------------:|:-------------------:|:--------------------:|:----------------:|:--------------------:|
+| [![travisCI][1]][2] | [![appveyor][3]][4] | [![codecov][15]][16] | [![docs][11]][12] | [![crates][13]][14] |
 
 **Development in progress:** *The implementation has not been finished and may not work.*
 
@@ -100,8 +100,6 @@ additional terms or conditions.
 [2]: https://travis-ci.org/Robbepop/apint
 [3]: https://ci.appveyor.com/api/projects/status/16fc9l6rtroo4xqd?svg=true
 [4]: https://ci.appveyor.com/project/Robbepop/apint/branch/master
-[5]: https://coveralls.io/repos/github/Robbepop/apint/badge.svg?branch=master
-[6]: https://coveralls.io/github/Robbepop/apint?branch=master
 [7]: https://img.shields.io/badge/license-MIT-blue.svg
 [8]: https://img.shields.io/badge/license-APACHE-orange.svg
 [9]: ./LICENSE-MIT
