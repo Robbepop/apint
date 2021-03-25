@@ -359,7 +359,7 @@ impl Digit {
     ///   the users wishes to.
     ///
     /// - Implementation inspired by [Bit Twiddling Hacks] (
-    /// https://graphics.stanford.edu/~seander/bithacks.html#VariableSignExtend).
+    /// <https://graphics.stanford.edu/~seander/bithacks.html#VariableSignExtend>).
     ///
     /// # Errors
     ///
