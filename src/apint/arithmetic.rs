@@ -1950,6 +1950,7 @@ mod tests {
         use core::{u64, u8};
 
         #[test]
+        #[cfg_attr(miri, ignore)]
         fn rigorous() {
             // there are many special case and size optimization paths, so this test must
             // be very rigorous.
