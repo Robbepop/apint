@@ -500,7 +500,7 @@ mod tests {
             .chain(
                 [u16::max_value(), 500, 1000, 1337, 7777, 42_000]
                     .iter()
-                    .copied()
+                    .copied(),
             )
     }
 
@@ -531,7 +531,7 @@ mod tests {
             .chain(
                 [u32::max_value(), 1_000_000, 999_999_999, 1_234_567_890]
                     .iter()
-                    .copied()
+                    .copied(),
             )
     }
 
@@ -567,7 +567,7 @@ mod tests {
                     0x0123_4567_89AB_CDEF,
                 ]
                 .iter()
-                .copied()
+                .copied(),
             )
     }
 
@@ -580,9 +580,7 @@ mod tests {
             let implicit_i64 = ApInt::from(val as i64);
             let expected = ApInt {
                 len: BitWidth::w64(),
-                data: ApIntData {
-                    inl: Digit(val),
-                },
+                data: ApIntData { inl: Digit(val) },
             };
             assert_eq!(explicit_u64, explicit_i64);
             assert_eq!(explicit_u64, implicit_i64);
@@ -603,7 +601,7 @@ mod tests {
                     0x0123_4567_89AB_CDEF_FEDC_BA98_7654_3210,
                 ]
                 .iter()
-                .copied()
+                .copied(),
             )
     }
 

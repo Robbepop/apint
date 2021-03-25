@@ -327,8 +327,7 @@ mod tests {
 
         #[test]
         fn test_large() {
-            let x =
-                ApInt::from_u128(0xFEDC_BA98_7654_3210_0101_1010_0110_1001);
+            let x = ApInt::from_u128(0xFEDC_BA98_7654_3210_0101_1010_0110_1001);
             let expected = &[
                 Token::Tuple { len: 2 },
                 Token::U64(128),
