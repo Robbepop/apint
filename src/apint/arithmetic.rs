@@ -31,17 +31,17 @@ impl ApInt {
             DataAccessMut::Inl(x) => {
                 *x = x.wrapping_add(Digit::ONE);
             }
-            DataAccessMut::Ext(x) => {
-                for i in 0..x.len() {
-                    match x[i].overflowing_add(Digit::ONE) {
+            DataAccessMut::Ext(xs) => {
+                for x in xs {
+                    match x.overflowing_add(Digit::ONE) {
                         (v, false) => {
-                            x[i] = v;
+                            *x = v;
                             break
                         }
                         (v, true) => {
                             // if the ApInt was relatively random this should rarely
                             // happen
-                            x[i] = v;
+                            *x = v;
                         }
                     }
                 }
@@ -61,17 +61,17 @@ impl ApInt {
             DataAccessMut::Inl(x) => {
                 *x = x.wrapping_sub(Digit::ONE);
             }
-            DataAccessMut::Ext(x) => {
-                for i in 0..x.len() {
-                    match x[i].overflowing_sub(Digit::ONE) {
+            DataAccessMut::Ext(xs) => {
+                for x in xs {
+                    match x.overflowing_sub(Digit::ONE) {
                         (v, false) => {
-                            x[i] = v;
+                            *x = v;
                             break
                         }
                         (v, true) => {
                             // if the ApInt was relatively random this should rarely
                             // happen
-                            x[i] = v;
+                            *x = v;
                         }
                     }
                 }
@@ -354,9 +354,14 @@ impl ApInt {
                             );
                             sum.push(temp.0);
                             let mut mul_carry = temp.1;
-                            for rhs_i in 1..rhs_sig_nonzero {
-                                let temp = mult
-                                    .carrying_mul_add(rhs[rhs_i], mul_carry);
+                            for rhs in rhs
+                                .iter()
+                                .take(rhs_sig_nonzero)
+                                .skip(1)
+                                .copied()
+                            {
+                                let temp =
+                                    mult.carrying_mul_add(rhs, mul_carry);
                                 sum.push(temp.0);
                                 mul_carry = temp.1;
                             }
@@ -434,13 +439,9 @@ impl ApInt {
                             sum[lhs_sig_nonzero + rhs_sig_nonzero] = temp1.lo();
                             sum.push(temp1.hi().wrapping_add(temp0.1));
                             if lhs.len() < sum.len() {
-                                for i in 0..lhs.len() {
-                                    lhs[i] = sum[i];
-                                }
+                                lhs.copy_from_slice(&sum[..lhs.len()]);
                             } else {
-                                for i in 0..sum.len() {
-                                    lhs[i] = sum[i];
-                                }
+                                lhs[..sum.len()].copy_from_slice(&sum[..]);
                             }
                         } else {
                             // wrapping (modular) multiplication
@@ -453,9 +454,11 @@ impl ApInt {
                             let mut sum = Vec::with_capacity(lhs.len());
                             sum.push(temp.0);
                             let mut mul_carry = temp.1;
-                            for rhs_i in 1..sig_nonzero {
-                                let temp = lhs[0]
-                                    .carrying_mul_add(rhs[rhs_i], mul_carry);
+                            for rhs in
+                                rhs.iter().take(sig_nonzero).skip(1).copied()
+                            {
+                                let temp =
+                                    lhs[0].carrying_mul_add(rhs, mul_carry);
                                 sum.push(temp.0);
                                 mul_carry = temp.1;
                             }
@@ -500,9 +503,8 @@ impl ApInt {
                                     .wrapping_add(sum[sig_nonzero])
                                     .wrapping_add(add_carry);
                             }
-                            for i in 0..sig_nonzero {
-                                lhs[i] = sum[i];
-                            }
+                            lhs[..sig_nonzero]
+                                .copy_from_slice(&sum[..sig_nonzero]);
                             // final digit (the only one in its row)
                             lhs[sig_nonzero] = lhs[sig_nonzero]
                                 .wrapping_mul_add(rhs[0], sum[sig_nonzero]);
@@ -542,10 +544,10 @@ impl ApInt {
                         lhs[0] = temp.0;
                         let mut mul_carry = temp.1;
                         // middle of row
-                        for lhs_i in 1..lhs_sig_nonzero {
-                            let temp =
-                                rhs[0].carrying_mul_add(lhs[lhs_i], mul_carry);
-                            lhs[lhs_i] = temp.0;
+                        for lhs in lhs.iter_mut().take(lhs_sig_nonzero).skip(1)
+                        {
+                            let temp = rhs[0].carrying_mul_add(*lhs, mul_carry);
+                            *lhs = temp.0;
                             mul_carry = temp.1;
                         }
                         // final digit
@@ -943,8 +945,9 @@ impl ApInt {
                     div[i] = duo[i];
                     duo[i].unset_all();
                 }
-                for i in (ini_duo_sd + 1)..=div_sd {
-                    div[i].unset_all();
+                for div in div.iter_mut().take(div_sd + 1).skip(ini_duo_sd + 1)
+                {
+                    div.unset_all();
                 }
                 return
             }
@@ -966,8 +969,8 @@ impl ApInt {
                             div[i] = duo[i];
                             duo[i].unset_all();
                         }
-                        for i in place..=div_sd {
-                            div[i].unset_all();
+                        for div in div.iter_mut().take(div_sd + 1).skip(place) {
+                            div.unset_all();
                         }
                         return
                     }
@@ -1012,8 +1015,8 @@ impl ApInt {
                 sub.push(temp.0);
                 let mut carry = temp.1;
                 // middle of row
-                for i in 1..div_sd {
-                    let temp = mul.carrying_mul_add(div[i], carry);
+                for div in div.iter().take(div_sd).skip(1).copied() {
+                    let temp = mul.carrying_mul_add(div, carry);
                     sub.push(temp.0);
                     carry = temp.1;
                 }
@@ -1159,12 +1162,12 @@ impl ApInt {
                         .wrapping_add(carry.dd());
                     quo[digits + 1] = temp.lo();
                     carry = temp.hi();
-                    for i in (digits + 2)..quo.len() {
+                    for quo in quo.iter_mut().skip(digits + 2) {
                         if carry.is_zero() {
                             break
                         }
-                        let temp = quo[i].carrying_add(carry);
-                        quo[i] = temp.0;
+                        let temp = quo.carrying_add(carry);
+                        *quo = temp.0;
                         carry = temp.1;
                     }
                     // special long division algorithm core.
@@ -1273,20 +1276,21 @@ impl ApInt {
                             | (div[duo_sd - 2].dd() >> (Digit::BITS - duo_lz))
                     };
                     let mul = duo_sig_dd.wrapping_div(div_sig_dd).lo();
-                    // I could avoid allocation but it would involve more long division to
-                    // recover
-                    //`div`, followed by a second long multiplication with `mul - 1`.
+                    // We could avoid allocation but it would involve more long division to
+                    // recover `div`, followed by a second long multiplication with `mul - 1`.
                     // this will become `-(div * mul)`
-                    // note: div_sd != len - 1 because it would be caught by the first
-                    // `mul` or
-                    //`mul-1` algorithm
+                    //
+                    // # Note
+                    //
+                    // `div_sd != len - 1` because it would be caught by the first
+                    // `mul` or `mul-1` algorithm.
                     let mut sub: Vec<Digit> = Vec::with_capacity(len);
-                    // first digit done and carry
+                    // First digit done and carry.
                     let (temp, mut mul_carry) =
                         mul.dd().wrapping_mul(div[0].dd()).lo_hi();
                     sub.push(temp);
-                    for i in 1..div_sd {
-                        let temp = mul.carrying_mul_add(div[i], mul_carry);
+                    for x in div.iter().take(div_sd).skip(1).copied() {
+                        let temp = mul.carrying_mul_add(x, mul_carry);
                         sub.push(temp.0);
                         mul_carry = temp.1;
                     }
@@ -1360,9 +1364,9 @@ impl ApInt {
                                 match quo[i0].overflowing_add(Digit::ONE) {
                                     (v, false) => {
                                         duo[i0] = v;
-                                        for i1 in (i0 + 1)..len {
-                                            duo[i1] = quo[i1];
-                                        }
+                                        duo[(i0 + 1)..len].copy_from_slice(
+                                            &quo[(i0 + 1)..len],
+                                        );
                                         break
                                     }
                                     (v, true) => {
@@ -1374,10 +1378,8 @@ impl ApInt {
                         },
                         {
                             // the quotient should be `quo` and remainder should be `duo`
-                            for i in 0..len {
-                                div[i] = duo[i];
-                                duo[i] = quo[i];
-                            }
+                            div[..len].copy_from_slice(&duo[..len]);
+                            duo[..len].copy_from_slice(&quo[..len]);
                             return
                         }
                     );
@@ -1385,10 +1387,8 @@ impl ApInt {
                 // more 0 cases check
                 if div_sb > duo_sb {
                     // the quotient should be `quo` and remainder should be `duo`
-                    for i in 0..len {
-                        div[i] = duo[i];
-                        duo[i] = quo[i];
-                    }
+                    div[..len].copy_from_slice(&duo[..len]);
+                    duo[..len].copy_from_slice(&quo[..len]);
                     return
                 }
                 // this can only happen if `div_sd < 2` (because of above branches),
@@ -1412,7 +1412,7 @@ impl ApInt {
                     carry = temp.hi();
                     for i0 in 2..len {
                         if carry.is_zero() {
-                            duo[i0..len].clone_from_slice(&quo[i0..len]);
+                            duo[i0..len].copy_from_slice(&quo[i0..len]);
                             break
                         }
                         let temp = quo[i0].carrying_add(carry);

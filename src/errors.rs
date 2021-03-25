@@ -148,10 +148,7 @@ impl Error {
     /// Returns the optional annotation of this `Error`.
     #[inline]
     pub fn annotation(&self) -> Option<&str> {
-        match self.annotation {
-            Some(ref ann) => Some(ann.as_str()),
-            None => None,
-        }
+        self.annotation.as_deref()
     }
 }
 
@@ -383,15 +380,15 @@ impl Error {
     }
 }
 
-impl<T> Into<Result<T>> for Error {
+impl<T> From<Error> for Result<T> {
     /// Converts an `Error` into a `Result<T, Error>`.
     ///
     /// This might be useful to prevent some parentheses spams
     /// because it replaces `Err(my_error)` with `my_error.into()`.
     ///
     /// On the other hand it might be an abuse of the trait ...
-    fn into(self) -> Result<T> {
-        Err(self)
+    fn from(error: Error) -> Self {
+        Err(error)
     }
 }
 

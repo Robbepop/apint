@@ -141,10 +141,7 @@ impl BitWidth {
     ///         Read the documentation of `excess_bits` for more information
     ///         about what is actually returned by this.
     pub(crate) fn excess_width(self) -> Option<BitWidth> {
-        match NonZeroUsize::new(self.to_usize() % Digit::BITS) {
-            Some(bitwidth) => Some(BitWidth(bitwidth)),
-            None => None,
-        }
+        NonZeroUsize::new(self.to_usize() % Digit::BITS).map(BitWidth)
     }
 
     /// Returns a storage specifier that tells the caller if `ApInt`'s
