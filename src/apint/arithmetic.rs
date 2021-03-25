@@ -2574,6 +2574,7 @@ mod tests {
         }
     }
 
+    #[cfg(feature = "dev-fuzz")]
     mod megafuzz {
         use super::*;
         use crate::bitwidth::BitWidth;
