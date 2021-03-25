@@ -42,6 +42,9 @@ rand_support = [
 ]
 serde_support = ["serde"]
 
+# Enable fuzz testing.
+dev-fuzz = []
+
 [badges]
 travis-ci = { repository = "Robbepop/apint" }
 appveyor = { repository = "Robbepop/apint", branch = "master", service = "github" }

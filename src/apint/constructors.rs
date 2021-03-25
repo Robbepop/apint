@@ -201,6 +201,7 @@ impl ApInt {
 
     // TODO: convert this to take from a slice or IntoIterator<u64>
     #[cfg(test)]
+    #[cfg(feature = "dev-fuzz")]
     pub(crate) fn from_vec_u64(val: Vec<u64>) -> Option<ApInt> {
         if val.len() == 0 {
             None
