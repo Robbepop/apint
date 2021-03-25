@@ -1,9 +1,9 @@
 ApInt - Arbitrary Precision Integer
 ===================================
 
-|        Linux        |       Windows       |       Codecov        |       Docs       |       Crates.io      |
-|:-------------------:|:-------------------:|:--------------------:|:----------------:|:--------------------:|
-| [![travisCI][1]][2] | [![appveyor][3]][4] | [![codecov][15]][16] | [![docs][11]][12] | [![crates][13]][14] |
+|        Linux        |       Codecov        |       Docs       |       Crates.io      |       LoC        |
+|:-------------------:|:--------------------:|:----------------:|:--------------------:|:----------------:|
+| [![travisCI][1]][2] | [![codecov][15]][16] | [![docs][11]][12] | [![crates][13]][14] | [![][C1]][C2]    |
 
 **Development in progress:** *The implementation has not been finished and may not work.*
 
@@ -96,10 +96,8 @@ Unless you explicitly state otherwise, any contribution intentionally submitted
 for inclusion in the work by you, as defined in the Apache-2.0 license, shall be dual licensed as above, without any
 additional terms or conditions.
 
-[1]: https://travis-ci.org/Robbepop/apint.svg?branch=master
-[2]: https://travis-ci.org/Robbepop/apint
-[3]: https://ci.appveyor.com/api/projects/status/16fc9l6rtroo4xqd?svg=true
-[4]: https://ci.appveyor.com/project/Robbepop/apint/branch/master
+[1]: https://github.com/Robbepop/apint/actions/workflows/rust.yml/badge.svg
+[2]: https://github.com/Robbepop/apint/actions/workflows/rust.yml
 [7]: https://img.shields.io/badge/license-MIT-blue.svg
 [8]: https://img.shields.io/badge/license-APACHE-orange.svg
 [9]: ./LICENSE-MIT
@@ -110,6 +108,8 @@ additional terms or conditions.
 [14]: https://crates.io/crates/apint/
 [15]: https://codecov.io/gh/robbepop/apint/branch/master/graph/badge.svg
 [16]: https://codecov.io/gh/Robbepop/apint/branch/master
+[C1]: https://tokei.rs/b1/github/Robbepop/apint?category=code
+[C2]: https://github.com/Aaronepower/tokei#badges
 
 [17]: https://github.com/rust-lang/rust/issues/35118
 [18]: https://github.com/rust-lang/rust/issues/34511
