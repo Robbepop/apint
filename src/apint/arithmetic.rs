@@ -1895,7 +1895,7 @@ mod tests {
         use crate::bitwidth::BitWidth;
 
         fn assert_symmetry(input: ApInt, expected: ApInt) {
-            assert_eq!(input.clone().into_wrapping_neg(), expected.clone());
+            assert_eq!(input.clone().into_wrapping_neg(), expected);
             assert_eq!(expected.into_wrapping_neg(), input);
         }
 
@@ -1905,7 +1905,7 @@ mod tests {
                 999999, 987432, 77216417,
             ]
             .iter()
-            .map(|v| *v)
+            .copied()
         }
 
         #[test]

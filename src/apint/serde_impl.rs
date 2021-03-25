@@ -328,7 +328,7 @@ mod tests {
         #[test]
         fn test_large() {
             let x =
-                ApInt::from_u128(0xFEDC_BA98_7654_3210__0101_1010_0110_1001);
+                ApInt::from_u128(0xFEDC_BA98_7654_3210_0101_1010_0110_1001);
             let expected = &[
                 Token::Tuple { len: 2 },
                 Token::U64(128),
@@ -367,7 +367,7 @@ mod tests {
                 Token::SeqEnd,
                 Token::StructEnd,
             ];
-            assert_tokens(&x.clone().readable(), expected);
+            assert_tokens(&x.readable(), expected);
         }
 
         #[test]
@@ -392,7 +392,7 @@ mod tests {
                 Token::SeqEnd,
                 Token::StructEnd,
             ];
-            assert_tokens(&x.clone().readable(), expected);
+            assert_tokens(&x.readable(), expected);
         }
     }
 }

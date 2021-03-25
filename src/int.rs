@@ -1181,21 +1181,17 @@ impl fmt::UpperHex for Int {
 mod tests {
     use super::*;
 
-    mod tests {
-        use super::*;
-
-        #[test]
-        fn one() {
-            assert_eq!(Int::one(BitWidth::w1()), None);
-            assert_eq!(Int::one(BitWidth::w8()), Some(Int::from_i8(1)));
-            assert_eq!(Int::one(BitWidth::w16()), Some(Int::from_i16(1)));
-            assert_eq!(Int::one(BitWidth::w32()), Some(Int::from_i32(1)));
-            assert_eq!(Int::one(BitWidth::w64()), Some(Int::from_i64(1)));
-            assert_eq!(Int::one(BitWidth::w128()), Some(Int::from_i128(1)));
-            assert_eq!(
-                Int::one(BitWidth::new(192).unwrap()),
-                Some(Int::from([0i64, 0, 1]))
-            );
-        }
+    #[test]
+    fn one() {
+        assert_eq!(Int::one(BitWidth::w1()), None);
+        assert_eq!(Int::one(BitWidth::w8()), Some(Int::from_i8(1)));
+        assert_eq!(Int::one(BitWidth::w16()), Some(Int::from_i16(1)));
+        assert_eq!(Int::one(BitWidth::w32()), Some(Int::from_i32(1)));
+        assert_eq!(Int::one(BitWidth::w64()), Some(Int::from_i64(1)));
+        assert_eq!(Int::one(BitWidth::w128()), Some(Int::from_i128(1)));
+        assert_eq!(
+            Int::one(BitWidth::new(192).unwrap()),
+            Some(Int::from([0i64, 0, 1]))
+        );
     }
 }

@@ -203,7 +203,7 @@ impl ApInt {
     #[cfg(test)]
     #[cfg(feature = "dev-fuzz")]
     pub(crate) fn from_vec_u64(val: Vec<u64>) -> Option<ApInt> {
-        if val.len() == 0 {
+        if val.is_empty() {
             None
         } else {
             let buffer =
@@ -408,7 +408,6 @@ impl_from_array_for_apint!(32); // 2048 bits
 #[cfg(test)]
 mod tests {
     use super::*;
-
     use core::ops::Range;
 
     fn powers() -> impl Iterator<Item = u128> {
@@ -419,45 +418,41 @@ mod tests {
         powers().skip(range.start).take(range.end - range.start)
     }
 
-    mod tests {
-        use super::{powers, powers_from_to};
+    #[test]
+    fn test_powers() {
+        let mut pows = powers();
+        assert_eq!(pows.next(), Some(1 << 0));
+        assert_eq!(pows.next(), Some(1 << 1));
+        assert_eq!(pows.next(), Some(1 << 2));
+        assert_eq!(pows.next(), Some(1 << 3));
+        assert_eq!(pows.next(), Some(1 << 4));
+        assert_eq!(pows.next(), Some(1 << 5));
+        assert_eq!(pows.last(), Some(1 << 127));
+    }
 
-        #[test]
-        fn test_powers() {
-            let mut pows = powers();
-            assert_eq!(pows.next(), Some(1 << 0));
-            assert_eq!(pows.next(), Some(1 << 1));
-            assert_eq!(pows.next(), Some(1 << 2));
-            assert_eq!(pows.next(), Some(1 << 3));
-            assert_eq!(pows.next(), Some(1 << 4));
-            assert_eq!(pows.next(), Some(1 << 5));
-            assert_eq!(pows.last(), Some(1 << 127));
+    #[test]
+    fn test_powers_from_to() {
+        {
+            let mut powsft = powers_from_to(0..4);
+            assert_eq!(powsft.next(), Some(1 << 0));
+            assert_eq!(powsft.next(), Some(1 << 1));
+            assert_eq!(powsft.next(), Some(1 << 2));
+            assert_eq!(powsft.next(), Some(1 << 3));
+            assert_eq!(powsft.next(), None);
         }
-
-        #[test]
-        fn test_powers_from_to() {
-            {
-                let mut powsft = powers_from_to(0..4);
-                assert_eq!(powsft.next(), Some(1 << 0));
-                assert_eq!(powsft.next(), Some(1 << 1));
-                assert_eq!(powsft.next(), Some(1 << 2));
-                assert_eq!(powsft.next(), Some(1 << 3));
-                assert_eq!(powsft.next(), None);
-            }
-            {
-                let mut powsft = powers_from_to(4..7);
-                assert_eq!(powsft.next(), Some(1 << 4));
-                assert_eq!(powsft.next(), Some(1 << 5));
-                assert_eq!(powsft.next(), Some(1 << 6));
-                assert_eq!(powsft.next(), None);
-            }
+        {
+            let mut powsft = powers_from_to(4..7);
+            assert_eq!(powsft.next(), Some(1 << 4));
+            assert_eq!(powsft.next(), Some(1 << 5));
+            assert_eq!(powsft.next(), Some(1 << 6));
+            assert_eq!(powsft.next(), None);
         }
     }
 
     fn test_values_u8() -> impl Iterator<Item = u8> {
         powers_from_to(0..8)
             .map(|v| v as u8)
-            .chain([u8::max_value(), 10, 42, 99, 123].iter().map(|v| *v))
+            .chain([u8::max_value(), 10, 42, 99, 123].iter().copied())
     }
 
     #[test]
@@ -505,7 +500,7 @@ mod tests {
             .chain(
                 [u16::max_value(), 500, 1000, 1337, 7777, 42_000]
                     .iter()
-                    .map(|v| *v),
+                    .copied()
             )
     }
 
@@ -536,7 +531,7 @@ mod tests {
             .chain(
                 [u32::max_value(), 1_000_000, 999_999_999, 1_234_567_890]
                     .iter()
-                    .map(|v| *v),
+                    .copied()
             )
     }
 
@@ -572,7 +567,7 @@ mod tests {
                     0x0123_4567_89AB_CDEF,
                 ]
                 .iter()
-                .map(|v| *v),
+                .copied()
             )
     }
 
@@ -586,7 +581,7 @@ mod tests {
             let expected = ApInt {
                 len: BitWidth::w64(),
                 data: ApIntData {
-                    inl: Digit(u64::from(val)),
+                    inl: Digit(val),
                 },
             };
             assert_eq!(explicit_u64, explicit_i64);
@@ -608,7 +603,7 @@ mod tests {
                     0x0123_4567_89AB_CDEF_FEDC_BA98_7654_3210,
                 ]
                 .iter()
-                .map(|v| *v),
+                .copied()
             )
     }
 
