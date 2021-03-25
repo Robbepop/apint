@@ -81,10 +81,7 @@ impl PrimitiveTy {
     #[inline]
     pub(crate) fn is_signed(self) -> bool {
         use self::PrimitiveTy::*;
-        match self {
-            I8 | I16 | I32 | I64 | I128 => true,
-            _ => false,
-        }
+        matches!(self, I8 | I16 | I32 | I64 | I128)
     }
 
     /// Returns the associated `BitWidth` to this `PrimitiveTy`.
